@@ -1,5 +1,5 @@
 #!/bin/sh -
-#	@(#)distrib	10.25 (Sleepycat) 5/2/98
+#	@(#)distrib	10.26 (Sleepycat) 5/26/98
 
 # Build autoconf structure.
 echo "Running autoheader"
@@ -79,7 +79,7 @@ chmod 444 $f
 f=../build.win32/.dbtestrc
 echo "Building $f"
 (echo "$msgsh" && \
- cat ../test/test.tcl) > $f
+ sed -e "s/is_windows_test[	 ]0/is_windows_test 1/" ../test/test.tcl) > $f
 chmod 444 $f
 
 # Build the Win16 files.

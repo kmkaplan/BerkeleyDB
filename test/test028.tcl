@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test028.tcl	8.6 (Sleepycat) 4/26/98
+#	@(#)test028.tcl	8.7 (Sleepycat) 6/2/98
 #
 # Put after cursor delete test.
 proc test028 { method args } {
@@ -125,8 +125,8 @@ proc test028 { method args } {
 			# Now delete all the elements with a cursor
 			puts "\tTest028.j: Cursor Deletes"
 			set count 0
-			for { set ret [$dbc get $key $DB_SET] } { 
-			    [string length $ret] != 0 } { 
+			for { set ret [$dbc get $key $DB_SET] } {
+			    [string length $ret] != 0 } {
 			    set ret [$dbc get 0 $DB_NEXT] } {
 				set k [lindex $ret 0]
 				set d [lindex $ret 1]

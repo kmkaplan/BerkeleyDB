@@ -5,7 +5,7 @@
 .\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)DbMpool.sox	10.21 (Sleepycat) 5/4/98
+.\"	@(#)DbMpool.sox	10.22 (Sleepycat) 5/10/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
@@ -866,7 +866,7 @@ u_int32_t \\$1;\}
 .el\{\
 int get_\\$1();\}
 ..
-.TH DbMpool 3 "May 4, 1998"
+.TH DbMpool 3 "May 10, 1998"
 .UC 7
 .SH NAME
 DbMpool \- shared memory buffer pool
@@ -1248,6 +1248,12 @@ DB_MPOOL_STAT (typedef'd in <db_cxx.h>).
 .PP
 The following DB_MPOOL_STAT fields will be filled in:
 .TP 5
+u_int32_t st_refcnt;
+The number of references to the region.
+.Nt
+u_int32_t st_regsize;
+The size of the region.
+.Nt
 size_t st_cachesize;
 \}
 .el\{\

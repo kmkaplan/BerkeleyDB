@@ -473,12 +473,16 @@
             file.
        int get_st_version();
             The version of the log file type.
+       int get_st_refcnt();
+            The number of references to the region.
+       int get_st_regsize();
+            The size of the region.
+
        int get_st_mode();
             The mode of any created log files.
        int get_st_lg_max();
             The maximum size of any  individual  file  comprising
             the log.
-
        int get_st_written();
             The total number of bytes written to this log.
        int get_st_written_chkpt();
@@ -537,6 +541,7 @@
 <H2>ENVIRONMENT VARIABLES</H2><PRE>
        The following environment variables affect  the  execution
        of db_log:
+
        DB_HOME
             If  the  dbenv argument to DbLog.open was initialized
             using db_appinit, the  environment  variable  DB_HOME
@@ -647,6 +652,7 @@
        In addition, the DbLog.put method may  fail  and  throw  a
        <B><A HREF="DbException.j.html">DbException(3)</A></B>  encapsulating  an  errno for the following
        conditions:
+
        [EINVAL]
             An invalid flag value or parameter was specified.
 
@@ -694,7 +700,6 @@
        <B>memcpy(3)</B>, <B>memset(3)</B>, <B>open(2)</B>, <B>realloc(3)</B>, <B>sigfillset(3)</B>,
        <B>sigprocmask(2)</B>, <B>stat(2)</B>, <B>strcpy(3)</B>, <B>strdup(3)</B>,
        <B>strerror(3)</B>,  <B>strlen(3)</B>, <B>time(3)</B>, <B>unlink(2)</B>, and <B>write(2)</B>.
-
        In addition, the DbLog.db_register  method  may  fail  and
        throw  a  <B><A HREF="DbException.j.html">DbException(3)</A></B>  encapsulating  an  errno for the
        following conditions:

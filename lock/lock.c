@@ -8,14 +8,13 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)lock.c	10.50 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)lock.c	10.52 (Sleepycat) 5/10/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
 #include <errno.h>
-#include <stdio.h>
 #include <string.h>
 #endif
 
@@ -566,13 +565,10 @@ __lock_is_locked(lt, locker, dbt, mode)
 	return (0);
 }
 
-#ifdef DEBUG
 /*
  * __lock_printlock --
  *
- * PUBLIC: #ifdef DEBUG
  * PUBLIC: void __lock_printlock __P((DB_LOCKTAB *, struct __db_lock *, int));
- * PUBLIC: #endif
  */
 void
 __lock_printlock(lt, lp, ispgno)
@@ -651,7 +647,6 @@ __lock_printlock(lt, lp, ispgno)
 		printf("\n");
 	}
 }
-#endif
 
 /*
  * PUBLIC: int __lock_getobj  __P((DB_LOCKTAB *,

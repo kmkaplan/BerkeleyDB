@@ -514,6 +514,10 @@ DDEESSCCRRIIPPTTIIOONN
             file.
        u_int32_t st_version;
             The version of the log file type.
+       u_int32_t st_refcnt;
+            The number of references to the region.
+       u_int32_t st_regsize;
+            The size of the region.
        int st_mode;
             The mode of any created log files.
        u_int32_t st_lg_max;
@@ -599,7 +603,6 @@ EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
             able  TMPDIR may be used as the directory in which to
             create the log, as described in the _l_o_g___o_p_e_n  section
             above.
-
 EERRRROORRSS
        The _l_o_g___o_p_e_n function may fail and return _e_r_r_n_o for any of
        the errors specified for  the  following  DB  and  library
@@ -656,7 +659,6 @@ EERRRROORRSS
        In addition, the _l_o_g___g_e_t  function  may  fail  and  return
        _e_r_r_n_o for the following conditions:
 
-
        [EINVAL]
             An invalid flag value or parameter was specified.
 
@@ -710,9 +712,9 @@ EERRRROORRSS
        The _l_o_g___a_r_c_h_i_v_e function may fail and return _e_r_r_n_o for any
        of  the  errors specified for the following DB and library
        functions: close(2), fcntl(2), fflush(3), getcwd(3),
-       log_compare(3), log_get(3), malloc(3), memcpy(3),
-       memset(3), open(2), qsort(3), realloc(3), sigfillset(3),
-       sigprocmask(2), stat(2), strchr(3), strcmp(3), strcpy(3),
+       log_compare(3), log_get(3), malloc(3), memcpy(3), mem-
+       set(3), open(2), qsort(3), realloc(3), sigfillset(3), sig-
+       procmask(2), stat(2), strchr(3), strcmp(3), strcpy(3),
        strdup(3), strerror(3), strlen(3), and unlink(2).
 
        In addition, the _l_o_g___a_r_c_h_i_v_e function may fail and  return

@@ -4,7 +4,7 @@
  * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)lock.h	10.14 (Sleepycat) 4/10/98
+ *	@(#)lock.h	10.15 (Sleepycat) 5/10/98
  */
 
 typedef struct __db_lockobj	DB_LOCKOBJ;
@@ -173,18 +173,5 @@ struct __db_lock {
 	(N) * ALIGN(sizeof(struct __db_lock), MUTEX_ALIGNMENT) +	\
 	ALIGN((N) * sizeof(DB_LOCKOBJ), sizeof(size_t)) +		\
 	ALIGN(STRING_SIZE(N), sizeof(size_t)))
-
-#ifdef DEBUG
-#define	LOCK_DEBUG_LOCKERS	0x0001
-#define	LOCK_DEBUG_LOCK	 	0x0002
-#define	LOCK_DEBUG_OBJ	 	0x0004
-#define	LOCK_DEBUG_CONF	 	0x0008
-#define	LOCK_DEBUG_MEM	 	0x0010
-#define	LOCK_DEBUG_BUCKET	0x0020
-#define LOCK_DEBUG_OBJECTS	0x0040
-#define	LOCK_DEBUG_ALL	 	0xFFFF
-
-#define	LOCK_DEBUG_NOMUTEX	0x0100
-#endif
 
 #include "lock_ext.h"

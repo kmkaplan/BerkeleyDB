@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)bt_recno.c	10.35 (Sleepycat) 5/3/98";
+static const char sccsid[] = "@(#)bt_recno.c	10.37 (Sleepycat) 5/23/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -16,7 +16,6 @@ static const char sccsid[] = "@(#)bt_recno.c	10.35 (Sleepycat) 5/3/98";
 
 #include <errno.h>
 #include <limits.h>
-#include <stdio.h>
 #include <string.h>
 #endif
 
@@ -199,9 +198,9 @@ __ram_cursor(dbp, txn, dbcp)
 	 * All cursors are queued from the master DB structure.  Add the
 	 * cursor to that queue.
 	 */
-	DB_THREAD_LOCK(dbp);
+	CURSOR_SETUP(dbp);
 	TAILQ_INSERT_HEAD(&dbp->curs_queue, dbc, links);
-	DB_THREAD_UNLOCK(dbp);
+	CURSOR_TEARDOWN(dbp);
 
 	*dbcp = dbc;
 	return (0);
@@ -420,17 +419,10 @@ __ram_c_iclose(dbp, dbc)
 	DB *dbp;
 	DBC *dbc;
 {
-	/*
-	 * All cursors are queued from the master DB structure.  For
-	 * now, discard the DB handle which triggered this call, and
-	 * replace it with the cursor's reference.
-	 */
-	dbp = dbc->dbp;
-
 	/* Remove the cursor from the queue. */
-	DB_THREAD_LOCK(dbp);
+	CURSOR_SETUP(dbp);
 	TAILQ_REMOVE(&dbp->curs_queue, dbc, links);
-	DB_THREAD_UNLOCK(dbp);
+	CURSOR_TEARDOWN(dbp);
 
 	/* Discard the structures. */
 	FREE(dbc->internal, sizeof(RCURSOR));
@@ -689,7 +681,7 @@ __ram_ca(dbp, recno, op)
 	/*
 	 * Adjust the cursors.  See the comment in __bam_ca_delete().
 	 */
-	DB_THREAD_LOCK(dbp);
+	CURSOR_SETUP(dbp);
 	for (dbc = TAILQ_FIRST(&dbp->curs_queue);
 	    dbc != NULL; dbc = TAILQ_NEXT(dbc, links)) {
 		cp = (RCURSOR *)dbc->internal;
@@ -708,7 +700,7 @@ __ram_ca(dbp, recno, op)
 			break;
 		}
 	}
-	DB_THREAD_UNLOCK(dbp);
+	CURSOR_TEARDOWN(dbp);
 }
 
 #ifdef DEBUG
@@ -725,14 +717,15 @@ __ram_cprint(dbp)
 	DBC *dbc;
 	RCURSOR *cp;
 
-	DB_THREAD_LOCK(dbp);
+	CURSOR_SETUP(dbp);
 	for (dbc = TAILQ_FIRST(&dbp->curs_queue);
 	    dbc != NULL; dbc = TAILQ_NEXT(dbc, links)) {
 		cp = (RCURSOR *)dbc->internal;
 		fprintf(stderr,
 		    "%#0x: recno: %lu\n", (u_int)cp, (u_long)cp->recno);
 	}
-	DB_THREAD_UNLOCK(dbp);
+	CURSOR_TEARDOWN(dbp);
+
 	return (0);
 }
 #endif /* DEBUG */

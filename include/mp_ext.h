@@ -11,7 +11,7 @@ int __memp_fopen __P((DB_MPOOL *, MPOOLFILE *, const char *,
    u_int32_t, int, size_t, int, DB_MPOOL_FINFO *, DB_MPOOLFILE **));
 char * __memp_fn __P((DB_MPOOLFILE *));
 char * __memp_fns __P((DB_MPOOL *, MPOOLFILE *));
-void __memp_debug __P((DB_MPOOL *, FILE *, int));
+void __memp_dump_region __P((DB_MPOOL *, char *, FILE *));
 int __memp_ralloc __P((DB_MPOOL *, size_t, size_t *, void *));
 int __memp_ropen
    __P((DB_MPOOL *, const char *, size_t, int, int, u_int32_t));

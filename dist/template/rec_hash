@@ -17,7 +17,7 @@
 /*
  * __ham_insdel_recover --
  *	Recovery function for insdel.
- * 
+ *
  * PUBLIC: int __ham_insdel_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -94,7 +94,7 @@ out:	if (argp != NULL)
 /*
  * __ham_newpage_recover --
  *	Recovery function for newpage.
- * 
+ *
  * PUBLIC: int __ham_newpage_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -171,7 +171,7 @@ out:	if (argp != NULL)
 /*
  * __ham_splitmeta_recover --
  *	Recovery function for splitmeta.
- * 
+ *
  * PUBLIC: int __ham_splitmeta_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -248,7 +248,7 @@ out:	if (argp != NULL)
 /*
  * __ham_splitdata_recover --
  *	Recovery function for splitdata.
- * 
+ *
  * PUBLIC: int __ham_splitdata_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -325,7 +325,7 @@ out:	if (argp != NULL)
 /*
  * __ham_replace_recover --
  *	Recovery function for replace.
- * 
+ *
  * PUBLIC: int __ham_replace_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -402,7 +402,7 @@ out:	if (argp != NULL)
 /*
  * __ham_newpgno_recover --
  *	Recovery function for newpgno.
- * 
+ *
  * PUBLIC: int __ham_newpgno_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -479,7 +479,7 @@ out:	if (argp != NULL)
 /*
  * __ham_ovfl_recover --
  *	Recovery function for ovfl.
- * 
+ *
  * PUBLIC: int __ham_ovfl_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -556,7 +556,7 @@ out:	if (argp != NULL)
 /*
  * __ham_copypage_recover --
  *	Recovery function for copypage.
- * 
+ *
  * PUBLIC: int __ham_copypage_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */

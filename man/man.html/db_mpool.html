@@ -625,6 +625,10 @@
 
        The following DB_MPOOL_STAT fields will be filled in:
 
+       u_int32_t st_refcnt;
+            The number of references to the region.
+       u_int32_t st_regsize;
+            The size of the region.
        size_t st_cachesize;
             Cache size in bytes.
        u_int32_t st_cache_hit;
@@ -649,6 +653,7 @@
             Dirty pages forced from the cache.
        u_int32_t st_hash_buckets;
             Number of hash buckets in buffer hash table.
+
        u_int32_t st_hash_searches;
             Total number of buffer hash table lookups.
        u_int32_t st_hash_longest;
@@ -869,7 +874,6 @@
        <B>memcpy(3)</B>, <B>memset(3)</B>, <B>mmap(2)</B>, <B>munmap(2)</B>, <B>open(2)</B>,
        <B>sigfillset(3)</B>, <B>sigprocmask(2)</B>, <B>stat(2)</B>, <B>strcpy(3)</B>,
        <B>strdup(3)</B>, <B>strerror(3)</B>, <B>strlen(3)</B>, and <B>unlink(2)</B>.
-
        In  addition, the memp_unlink function may fail and return
        errno for the following conditions:
 

@@ -7,7 +7,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)mp_region.c	10.29 (Sleepycat) 5/4/98";
+static const char sccsid[] = "@(#)mp_region.c	10.30 (Sleepycat) 5/31/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -300,5 +300,8 @@ err:	UNLOCKREGION(dbmp);
 	(void)__db_rdetach(&dbmp->reginfo);
 	if (F_ISSET(&dbmp->reginfo, REGION_CREATED))
 		(void)memp_unlink(path, 1, dbmp->dbenv);
+
+	if (dbmp->reginfo.path != NULL)
+		FREES(dbmp->reginfo.path);
 	return (ret);
 }

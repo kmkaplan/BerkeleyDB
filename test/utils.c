@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)utils.c	10.45 (Sleepycat) 5/3/98";
+static const char sccsid[] = "@(#)utils.c	10.46 (Sleepycat) 5/31/98";
 #endif /* not lint */
 
 /*
@@ -333,6 +333,13 @@ process_env_options(interp, argc, argv, envinfo)
 	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
 			flags = (u_int32_t)tclint;
+			/*
+			 * Don't specify DB_THREAD if the architecture can't
+			 * do spinlocks.
+			 */
+#ifndef HAVE_SPINLOCKS
+			LF_CLR(DB_THREAD);
+#endif
 		} else if (strcmp(option, "dbhome") == 0) {
 			db_home = argv[1];
 		} else if (strcmp(option, "dbconfig") == 0) {

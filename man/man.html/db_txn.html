@@ -411,6 +411,10 @@
        structure  of type DB_TXN_STAT (typedef'd in &lt;db.h&gt;).  The
        following DB_TXN_STAT fields will be filled in:
 
+       u_int32_t st_refcnt;
+            The number of references to the region.
+       u_int32_t st_regsize;
+            The size of the region.
        DB_LSN st_last_ckp;
             The LSN of the last checkpoint.
        DB_LSN st_pending_ckp;
@@ -433,6 +437,7 @@
             The number of transactions that have begun.
        u_int32_t st_ncommits;
             The number of transactions that have committed.
+
        u_int32_t st_region_wait;
             The  number  of  times  that  a thread of control was
             forced to wait before obtaining the region lock.
@@ -606,6 +611,7 @@
 
        In  addition,  the  txn_open  function may fail and return
        errno for the following conditions:
+
        [EINVAL]
             An invalid flag value or parameter was specified.
 
@@ -660,6 +666,7 @@
        library functions: <B>fcntl(2)</B>, <B>fflush(3)</B>, <B><A HREF="db_log.html">log_compare(3)</A></B>,
        <B><A HREF="db_log.html">log_put(3)</A></B>, <B>malloc(3)</B>, <B>memcpy(3)</B>, <B><A HREF="db_mpool.html">memp_sync(3)</A></B>, <B>memset(3)</B>,
        <B>strerror(3)</B>, and <B>time(3)</B>.
+
        [EINVAL]
             An invalid flag value or parameter was specified.
 

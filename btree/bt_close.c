@@ -47,13 +47,12 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)bt_close.c	10.31 (Sleepycat) 4/28/98";
+static const char sccsid[] = "@(#)bt_close.c	10.32 (Sleepycat) 5/6/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
-#include <stdio.h>
 #include <string.h>
 #endif
 

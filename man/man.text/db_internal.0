@@ -351,6 +351,11 @@ DDEESSCCRRIIPPTTIIOONN
 
        The following values of _w_h_i_c_h are supported:
 
+       DB_MUTEXLOCKS
+            Grant all requested mutual exclusion mutexes  without
+            testing  for  their  availability.   This flag should
+            never be used for any other purpose than debugging.
+
        DB_REGION_ANON
             Setting _v_a_l_u_e to  a  non-zero  value  specifies  that
             shared  memory regions are to be created in anonymous
@@ -376,8 +381,9 @@ DDEESSCCRRIIPPTTIIOONN
             memory,  and  not   backed   by   a   regular   file.
             DB_REGION_NAME  differs  from  DB_REGION_ANON in that
             the former will fail if  the  shared  memory  regions
-            cannot  be named, that is, if multiple processes can-
-            not use them.  See DB_FUNC_MAP for more  information.
+            cannot  be  named,  that  is,  if  multiple processes
+            cannot use them.  See DB_FUNC_MAP for  more  informa-
+            tion.
 
        DB_TSL_SPINS
             Specify the number of times mutexes should spin with-

@@ -47,7 +47,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)hash_page.c	10.36 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)hash_page.c	10.40 (Sleepycat) 6/2/98";
 #endif /* not lint */
 
 /*
@@ -70,7 +70,6 @@ static const char sccsid[] = "@(#)hash_page.c	10.36 (Sleepycat) 4/26/98";
 #include <sys/types.h>
 
 #include <errno.h>
-#include <stdio.h>
 #include <string.h>
 #endif
 
@@ -487,6 +486,54 @@ __ham_putitem(p, dbt, type)
 	NUM_ENT(p) += 1;
 }
 
+/*
+ * PUBLIC: void __ham_reputpair
+ * PUBLIC:    __P((PAGE *p, u_int32_t, u_int32_t, const DBT *, const DBT *));
+ *
+ * This is a special case to restore a key/data pair to its original
+ * location during recovery.  We are guaranteed that the pair fits
+ * on the page and is not the last pair on the page (because if it's
+ * the last pair, the normal insert works).
+ */
+void
+__ham_reputpair(p, psize, ndx, key, data)
+	PAGE *p;
+	u_int32_t psize, ndx;
+	const DBT *key, *data;
+{
+	db_indx_t i, movebytes, newbytes;
+	u_int8_t *from;
+
+	/* First shuffle the existing items up on the page.  */
+	movebytes =
+	    (ndx == 0 ? psize : p->inp[H_DATAINDEX(ndx - 1)]) - HOFFSET(p);
+	newbytes = key->size + data->size;
+	from = (u_int8_t *)p + HOFFSET(p);
+	memmove(from - newbytes, from, movebytes);
+
+	/*
+	 * Adjust the indices and move them up 2 spaces. Note that we
+	 * have to check the exit condition inside the loop just in case
+	 * we are dealing with index 0 (db_indx_t's are unsigned).
+	 */
+	for (i = NUM_ENT(p) - 1; ; i-- ) {
+		p->inp[i + 2] = p->inp[i] - newbytes;
+		if (i == H_KEYINDEX(ndx))
+			break;
+	}
+
+	/* Put the key and data on the page. */
+	p->inp[H_KEYINDEX(ndx)] =
+	    (ndx == 0 ? psize : p->inp[H_DATAINDEX(ndx - 1)]) - key->size;
+	p->inp[H_DATAINDEX(ndx)] = p->inp[H_KEYINDEX(ndx)] - data->size;
+	memcpy(P_ENTRY(p, H_KEYINDEX(ndx)), key->data, key->size);
+	memcpy(P_ENTRY(p, H_DATAINDEX(ndx)), data->data, data->size);
+
+	/* Adjust page info. */
+	HOFFSET(p) -= newbytes;
+	NUM_ENT(p) += 2;
+}
+
 
 /*
  * PUBLIC: int __ham_del_pair __P((HTAB *, HASH_CURSOR *, int));
@@ -649,8 +696,9 @@ __ham_del_pair(hashp, cursorp, reclaim_page)
 		/*
 		 * Cursor is advanced to the beginning of the next page.
 		 */
-		cursorp->bndx = NDX_INVALID;
+		cursorp->bndx = 0;
 		cursorp->pgno = PGNO(p);
+		F_SET(cursorp, H_DELETED);
 		chg_pgno = PGNO(p);
 		if ((ret = __ham_dirty_page(hashp, p)) != 0 ||
 		    (ret = __ham_del_page(hashp->dbp, n_pagep)) != 0)

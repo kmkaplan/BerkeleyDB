@@ -512,6 +512,10 @@ DDEESSCCRRIIPPTTIIOONN
             file.
        u_int32_t st_version;
             The version of the log file type.
+       u_int32_t st_refcnt;
+            The number of references to the region.
+       u_int32_t st_regsize;
+            The size of the region.
        u_int32_t st_mode;
             The mode of any created log files.
        u_int32_t st_lg_max;
@@ -597,6 +601,7 @@ EERRRROORRSS
 
        or  return  _e_r_r_n_o  for any of the errors specified for the
        following DB and library functions: DbLog::close(3),
+
        DbLog::unlink(3), atoi(3), close(2), db_version(3),
        fcntl(2), fflush(3), lseek(2), malloc(3), memcpy(3), mem-
        set(3), mmap(2), munmap(2), open(2), opendir(3), read(2),
@@ -704,11 +709,10 @@ EERRRROORRSS
 
        or  return  _e_r_r_n_o  for any of the errors specified for the
        following DB and library functions: close(2), fcntl(2),
-       fflush(3), malloc(3), memcpy(3), memset(3), mmap(2), mun-
-       map(2), open(2), sigfillset(3), sigprocmask(2), stat(2),
-       strcpy(3), strdup(3), strerror(3), strlen(3), and
+       fflush(3), malloc(3), memcpy(3), memset(3), mmap(2),
+       munmap(2), open(2), sigfillset(3), sigprocmask(2),
+       stat(2), strcpy(3), strdup(3), strerror(3), strlen(3), and
        unlink(2).
-
 
        In addition, the _D_b_L_o_g_:_:_u_n_l_i_n_k method may fail and throw a
        _D_b_E_x_c_e_p_t_i_o_n(3)  or  return  _e_r_r_n_o for the following condi-

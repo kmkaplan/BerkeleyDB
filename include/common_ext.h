@@ -36,7 +36,7 @@ int __db_shalloc __P((void *, size_t, size_t, void *));
 void __db_shalloc_free __P((void *, void *));
 size_t __db_shalloc_count __P((void *));
 size_t __db_shsizeof __P((void *));
-void __db_shalloc_dump __P((FILE *, void *));
+void __db_shalloc_dump __P((void *, FILE *));
 int __db_tablesize __P((u_int32_t));
 void __db_hashinit __P((void *, u_int32_t));
 #endif /* _common_ext_h_ */

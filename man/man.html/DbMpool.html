@@ -364,6 +364,10 @@
 
        The following DB_MPOOL_STAT fields will be filled in:
 
+       u_int32_t st_refcnt;
+            The number of references to the region.
+       u_int32_t st_regsize;
+            The size of the region.
        size_t st_cachesize;
              Cache size in bytes.
        u_int32_t st_cache_hit;
@@ -380,11 +384,11 @@
             Pages created in the cache.
        u_int32_t st_page_in;
             Pages read into the cache.
+
        u_int32_t st_page_out;
             Pages written from the cache to the backing file.
        u_int32_t st_ro_evict;
             Clean pages forced from the cache.
-
        u_int32_t st_rw_evict;
             Dirty pages forced from the cache.
        u_int32_t st_hash_buckets;
@@ -441,6 +445,7 @@
 <H2>ENVIRONMENT VARIABLES</H2><PRE>
        The following environment variables affect the behavior of
        DbMpoolFile:
+
        DB_HOME
             If  the   dbenv   argument   to   DbMpool::open   was
             initialized   using   db_appinit,   the   environment
@@ -497,6 +502,7 @@
 
        The  DbMpool::close  method   may   fail   and   throw   a
        <B><A HREF="DbException.html">DbException(3)</A></B>
+
        or  return  errno  for any of the errors specified for the
        following DB and library functions: <B><A HREF="DbMpoolFile.html">DbMpoolFile::close(3)</A></B>,
        <B>close(2)</B>, <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>munmap(2)</B>, and <B>strerror(3)</B>.

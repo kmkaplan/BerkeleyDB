@@ -47,7 +47,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)hash_rec.c	10.18 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)hash_rec.c	10.19 (Sleepycat) 5/23/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -129,13 +129,23 @@ __ham_insdel_recover(logp, dbtp, lsnp, redo, info)
 
 	if ((op == DELPAIR && cmp_n == 0 && !redo) ||
 	    (op == PUTPAIR && cmp_p == 0 && redo)) {
-		/* Need to redo a PUT or undo a delete. */
-		__ham_putitem(pagep, &argp->key,
-		    !redo || PAIR_ISKEYBIG(argp->opcode) ?
-		    H_OFFPAGE : H_KEYDATA);
-		__ham_putitem(pagep, &argp->data,
-		    !redo || PAIR_ISDATABIG(argp->opcode) ?
-		    H_OFFPAGE : H_KEYDATA);
+		/*
+		 * Need to redo a PUT or undo a delete.  If we are undoing a
+		 * delete, we've got to restore the item back to its original
+		 * position.  That's a royal pain in the butt (because we do
+		 * not store item lengths on the page), but there's no choice.
+		 */
+		if (op != DELPAIR ||
+		    argp->ndx == (u_int32_t)H_NUMPAIRS(pagep)) {
+			__ham_putitem(pagep, &argp->key,
+			    !redo || PAIR_ISKEYBIG(argp->opcode) ?
+			    H_OFFPAGE : H_KEYDATA);
+			__ham_putitem(pagep, &argp->data,
+			    !redo || PAIR_ISDATABIG(argp->opcode) ?
+			    H_OFFPAGE : H_KEYDATA);
+		} else
+			(void) __ham_reputpair(pagep, hashp->hdr->pagesize,
+			    argp->ndx, &argp->key, &argp->data);
 
 		LSN(pagep) = redo ? *lsnp : argp->pagelsn;
 		if ((ret = __ham_put_page(file_dbp, pagep, 1)) != 0)

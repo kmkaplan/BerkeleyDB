@@ -1,16 +1,16 @@
 %!PS-Adobe-3.0
-%%Creator: groff version 1.10
-%%CreationDate: Mon May  4 20:56:16 1998
+%%Creator: groff version 1.11
+%%CreationDate: Sun May 31 22:58:22 1998
 %%DocumentNeededResources: font Times-Bold
 %%+ font Times-Roman
 %%+ font Times-Italic
-%%DocumentSuppliedResources: procset grops 1.10 0
+%%DocumentSuppliedResources: procset grops 1.11 0
 %%Pages: 8
 %%PageOrder: Ascend
 %%Orientation: Portrait
 %%EndComments
 %%BeginProlog
-%%BeginResource: procset grops 1.10 0
+%%BeginResource: procset grops 1.11 0
 /setpacking where{
 pop
 currentpacking
@@ -357,7 +357,7 @@ R -.15(ve)-.25 G 3.611(ral).15 G 1.111
 (which transaction should be aborted in the case of a deadlock.)133
 681.6 R(The)5.269 E F1(lk_detect)2.769 E F0 .269
 (\214eld must be set to one)2.769 F(of the follo)133 693.6 Q(wing v)-.25
-E(alues.)-.25 E(April 10, 1998)276.695 768 Q(2)199.695 E EP
+E(alues.)-.25 E(May 10, 1998)278.085 768 Q(2)201.085 E EP
 %%Page: 3 3
 %%BeginPageSetup
 BP
@@ -435,7 +435,7 @@ E(DB_LOCK_PUT)133 657.6 Q(The lock referenced by the contents of the)158
 5.759 E 3.259(yl)-.15 G .759
 (ocks acquired as a part of the current call to)-3.259 F F1(loc)158
 710.4 Q(k_vec)-.2 E F0 .84(that appear after the DB_LOCK_PUT_ALL entry are not considered for this opera-)
-3.34 F(tion\).)158 722.4 Q(April 10, 1998)276.695 768 Q(3)199.695 E EP
+3.34 F(tion\).)158 722.4 Q(May 10, 1998)278.085 768 Q(3)201.085 E EP
 %%Page: 4 4
 %%BeginPageSetup
 BP
@@ -542,8 +542,8 @@ R F1(dir)2.687 E F0(ar)2.687 E .187(gument to)-.18 F F1(loc)2.687 E
 (nly a single thread may call the)-2.706 F F1(loc)108 696 Q(k_close)-.2
 E F0(function.)2.5 E(The)108 712.8 Q F1(loc)2.5 E(k_close)-.2 E F0
 (function returns the v)2.5 E(alue of)-.25 E F1(errno)2.5 E F0(on f)2.5
-E(ailure and 0 on success.)-.1 E(April 10, 1998)276.695 768 Q(4)199.695
-E EP
+E(ailure and 0 on success.)-.1 E(May 10, 1998)278.085 768 Q(4)201.085 E
+EP
 %%Page: 5 5
 %%BeginPageSetup
 BP
@@ -646,180 +646,185 @@ E F0(utility for an e)2.5 E(xample of using)-.15 E F1(loc)2.5 E
 (elds will be \214lled in:)1.11 E(u_int32_t st_magic;)108 667.2 Q
 (The magic number that identi\214es a \214le as a lock \214le.)133 679.2
 Q(u_int32_t st_v)108 691.2 Q(ersion;)-.15 E(The v)133 703.2 Q
-(ersion of the lock \214le type.)-.15 E(April 10, 1998)276.695 768 Q(5)
-199.695 E EP
+(ersion of the lock \214le type.)-.15 E(May 10, 1998)278.085 768 Q(5)
+201.085 E EP
 %%Page: 6 6
 %%BeginPageSetup
 BP
 %%EndPageSetup
 /F0 10/Times-Roman@0 SF 349.96(DB_LOCK\(3\) DB_LOCK\(3\))72 48 R
-(u_int32_t st_maxlocks;)108 84 Q(The maximum number of locks possible.)
-133 96 Q(u_int32_t st_nmodes;)108 108 Q(The number of lock modes.)133
-120 Q(u_int32_t st_numobjs;)108 132 Q(The number of unique objects lock)
-133 144 Q(ed.)-.1 E(u_int32_t st_nlock)108 156 Q(ers;)-.1 E
-(The number of unique lock)133 168 Q(ers.)-.1 E
-(u_int32_t st_ncon\215icts;)108 180 Q
-(The total number of locks not immediately a)133 192 Q -.25(va)-.2 G
-(ilable due to con\215icts.).25 E(u_int32_t st_nrequests;)108 204 Q
-(The total number of locks requested.)133 216 Q(u_int32_t st_nreleases;)
-108 228 Q(The total number of locks released.)133 240 Q
-(u_int32_t st_ndeadlocks)108 252 Q(The number of deadlocks detected.)133
-264 Q(u_int32_t st_re)108 276 Q(gion_w)-.15 E(ait;)-.1 E
-(The number of times that a thread of control w)133 288 Q
+(u_int32_t st_refcnt;)108 84 Q(The number of references to the re)133 96
+Q(gion.)-.15 E(u_int32_t st_re)108 108 Q(gsize;)-.15 E
+(The size of the re)133 120 Q(gion.)-.15 E(u_int32_t st_maxlocks;)108
+132 Q(The maximum number of locks possible.)133 144 Q
+(u_int32_t st_nmodes;)108 156 Q(The number of lock modes.)133 168 Q
+(u_int32_t st_numobjs;)108 180 Q(The number of unique objects lock)133
+192 Q(ed.)-.1 E(u_int32_t st_nlock)108 204 Q(ers;)-.1 E
+(The number of unique lock)133 216 Q(ers.)-.1 E
+(u_int32_t st_ncon\215icts;)108 228 Q
+(The total number of locks not immediately a)133 240 Q -.25(va)-.2 G
+(ilable due to con\215icts.).25 E(u_int32_t st_nrequests;)108 252 Q
+(The total number of locks requested.)133 264 Q(u_int32_t st_nreleases;)
+108 276 Q(The total number of locks released.)133 288 Q
+(u_int32_t st_ndeadlocks)108 300 Q(The number of deadlocks detected.)133
+312 Q(u_int32_t st_re)108 324 Q(gion_w)-.15 E(ait;)-.1 E
+(The number of times that a thread of control w)133 336 Q
 (as forced to w)-.1 E(ait before obtaining the re)-.1 E(gion lock.)-.15
-E(u_int32_t st_re)108 300 Q(gion_no)-.15 E -.1(wa)-.25 G(it;).1 E
-(The number of times that a thread of control w)133 312 Q
+E(u_int32_t st_re)108 348 Q(gion_no)-.15 E -.1(wa)-.25 G(it;).1 E
+(The number of times that a thread of control w)133 360 Q
 (as able to obtain the re)-.1 E(gion lock without w)-.15 E(aiting.)-.1 E
-/F1 9/Times-Bold@0 SF(ENVIR)72 328.8 Q(ONMENT V)-.27 E(ARIABLES)-1.215 E
-F0(The follo)108 340.8 Q(wing en)-.25 E(vironment v)-.4 E(ariables af)
+/F1 9/Times-Bold@0 SF(ENVIR)72 376.8 Q(ONMENT V)-.27 E(ARIABLES)-1.215 E
+F0(The follo)108 388.8 Q(wing en)-.25 E(vironment v)-.4 E(ariables af)
 -.25 E(fect the e)-.25 E -.15(xe)-.15 G(cution of).15 E/F2 10
-/Times-Italic@0 SF(db_loc)2.5 E(k)-.2 E F0(:).67 E(DB_HOME)108 357.6 Q
-2.533(If the)133 369.6 R F2(dben)5.033 E(v)-.4 E F0(ar)5.033 E 2.533
+/Times-Italic@0 SF(db_loc)2.5 E(k)-.2 E F0(:).67 E(DB_HOME)108 405.6 Q
+2.533(If the)133 417.6 R F2(dben)5.033 E(v)-.4 E F0(ar)5.033 E 2.533
 (gument to)-.18 F F2(loc)5.033 E(k_open)-.2 E F0 -.1(wa)5.033 G 5.033
 (si).1 G 2.533(nitialized using)-5.033 F F2(db_appinit)5.034 E F0 5.034
 (,t).68 G 2.534(he en)-5.034 F 2.534(vironment v)-.4 F(ariable)-.25 E
 .508(DB_HOME may be used as the path of the database home for the interpretation of the)
-133 381.6 R F2(dir)3.008 E F0(ar)3.008 E(gument)-.18 E(to)133 393.6 Q F2
+133 429.6 R F2(dir)3.008 E F0(ar)3.008 E(gument)-.18 E(to)133 441.6 Q F2
 (loc)2.5 E(k_open)-.2 E F0 2.5(,a).24 G 2.5(sd)-2.5 G(escribed in)-2.5 E
-F2(db_appinit)2.5 E F0(\(3\).).68 E(TMPDIR)108 410.4 Q .685(If the)133
-422.4 R F2(dben)3.185 E(v)-.4 E F0(ar)3.185 E .685(gument to)-.18 F F2
+F2(db_appinit)2.5 E F0(\(3\).).68 E(TMPDIR)108 458.4 Q .685(If the)133
+470.4 R F2(dben)3.185 E(v)-.4 E F0(ar)3.185 E .685(gument to)-.18 F F2
 (loc)3.185 E(k_open)-.2 E F0 -.1(wa)3.185 G 3.185(sN).1 G .685
 (ULL or not initialized using)-3.185 F F2(db_appinit)3.185 E F0 3.185
-(,t).68 G .685(he en)-3.185 F(vironment)-.4 E -.25(va)133 434.4 S .484(riable TMPDIR may be used as the directory in which to create the lock table, as described in the)
-.25 F F2(loc)133 446.4 Q(k_open)-.2 E F0(section abo)2.5 E -.15(ve)-.15
-G(.).15 E F1(ST)72 463.2 Q(AND)-.81 E(ARD LOCK MODES)-.315 E F0
-(The include \214le <db)108 475.2 Q(.h> declares tw)-.4 E 2.5(oc)-.1 G
+(,t).68 G .685(he en)-3.185 F(vironment)-.4 E -.25(va)133 482.4 S .484(riable TMPDIR may be used as the directory in which to create the lock table, as described in the)
+.25 F F2(loc)133 494.4 Q(k_open)-.2 E F0(section abo)2.5 E -.15(ve)-.15
+G(.).15 E F1(ST)72 511.2 Q(AND)-.81 E(ARD LOCK MODES)-.315 E F0
+(The include \214le <db)108 523.2 Q(.h> declares tw)-.4 E 2.5(oc)-.1 G
 (ommonly used con\215ict arrays:)-2.5 E
-(const u_int8_t db_lock_rw_con\215icts[];)108 492 Q
+(const u_int8_t db_lock_rw_con\215icts[];)108 540 Q
 (This is a con\215ict array for a simple scheme using shared and e)133
-504 Q(xclusi)-.15 E .3 -.15(ve l)-.25 H(ock modes.).15 E
-(const u_int8_t db_lock_riw_con\215icts[];)108 520.8 Q .703
-(This is a con\215ict array that in)133 532.8 R -.2(vo)-.4 G(lv).2 E
+552 Q(xclusi)-.15 E .3 -.15(ve l)-.25 H(ock modes.).15 E
+(const u_int8_t db_lock_riw_con\215icts[];)108 568.8 Q .703
+(This is a con\215ict array that in)133 580.8 R -.2(vo)-.4 G(lv).2 E
 .703(es v)-.15 F .703
 (arious intent lock modes \(e.g., intent shared\) that are used for)-.25
-F(multigranularity locking.)133 544.8 Q
-(Their associated sizes are DB_LOCK_R)108 561.6 Q
+F(multigranularity locking.)133 592.8 Q
+(Their associated sizes are DB_LOCK_R)108 609.6 Q
 (W_N and DB_LOCK_RIW_N.)-.55 E .988(In addition, the include \214le <db)
-108 578.4 R .988(.h> de\214nes the type)-.4 F F2(db_loc)3.488 E(kmode_t)
+108 626.4 R .988(.h> de\214nes the type)-.4 F F2(db_loc)3.488 E(kmode_t)
 -.2 E F0 3.488(,w).68 G .987(hich is the type of the lock modes)-3.488 F
-(used with the standard tables abo)108 590.4 Q -.15(ve)-.15 G(:).15 E
-(DB_LOCK_NG)144 607.2 Q(not granted \(al)169 619.2 Q -.1(wa)-.1 G
-(ys 0\)).1 E(DB_LOCK_READ)144 636 Q(read \(shared\))169 648 Q
-(DB_LOCK_WRITE)144 664.8 Q(write \(e)169 676.8 Q(xclusi)-.15 E -.15(ve)
--.25 G(\)).15 E F1(ERR)72 693.6 Q(ORS)-.27 E F0(The)108 705.6 Q F2(loc)
-3.056 E(k_open)-.2 E F0 .556(function may f)3.056 F .556(ail and return)
--.1 F F2(errno)3.056 E F0 .556(for an)3.056 F 3.056(yo)-.15 G 3.056(ft)
--3.056 G .556(he errors speci\214ed for the follo)-3.056 F .557
-(wing DB and)-.25 F(library functions: close\(2\), db_v)108 717.6 Q
-(ersion\(3\), fcntl\(2\), f)-.15 E
-(\215ush\(3\), lock_unlink\(3\), lseek\(2\), malloc\(3\), mem-)-.25 E
-(cp)108 729.6 Q(y\(3\), memset\(3\), mmap\(2\), munmap\(2\), open\(2\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strcp)
--.1 E(y\(3\),)-.1 E(April 10, 1998)276.695 768 Q(6)199.695 E EP
+(used with the standard tables abo)108 638.4 Q -.15(ve)-.15 G(:).15 E
+(DB_LOCK_NG)144 655.2 Q(not granted \(al)169 667.2 Q -.1(wa)-.1 G
+(ys 0\)).1 E(DB_LOCK_READ)144 684 Q(read \(shared\))169 696 Q
+(May 10, 1998)278.085 768 Q(6)201.085 E EP
 %%Page: 7 7
 %%BeginPageSetup
 BP
 %%EndPageSetup
 /F0 10/Times-Roman@0 SF 349.96(DB_LOCK\(3\) DB_LOCK\(3\))72 48 R
+(DB_LOCK_WRITE)144 84 Q(write \(e)169 96 Q(xclusi)-.15 E -.15(ve)-.25 G
+(\)).15 E/F1 9/Times-Bold@0 SF(ERR)72 112.8 Q(ORS)-.27 E F0(The)108
+124.8 Q/F2 10/Times-Italic@0 SF(loc)3.056 E(k_open)-.2 E F0 .556
+(function may f)3.056 F .556(ail and return)-.1 F F2(errno)3.056 E F0
+.556(for an)3.056 F 3.056(yo)-.15 G 3.056(ft)-3.056 G .556
+(he errors speci\214ed for the follo)-3.056 F .557(wing DB and)-.25 F
+(library functions: close\(2\), db_v)108 136.8 Q
+(ersion\(3\), fcntl\(2\), f)-.15 E
+(\215ush\(3\), lock_unlink\(3\), lseek\(2\), malloc\(3\), mem-)-.25 E
+(cp)108 148.8 Q(y\(3\), memset\(3\), mmap\(2\), munmap\(2\), open\(2\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strcp)
+-.1 E(y\(3\),)-.1 E
 (strdup\(3\), strerror\(3\), strlen\(3\), unlink\(2\), and write\(2\).)
-108 84 Q(In addition, the)108 100.8 Q/F1 10/Times-Italic@0 SF(loc)2.5 E
-(k_open)-.2 E F0(function may f)2.5 E(ail and return)-.1 E F1(errno)2.5
-E F0(for the follo)2.5 E(wing conditions:)-.25 E([EA)108 117.6 Q(GAIN])
--.4 E(The shared memory re)133 129.6 Q(gion w)-.15 E(as lock)-.1 E
+108 160.8 Q(In addition, the)108 177.6 Q F2(loc)2.5 E(k_open)-.2 E F0
+(function may f)2.5 E(ail and return)-.1 E F2(errno)2.5 E F0
+(for the follo)2.5 E(wing conditions:)-.25 E([EA)108 194.4 Q(GAIN])-.4 E
+(The shared memory re)133 206.4 Q(gion w)-.15 E(as lock)-.1 E
 (ed and \(repeatedly\) una)-.1 E -.25(va)-.2 G(ilable.).25 E([EINV)108
-146.4 Q(AL])-1.35 E(An in)133 158.4 Q -.25(va)-.4 G(lid \215ag v).25 E
+223.2 Q(AL])-1.35 E(An in)133 235.2 Q -.25(va)-.4 G(lid \215ag v).25 E
 (alue or parameter w)-.25 E(as speci\214ed.)-.1 E
-(The DB_THREAD \215ag w)133 182.4 Q(as speci\214ed and spinlocks are not implemented for this architecture.)
--.1 E(The)108 199.2 Q F1(loc)3.397 E(k_vec)-.2 E F0 .896(function may f)
-3.397 F .896(ail and return)-.1 F F1(errno)3.396 E F0 .896(for an)3.396
+(The DB_THREAD \215ag w)133 259.2 Q(as speci\214ed and spinlocks are not implemented for this architecture.)
+-.1 E(The)108 276 Q F2(loc)3.397 E(k_vec)-.2 E F0 .896(function may f)
+3.397 F .896(ail and return)-.1 F F2(errno)3.396 E F0 .896(for an)3.396
 F 3.396(yo)-.15 G 3.396(ft)-3.396 G .896
 (he errors speci\214ed for the follo)-3.396 F .896(wing DB and)-.25 F
-(library functions: fcntl\(2\), f)108 211.2 Q
+(library functions: fcntl\(2\), f)108 288 Q
 (\215ush\(3\), lock_detect\(3\), lseek\(2\), memcp)-.25 E
 (y\(3\), memset\(3\), mmap\(2\), mun-)-.1 E
-(map\(2\), strerror\(3\), and write\(2\).)108 223.2 Q(In addition, the)
-108 240 Q F1(loc)2.5 E(k_vec)-.2 E F0(function may f)2.5 E
-(ail and return)-.1 E F1(errno)2.5 E F0(for the follo)2.5 E
-(wing conditions:)-.25 E([EA)108 256.8 Q(CCES])-.4 E(An attempt w)133
-268.8 Q(as made to release lock held by another lock)-.1 E(er)-.1 E(.)
--.55 E([EINV)108 285.6 Q(AL])-1.35 E(An in)133 297.6 Q -.25(va)-.4 G
+(map\(2\), strerror\(3\), and write\(2\).)108 300 Q(In addition, the)108
+316.8 Q F2(loc)2.5 E(k_vec)-.2 E F0(function may f)2.5 E(ail and return)
+-.1 E F2(errno)2.5 E F0(for the follo)2.5 E(wing conditions:)-.25 E([EA)
+108 333.6 Q(CCES])-.4 E(An attempt w)133 345.6 Q
+(as made to release lock held by another lock)-.1 E(er)-.1 E(.)-.55 E
+([EINV)108 362.4 Q(AL])-1.35 E(An in)133 374.4 Q -.25(va)-.4 G
 (lid \215ag v).25 E(alue or parameter w)-.25 E(as speci\214ed.)-.1 E
-(The)108 314.4 Q F1(loc)3.463 E(k_g)-.2 E(et)-.1 E F0 .963
-(function may f)3.463 F .963(ail and return)-.1 F F1(errno)3.463 E F0
+(The)108 391.2 Q F2(loc)3.463 E(k_g)-.2 E(et)-.1 E F0 .963
+(function may f)3.463 F .963(ail and return)-.1 F F2(errno)3.463 E F0
 .963(for an)3.463 F 3.463(yo)-.15 G 3.463(ft)-3.463 G .963
 (he errors speci\214ed for the follo)-3.463 F .962(wing DB and)-.25 F
-(library functions: fcntl\(2\), f)108 326.4 Q
+(library functions: fcntl\(2\), f)108 403.2 Q
 (\215ush\(3\), lock_detect\(3\), lseek\(2\), memcp)-.25 E
 (y\(3\), memset\(3\), mmap\(2\), mun-)-.1 E
-(map\(2\), strerror\(3\), and write\(2\).)108 338.4 Q(In addition, the)
-108 355.2 Q F1(loc)2.5 E(k_g)-.2 E(et)-.1 E F0(function may f)2.5 E
-(ail and return)-.1 E F1(errno)2.5 E F0(for the follo)2.5 E
-(wing conditions:)-.25 E([EINV)108 372 Q(AL])-1.35 E(An in)133 384 Q
+(map\(2\), strerror\(3\), and write\(2\).)108 415.2 Q(In addition, the)
+108 432 Q F2(loc)2.5 E(k_g)-.2 E(et)-.1 E F0(function may f)2.5 E
+(ail and return)-.1 E F2(errno)2.5 E F0(for the follo)2.5 E
+(wing conditions:)-.25 E([EINV)108 448.8 Q(AL])-1.35 E(An in)133 460.8 Q
 -.25(va)-.4 G(lid \215ag v).25 E(alue or parameter w)-.25 E
-(as speci\214ed.)-.1 E(The)108 400.8 Q F1(loc)3.427 E(k_put)-.2 E F0
-.926(function may f)3.427 F .926(ail and return)-.1 F F1(errno)3.426 E
+(as speci\214ed.)-.1 E(The)108 477.6 Q F2(loc)3.427 E(k_put)-.2 E F0
+.926(function may f)3.427 F .926(ail and return)-.1 F F2(errno)3.426 E
 F0 .926(for an)3.426 F 3.426(yo)-.15 G 3.426(ft)-3.426 G .926
 (he errors speci\214ed for the follo)-3.426 F .926(wing DB and)-.25 F
-(library functions: fcntl\(2\), f)108 412.8 Q
+(library functions: fcntl\(2\), f)108 489.6 Q
 (\215ush\(3\), lock_detect\(3\), lseek\(2\), memcp)-.25 E
 (y\(3\), memset\(3\), mmap\(2\), mun-)-.1 E
-(map\(2\), strerror\(3\), and write\(2\).)108 424.8 Q(In addition, the)
-108 441.6 Q F1(loc)2.5 E(k_put)-.2 E F0(function may f)2.5 E
-(ail and return)-.1 E F1(errno)2.5 E F0(for the follo)2.5 E
-(wing conditions:)-.25 E([EA)108 458.4 Q(CCES])-.4 E(An attempt w)133
-470.4 Q(as made to release lock held by another lock)-.1 E(er)-.1 E(.)
--.55 E([EINV)108 487.2 Q(AL])-1.35 E(An in)133 499.2 Q -.25(va)-.4 G
+(map\(2\), strerror\(3\), and write\(2\).)108 501.6 Q(In addition, the)
+108 518.4 Q F2(loc)2.5 E(k_put)-.2 E F0(function may f)2.5 E
+(ail and return)-.1 E F2(errno)2.5 E F0(for the follo)2.5 E
+(wing conditions:)-.25 E([EA)108 535.2 Q(CCES])-.4 E(An attempt w)133
+547.2 Q(as made to release lock held by another lock)-.1 E(er)-.1 E(.)
+-.55 E([EINV)108 564 Q(AL])-1.35 E(An in)133 576 Q -.25(va)-.4 G
 (lid \215ag v).25 E(alue or parameter w)-.25 E(as speci\214ed.)-.1 E
-(The)108 516 Q F1(loc)2.995 E(k_close)-.2 E F0 .495(function may f)2.995
-F .495(ail and return)-.1 F F1(errno)2.995 E F0 .494(for an)2.995 F
-2.994(yo)-.15 G 2.994(ft)-2.994 G .494
+(The)108 592.8 Q F2(loc)2.995 E(k_close)-.2 E F0 .495(function may f)
+2.995 F .495(ail and return)-.1 F F2(errno)2.995 E F0 .494(for an)2.995
+F 2.994(yo)-.15 G 2.994(ft)-2.994 G .494
 (he errors speci\214ed for the follo)-2.994 F .494(wing DB and)-.25 F
-(library functions: close\(2\), fcntl\(2\), f)108 528 Q
-(\215ush\(3\), munmap\(2\), and strerror\(3\).)-.25 E(The)108 544.8 Q F1
+(library functions: close\(2\), fcntl\(2\), f)108 604.8 Q
+(\215ush\(3\), munmap\(2\), and strerror\(3\).)-.25 E(The)108 621.6 Q F2
 (loc)2.747 E(k_unlink)-.2 E F0 .247(function may f)2.747 F .247
-(ail and return)-.1 F F1(errno)2.747 E F0 .247(for an)2.747 F 2.747(yo)
+(ail and return)-.1 F F2(errno)2.747 E F0 .247(for an)2.747 F 2.747(yo)
 -.15 G 2.747(ft)-2.747 G .247(he errors speci\214ed for the follo)-2.747
 F .248(wing DB and)-.25 F(library functions: close\(2\), fcntl\(2\), f)
-108 556.8 Q(\215ush\(3\), malloc\(3\), memcp)-.25 E
+108 633.6 Q(\215ush\(3\), malloc\(3\), memcp)-.25 E
 (y\(3\), memset\(3\), mmap\(2\), munmap\(2\),)-.1 E
 (open\(2\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strcp)108
-568.8 Q
+645.6 Q
 (y\(3\), strdup\(3\), strerror\(3\), strlen\(3\), and unlink\(2\).)-.1 E
-(In addition, the)108 585.6 Q F1(loc)2.5 E(k_unlink)-.2 E F0
-(function may f)2.5 E(ail and return)-.1 E F1(errno)2.5 E F0
-(for the follo)2.5 E(wing conditions:)-.25 E([EB)108 602.4 Q(USY])-.1 E
-(The shared memory re)133 614.4 Q(gion w)-.15 E
-(as in use and the force \215ag w)-.1 E(as not set.)-.1 E(The)108 631.2
-Q F1(loc)2.809 E(k_detect)-.2 E F0 .309(function may f)2.809 F .309
-(ail and return)-.1 F F1(errno)2.809 E F0 .309(for an)2.809 F 2.809(yo)
+(In addition, the)108 662.4 Q F2(loc)2.5 E(k_unlink)-.2 E F0
+(function may f)2.5 E(ail and return)-.1 E F2(errno)2.5 E F0
+(for the follo)2.5 E(wing conditions:)-.25 E([EB)108 679.2 Q(USY])-.1 E
+(The shared memory re)133 691.2 Q(gion w)-.15 E
+(as in use and the force \215ag w)-.1 E(as not set.)-.1 E(The)108 708 Q
+F2(loc)2.809 E(k_detect)-.2 E F0 .309(function may f)2.809 F .309
+(ail and return)-.1 F F2(errno)2.809 E F0 .309(for an)2.809 F 2.809(yo)
 -.15 G 2.81(ft)-2.809 G .31(he errors speci\214ed for the follo)-2.81 F
 .31(wing DB and)-.25 F(library functions: calloc\(3\), fcntl\(2\), f)108
-643.2 Q(\215ush\(3\), lseek\(2\), malloc\(3\), memcp)-.25 E
-(y\(3\), memset\(3\), mmap\(2\), mun-)-.1 E
-(map\(2\), strerror\(3\), and write\(2\).)108 655.2 Q/F2 9/Times-Bold@0
-SF -.09(BU)72 672 S(GS).09 E F0 .342
-(If a process dies while holding locks, those locks remain held and are)
-108 684 R/F3 10/Times-Bold@0 SF(ne)2.843 E -.1(ve)-.15 G(r).1 E F0 2.843
-(released. In)2.843 F .343(this case, all pro-)2.843 F(cesses should e)
-108 696 Q(xit as quickly as possible, so that)-.15 E F1(db_r)2.5 E(eco)
--.37 E(ver)-.1 E F0(can be run.)2.5 E(April 10, 1998)276.695 768 Q(7)
-199.695 E EP
+720 Q(\215ush\(3\), lseek\(2\), malloc\(3\), memcp)-.25 E
+(y\(3\), memset\(3\), mmap\(2\),)-.1 E(May 10, 1998)278.085 768 Q(7)
+201.085 E EP
 %%Page: 8 8
 %%BeginPageSetup
 BP
 %%EndPageSetup
-/F0 10/Times-Roman@0 SF 349.96(DB_LOCK\(3\) DB_LOCK\(3\))72 48 R/F1 9
-/Times-Bold@0 SF(SEE ALSO)72 84 Q/F2 10/Times-Italic@0 SF(db_ar)108 96 Q
--.15(ch)-.37 G(ive).15 E F0(\(1\),).18 E F2(db_c)2.5 E(hec)-.15 E
-(kpoint)-.2 E F0(\(1\),).68 E F2(db_deadloc)2.5 E(k)-.2 E F0(\(1\),).67
-E F2(db_dump)2.5 E F0(\(1\),).19 E F2(db_load)2.5 E F0(\(1\),).77 E F2
-(db_r)2.5 E(eco)-.37 E(ver)-.1 E F0(\(1\),).73 E F2(db_stat)2.5 E F0
-(\(1\),).68 E F2(db_intr)108 108 Q(o)-.45 E F0(\(3\),).18 E F2
-(db_appinit)2.5 E F0(\(3\),).68 E F2(db_cur)2.5 E(sor)-.1 E F0(\(3\),)
-.73 E F2(db_dbm)2.5 E F0(\(3\),).32 E F2(db_internal)2.5 E F0(\(3\),).51
-E F2(db_loc)2.5 E(k)-.2 E F0(\(3\),).67 E F2(db_lo)2.5 E(g)-.1 E F0
-(\(3\),).22 E F2(db_mpool)2.5 E F0(\(3\),).51 E F2(db_open)108 120 Q F0
-(\(3\),).24 E F2(db_thr)2.5 E(ead)-.37 E F0(\(3\),).77 E F2(db_txn)2.5 E
-F0(\(3\)).24 E(April 10, 1998)276.695 768 Q(8)199.695 E EP
+/F0 10/Times-Roman@0 SF 349.96(DB_LOCK\(3\) DB_LOCK\(3\))72 48 R
+(munmap\(2\), strerror\(3\), and write\(2\).)108 84 Q/F1 9/Times-Bold@0
+SF -.09(BU)72 100.8 S(GS).09 E F0 .342
+(If a process dies while holding locks, those locks remain held and are)
+108 112.8 R/F2 10/Times-Bold@0 SF(ne)2.843 E -.1(ve)-.15 G(r).1 E F0
+2.843(released. In)2.843 F .343(this case, all pro-)2.843 F
+(cesses should e)108 124.8 Q(xit as quickly as possible, so that)-.15 E
+/F3 10/Times-Italic@0 SF(db_r)2.5 E(eco)-.37 E(ver)-.1 E F0(can be run.)
+2.5 E F1(SEE ALSO)72 141.6 Q F3(db_ar)108 153.6 Q -.15(ch)-.37 G(ive).15
+E F0(\(1\),).18 E F3(db_c)2.5 E(hec)-.15 E(kpoint)-.2 E F0(\(1\),).68 E
+F3(db_deadloc)2.5 E(k)-.2 E F0(\(1\),).67 E F3(db_dump)2.5 E F0(\(1\),)
+.19 E F3(db_load)2.5 E F0(\(1\),).77 E F3(db_r)2.5 E(eco)-.37 E(ver)-.1
+E F0(\(1\),).73 E F3(db_stat)2.5 E F0(\(1\),).68 E F3(db_intr)108 165.6
+Q(o)-.45 E F0(\(3\),).18 E F3(db_appinit)2.5 E F0(\(3\),).68 E F3
+(db_cur)2.5 E(sor)-.1 E F0(\(3\),).73 E F3(db_dbm)2.5 E F0(\(3\),).32 E
+F3(db_internal)2.5 E F0(\(3\),).51 E F3(db_loc)2.5 E(k)-.2 E F0(\(3\),)
+.67 E F3(db_lo)2.5 E(g)-.1 E F0(\(3\),).22 E F3(db_mpool)2.5 E F0
+(\(3\),).51 E F3(db_open)108 177.6 Q F0(\(3\),).24 E F3(db_thr)2.5 E
+(ead)-.37 E F0(\(3\),).77 E F3(db_txn)2.5 E F0(\(3\)).24 E(May 10, 1998)
+278.085 768 Q(8)201.085 E EP
 %%Trailer
 end
 %%EOF

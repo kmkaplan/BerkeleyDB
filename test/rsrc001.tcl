@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)rsrc001.tcl	8.8 (Sleepycat) 4/22/98
+#	@(#)rsrc001.tcl	8.9 (Sleepycat) 5/26/98
 #
 # Recno backing file test.
 # Try different patterns of adding records and making sure that the
@@ -124,10 +124,10 @@ proc rsrc001 { } {
 # convert CR/LF to just LF.
 # Needed on Windows when a file is created as text but read as binary.
 proc sanitize_textfile { filename } {
-	global tcl_platform
+	global is_windows_test
 	source ./include.tcl
 
-	if { $tcl_platform(platform) == "windows" } {
+	if { $is_windows_test == 1 } {
 		set TR "c:/mksnt/tr.exe"
 		catch { exec $TR -d '\015' <$filename > $testdir/nonl.tmp } res
 		catch { exec $MV $testdir/nonl.tmp $filename } res

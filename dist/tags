@@ -69,6 +69,8 @@ COMPQUIET	../include/db_int.h.src	/^#define	COMPQUIET(n, v)	(n) = (v)$/
 CONFIG_NAME	../common/db_appinit.c	/^#define	CONFIG_NAME	"\/DB_CONFIG"$/
 CONFLICTS	../include/lock.h	/^#define CONFLICTS(T, HELD, WANTED) \\$/
 CR_DELETED	../include/btree.h	/^#define	CR_DELETED	0x0001		\/* Record deleted. *\//
+CURSOR_SETUP	../include/btree.h	/^#define	CURSOR_SETUP(dbp) {						\\$/
+CURSOR_TEARDOWN	../include/btree.h	/^#define	CURSOR_TEARDOWN(dbp)						\\$/
 C_DELETED	../include/btree.h	/^#define	C_DELETED	0x0001$/
 C_INTERNAL	../include/btree.h	/^#define	C_INTERNAL	0x0008$/
 C_REPLACE	../include/btree.h	/^#define	C_REPLACE	0x0002$/
@@ -181,6 +183,7 @@ DB_FUNC_UNMAP	../include/db.h.src	/^#define	DB_FUNC_UNMAP	18		\/* DB: unmap shar
 DB_FUNC_WRITE	../include/db.h.src	/^#define	DB_FUNC_WRITE	19		\/* POSIX 1003.1 write. /
 DB_FUNC_YIELD	../include/db.h.src	/^#define	DB_FUNC_YIELD	20		\/* DB: yield thread to /
 DB_GET_RECNO	../include/db.h.src	/^#define	DB_GET_RECNO	0x000080	\/* get(), c_get() */
+DB_GLOBAL	../include/db_int.h.src	/^#define	DB_GLOBAL(v)	__db_global_values.v$/
 DB_GROW_SIZE	../include/log.h	/^#define	DB_GROW_SIZE	64$/
 DB_HASHMAGIC	../include/db.h.src	/^#define	DB_HASHMAGIC	0x061561$/
 DB_HASHOLDVER	../include/db.h.src	/^#define	DB_HASHOLDVER	4		\/* Oldest hash version s/
@@ -235,7 +238,7 @@ DB_MPOOL_DISCARD	../include/db.h.src	/^#define	DB_MPOOL_DISCARD	0x004	\/* Don't 
 DB_MPOOL_LAST	../include/db.h.src	/^#define	DB_MPOOL_LAST		0x002	\/* Return the last p/
 DB_MPOOL_NEW	../include/db.h.src	/^#define	DB_MPOOL_NEW		0x004	\/* Create a new page./
 DB_MPOOL_PRIVATE	../include/db.h.src	/^#define	DB_MPOOL_PRIVATE      0x000080	\/* Mpool: /
-DB_MUTEXDEBUG	../include/db.h.src	/^#define	DB_MUTEXDEBUG	      0x000100	\/* Do not ge/
+DB_MUTEXLOCKS	../include/db.h.src	/^#define	DB_MUTEXLOCKS	26		\/* DB: turn off all mut/
 DB_NEEDSPLIT	../include/db.h.src	/^#define	DB_NEEDSPLIT		( -9)	\/* Page needs to be s/
 DB_NEXT	../include/db.h.src	/^#define	DB_NEXT		0x000800	\/* c_get(), log_get() */
 DB_NOMMAP	../include/db.h.src	/^#define	DB_NOMMAP	      0x000002	\/* Don't mmap un/
@@ -243,6 +246,7 @@ DB_NOOVERWRITE	../include/db.h.src	/^#define	DB_NOOVERWRITE	0x001000	\/* put() *
 DB_NOSYNC	../include/db.h.src	/^#define	DB_NOSYNC	0x002000	\/* close() *\/$/
 DB_NOTFOUND	../include/db.h.src	/^#define	DB_NOTFOUND		( -7)	\/* Key\/data pair not /
 DB_PAD	../include/db.h.src	/^#define	DB_PAD			0x0008	\/* Recno: re_pad set. *\//
+DB_PAGEYIELD	../include/db.h.src	/^#define	DB_PAGEYIELD	27		\/* DB: yield the CPU on /
 DB_PAGE_CLEAR_LEN	../include/db_page.h	/^#define	DB_PAGE_CLEAR_LEN	32$/
 DB_PREV	../include/db.h.src	/^#define	DB_PREV		0x004000	\/* c_get(), log_get() */
 DB_RDONLY	../include/db.h.src	/^#define	DB_RDONLY	      0x010000	\/* O_RDONLY: rea/
@@ -299,7 +303,7 @@ DB_USE_ENVIRON	../include/db.h.src	/^#define	DB_USE_ENVIRON	      0x001000	\/* U
 DB_USE_ENVIRON_ROOT	../include/db.h.src	/^#define	DB_USE_ENVIRON_ROOT   0x002000	\/* Use the/
 DB_VERSION_MAJOR	../include/db.h.src	/^#define	DB_VERSION_MAJOR	2$/
 DB_VERSION_MINOR	../include/db.h.src	/^#define	DB_VERSION_MINOR	4$/
-DB_VERSION_PATCH	../include/db.h.src	/^#define	DB_VERSION_PATCH	10$/
+DB_VERSION_PATCH	../include/db.h.src	/^#define	DB_VERSION_PATCH	14$/
 DB_VERSION_STRING	../include/db.h.src	/^#define	DB_VERSION_STRING	"Sleepycat Software: DB /
 DB_VMPAGESIZE	../include/db_int.h.src	/^#define	DB_VMPAGESIZE	(4 * 1024)$/
 DB_bam_BEGIN	../include/db_dispatch.h	/^#define	DB_bam_BEGIN		 50$/
@@ -357,6 +361,7 @@ ENVWIDGET_SIMPLEDUP	../test/utils.c	/^#define	ENVWIDGET_SIMPLEDUP "envN simpledu
 ENVWIDGET_USAGE	../test/utils.c	/^#define	ENVWIDGET_USAGE "envN"$/
 E_ERROR	../test/test_ext.h	/^#define E_ERROR(S)                                /
 FAST_HASH	../lock/lock_util.c	/^#define FAST_HASH(P) {			\\$/
+FMAP_ENTRIES	../mp/mp_pr.c	/^#define	FMAP_ENTRIES	200			\/* Files we map. *\/$/
 FREE	../include/db_int.h.src	/^#define	FREE(p, len) {							\\$/
 FREES	../include/db_int.h.src	/^#define	FREES(p) {							\\$/
 F_CLR	../include/db_int.h.src	/^#define	F_CLR(p, f)	(p)->flags &= ~(f)$/
@@ -455,15 +460,12 @@ LOCKREGION	../include/mp.h	/^#define	LOCKREGION(dbmp)						\\$/
 LOCKUNLINK_USAGE	../test/tcl_lock.c	/^#define LOCKUNLINK_USAGE "lock_unlink path force"$/
 LOCKVEC_USAGE	../test/tcl_lock.c	/^#define LOCKVEC_USAGE \\$/
 LOCKWIDGET_USAGE	../test/tcl_lock.c	/^#define LOCKWIDGET_USAGE "lockmgrN option ?arg arg/
-LOCK_DEBUG_ALL	../include/lock.h	/^#define	LOCK_DEBUG_ALL	 	0xFFFF$/
-LOCK_DEBUG_BUCKET	../include/lock.h	/^#define	LOCK_DEBUG_BUCKET	0x0020$/
-LOCK_DEBUG_CONF	../include/lock.h	/^#define	LOCK_DEBUG_CONF	 	0x0008$/
-LOCK_DEBUG_LOCK	../include/lock.h	/^#define	LOCK_DEBUG_LOCK	 	0x0002$/
-LOCK_DEBUG_LOCKERS	../include/lock.h	/^#define	LOCK_DEBUG_LOCKERS	0x0001$/
-LOCK_DEBUG_MEM	../include/lock.h	/^#define	LOCK_DEBUG_MEM	 	0x0010$/
-LOCK_DEBUG_NOMUTEX	../include/lock.h	/^#define	LOCK_DEBUG_NOMUTEX	0x0100$/
-LOCK_DEBUG_OBJ	../include/lock.h	/^#define	LOCK_DEBUG_OBJ	 	0x0004$/
-LOCK_DEBUG_OBJECTS	../include/lock.h	/^#define LOCK_DEBUG_OBJECTS	0x0040$/
+LOCK_DUMP_ALL	../lock/lock_region.c	/^#define	LOCK_DUMP_ALL		0x01f		\/* Display all. *\//
+LOCK_DUMP_CONF	../lock/lock_region.c	/^#define	LOCK_DUMP_CONF		0x001		\/* Conflict matrix/
+LOCK_DUMP_FREE	../lock/lock_region.c	/^#define	LOCK_DUMP_FREE		0x002		\/* Display lock fr/
+LOCK_DUMP_LOCKERS	../lock/lock_region.c	/^#define	LOCK_DUMP_LOCKERS	0x004		\/* Display locke/
+LOCK_DUMP_MEM	../lock/lock_region.c	/^#define	LOCK_DUMP_MEM		0x008		\/* Display region m/
+LOCK_DUMP_OBJECTS	../lock/lock_region.c	/^#define	LOCK_DUMP_OBJECTS	0x010		\/* Display objec/
 LOCK_HASH_ALIGN	../include/lock.h	/^#define LOCK_HASH_ALIGN	8$/
 LOCK_HEADER_SIZE	../include/lock.h	/^#define LOCK_HEADER_SIZE(M)	\\$/
 LOCK_INVALID	../include/db_int.h.src	/^#define	LOCK_INVALID	0$/
@@ -510,6 +512,10 @@ MPFOPEN_USAGE	../test/tcl_mpool.c	/^#define MPFOPEN_USAGE "mpN open path pagesiz
 MPFSYNC_USAGE	../test/tcl_mpool.c	/^#define MPFSYNC_USAGE "mpN.mpfM sync"$/
 MPF_USAGE	../test/tcl_mpool.c	/^#define MPF_USAGE "mpN.mpfM cmd ?arg arg ...?"$/
 MPOOLUNLINK_USAGE	../test/tcl_mpool.c	/^#define MPOOLUNLINK_USAGE "memp_unlink path force"/
+MPOOL_DUMP_ALL	../mp/mp_pr.c	/^#define	MPOOL_DUMP_ALL	0x07			\/* Debug all. *\/$/
+MPOOL_DUMP_HASH	../mp/mp_pr.c	/^#define	MPOOL_DUMP_HASH	0x01			\/* Debug hash chai/
+MPOOL_DUMP_LRU	../mp/mp_pr.c	/^#define	MPOOL_DUMP_LRU	0x02			\/* Debug LRU chains/
+MPOOL_DUMP_MEM	../mp/mp_pr.c	/^#define	MPOOL_DUMP_MEM	0x04			\/* Debug region mem/
 MPOOL_USAGE	../test/tcl_mpool.c	/^#define MPOOL_USAGE "memp path mode flags options /
 MPSTAT_USAGE	../test/tcl_mpool.c	/^#define MPSTAT_USAGE "mpN stat"$/
 MPWIDGET_USAGE	../test/tcl_mpool.c	/^#define MPWIDGET_USAGE "mpN option ?arg arg ...?"$/
@@ -810,9 +816,10 @@ _TXN_H_	../include/txn.h	/^#define	_TXN_H_$/
 __BIT_TYPES_DEFINED__	../include/db.h.src	/^#define	__BIT_TYPES_DEFINED__$/
 __BT_LPUT	../include/btree.h	/^#define	__BT_LPUT(dbp, lock)						\\$/
 __BT_TLPUT	../include/btree.h	/^#define	__BT_TLPUT(dbp, lock)						\\$/
-__CURRENTLY_UNUSED	../include/db.h.src	/^#define	__CURRENTLY_UNUSED    0x004000$/
 __P	../include/db.h.src	/^#define	__P(protos)	protos		\/* ANSI C prototypes /
 __R_UNUSED	../include/db_185.h.src	/^#define	__R_UNUSED	2		\/* UNUSED *\/$/
+__UNUSED_100	../include/db.h.src	/^#define	__UNUSED_100	      0x000100$/
+__UNUSED_4000	../include/db.h.src	/^#define	__UNUSED_4000	      0x004000$/
 __absname	../log/log_archive.c	/^__absname(pref, name, newnamep)$/
 __account_page	../hash/hash_page.c	/^__account_page(hashp, pgno, inout)$/
 __bam_add_mstat	../btree/bt_stat.c	/^__bam_add_mstat(from, to)$/
@@ -1048,7 +1055,8 @@ __db_poff	../db/db_overflow.c	/^__db_poff(dbp, dbt, pgnop, newfunc)$/
 __db_pr	../db/db_pr.c	/^__db_pr(p, len)$/
 __db_prbtree	../db/db_pr.c	/^__db_prbtree(dbp)$/
 __db_prdb	../db/db_pr.c	/^__db_prdb(dbp)$/
-__db_prflags	../db/db_pr.c	/^__db_prflags(flags, fn)$/
+__db_prdbt	../db/db_pr.c	/^__db_prdbt(dbtp, checkprint, fp)$/
+__db_prflags	../db/db_pr.c	/^__db_prflags(flags, fn, fp)$/
 __db_prhash	../db/db_pr.c	/^__db_prhash(dbp)$/
 __db_prinit	../db/db_pr.c	/^__db_prinit(fp)$/
 __db_prnpage	../db/db_pr.c	/^__db_prnpage(mpf, pgno)$/
@@ -1077,7 +1085,7 @@ __db_runlink	../common/db_region.c	/^__db_runlink(infop, force)$/
 __db_seek	../include/os_func.h	/^#define	__db_seek	__db_jump.j_seek$/
 __db_shalloc	../common/db_salloc.c	/^__db_shalloc(p, len, align, retp)$/
 __db_shalloc_count	../common/db_salloc.c	/^__db_shalloc_count(addr)$/
-__db_shalloc_dump	../common/db_salloc.c	/^__db_shalloc_dump(fp, addr)$/
+__db_shalloc_dump	../common/db_salloc.c	/^__db_shalloc_dump(addr, fp)$/
 __db_shalloc_free	../common/db_salloc.c	/^__db_shalloc_free(regionp, ptr)$/
 __db_shalloc_init	../common/db_salloc.c	/^__db_shalloc_init(area, size)$/
 __db_shsizeof	../common/db_salloc.c	/^__db_shsizeof(ptr)$/
@@ -1192,6 +1200,7 @@ __ham_replace_print	../hash/hash_auto.c	/^__ham_replace_print(notused1, dbtp, ls
 __ham_replace_read	../hash/hash_auto.c	/^__ham_replace_read(recbuf, argpp)$/
 __ham_replace_recover	../hash/hash_rec.c	/^__ham_replace_recover(logp, dbtp, lsnp, redo, info/
 __ham_replpair	../hash/hash_page.c	/^__ham_replpair(hashp, hcp, dbt, make_dup)$/
+__ham_reputpair	../hash/hash_page.c	/^__ham_reputpair(p, psize, ndx, key, data)$/
 __ham_split_page	../hash/hash_page.c	/^__ham_split_page(hashp, obucket, nbucket)$/
 __ham_splitdata_log	../hash/hash_auto.c	/^int __ham_splitdata_log(logp, txnid, ret_lsnp, fla/
 __ham_splitdata_print	../hash/hash_auto.c	/^__ham_splitdata_print(notused1, dbtp, lsnp, notuse/
@@ -1207,9 +1216,10 @@ __lock_checklocker	../lock/lock.c	/^__lock_checklocker(lt, lockp, do_remove)$/
 __lock_cmp	../lock/lock_util.c	/^__lock_cmp(dbt, lock_obj)$/
 __lock_count_locks	../lock/lock_region.c	/^__lock_count_locks(lrp)$/
 __lock_count_objs	../lock/lock_region.c	/^__lock_count_objs(lrp)$/
-__lock_dump_locker	../lock/lock_region.c	/^__lock_dump_locker(lt, op)$/
-__lock_dump_object	../lock/lock_region.c	/^__lock_dump_object(lt, op)$/
-__lock_dump_region	../lock/lock_region.c	/^__lock_dump_region(lt, flags)$/
+__lock_dump_locker	../lock/lock_region.c	/^__lock_dump_locker(lt, op, fp)$/
+__lock_dump_object	../lock/lock_region.c	/^__lock_dump_object(lt, op, fp)$/
+__lock_dump_region	../lock/lock_region.c	/^__lock_dump_region(lt, area, fp)$/
+__lock_dump_status	../lock/lock_region.c	/^__lock_dump_status(status)$/
 __lock_freeobj	../lock/lock.c	/^__lock_freeobj(lt, obj)$/
 __lock_get_internal	../lock/lock.c	/^__lock_get_internal(lt, locker, flags, obj, lock_m/
 __lock_getobj	../lock/lock.c	/^__lock_getobj(lt, locker, dbt, type, objp)$/
@@ -1249,20 +1259,17 @@ __log_valid	../log/log.c	/^__log_valid(dblp, lp, cnt)$/
 __log_write	../log/log_put.c	/^__log_write(dblp, addr, len)$/
 __memp_bhfree	../mp/mp_bh.c	/^__memp_bhfree(dbmp, mfp, bhp, free_mem)$/
 __memp_bhwrite	../mp/mp_bh.c	/^__memp_bhwrite(dbmp, mfp, bhp, restartp, wrotep)$/
-__memp_debug	../mp/mp_pr.c	/^__memp_debug(dbmp, fp, data)$/
+__memp_dump_region	../mp/mp_pr.c	/^__memp_dump_region(dbmp, area, fp)$/
 __memp_fn	../mp/mp_pr.c	/^__memp_fn(dbmfp)$/
 __memp_fns	../mp/mp_pr.c	/^__memp_fns(dbmp, mfp)$/
 __memp_fopen	../mp/mp_fopen.c	/^__memp_fopen(dbmp, mfp, path, flags, mode, pagesiz/
 __memp_fsync	../mp/mp_sync.c	/^__memp_fsync(dbmfp)$/
 __memp_mf_close	../mp/mp_fopen.c	/^__memp_mf_close(dbmp, dbmfp)$/
 __memp_mf_open	../mp/mp_fopen.c	/^__memp_mf_open(dbmp, path, pagesize, last_pgno, fi/
-__memp_pbh	../mp/mp_pr.c	/^__memp_pbh(fp, dbmp, bhp, data)$/
-__memp_pdbmf	../mp/mp_pr.c	/^__memp_pdbmf(fp, dbmfp, data)$/
+__memp_pbh	../mp/mp_pr.c	/^__memp_pbh(dbmp, bhp, fmap, fp)$/
 __memp_pg	../mp/mp_bh.c	/^__memp_pg(dbmfp, bhp, is_pgin)$/
 __memp_pgread	../mp/mp_bh.c	/^__memp_pgread(dbmfp, bhp, can_create)$/
 __memp_pgwrite	../mp/mp_bh.c	/^__memp_pgwrite(dbmfp, bhp, restartp, wrotep)$/
-__memp_pmf	../mp/mp_pr.c	/^__memp_pmf(fp, mfp, data)$/
-__memp_pmp	../mp/mp_pr.c	/^__memp_pmp(fp, dbmp, mp, data)$/
 __memp_ralloc	../mp/mp_region.c	/^__memp_ralloc(dbmp, len, offsetp, retp)$/
 __memp_ropen	../mp/mp_region.c	/^__memp_ropen(dbmp, path, cachesize, mode, is_priva/
 __memp_upgrade	../mp/mp_bh.c	/^__memp_upgrade(dbmp, dbmfp, mfp)$/

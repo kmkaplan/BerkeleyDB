@@ -47,14 +47,13 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)bt_put.c	10.43 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)bt_put.c	10.45 (Sleepycat) 5/25/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
 #include <errno.h>
-#include <stdio.h>
 #include <string.h>
 #endif
 
@@ -437,7 +436,7 @@ __bam_iitem(dbp, hp, indxp, key, data, op, flags)
 	BKEYDATA *bk;
 	DBT tdbt;
 	PAGE *h;
-	db_indx_t indx;
+	db_indx_t indx, nbytes;
 	u_int32_t data_size, have_bytes, need_bytes, needed;
 	int bigkey, bigdata, dupadjust, replace, ret;
 
@@ -462,9 +461,21 @@ __bam_iitem(dbp, hp, indxp, key, data, op, flags)
 			++*indxp;
 
 		/* Remove the current item if it's a DB_CURRENT op. */
-		if (op == DB_CURRENT && (ret = __db_ditem(dbp, *hp, *indxp,
-		    BKEYDATA_SIZE(GET_BKEYDATA(*hp, *indxp)->len))) != 0)
-			return (ret);
+		if (op == DB_CURRENT) {
+			bk = GET_BKEYDATA(*hp, *indxp);
+			switch (B_TYPE(bk->type)) {
+			case B_KEYDATA:
+				nbytes = BKEYDATA_SIZE(bk->len);
+				break;
+			case B_OVERFLOW:
+				nbytes = BOVERFLOW_SIZE;
+				break;
+			default:
+				return (__db_pgfmt(dbp, h->pgno));
+			}
+			if ((ret = __db_ditem(dbp, *hp, *indxp, nbytes)) != 0)
+				return (ret);
+		}
 
 		/* Put the new/replacement item onto the page. */
 		if ((ret = __db_dput(dbp, data, hp, indxp, __bam_new)) != 0)

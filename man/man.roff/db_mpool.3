@@ -5,7 +5,7 @@
 .\" Copyright (c) 1996, 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)db_mpool.so	10.41 (Sleepycat) 5/4/98
+.\"	@(#)db_mpool.so	10.42 (Sleepycat) 5/10/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
@@ -859,7 +859,7 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH DB_MPOOL 3 "May 4, 1998"
+.TH DB_MPOOL 3 "May 10, 1998"
 .UC 7
 .SH NAME
 db_mpool \- shared memory buffer pool
@@ -1521,6 +1521,12 @@ DB_MPOOL_STAT (typedef'd in <db.h>).
 .PP
 The following DB_MPOOL_STAT fields will be filled in:
 .TP 5
+u_int32_t st_refcnt;
+The number of references to the region.
+.Nt
+u_int32_t st_regsize;
+The size of the region.
+.Nt
 size_t st_cachesize;
 Cache size in bytes.
 .Nt

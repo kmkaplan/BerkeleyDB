@@ -99,7 +99,8 @@ int __db_prnpage __P((DB_MPOOLFILE *, db_pgno_t));
 int __db_prpage __P((PAGE *, int));
 int __db_isbad __P((PAGE *, int));
 void __db_pr __P((u_int8_t *, u_int32_t));
-void __db_prflags __P((u_int32_t, const FN *));
+int __db_prdbt __P((DBT *, int, FILE *));
+void __db_prflags __P((u_int32_t, const FN *, FILE *));
 int __db_addrem_recover
    __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
 int __db_split_recover __P((DB_LOG *, DBT *, DB_LSN *, int, void *));

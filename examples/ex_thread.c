@@ -4,7 +4,7 @@
  * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)ex_thread.c	10.5 (Sleepycat) 4/10/98
+ *	@(#)ex_thread.c	10.6 (Sleepycat) 5/31/98
  */
 
 #include "config.h"
@@ -141,7 +141,6 @@ main(argc, argv)
 
 	/* Initialize the database. */
 	memset(&dbinfo, 0, sizeof(dbinfo));
-	dbinfo.db_cachesize = 32 * 1024;	/* Cachesize: 32K. */
 	dbinfo.db_pagesize = 1024;		/* Page size: 1K. */
 
 	if ((errno = db_open(DATABASE, DB_BTREE,
@@ -448,6 +447,7 @@ db_init(home)
 	dbenv->lg_max = 200000;
 	dbenv->db_errfile = stderr;
 	dbenv->db_errpfx = progname;
+	dbenv->mp_size = 100 * 1024;		/* Cachesize: 100K. */
 
 	if ((errno = db_appinit(home, NULL, dbenv,
 	    DB_CREATE | DB_INIT_LOCK | DB_INIT_LOG |

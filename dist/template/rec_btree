@@ -17,7 +17,7 @@
 /*
  * __bam_pg_alloc_recover --
  *	Recovery function for pg_alloc.
- * 
+ *
  * PUBLIC: int __bam_pg_alloc_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -94,7 +94,7 @@ out:	if (argp != NULL)
 /*
  * __bam_pg_free_recover --
  *	Recovery function for pg_free.
- * 
+ *
  * PUBLIC: int __bam_pg_free_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -171,7 +171,7 @@ out:	if (argp != NULL)
 /*
  * __bam_split_recover --
  *	Recovery function for split.
- * 
+ *
  * PUBLIC: int __bam_split_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -248,7 +248,7 @@ out:	if (argp != NULL)
 /*
  * __bam_rsplit_recover --
  *	Recovery function for rsplit.
- * 
+ *
  * PUBLIC: int __bam_rsplit_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -325,7 +325,7 @@ out:	if (argp != NULL)
 /*
  * __bam_adj_recover --
  *	Recovery function for adj.
- * 
+ *
  * PUBLIC: int __bam_adj_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -402,7 +402,7 @@ out:	if (argp != NULL)
 /*
  * __bam_cadjust_recover --
  *	Recovery function for cadjust.
- * 
+ *
  * PUBLIC: int __bam_cadjust_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -479,7 +479,7 @@ out:	if (argp != NULL)
 /*
  * __bam_cdel_recover --
  *	Recovery function for cdel.
- * 
+ *
  * PUBLIC: int __bam_cdel_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -556,7 +556,7 @@ out:	if (argp != NULL)
 /*
  * __bam_repl_recover --
  *	Recovery function for repl.
- * 
+ *
  * PUBLIC: int __bam_repl_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */

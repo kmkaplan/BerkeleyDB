@@ -7,7 +7,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)mp_fget.c	10.46 (Sleepycat) 5/4/98";
+static const char sccsid[] = "@(#)mp_fget.c	10.48 (Sleepycat) 6/2/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -22,8 +22,6 @@ static const char sccsid[] = "@(#)mp_fget.c	10.46 (Sleepycat) 5/4/98";
 #include "db_shash.h"
 #include "mp.h"
 #include "common_ext.h"
-
-int __sleep_on_every_page_get;		/* XXX: thread debugging option. */
 
 /*
  * memp_fget --
@@ -84,7 +82,7 @@ memp_fget(dbmfp, pgnoaddr, flags, addrp)
 	 * We want to switch threads as often as possible.  Sleep every time
 	 * we get a new page to make it more likely.
 	 */
-	if (__sleep_on_every_page_get &&
+	if (DB_GLOBAL(db_pageyield) &&
 	    (__db_yield == NULL || __db_yield() != 0))
 		__db_sleep(0, 1);
 #endif
@@ -286,7 +284,7 @@ alloc:	/* Allocate new buffer header and data space. */
 		else {
 			memset(bhp->buf, 0, mfp->clear_len);
 #ifdef DIAGNOSTIC
-			memset(bhp->buf + mfp->clear_len, 0xff, 
+			memset(bhp->buf + mfp->clear_len, 0xff,
 			    mfp->stat.st_pagesize - mfp->clear_len);
 #endif
 		}

@@ -1,4 +1,4 @@
-; @(#)libdb.def	8.14 (Sleepycat) 4/26/98
+; @(#)libdb.def	8.16 (Sleepycat) 5/23/98
 
 DESCRIPTION     'Berkeley DB 2.0 Library'
 CODE            SHARED READ EXECUTE
@@ -92,6 +92,7 @@ EXPORTS
 	__db_open				@243
 	__db_write				@244
 	__lock_dump_region			@245
+	__memp_dump_region			@246
 ; these are needed for linking tools
 	__db_dump				@401
 	__db_rpath				@402
@@ -108,3 +109,4 @@ EXPORTS
 	__bam_pgin				@413
 	__bam_pgout				@414
 	__db_omode				@415
+	__db_prdbt				@416

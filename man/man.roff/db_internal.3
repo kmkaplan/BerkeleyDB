@@ -5,7 +5,7 @@
 .\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)db_internal.so	10.18 (Sleepycat) 5/3/98
+.\"	@(#)db_internal.so	10.19 (Sleepycat) 5/10/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
@@ -1336,6 +1336,11 @@ argument specifies the information being set by the argument
 The following values of
 .I which
 are supported:
+.TP 5
+DB_MUTEXLOCKS
+Grant all requested mutual exclusion mutexes without testing for their
+availability.
+This flag should never be used for any other purpose than debugging.
 .TP 5
 DB_REGION_ANON
 Setting

@@ -2,7 +2,7 @@
 /*
  * __PREF_FUNC_recover --
  *	Recovery function for FUNC.
- * 
+ *
  * PUBLIC: int __PREF_FUNC_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */

@@ -44,13 +44,11 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)bt_rsearch.c	10.14 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)bt_rsearch.c	10.15 (Sleepycat) 5/6/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
-
-#include <stdio.h>
 #endif
 
 #include "db_int.h"

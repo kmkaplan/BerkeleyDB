@@ -1,4 +1,4 @@
-dnl @(#)configure.in	10.60 (Sleepycat) 4/22/98
+dnl @(#)configure.in	10.63 (Sleepycat) 5/26/98
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(../db/db.c)
@@ -23,6 +23,7 @@ AC_SUBST(LDFLAGS)
 case "$host_os" in
 aix4.1*)   CFLAGS=${CFLAGS-"-O3"};;
 bsd4.4)    CFLAGS=${CFLAGS-"-O2"};;
+bsdi4*)	   CFLAGS=${CFLAGS-"-O2"};;
 bsdi*)	   CC=${CC-"shlicc2"}
 	   CFLAGS=${CFLAGS-"-O2"}
 	   LIBS="-lipc $LIBS";;
@@ -31,6 +32,8 @@ nextstep3) CFLAGS=${CFLAGS-"-O2"};;
 linux*)	   CFLAGS=${CFLAGS-"-O2"};;
 mpeix*)	   CPPFLAGS="-D_POSIX_SOURCE -D_SOCKET_SOURCE $CPPFLAGS"
 	   LIBS="-lsocket -lsvipc $LIBS";;
+sco*)	   CFLAGS="$CFLAGS -b elf"
+	   LIBS="-lsocket -lnsl $LIBS";;
 *)	   CFLAGS=${CFLAGS-"-O"};;
 esac
 CXXFLAGS=${CXXFLAGS-"$CFLAGS"}
@@ -176,8 +179,12 @@ esac
 dnl Checks for library functions for which we don't have replacements.
 dnl
 dnl XXX
+dnl FreeBSD has the shmget(2) interfaces, but as ftok(3) is not in the C
+dnl library, so we ignore them.
+dnl
 dnl HP/UX has the shmget(2) interfaces, but you can't use them to hold
 dnl mutexes, so they're useless.
+dnl
 dnl SunOS has the shmget(2) interfaces, but there appears to be a missing
 dnl #include <debug/debug.h> file!?
 case "$host_os" in
@@ -188,11 +195,16 @@ sunos*)
 	ac_cv_func_shmget="no"
 	AC_MSG_WARN([shmget(2) interface ignored on the SunOS architecture.]);;
 *)
-	AC_CHECK_FUNCS(shmget);;
+	AC_CHECK_FUNC(ftok, AC_CHECK_FUNCS(shmget));;
 esac
 
+dnl Nextstep (version 3.3) apparently supports mmap(2) (the mmap symbol is
+dnl defined in the C library) but does not support munmap(2).
+AC_CHECK_FUNC(munmap, AC_CHECK_FUNCS(mmap))
+
+AC_CHECK_FUNCS(getuid select sysconf)
+
 dnl We require mmap/munmap(2) or shmget(2), and select(2).
-AC_CHECK_FUNCS(getuid mmap select sysconf)
 if test "$ac_cv_func_mmap" = no -a "$ac_cv_func_shmget" = no; then
 	AC_MSG_ERROR([Neither mmap/munmap(2) or shmget(2) library functions.])
 fi

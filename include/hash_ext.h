@@ -90,6 +90,8 @@ int __ham_item_first __P((HTAB *, HASH_CURSOR *, db_lockmode_t));
 int __ham_item_prev __P((HTAB *, HASH_CURSOR *, db_lockmode_t));
 int __ham_item_next __P((HTAB *, HASH_CURSOR *, db_lockmode_t));
 void __ham_putitem __P((PAGE *p, const DBT *, int));
+void __ham_reputpair
+   __P((PAGE *p, u_int32_t, u_int32_t, const DBT *, const DBT *));
 int __ham_del_pair __P((HTAB *, HASH_CURSOR *, int));
 int __ham_replpair __P((HTAB *, HASH_CURSOR *, DBT *, u_int32_t));
 void __ham_onpage_replace __P((PAGE *, size_t, u_int32_t, int32_t,

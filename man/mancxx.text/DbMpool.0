@@ -363,6 +363,10 @@ DDEESSCCRRIIPPTTIIOONN
 
        The following DB_MPOOL_STAT fields will be filled in:
 
+       u_int32_t st_refcnt;
+            The number of references to the region.
+       u_int32_t st_regsize;
+            The size of the region.
        size_t st_cachesize;
              Cache size in bytes.
        u_int32_t st_cache_hit;
@@ -433,10 +437,10 @@ DDEESSCCRRIIPPTTIIOONN
 
        The   _D_b_M_p_o_o_l_:_:_s_t_a_t  method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)  or
        returns the value of _e_r_r_n_o on failure and 0 on success.
-
 EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
        The following environment variables affect the behavior of
        _D_b_M_p_o_o_l_F_i_l_e:
+
        DB_HOME
             If  the  _d_b_e_n_v argument to _D_b_M_p_o_o_l_:_:_o_p_e_n was initial-
             ized  using  _d_b___a_p_p_i_n_i_t,  the  environment   variable

@@ -43,7 +43,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)hash_debug.c	10.5 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)hash_debug.c	10.6 (Sleepycat) 5/7/98";
 #endif /* not lint */
 
 #ifdef DEBUG
@@ -60,8 +60,6 @@ static const char sccsid[] = "@(#)hash_debug.c	10.5 (Sleepycat) 4/26/98";
  */
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
-
-#include <stdio.h>
 #endif
 
 #include "db_int.h"

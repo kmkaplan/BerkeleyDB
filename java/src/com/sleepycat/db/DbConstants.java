@@ -6,7 +6,7 @@ public class DbConstants
 {
 	public static final int DB_VERSION_MAJOR = 2;
 	public static final int DB_VERSION_MINOR = 4;
-	public static final int DB_VERSION_PATCH = 10;
+	public static final int DB_VERSION_PATCH = 14;
 	public static final int DB_MAX_PAGES = 0xffffffff;
 	public static final int DB_MAX_RECORDS = 0xffffffff;
 	public static final int DB_FILE_ID_LEN = 20;
@@ -39,6 +39,8 @@ public class DbConstants
 	public static final int DB_REGION_ANON = 23;
 	public static final int DB_REGION_INIT = 24;
 	public static final int DB_REGION_NAME = 25;
+	public static final int DB_MUTEXLOCKS = 26;
+	public static final int DB_PAGEYIELD = 27;
 	public static final int DB_CREATE = 0x000001;
 	public static final int DB_NOMMAP = 0x000002;
 	public static final int DB_THREAD = 0x000004;
@@ -47,7 +49,6 @@ public class DbConstants
 	public static final int DB_INIT_MPOOL = 0x000020;
 	public static final int DB_INIT_TXN = 0x000040;
 	public static final int DB_MPOOL_PRIVATE = 0x000080;
-	public static final int DB_MUTEXDEBUG = 0x000100;
 	public static final int DB_RECOVER = 0x000200;
 	public static final int DB_RECOVER_FATAL = 0x000400;
 	public static final int DB_TXN_NOSYNC = 0x000800;

@@ -5,7 +5,7 @@
 .\" Copyright (c) 1996, 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)db_load.so	10.9 (Sleepycat) 4/10/98
+.\"	@(#)db_load.so	10.11 (Sleepycat) 6/2/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
@@ -859,12 +859,12 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH DB_LOAD 1 "April 10, 1998"
+.TH DB_LOAD 1 "June 2, 1998"
 .UC 7
 .SH NAME
 db_load \- the DB database loader
 .SH SYNOPSIS
-\fBdb_load\fP [\fB-T\fP]
+\fBdb_load\fP [\fB-nT\fP] [\fB-c name=value\fP]
 .br
 .ti +5
 [\fB-f file\fP] [\fB-h home\fP] [\fB-t btree | hash | recno\fP] db_file
@@ -874,6 +874,10 @@ The
 utility reads from the standard input
 and loads it into the database
 .IR db_file .
+The database
+.I db_file
+is created if it does not already exist.
+.PP
 The input to
 .I db_load
 must be in the output format specified by the
@@ -902,6 +906,26 @@ file instead of from the standard input.
 .TP 5
 .B \-h
 Specify a home directory for the database.
+.sp
+If a home directory is specified, the database environment is opened
+using the DB_INIT_LOCK, DB_INIT_LOG, DB_INIT_MPOOL, DB_INIT_TXN and
+DB_USE_ENVIRON flags to
+.IR db_appinit (3).
+(This means that
+.I db_load
+can be used to load data into databases while they are in use by other
+processes.)
+If the
+.I db_appinit
+call fails, or if no home directory is specified, the database is still
+updated, but the environment is ignored, e.g., no locking is done.
+.TP 5
+.B \-n
+Do not overwrite existing keys in the database when loading into an
+already existing database.
+If a key/data pair cannot be loaded into the database for this reason,
+a warning message is displayed on the standard error output and the
+key/data pair are skipped.
 .TP 5
 .B \-T
 The
@@ -954,7 +978,11 @@ Btree and hash databases may be converted from one to the other.
 Recno databases may not be converted to any other database type
 or from any other database type.
 .PP
-.Ex db_load
+The
+.I db_load
+utility exits 0 on success, 1 if one or more key/data pairs were not
+loaded into the database because the key already existed, and >1 if
+an error occurs.
 .SH KEYWORDS
 The following keywords are supported for the
 .B \-c

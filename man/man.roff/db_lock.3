@@ -5,7 +5,7 @@
 .\" Copyright (c) 1996, 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)db_lock.so	10.28 (Sleepycat) 4/10/98
+.\"	@(#)db_lock.so	10.29 (Sleepycat) 5/10/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
@@ -859,7 +859,7 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH DB_LOCK 3 "April 10, 1998"
+.TH DB_LOCK 3 "May 10, 1998"
 .UC 7
 .SH NAME
 db_lock \- lock manager
@@ -1293,6 +1293,12 @@ The magic number that identifies a file as a lock file.
 .Nt
 u_int32_t st_version;
 The version of the lock file type.
+.Nt
+u_int32_t st_refcnt;
+The number of references to the region.
+.Nt
+u_int32_t st_regsize;
+The size of the region.
 .Nt
 u_int32_t st_maxlocks;
 The maximum number of locks possible.

@@ -43,7 +43,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)txn.c	10.55 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)txn.c	10.58 (Sleepycat) 5/31/98";
 #endif /* not lint */
 
 
@@ -51,13 +51,12 @@ static const char sccsid[] = "@(#)txn.c	10.55 (Sleepycat) 4/26/98";
 #include <sys/types.h>
 
 #include <errno.h>
-#include <stdio.h>
 #include <string.h>
 #include <time.h>
 #endif
 
-#include "shqueue.h"
 #include "db_int.h"
+#include "shqueue.h"
 #include "db_page.h"
 #include "db_shash.h"
 #include "txn.h"
@@ -192,6 +191,7 @@ txn_open(path, flags, mode, dbenv, mgrpp)
 		if (ret != 0)
 			goto err;
 	}
+
 	UNLOCK_TXNREGION(tmgrp);
 	*mgrpp = tmgrp;
 	return (0);
@@ -199,16 +199,16 @@ txn_open(path, flags, mode, dbenv, mgrpp)
 err:	if (tmgrp->reginfo.addr != NULL) {
 		if (tmgrp->mutexp != NULL)
 			__db_shalloc_free(tmgrp->mem, tmgrp->mutexp);
-		UNLOCK_TXNREGION(tmgrp);
 
+		UNLOCK_TXNREGION(tmgrp);
+		(void)__db_rdetach(&tmgrp->reginfo);
 		if (F_ISSET(&tmgrp->reginfo, REGION_CREATED))
-			(void)__db_runlink(&tmgrp->reginfo, 1);
+			(void)txn_unlink(path, 1, dbenv);
 	}
 
 	if (tmgrp->reginfo.path != NULL)
 		FREES(tmgrp->reginfo.path);
 	FREE(tmgrp, sizeof(*tmgrp));
-
 	return (ret);
 }
 
@@ -824,6 +824,8 @@ txn_stat(mgr, statp, db_malloc)
 
 	stats->st_region_wait = mgr->region->hdr.lock.mutex_set_wait;
 	stats->st_region_nowait = mgr->region->hdr.lock.mutex_set_nowait;
+	stats->st_refcnt = mgr->region->hdr.refcnt;
+	stats->st_regsize = mgr->region->hdr.size;
 
 	UNLOCK_TXNREGION(mgr);
 	*statp = stats;

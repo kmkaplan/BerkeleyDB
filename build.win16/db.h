@@ -5,7 +5,7 @@
  * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)db.h.src	10.125 (Sleepycat) 5/5/98
+ *	@(#)db.h.src	10.131 (Sleepycat) 6/2/98
  */
 
 #ifndef _DB_H_
@@ -75,8 +75,8 @@ typedef unsigned long u_long;
 
 #define	DB_VERSION_MAJOR	2
 #define	DB_VERSION_MINOR	4
-#define	DB_VERSION_PATCH	10
-#define	DB_VERSION_STRING	"Sleepycat Software: DB 2.4.10: (5/5/98)"
+#define	DB_VERSION_PATCH	14
+#define	DB_VERSION_STRING	"Sleepycat Software: DB 2.4.14: (6/2/98)"
 
 typedef	u_int32_t	db_pgno_t;	/* Page number type. */
 typedef	u_int16_t	db_indx_t;	/* Page offset type. */
@@ -97,7 +97,6 @@ struct __db_bt_stat;	typedef struct __db_bt_stat DB_BTREE_STAT;
 struct __db_dbt;	typedef struct __db_dbt DBT;
 struct __db_env;	typedef struct __db_env DB_ENV;
 struct __db_info;	typedef struct __db_info DB_INFO;
-struct __db_lock_active;typedef struct __db_lock_active DB_LOCK_ACTIVE;
 struct __db_lock_stat;	typedef struct __db_lock_stat DB_LOCK_STAT;
 struct __db_lockregion;	typedef struct __db_lockregion DB_LOCKREGION;
 struct __db_lockreq;	typedef struct __db_lockreq DB_LOCKREQ;
@@ -164,6 +163,8 @@ struct __db_dbt {
 #define	DB_REGION_ANON	23		/* DB: anonymous, unnamed regions. */
 #define	DB_REGION_INIT	24		/* DB: page-fault regions in create. */
 #define	DB_REGION_NAME	25		/* DB: anonymous, named regions. */
+#define	DB_MUTEXLOCKS	26		/* DB: turn off all mutex locks. */
+#define	DB_PAGEYIELD	27		/* DB: yield the CPU on pool get. */
 
 /*
  * Database configuration and initialization.
@@ -177,8 +178,6 @@ struct __db_dbt {
 
 /*
  * Flags understood by db_appinit(3).
- *
- * DB_MUTEXDEBUG is internal only, and not documented.
  */
 /*			      0x000007	   COMMON MASK. */
 #define	DB_INIT_LOCK	      0x000008	/* Initialize locking. */
@@ -186,7 +185,7 @@ struct __db_dbt {
 #define	DB_INIT_MPOOL	      0x000020	/* Initialize mpool. */
 #define	DB_INIT_TXN	      0x000040	/* Initialize transactions. */
 #define	DB_MPOOL_PRIVATE      0x000080	/* Mpool: private memory pool. */
-#define	DB_MUTEXDEBUG	      0x000100	/* Do not get/set mutexes in regions. */
+#define	__UNUSED_100	      0x000100
 #define	DB_RECOVER	      0x000200	/* Run normal recovery. */
 #define	DB_RECOVER_FATAL      0x000400	/* Run catastrophic recovery. */
 #define	DB_TXN_NOSYNC	      0x000800	/* Do not sync log on commit. */
@@ -212,7 +211,7 @@ struct __db_dbt {
  */
 /*			      0x000007	   COMMON MASK. */
 /*			      0x003fff	   ALREADY USED. */
-#define	__CURRENTLY_UNUSED    0x004000
+#define	__UNUSED_4000	      0x004000
 #define	DB_EXCL		      0x008000	/* O_EXCL: exclusive open. */
 #define	DB_RDONLY	      0x010000	/* O_RDONLY: read-only. */
 #define	DB_SEQUENTIAL	      0x020000	/* Indicate sequential access. */
@@ -623,14 +622,6 @@ extern const u_int8_t db_rw_conflicts[];
 #define	DB_LOCK_RIW_N	6
 extern const u_int8_t db_riw_conflicts[];
 
-/* Lock statistics structure. */
-struct __db_lock_active {
-	u_int32_t	holder;		/* Who holds this lock. */
-	db_lockmode_t	mode;		/* What sort of lock. */
-	db_status_t	status;		/* Status of this lock. */
-	u_int32_t	refcnt;		/* Lock reference count. */
-};
-
 struct __db_lock_stat {
 	u_int32_t st_magic;		/* Lock file magic number. */
 	u_int32_t st_version;		/* Lock file version number. */
@@ -644,8 +635,8 @@ struct __db_lock_stat {
 	u_int32_t st_ndeadlocks;	/* Number of lock deadlocks. */
 	u_int32_t st_region_wait;	/* Region lock granted after wait. */
 	u_int32_t st_region_nowait;	/* Region lock granted without wait. */
-	DB_LOCK_ACTIVE
-		 *st_lockarray;		/* Array of active locks. */
+	u_int32_t st_refcnt;		/* Region reference count. */
+	u_int32_t st_regsize;		/* Region size. */
 };
 
 #if defined(__cplusplus)
@@ -705,6 +696,8 @@ struct __db_log_stat {
 	u_int32_t st_region_nowait;	/* Region lock granted without wait. */
 	u_int32_t st_cur_file;		/* Current log file number. */
 	u_int32_t st_cur_offset;	/* Current log file offset. */
+	u_int32_t st_refcnt;		/* Region reference count. */
+	u_int32_t st_regsize;		/* Region size. */
 };
 
 #if defined(__cplusplus)
@@ -759,6 +752,8 @@ struct __db_mpool_stat {
 	u_int32_t st_page_trickle;	/* Pages written by memp_trickle. */
 	u_int32_t st_region_wait;	/* Region lock granted after wait. */
 	u_int32_t st_region_nowait;	/* Region lock granted without wait. */
+	u_int32_t st_refcnt;		/* Region reference count. */
+	u_int32_t st_regsize;		/* Region size. */
 };
 
 /* Mpool file open information structure. */
@@ -841,6 +836,8 @@ struct __db_txn_stat {
 		 *st_txnarray;	/* array of active transactions */
 	u_int32_t st_region_wait;	/* Region lock granted after wait. */
 	u_int32_t st_region_nowait;	/* Region lock granted without wait. */
+	u_int32_t st_refcnt;		/* Region reference count. */
+	u_int32_t st_regsize;		/* Region size. */
 };
 
 #if defined(__cplusplus)

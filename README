@@ -1,6 +1,6 @@
-# @(#)README	10.56 (Sleepycat) 5/5/98
+# @(#)README	10.61 (Sleepycat) 6/2/98
 
-This is version 2.4.10 (5/5/98) of the Berkeley DB library.
+This is version 2.4.14 (6/2/98) of the Berkeley DB library.
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 To view the documentation for the Berkeley DB release, point your web
@@ -13,9 +13,9 @@ browser at the following distribution files:
 The documentation is available in PostScript, UNIX roff and flat text
 format as well.  We suggest reviewing the following three pages first:
 
-    db_intro(3) 
-    db_appinit(3) 
-    db_open(3) 
+    db_intro(3)
+    db_appinit(3)
+    db_open(3)
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 Bug fixes, answers to Frequently Asked Questions and updated versions of
