@@ -47,7 +47,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)dbm.c	10.6 (Sleepycat) 8/27/97";
+static const char sccsid[] = "@(#)dbm.c	10.7 (Sleepycat) 11/25/97";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -198,7 +198,18 @@ dbm_open(file, oflags, mode)
 	dbinfo.h_ffactor = 40;
 	dbinfo.h_nelem = 1;
 
-	(void)snprintf(path, sizeof(path), "%s%s", file, DBM_SUFFIX);
+	/*
+	 * XXX
+	 * Don't use sprintf(3)/snprintf(3) -- the former is dangerous, and
+	 * the latter isn't standard, and we're manipulating strings handed
+	 * us by the application.
+	 */
+	if (strlen(file) + strlen(DBM_SUFFIX) + 1 > sizeof(path)) {
+		errno = ENAMETOOLONG;
+		return (NULL);
+	}
+	(void)strcpy(path, file);
+	(void)strcat(path, DBM_SUFFIX);
 	if ((errno = db_open(path,
 	    DB_HASH, __db_oflags(oflags), mode, NULL, &dbinfo, &dbp)) != 0)
 		return (NULL);

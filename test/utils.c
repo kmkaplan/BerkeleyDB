@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)utils.c	10.28 (Sleepycat) 10/25/97";
+static const char sccsid[] = "@(#)utils.c	10.29 (Sleepycat) 11/9/97";
 #endif /* not lint */
 
 /*
@@ -1011,7 +1011,7 @@ dbc_del_cmd(interp, argc, argv, dbc)
 	}
 }
 
-#define DBCGET_USAGE "cursorN get key flags"
+#define DBCGET_USAGE "cursorN get key flags [beg len]"
 int
 dbc_get_cmd(interp, argc, argv, dbc)
 	Tcl_Interp *interp;
@@ -1023,7 +1023,7 @@ dbc_get_cmd(interp, argc, argv, dbc)
 	int flags, rkey, ret;
 	char numbuf[16];
 
-	USAGE(argc, 4, DBCGET_USAGE, 0);
+	USAGE_GE(argc, 4, DBCGET_USAGE, 0);
 
 	if (Tcl_GetInt(interp, argv[3], &flags) != TCL_OK) {
 		Tcl_AppendResult(interp, "\n", DBCGET_USAGE, NULL);
@@ -1041,7 +1041,16 @@ dbc_get_cmd(interp, argc, argv, dbc)
 		key.size = strlen(argv[2]) + 1;	/* Add Null on end */
 		key.flags = 0;
 	}
-	data.flags = 0;
+
+	if (LF_ISSET(DB_DBT_PARTIAL)) {
+		USAGE(argc, 6, DBCGET_USAGE, 0);
+		if (Tcl_GetInt(interp, argv[4], (int *)&data.doff) != TCL_OK ||
+		    Tcl_GetInt(interp, argv[5], (int *)&data.dlen) != TCL_OK)
+			return (TCL_ERROR);
+		data.flags = DB_DBT_PARTIAL;
+		LF_CLR(DB_DBT_PARTIAL);
+	} else
+		data.flags = 0;
 
 	debug_check();
 
@@ -1398,8 +1407,12 @@ set_get_result(interp, dbt)
 	 * If this is a partial get, we need to make sure that the last
 	 * character is a NUL so that tcl can handle it.
 	 */
-	if (F_ISSET(dbt, DB_DBT_PARTIAL))
-		 ((char *)dbt->data)[dbt->size - 1] = '\0';
+	if (F_ISSET(dbt, DB_DBT_PARTIAL)) {
+		if (dbt->size == 0)
+			((char *)dbt->data)[0] = '\0';
+		else
+			((char *)dbt->data)[dbt->size - 1] = '\0';
+	}
 
 	if (i == 0) {
 		if (((u_int8_t *)dbt->data)[dbt->size - 1] != '\0') {

@@ -1,8 +1,8 @@
 %!PS-Adobe-3.0
 %%Creator: groff version 1.10
-%%CreationDate: Mon Nov  3 11:30:02 1997
-%%DocumentNeededResources: font Times-Roman
-%%+ font Times-Bold
+%%CreationDate: Fri Nov 28 16:33:40 1997
+%%DocumentNeededResources: font Times-Bold
+%%+ font Times-Roman
 %%+ font Times-Italic
 %%DocumentSuppliedResources: procset grops 1.10 0
 %%Pages: 1
@@ -166,8 +166,8 @@ pop
 setpacking
 }if
 %%EndResource
-%%IncludeResource: font Times-Roman
 %%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
 %%IncludeResource: font Times-Italic
 grops begin/DEFS 1 dict def DEFS begin/u{.001 mul}bind def end/RES 72
 def/PL 792 def/LS false def/ENC0[/asciicircum/asciitilde/Scaron/Zcaron
@@ -197,55 +197,53 @@ def/PL 792 def/LS false def/ENC0[/asciicircum/asciitilde/Scaron/Zcaron
 /egrave/eacute/ecircumflex/edieresis/igrave/iacute/icircumflex/idieresis
 /eth/ntilde/ograve/oacute/ocircumflex/otilde/odieresis/divide/oslash
 /ugrave/uacute/ucircumflex/udieresis/yacute/thorn/ydieresis]def
-/Times-Italic@0 ENC0/Times-Italic RE/Times-Bold@0 ENC0/Times-Bold RE
-/Times-Roman@0 ENC0/Times-Roman RE
+/Times-Italic@0 ENC0/Times-Italic RE/Times-Roman@0 ENC0/Times-Roman RE
+/Times-Bold@0 ENC0/Times-Bold RE
 %%EndProlog
 %%Page: 1 1
 %%BeginPageSetup
 BP
 %%EndPageSetup
-/F0 10/Times-Roman@0 SF 387.74(DbLsn\(3\) DbLsn\(3\))72 48 R/F1 9
-/Times-Bold@0 SF -.18(NA)72 84 S(ME).18 E F0
-(DbLsn \255 Log sequence numbers)108 96 Q F1(SYNOPSIS)72 112.8 Q/F2 10
-/Times-Bold@0 SF(#include <db_cxx.h>)108 124.8 Q F1(DESCRIPTION)72 141.6
-Q F0 1.02(The DB library is a f)108 153.6 R 1.019
+/F0 9/Times-Bold@0 SF -.18(NA)72 28.8 S(ME).18 E/F1 10/Times-Roman@0 SF
+(DbLsn \255 Log sequence numbers)108 40.8 Q F0(SYNOPSIS)72 57.6 Q/F2 10
+/Times-Bold@0 SF(#include <db_cxx.h>)108 69.6 Q F0(DESCRIPTION)72 86.4 Q
+F1 1.02(The DB library is a f)108 98.4 R 1.019
 (amily of classes that pro)-.1 F 1.019
 (vides a modular programming interf)-.15 F 1.019
 (ace to transactions and)-.1 F 1.377(record-oriented \214le access.)108
-165.6 R 1.378(The library includes support for transactions, locking, logging and \214le page)
-6.377 F .443(caching, as well as v)108 177.6 R .443(arious inde)-.25 F
+110.4 R 1.378(The library includes support for transactions, locking, logging and \214le page)
+6.377 F .443(caching, as well as v)108 122.4 R .443(arious inde)-.25 F
 -.15(xe)-.15 G 2.943(da).15 G .442(ccess methods.)-2.943 F(Man)5.442 E
 2.942(yo)-.15 G 2.942(ft)-2.942 G .442
 (he classes \(e.g., the \214le page caching class\))-2.942 F .4(are useful independent of the other DB classes, although some classes are e)
-108 189.6 R .4(xplicitly based on other classes)-.15 F
-(\(e.g., transactions and logging\).)108 201.6 Q -.15(Fo)5 G 2.5(rag).15
+108 134.4 R .4(xplicitly based on other classes)-.15 F
+(\(e.g., transactions and logging\).)108 146.4 Q -.15(Fo)5 G 2.5(rag).15
 G(eneral description of the DB package, see)-2.5 E/F3 10/Times-Italic@0
-SF(db_intr)2.5 E(o)-.45 E F0(\(3\).).18 E
-(This manual page describes the DbLsn class.)108 218.4 Q 2.702(AD)108
-235.2 S .201
-(bLsn is a "log sequence number" that is fully encapsulated.)-2.702 F
-.201(The class itself has no methods, other than)5.201 F 2.568(ad)108
-247.2 S(ef)-2.568 E .068(ault constructor)-.1 F 2.568(,s)-.4 G 2.568(ot)
--2.568 G .068(here is no w)-2.568 F .069
+SF(db_intr)2.5 E(o)-.45 E F1(\(3\).).18 E
+(This manual page describes the DbLsn class.)108 163.2 Q 2.702(AD)108
+180 S .201(bLsn is a "log sequence number" that is fully encapsulated.)
+-2.702 F .201(The class itself has no methods, other than)5.201 F 2.568
+(ad)108 192 S(ef)-2.568 E .068(ault constructor)-.1 F 2.568(,s)-.4 G
+2.568(ot)-2.568 G .068(here is no w)-2.568 F .069
 (ay for the user to manipulate its data directly)-.1 F 5.069(.I)-.65 G
 2.569(ti)-5.069 G 2.569(si)-2.569 G .069(nitialized and used)-2.569 F
-(by methods in)108 259.2 Q F3(DbLo)2.5 E(g)-.1 E F0(\(3\) and).22 E F3
-(DbMpool)2.5 E F0 2.5(\(3\). These).51 F(methods al)2.5 E -.1(wa)-.1 G
-(ys accept a pointer to a DbLsn.).1 E F1(SEE ALSO)72 276 Q F3(db_ar)108
-288 Q -.15(ch)-.37 G(ive).15 E F0(\(1\),).18 E F3(db_c)2.5 E(hec)-.15 E
-(kpoint)-.2 E F0(\(1\),).68 E F3(db_deadloc)2.5 E(k)-.2 E F0(\(1\),).67
-E F3(db_dump)2.5 E F0(\(1\),).19 E F3(db_load)2.5 E F0(\(1\),).77 E F3
-(db_r)2.5 E(eco)-.37 E(ver)-.1 E F0(\(1\),).73 E F3(db_stat)2.5 E F0
-(\(1\),).68 E F3(db_intr)108 300 Q(o)-.45 E F0(\(3\),).18 E F3(db_jump)
-2.5 E F0(\(3\),).19 E F3(db_thr)2.5 E(ead)-.37 E F0(\(3\),).77 E F3(Db)
-2.5 E F0(\(3\),).23 E F3(Dbc)2.5 E F0(\(3\),).31 E F3(DbEn)2.5 E(v)-.4 E
-F0(\(3\),).32 E F3(DbException)2.5 E F0(\(3\),).24 E F3(DbInfo)2.5 E F0
-(\(3\),).18 E F3(DbLoc)2.5 E(k)-.2 E F0(\(3\),).67 E F3(DbLoc)108 312 Q
-(ktab)-.2 E F0(\(3\),).23 E F3(DbLo)2.5 E(g)-.1 E F0(\(3\),).22 E F3
-(DbLsn)2.5 E F0(\(3\),).24 E F3(DbMpool)2.5 E F0(\(3\),).51 E F3
-(DbMpoolF)2.5 E(ile)-.45 E F0(\(3\),).18 E F3(Dbt)2.5 E F0(\(3\),).68 E
-F3(DbTxn)2.5 E F0(\(3\),).24 E F3(DbTxnMgr)2.5 E F0(\(3\)).73 E
-(September 18, 1997)265.865 768 Q(1)188.865 E EP
+(by methods in)108 204 Q F3(DbLo)2.5 E(g)-.1 E F1(\(3\) and).22 E F3
+(DbMpool)2.5 E F1 2.5(\(3\). These).51 F(methods al)2.5 E -.1(wa)-.1 G
+(ys accept a pointer to a DbLsn.).1 E F0(SEE ALSO)72 220.8 Q F3(db_ar)
+108 232.8 Q -.15(ch)-.37 G(ive).15 E F1(\(1\),).18 E F3(db_c)2.5 E(hec)
+-.15 E(kpoint)-.2 E F1(\(1\),).68 E F3(db_deadloc)2.5 E(k)-.2 E F1
+(\(1\),).67 E F3(db_dump)2.5 E F1(\(1\),).19 E F3(db_load)2.5 E F1
+(\(1\),).77 E F3(db_r)2.5 E(eco)-.37 E(ver)-.1 E F1(\(1\),).73 E F3
+(db_stat)2.5 E F1(\(1\),).68 E F3(db_intr)108 244.8 Q(o)-.45 E F1
+(\(3\),).18 E F3(db_internal)2.5 E F1(\(3\),).51 E F3(db_thr)2.5 E(ead)
+-.37 E F1(\(3\),).77 E F3(Db)2.5 E F1(\(3\),).23 E F3(Dbc)2.5 E F1
+(\(3\),).31 E F3(DbEn)2.5 E(v)-.4 E F1(\(3\),).32 E F3(DbException)2.5 E
+F1(\(3\),).24 E F3(DbInfo)2.5 E F1(\(3\),).18 E F3(DbLoc)108 256.8 Q(k)
+-.2 E F1(\(3\),).67 E F3(DbLoc)2.5 E(kT)-.2 E(ab)-.92 E F1(\(3\),).23 E
+F3(DbLo)2.5 E(g)-.1 E F1(\(3\),).22 E F3(DbLsn)2.5 E F1(\(3\),).24 E F3
+(DbMpool)2.5 E F1(\(3\),).51 E F3(DbMpoolF)2.5 E(ile)-.45 E F1(\(3\),)
+.18 E F3(Dbt)2.5 E F1(\(3\),).68 E F3(DbTxn)2.5 E F1(\(3\),).24 E F3
+(DbTxnMgr)108 268.8 Q F1(\(3\)).73 E(1)535 768 Q EP
 %%Trailer
 end
 %%EOF

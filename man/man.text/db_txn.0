@@ -1,9 +1,5 @@
 
 
-
-DB_TXN(3)                                               DB_TXN(3)
-
-
 NNAAMMEE
        db_txn - DB transaction management
 
@@ -58,11 +54,11 @@ DDEESSCCRRIIPPTTIIOONN
        This  manual page describes the specific details of the DB
        transaction support.
 
-
        The _d_b___t_x_n functions are the library interface  that  pro-
        vides  transaction semantics.  Full transaction support is
        provided by a collection of modules  that  provide  inter-
        faces to the services required for transaction processing.
+
        These services are recovery (see  _d_b___l_o_g(3)),  concurrency
        control  (see  _d_b___l_o_c_k(3)),  and  the management of shared
        data (see  _d_b___m_p_o_o_l(3)).   Transaction  semantics  can  be
@@ -95,70 +91,70 @@ DDEESSCCRRIIPPTTIIOONN
 
        All files associated with the transaction region are  cre-
        ated in this directory.  This directory must already exist
-       when _i_s _c_a_l_l_e_d_.  If the transaction region already exists,
-       the  process  must  have  permission to read and write the
-       existing  files.   If  the  transaction  region  does  not
-       already exist, it is optionally created and initialized.
+       when
 
-       The  _f_l_a_g_s  and  _m_o_d_e  arguments specify how files will be
-       opened and/or created when they don't already exist.   The
+       transaction region_open is  called.   If  the  transaction
+       region already exists, the process must have permission to
+       read and write the existing  files.   If  the  transaction
+       region  does  not  already exist, it is optionally created
+       and initialized.
+
+       The _f_l_a_g_s and _m_o_d_e arguments specify  how  files  will  be
+       opened  and/or created when they don't already exist.  The
        flags value is specified by oorr'ing together one or more of
        the following values:
 
        DB_CREATE
-            Create any underlying files, as  necessary.   If  the
-            files  do not already exist and the DB_CREATE flag is
+            Create  any  underlying  files, as necessary.  If the
+            files do not already exist and the DB_CREATE flag  is
             not specified, the call will fail.
 
+
        DB_THREAD
-            Cause the DB_TXNMGR handle returned by  the  _t_x_n___o_p_e_n
-            function  to  be useable by multiple threads within a
-            single address space, i.e., to be  ``free-threaded''.
+            Cause  the  DB_TXNMGR handle returned by the _t_x_n___o_p_e_n
+            function to be useable by multiple threads  within  a
+            single  address space, i.e., to be ``free-threaded''.
 
        DB_TXN_NOSYNC
             On transaction commit, do not synchronously flush the
-            log.  This means that transactions  exhibit  the  ACI
-            (atomicity,  consistency  and  isolation) properties,
+            log.   This  means  that transactions exhibit the ACI
+            (atomicity, consistency  and  isolation)  properties,
             but not D (durability), i.e., database integrity will
-            be  maintained but it is possible that some number of
+            be maintained but it is possible that some number  of
             the  most  recently  committed  transactions  may  be
             undone during recovery instead of being redone.
 
-            The  number  of  transactions that are potentially at
+            The number of transactions that  are  potentially  at
             risk is governed by how often the log is checkpointed
-            (see  _d_b___c_h_e_c_k_p_o_i_n_t(1))  and how many log updates can
+            (see _d_b___c_h_e_c_k_p_o_i_n_t(1)) and how many log  updates  can
             fit on a single log page.
 
        All files created by the transaction subsystem are created
-       with  mode _m_o_d_e (as described in _c_h_m_o_d(2)) and modified by
-       the process' umask value at  the  time  of  creation  (see
-       _u_m_a_s_k(2)).   The group ownership of created files is based
-       on the system and directory defaults, and is  not  further
+       with mode _m_o_d_e (as described in _c_h_m_o_d(2)) and modified  by
+       the  process'  umask  value  at  the time of creation (see
+       _u_m_a_s_k(2)).  The group ownership of created files is  based
+       on  the  system and directory defaults, and is not further
        specified by DB.
 
        The transaction subsystem is configured based on the _d_b_e_n_v
        argument to _t_x_n___o_p_e_n, which is a pointer to a structure of
-       type  DB_ENV  (typedef'd  in <db.h>).  It is expected that
-       applications will use a single  DB_ENV  structure  as  the
-       argument  to  all of the subsystems in the DB package.  In
-       order to ensure compatibility with future releases of  DB,
+       type DB_ENV (typedef'd in <db.h>).  It  is  expected  that
+       applications  will  use  a  single DB_ENV structure as the
+       argument to all of the subsystems in the DB  package.   In
+       order  to ensure compatibility with future releases of DB,
        all fields of the DB_ENV structure that are not explicitly
-       set should be initialized to 0 before the first  time  the
-       structure  is  used.   Do  this by declaring the structure
-       external or static, or by calling the  C  library  routine
+       set  should  be initialized to 0 before the first time the
+       structure is used.  Do this  by  declaring  the  structure
+       external  or  static,  or by calling the C library routine
        _b_z_e_r_o(3) or _m_e_m_s_e_t(3).
 
-       The  fields  of  the DB_ENV structure used by _t_x_n___o_p_e_n are
-       described below.  As references to  the  DB_ENV  structure
-       may  be  maintained  by _t_x_n___o_p_e_n, it is necessary that the
-       DB_ENV structure and memory it references be  valid  until
-       the _t_x_n___c_l_o_s_e function is called.  If _d_b_e_n_v is NULL or any
-       of its fields are set to 0, defaults appropriate  for  the
-       system are used where possible.
+       The fields of the DB_ENV structure used  by  _t_x_n___o_p_e_n  are
+       described  below.   If  _d_b_e_n_v is NULL or any of its fields
+       are set to 0, defaults appropriate for the system are used
+       where possible.
 
        The  following  fields in the DB_ENV structure may be ini-
        tialized before calling _t_x_n___o_p_e_n:
-
 
        void *(*db_errcall)(char *db_errpfx, char *buffer);
        FILE *db_errfile;
@@ -350,7 +346,7 @@ DDEESSCCRRIIPPTTIIOONN
        descriptor for the file, the region removal will fail.
 
        In the case of catastrophic or  system  failure,  database
-       recovery  must  be  performed  (see  _d_b___r_e_c_o_v_e_r_y(1) or the
+       recovery  must  be  performed  (see  _d_b___r_e_c_o_v_e_r(1)  or the
        DB_RECOVER flags  to  _d_b___a_p_p_i_n_i_t(3)).   Alternatively,  if
        recovery  is  not  required  because  no database state is
        maintained across failures, it is possible to clean  up  a
@@ -437,6 +433,8 @@ DDEESSCCRRIIPPTTIIOONN
                  The  transaction ID as returned by _t_x_n___b_e_g_i_n(3).
             DB_LSN lsn;
                  The LSN of the transaction-begin record.
+
+
 TTRRAANNSSAACCTTIIOONNSS
        Creating transaction protected applications using  the  DB
        access  methods  requires little system customization.  In
@@ -493,17 +491,17 @@ TTRRAANNSSAACCTTIIOONNSS
        bytes, or some key.  It is up to the application to ensure
        that  appropriate  locks  are acquired.  Before a write is
        performed, the application should acquire a write lock  on
-       the object, by making an appropriate call to the lock man-
-       ager, _d_b___l_o_c_k.  Then, the application should make  a  call
-       to  the  log manager, _d_b___l_o_g, to record enough information
-       to redo the operation in case of failure after commit  and
-       to  undo  the operation in case of abort.  As discussed in
-       the _d_b___l_o_g(3) manual page, the application is  responsible
-       for  providing  any necessary structure to the log record.
-       For example, the application must understand what part  of
-       the  log record is an operation code, what part identifies
-       the file being modified, what part  is  redo  information,
-       and what part is undo information.
+       the  object,  by  making  an  appropriate call to the lock
+       manager, _d_b___l_o_c_k.  Then, the  application  should  make  a
+       call to the log manager, _d_b___l_o_g, to record enough informa-
+       tion to redo the operation in case of failure after commit
+       and  to undo the operation in case of abort.  As discussed
+       in the _d_b___l_o_g(3) manual page, the application is responsi-
+       ble  for  providing  any  necessary  structure  to the log
+       record.  For example, the application must understand what
+       part  of  the  log  record is an operation code, what part
+       identifies the file being  modified,  what  part  is  redo
+       information, and what part is undo information.
 
        After  the  log  message  is  written, the application may
        issue the write  system  call.   After  all  requests  are
@@ -544,7 +542,6 @@ EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
             interpretation  of  the  _d_i_r argument to _t_x_n___o_p_e_n, as
             described in _d_b___a_p_p_i_n_i_t(3).
 
-
        TMPDIR
             If the _d_b_e_n_v argument to _t_x_n___o_p_e_n  was  NULL  or  not
             initialized  using  _d_b___a_p_p_i_n_i_t, the environment vari-
@@ -556,13 +553,13 @@ EERRRROORRSS
        The _t_x_n___o_p_e_n function may fail and return _e_r_r_n_o for any of
        the  errors  specified  for  the  following DB and library
        functions: close(2), db_version(3), fcntl(2), fflush(3),
-       lseek(2), malloc(3), memcpy(3), memset(3), mmap(2),
-       munmap(2), open(2), sigfillset(3), sigprocmask(2),
-       stat(2), strcpy(3), strdup(3), strerror(3), strlen(3),
-       time(3), txn_unlink(3), unlink(2), and write(2).
+       lseek(2), malloc(3), memcpy(3), memset(3), mmap(2), mun-
+       map(2), open(2), sigfillset(3), sigprocmask(2), stat(2),
+       strcpy(3), strdup(3), strerror(3), strlen(3), time(3),
+       txn_unlink(3), unlink(2), and write(2).
 
-       In addition, the _t_x_n___o_p_e_n function may fail and return _e_r_-
-       _r_n_o for the following conditions:
+       In addition, the _t_x_n___o_p_e_n function  may  fail  and  return
+       _e_r_r_n_o for the following conditions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
@@ -578,9 +575,9 @@ EERRRROORRSS
 
        The  _t_x_n___b_e_g_i_n  function may fail and return _e_r_r_n_o for any
        of the errors specified for the following DB  and  library
-       functions: fcntl(2), fflush(3), log_put(3), lseek(2),
-       malloc(3), memcpy(3), memset(3), mmap(2), munmap(2),
-       strerror(3), and write(2).
+       functions: fcntl(2), fflush(3), log_put(3), lseek(2), mal-
+       loc(3), memcpy(3), memset(3), mmap(2), munmap(2), str-
+       error(3), and write(2).
 
        In  addition,  the  _t_x_n___b_e_g_i_n function may fail and return
        _e_r_r_n_o for the following conditions:
@@ -591,17 +588,17 @@ EERRRROORRSS
 
        The _t_x_n___p_r_e_p_a_r_e function may fail and return _e_r_r_n_o for any
        of the errors specified for the following DB  and  library
-       functions: fcntl(2), fflush(3), log_flush(3), and
-       strerror(3).
+       functions: fcntl(2), fflush(3), log_flush(3), and str-
+       error(3).
 
        The _t_x_n___c_o_m_m_i_t function may fail and return _e_r_r_n_o for  any
        of  the  errors specified for the following DB and library
        functions: fcntl(2), fflush(3), lock_vec(3), log_put(3),
        malloc(3), memcpy(3), and strerror(3).
 
-
        In  addition,  the _t_x_n___c_o_m_m_i_t function may fail and return
        _e_r_r_n_o for the following conditions:
+
 
        [EINVAL]
             The transaction was aborted.
@@ -615,8 +612,8 @@ EERRRROORRSS
             The transaction was already aborted.
 
        The  _t_x_n___c_h_e_c_k_p_o_i_n_t function may fail and return _e_r_r_n_o for
-       any of the errors specified for the following DB  and  li-
-       brary functions: fcntl(2), fflush(3), log_compare(3),
+       any of the errors  specified  for  the  following  DB  and
+       library functions: fcntl(2), fflush(3), log_compare(3),
        log_put(3), malloc(3), memcpy(3), memp_sync(3), memset(3),
        strerror(3), and time(3).
 
@@ -630,10 +627,10 @@ EERRRROORRSS
 
        The _t_x_n___u_n_l_i_n_k function may fail and return _e_r_r_n_o for  any
        of  the  errors specified for the following DB and library
-       functions: close(2), fcntl(2), fflush(3), malloc(3),
-       memcpy(3), memset(3), mmap(2), munmap(2), open(2),
-       sigfillset(3), sigprocmask(2), stat(2), strcpy(3),
-       strdup(3), strerror(3), strlen(3), and unlink(2).
+       functions: close(2), fcntl(2), fflush(3), malloc(3), mem-
+       cpy(3), memset(3), mmap(2), munmap(2), open(2), sig-
+       fillset(3), sigprocmask(2), stat(2), strcpy(3), strdup(3),
+       strerror(3), strlen(3), and unlink(2).
 
        In  addition,  the _t_x_n___u_n_l_i_n_k function may fail and return
        _e_r_r_n_o for the following conditions:
@@ -655,5 +652,6 @@ BBUUGGSS
 
        _d_b___a_r_c_h_i_v_e(1), _d_b___c_h_e_c_k_p_o_i_n_t(1), _d_b___d_e_a_d_l_o_c_k(1), _d_b___d_u_m_p(1),
        _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3),
-       _d_b___a_p_p_i_n_i_t(3), _d_b___c_u_r_s_o_r(3), _d_b___d_b_m(3), _d_b___j_u_m_p(3), _d_b___l_o_c_k(3),
-       _d_b___l_o_g(3), _d_b___m_p_o_o_l(3), _d_b___o_p_e_n(3), _d_b___t_h_r_e_a_d(3), _d_b___t_x_n(3)
+       _d_b___a_p_p_i_n_i_t(3), _d_b___c_u_r_s_o_r(3), _d_b___d_b_m(3), _d_b___i_n_t_e_r_n_a_l(3),
+       _d_b___l_o_c_k(3), _d_b___l_o_g(3), _d_b___m_p_o_o_l(3), _d_b___o_p_e_n(3), _d_b___t_h_r_e_a_d(3),
+       _d_b___t_x_n(3)

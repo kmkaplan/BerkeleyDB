@@ -1,4 +1,4 @@
-#	@(#)script	8.23 (Berkeley) 11/3/97
+#	@(#)script	8.25 (Berkeley) 11/25/97
 #
 # Setup
 # setenv VERSION 2.1.0
@@ -19,7 +19,7 @@ cd $S/include && sco $X && vi $X && echo "go to $VERSION" | sccs delget $X
 
 # Build the documents.
 cd $S/man/man.source && make clean
-cd $S/man/man.source && make clean && make check
+cd $S/man/man.source && make && make check
 cd $S/man/man.source && make && make install_web
 
 # Configure the distribution.
@@ -45,7 +45,8 @@ chmod 444 ../ARCHIVE/history/$VERSION.gz
 
 # Clean up the tree.
 cd $S
-mv -i ARCHIVE TODO build.local build.margo db_tcl man/man.{error,source} SCCS/
+mv -i ARCHIVE TODO build.local build.margo db_tcl SCCS/
+mv -i man/man.{error,source} SCCS/
 find . \! -path '*SCCS*' -type d \! -perm 775
 find . \! -path '*SCCS*' \( -name '*.rej' -o -name '*.orig' \)
 find . \! -path '*SCCS*' -type f \( -perm -200 -o -perm -2 -o -perm -20 \)

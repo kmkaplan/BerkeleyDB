@@ -1,9 +1,5 @@
 
 
-
-DbEnv(3)                                                 DbEnv(3)
-
-
 NNAAMMEE
        DbEnv - Db initialization and environment options
 
@@ -58,6 +54,7 @@ SSYYNNOOPPSSIISS
 
        iinntt DDbbEEnnvv::::ggeett__llkk__mmooddeess(()) ccoonnsstt;;
        vvooiidd DDbbEEnnvv::::sseett__llkk__mmooddeess((iinntt));;
+
        uunnssiiggnneedd iinntt DDbbEEnnvv::::ggeett__llkk__mmaaxx(()) ccoonnsstt;;
        vvooiidd DDbbEEnnvv::::sseett__llkk__mmaaxx((uunnssiiggnneedd iinntt));;
 
@@ -112,11 +109,10 @@ DDEESSCCRRIIPPTTIIOONN
        and  logging).   For a general description of the DB pack-
        age, see _d_b___i_n_t_r_o(3).
 
-
        The DbEnv class provides simple access  to  an  underlying
        data  structure, whose elements can be examined or changed
-       using the _s_e_t__ or _g_e_t__ methods.  The remainder of the man-
-       ual  page  sometimes  refers  to  these accesses using the
+       using the _s_e_t__ or _g_e_t__  methods.   The  remainder  of  the
+       manual  page  sometimes refers to these accesses using the
        underlying name, e.g., simply _l_o_r_d_e_r instead of _g_e_t___l_o_r_d_e_r
        and  _s_e_t___l_o_r_d_e_r.  The constructors set all elements of the
        underlying structure to zero.  The constructor with  three
@@ -146,19 +142,24 @@ DDEESSCCRRIIPPTTIIOONN
        among  other  things.   The  flags  value  is specified by
        oorr'ing together one or more of the following values:
 
+
        DB_CREATE
             Cause subsystems to create any underlying  files,  as
             necessary.   (See _D_b(3), _D_b_L_o_c_k_T_a_b(3), _D_b_L_o_g(3), _D_b_M_-
             _p_o_o_l(3) and _D_b_T_x_n_M_g_r(3) for more information.)
 
+
        DB_INIT_LOCK
             Initialize  the  lock  subsystem;  see  _D_b_L_o_c_k_T_a_b(3).
             This subsystem should be used when multiple processes
-            or threads are going to be reading or  writing  a  Db
+            or threads are going to be reading and writing  a  Db
             database,  so  that  they  do not interfere with each
-            other.  When the DB_INIT_LOCK flag is  specified,  it
-            is  usually  necessary  to run the deadlock detector,
-            _d_b___d_e_a_d_l_o_c_k(1), as well.
+            other.  If all threads are accessing the  database(s)
+            read-only,  then  locking  is  unnecessary.  When the
+            DB_INIT_LOCK flag is specified, it is usually  neces-
+            sary to run the deadlock detector, _d_b___d_e_a_d_l_o_c_k(1), as
+            well.
+
 
        DB_INIT_LOG
             Initialize the log  subsystem;  see  _D_b_L_o_g(3).   This
@@ -170,21 +171,25 @@ DDEESSCCRRIIPPTTIIOONN
             subsystem  is  used whenever the application is using
             the Db access methods for any purpose.
 
+
        DB_INIT_TXN
             Initialize the transaction subsystem;  see  _D_b_T_x_n(3).
             This  subsystem  is  used  when atomicity of multiple
             operations   and   recovery   are   important.    The
             DB_INIT_TXN flag implies the DB_INIT_LOG flag.
 
+
        DB_MPOOL_PRIVATE
             Create a private memory pool (see _D_b_M_p_o_o_l(3) for fur-
             ther information).  Ignored unless  DB_INIT_MPOOL  is
             also specified.
 
+
        DB_NOMMAP
             Do  not  map  any  files within this environment (see
             _D_b_M_p_o_o_l(3) for further information).  Ignored  unless
             DB_INIT_MPOOL is also specified.
+
 
        DB_RECOVER
             Run  normal recovery on this environment before open-
@@ -194,6 +199,7 @@ DDEESSCCRRIIPPTTIIOONN
             recreated.   For further information, consult the man
             page for _d_b___r_e_c_o_v_e_r(1).
 
+
        DB_RECOVER_FATAL
             Run catastrophic recovery on this environment  before
             opening  it for normal use.  If this flag is set, the
@@ -202,6 +208,7 @@ DDEESSCCRRIIPPTTIIOONN
             recreated.  For further information, consult the  man
             page for _d_b___r_e_c_o_v_e_r(1).
 
+
        DB_THREAD
             Ensure that handles returned by the Db subsystems are
             useable by multiple threads within a single  process,
@@ -209,10 +216,12 @@ DDEESSCCRRIIPPTTIIOONN
             _D_b_L_o_c_k_T_a_b(3), _D_b_L_o_g(3), _D_b_M_p_o_o_l(3),  _D_b_:_:_o_p_e_n(3)  and
             _D_b_T_x_n(3) for more information.)
 
+
        DB_TXN_NOSYNC
             On transaction commit, do not synchronously flush the
             log (see _D_b_T_x_n(3) for further information).   Ignored
             unless DB_INIT_TXN is also specified.
+
 
        DB_USE_ENVIRON
             The Db process' environment may be permitted to spec-
@@ -222,6 +231,7 @@ DDEESSCCRRIIPPTTIIOONN
             security  problems,  environment  information will be
             used in  file  naming  for  all  users  only  if  the
             DB_USE_ENVIRON flag is set.
+
 
        DB_USE_ENVIRON_ROOT
             The Db process' environment may be permitted to spec-
@@ -275,6 +285,7 @@ DDEESSCCRRIIPPTTIIOONN
             ceded by the string referenced by _d_b___e_r_r_p_f_x, a  colon
             (``:'') and a space.  The message will be followed by
             a newline character.
+
        const char *db_errpfx;
             A prefix to prepend to error  messages.   Because  Db
             does  not copy the memory referenced by the _d_b___e_r_r_p_f_x
@@ -282,7 +293,7 @@ DDEESSCCRRIIPPTTIIOONN
             prefix at any time.
 
        ostream* error_stream;
-            The  error  stream  functions  like  the  error file,
+            The  error_stream  functions  like  the  error  file,
             allowing errors to  be  redirected  to  a  C++  error
             stream.   It  is unwise to use both error_stream with
             nonzero values of either errcall or errfile.
@@ -343,16 +354,16 @@ DDEESSCCRRIIPPTTIIOONN
        appropriate field of the DbEnv object:
 
        DbLockTab *lk_info;
-            The return value of the _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n(3) call.
+             The return value of the _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n(3) call.
 
        DbLog *lg_info;
-            The return value of the _D_b_L_o_g_:_:_o_p_e_n(3) call.
+             The return value of the _D_b_L_o_g_:_:_o_p_e_n(3) call.
 
        DbMpool *mp_info;
-            The return value of the _D_b_M_p_o_o_l_:_:_o_p_e_n(3) call.
+             The return value of the _D_b_M_p_o_o_l_:_:_o_p_e_n(3) call.
 
        DbTxnMgr *tx_info;
-            The return value of the _D_b_T_x_n_M_g_r_:_:_o_p_e_n(3) call.
+             The return value of the _D_b_T_x_n_M_g_r_:_:_o_p_e_n(3) call.
 
        In general, these fields are not directly used by applica-
        tions; subsystems of Db that use these fields will  simply
@@ -370,8 +381,8 @@ DDEESSCCRRIIPPTTIIOONN
 
        The  single  exception  to this rule is the _t_x___i_n_f_o field,
        which applications must explicitly specify to  the  _D_b_T_x_n_-
-       _M_g_r_:_:_b_e_g_i_n, _D_b_T_x_n_M_g_r_:_:_c_h_e_c_k_p_o_i_n_t and _D_b_T_x_n_M_g_r_:_:_c_l_o_s_e func-
-       tions.
+       _M_g_r_:_:_b_e_g_i_n,   _D_b_T_x_n_M_g_r_:_:_c_h_e_c_k_p_o_i_n_t   and   _D_b_T_x_n_M_g_r_:_:_c_l_o_s_e
+       functions.
 
        The _e_r_r_o_r___m_o_d_e_l field of DbEnv allows the user to  config-
        ure  the  way errors are treated in DB.  It can be changed
@@ -533,7 +544,6 @@ FFIILLEE NNAAMMIINNGG
             and log files in different directories, or  instanti-
             ate  a  new  log  directory each time the application
             runs.
-
        DB_HOME
             If the DB_HOME environment variable was set, (and the
             application has set the appropriate DB_USE_ENVIRON or
@@ -600,8 +610,8 @@ EEXXAAMMPPLLEESS
        _/_a_/_d_a_t_a_b_a_s_e:
 
               char *config[] = {
-                  "DB_DATA datadir",
-                  "DbLog logdir",
+                  "DB_DATA_DIR datadir",
+                  "DB_LOG_DIR logdir",
                   NULL
               };
 
@@ -612,8 +622,8 @@ EEXXAAMMPPLLEESS
        files that are created will be created in _/_b_/_d_a_t_a_2:
 
               char *config[] = {
-                  "DB_DATA /b/data2",
-                  "DB_DATA data1",
+                  "DB_DATA_DIR /b/data2",
+                  "DB_DATA_DIR data1",
                   NULL
               };
 
@@ -629,18 +639,19 @@ EERRRROORRSS
        an exception that encapsulates the error information.  The
        default error behavior can be changed, see _D_b_E_x_c_e_p_t_i_o_n(3).
 
-       The  _a_p_p_i_n_i_t method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3) or
-       return _e_r_r_n_o for any of the errors specified for the  fol-
-       lowing DB and library functions: Db::close(3),
+       The _a_p_p_i_n_i_t method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
+
+       or  return  _e_r_r_n_o  for any of the errors specified for the
+       following DB and library functions: Db::close(3),
        DbEnv::appexit(3), DbLock::unlink(3), DbLockTab::open(3),
        DbLog::compare(3), DbLog::get(3), DbLog::open(3),
        DbLog::unlink(3), DbMpool::open(3), DbMpool::unlink(3),
-       DbTxnMgr::checkpoint(3), DbTxnMgr::open(3),
-       DbTxnMgr::unlink(3), calloc(3), fclose(3), fcntl(2),
-       fflush(3), fgets(3), fopen(3), malloc(3), memcpy(3),
-       memset(3), realloc(3), stat(2), strchr(3), strcmp(3),
-       strcpy(3), strdup(3), strerror(3), strlen(3), strsep(3),
-       and time(3).
+       DbTxnMgr::checkpoint(3), DbTxnMgr::open(3), DbTxn-
+       Mgr::unlink(3), calloc(3), fclose(3), fcntl(2), fflush(3),
+       fgets(3), fopen(3), malloc(3), memcpy(3), memset(3), real-
+       loc(3), stat(2), strchr(3), strcmp(3), strcpy(3),
+       strdup(3), strerror(3), strlen(3), strsep(3), and time(3).
+
 
        In addition, the _a_p_p_i_n_i_t method may fail and throw a _D_b_E_x_-
        _c_e_p_t_i_o_n(3) or return _e_r_r_n_o for the following conditions:
@@ -648,41 +659,43 @@ EERRRROORRSS
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-            The  DB_THREAD  flag  was specified and spinlocks are
+            The DB_THREAD flag was specified  and  spinlocks  are
             not implemented for this architecture.
 
-            The DB_HOME or TMPDIR environment variables were  set
+            The  DB_HOME or TMPDIR environment variables were set
             but empty.
-
 
             An incorrectly formatted ``NAME VALUE'' entry or line
             was found.
 
        [ENOSPC]
-            HP-UX only: a previously created Db  environment  for
+            HP-UX  only:  a previously created Db environment for
             this process still exists.
 
-       The  _D_b_E_n_v_:_:_a_p_p_e_x_i_t  method  may fail and throw a _D_b_E_x_c_e_p_-
-       _t_i_o_n(3) or return _e_r_r_n_o for any of  the  errors  specified
-       for the following DB and library functions:
-       DbLockTab::close(3), DbLog::close(3), DbMpool::close(3),
-       and DbTxnMgr::close(3).
+       The _D_b_E_n_v_:_:_a_p_p_e_x_i_t method may fail and  throw  a  _D_b_E_x_c_e_p_-
+       _t_i_o_n(3)
+
+       or  return  _e_r_r_n_o  for any of the errors specified for the
+       following DB and library functions: DbLockTab::close(3),
+       DbLog::close(3), DbMpool::close(3), and DbTxn-
+       Mgr::close(3).
 
 BBUUGGSS
        Due to the constraints of the PA-RISC memory architecture,
-       HP-UX does not allow a process to map a file into its  ad-
-       dress  space multiple times.  For this reason, each DB en-
-       vironment may be opened only once by a process  on  HP-UX,
+       HP-UX  does  not  allow  a  process to map a file into its
+       address space multiple times.  For this  reason,  each  DB
+       environment may be opened only once by a process on HP-UX,
        i.e., calls to _a_p_p_i_n_i_t will fail if the specified Db envi-
        ronment has been opened and not subsequently  closed.
 
        Because of bugs in versions of Solaris before version 5.6,
-       setting  the  _d_b___y_i_e_l_d field of the DbEnv object will have
+       setting the _d_b___y_i_e_l_d field of the DbEnv object  will  have
        no effect on Solaris.
 
 SSEEEE AALLSSOO
        _d_b___a_r_c_h_i_v_e(1), _d_b___c_h_e_c_k_p_o_i_n_t(1), _d_b___d_e_a_d_l_o_c_k(1), _d_b___d_u_m_p(1),
-       _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3), _d_b___j_u_m_p(3),
-       _d_b___t_h_r_e_a_d(3), _D_b(3), _D_b_c(3), _D_b_E_n_v(3), _D_b_E_x_c_e_p_t_i_o_n(3), _D_b_I_n_f_o(3),
-       _D_b_L_o_c_k(3), _D_b_L_o_c_k_t_a_b(3), _D_b_L_o_g(3), _D_b_L_s_n(3), _D_b_M_p_o_o_l(3),
-       _D_b_M_p_o_o_l_F_i_l_e(3), _D_b_t(3), _D_b_T_x_n(3), _D_b_T_x_n_M_g_r(3)
+       _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3),
+       _d_b___i_n_t_e_r_n_a_l(3), _d_b___t_h_r_e_a_d(3), _D_b(3), _D_b_c(3), _D_b_E_n_v(3),
+       _D_b_E_x_c_e_p_t_i_o_n(3), _D_b_I_n_f_o(3), _D_b_L_o_c_k(3), _D_b_L_o_c_k_T_a_b(3), _D_b_L_o_g(3),
+       _D_b_L_s_n(3), _D_b_M_p_o_o_l(3), _D_b_M_p_o_o_l_F_i_l_e(3), _D_b_t(3), _D_b_T_x_n(3),
+       _D_b_T_x_n_M_g_r(3)

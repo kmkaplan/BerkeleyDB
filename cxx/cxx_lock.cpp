@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)cxx_lock.cpp	10.4 (Sleepycat) 8/22/97";
+static const char sccsid[] = "@(#)cxx_lock.cpp	10.5 (Sleepycat) 11/25/97";
 #endif /* not lint */
 
 #include "db_cxx.h"
@@ -52,7 +52,7 @@ int DbLockTab::close()
     return 0;
 }
 
-int DbLockTab::detect(int atype, u_int32_t flags)
+int DbLockTab::detect(int flags, int atype)
 {
     DB_LOCKTAB *locktab = unwrap(this);
 
@@ -61,7 +61,7 @@ int DbLockTab::detect(int atype, u_int32_t flags)
     }
 
     int err = 0;
-    if ((err = lock_detect(locktab, atype, flags)) != 0) {
+    if ((err = lock_detect(locktab, flags, atype)) != 0) {
         DB_ERROR("DbLockTab::detect", err);
         return err;
     }

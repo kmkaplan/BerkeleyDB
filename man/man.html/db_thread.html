@@ -6,25 +6,18 @@
 <H1>db_thread</H1>
 <HR>
 <PRE>
-
-</PRE>
-<H2>NAME</H2><PRE>
-       db_thread - using threads in the DB library.
-
-
-</PRE>
-<H2>DESCRIPTION</H2><PRE>
+<!-- Manpage converted by man2html 3.0.1 -->
        The  DB  library  is  a family of groups of functions that
        provides a modular programming interface  to  transactions
        and  record-oriented  file  access.   The library includes
        support for transactions, locking, logging and  file  page
        caching,  as well as various indexed access methods.  Many
        of the functional groups  (e.g.,  the  file  page  caching
-       functions)  are  useful  independent of the other DB func-
-       tions, although  some  functional  groups  are  explicitly
+       functions)   are   useful  independent  of  the  other  DB
+       functions, although some functional groups are  explicitly
        based  on  other functional groups (e.g., transactions and
        logging).  For a general description of  the  DB  package,
-       see <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>.
+       see <B><A HREF="db_intro.html">db_intro(3)</A></B>.
 
        This  manual pages describes the specific details of using
        DB from within threaded programs.
@@ -35,65 +28,80 @@
        within   the  library  would  introduce.   Object  handles
        returned from  DB  library  functions  are  free-threaded,
        i.e.,  threads may use handles concurrently, by specifying
-       the DB_THREAD flag to <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG> (or, in the  C++  API,
-       <EM>DbEnv::</EM><STRONG><A HREF="appinit.html">appinit(3)</A></STRONG>) and the other subsystem open functions.
+       the DB_THREAD flag to <B><A HREF="db_appinit.html">db_appinit(3)</A></B> (or, in the  C++  API,
+       <B><A HREF="DbEnv.html">DbEnv::appinit(3)</A></B>) and the other subsystem open functions.
+       However, in the Java API,  threading  is  assumed,  so  no
+       special flags are required.
 
-       DB supports multi-threaded applications  with  the  caveat
-       that it loads and calls functions that are commonly avail-
-       able in C language environments and which  may  not  them-
-       selves  be  thread-safe.  Other than this usage, DB has no
-       static data and maintains no local context  between  calls
-       to  DB  functions.  To ensure that applications can safely
-       use threads in the context of DB, porters to new operating
-       systems  and/or  C  libraries must confirm that the system
-       and C library functions used by the DB library are thread-
-       safe.
+       DB  supports  multi-threaded  applications with the caveat
+       that it  loads  and  calls  functions  that  are  commonly
+       available  in  C  language  environments and which may not
+       themselves be thread-safe.  Other than this usage, DB  has
+       no  static  data  and  maintains  no local context between
+       calls to DB functions.  To ensure  that  applications  can
+       safely  use  threads  in the context of DB, porters to new
+       operating systems and/or C libraries must confirm that the
+       system  and C library functions used by the DB library are
+       thread-safe.
 
-       There  are  some additional caveats about using threads to
+       There are some additional caveats about using  threads  to
        access the DB library:
 
-       <STRONG>o</STRONG> The DB_THREAD flag must be specified for all  subsystems
-         either explicitly or via the <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM> (<EM>DbEnv::appinit</EM>)
+       <B>o</B> The  DB_THREAD flag must be specified for all subsystems
+         either explicitly or via the db_appinit (DbEnv::appinit)
          function.  Setting the DB_THREAD flag inconsistently may
          result in database corruption.
 
-       <STRONG>o</STRONG> Only  a  single thread may call the close function for a
-         returned database or subsystem handle.   See  <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>
-         (<EM>Db::</EM><STRONG><A HREF="open.html">open(3)</A></STRONG>) and the appropriate subsystem manual pages
+       <B>o</B> Only a single thread may call the close function  for  a
+         returned  database  or subsystem handle.  See <B><A HREF="db_open.html">db_open(3)</A></B>
+         (<B><A HREF="Db.html">Db::open(3)</A></B>) and the appropriate subsystem manual pages
          for more information.
 
-       <STRONG>o</STRONG> Either the DB_DBT_MALLOC or DB_DBT_USERMEM flags must be
-         set  in  a  DBT  used  for  key  or data retrieval.  See
-         on behalf of a  unique  locker.   If,  within  a  single
-         thread  of control, multiple calls on behalf of the same
+       <B>o</B> Either the DB_DBT_MALLOC or DB_DBT_USERMEM flags must be
+         set in a DBT  used  for  key  or  data  retrieval.   See
+         <B><A HREF="db_dbt.html">db_dbt(3)</A></B> (<B><A HREF="Dbt.html">Dbt(3)</A></B>) for more information.
+
+       <B>o</B> The DB_CURRENT, DB_NEXT and DB_PREV flags to the log_get
+         (DbLog::get) function may not be used by a free-threaded
+         handle.   If  such  calls are necessary, a thread should
+         explicitly create a  unique  DB_LOG  handle  by  calling
+         <B><A HREF="db_log.html">log_open(3)</A></B> (DbLog::open).  See <B><A HREF="db_log.html">db_log(3)</A></B> (<B><A HREF="DbLog.html">DbLog(3)</A></B>) for
+         more information.
+
+       <B>o</B> Each database operation (i.e., any call  to  a  function
+         underlying   the  handles  returned  by  <B><A HREF="db_open.html">db_open(3)</A></B>  and
+         <B><A HREF="db_cursor.html">db_cursor(3)</A></B>) (<B><A HREF="Db.html">Db(3)</A></B> and <B><A HREF="Dbc.html">Dbc(3)</A></B>) is  normally  performed
+         on  behalf  of  a  unique  locker.   If, within a single
+         thread of control, multiple calls on behalf of the  same
          locker are desired, then transactions must be used.  For
          example, consider the case where a cursor scan locates a
-         record, and then based on  that  record,  accesses  some
+         record,  and  then  based  on that record, accesses some
          other item in the database.  If these are done using the
-         default lockers for the handle, there  is  no  guarantee
-         that  these  two  operations  will not conflict.  If the
-         application wishes to guarantee that the  operations  do
-         not  conflict,  locks  must  be  obtained on behalf of a
-         transaction, instead of the default  locker  id,  and  a
+         default  lockers  for  the handle, there is no guarantee
+         that these two operations will  not  conflict.   If  the
+         application  wishes  to guarantee that the operations do
+         not conflict, locks must be  obtained  on  behalf  of  a
+         transaction,  instead  of  the  default locker id, and a
          transaction must be specified to the cursor creation and
          the subsequent db call.
 
-       <STRONG>o</STRONG> Transactions may not span threads, i.e.,  each  transac-
-         tion  must  begin  and  end in the same thread, and each
-         transaction may only be used by a single thread.
+       <B>o</B> Transactions   may   not   span   threads,   i.e.,  each
+         transaction must begin and end in the same  thread,  and
+         each transaction may only be used by a single thread.
 
-       <STRONG>o</STRONG> Spinlocks  must  have  been  implemented  for  the  com-
-         piler/architecture  combination.   Attempting to specify
-         the DB_THREAD flag will fail if spinlocks are not avail-
-         able.
+       <B>o</B> Spinlocks   must   have   been   implemented   for   the
+         compiler/architecture   combination.    Attempting    to
+         specify  the  DB_THREAD  flag will fail if spinlocks are
+         not available.
 
-       <STRONG>o</STRONG> The  DB  library  makes  a system call to pause for some
+       <B>o</B> The DB library makes a system call  to  pause  for  some
          number of microseconds when it is necessary to wait on a
-         lock.   This may not be optimal, especially in a thread-
-         only environment where it  will  be  more  efficient  to
+         lock.  This may not be optimal, especially in a  thread-
+         only  environment  where  it  will  be more efficient to
          explicitly yield the processor to another thread.  It is
-         possible to specify a yield function on an  per-applica-
-         tion basis, see <STRONG><A HREF="db_jump.html">db_jump(3)</A></STRONG> for more information.
+         possible   to  specify  a  yield  function  on  an  per-
+         application   basis,   see   <B><A HREF="db_internal.html">db_jump_set(3)</A></B>   for   more
+         information.
 
 
 </PRE>
@@ -109,7 +117,6 @@
 
        On OSF/1, if you are compiling a threaded application, you
        must compile with the -D_REENTRANT flag:
-
             cc -D_REENTRANT ...
 
        On  Solaris,  if you are compiling a threaded application,
@@ -121,7 +128,17 @@
 
 </PRE>
 <H2>SEE ALSO</H2><PRE>
-       <STRONG><A HREF="db_archive.html">db_archive(1)</A></STRONG>, <STRONG><A HREF="db_checkpoint.html">db_checkpoint(1)</A></STRONG>, <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG>, <STRONG><A HREF="db_dump.html">db_dump(1)</A></STRONG>,
+       <B><A HREF="db_archive.html">db_archive(1)</A></B>, <B><A HREF="db_checkpoint.html">db_checkpoint(1)</A></B>, <B><A HREF="db_deadlock.html">db_deadlock(1)</A></B>, <B><A HREF="db_dump.html">db_dump(1)</A></B>,
+       <B><A HREF="db_load.html">db_load(1)</A></B>, <B><A HREF="db_recover.html">db_recover(1)</A></B>, <B><A HREF="db_stat.html">db_stat(1)</A></B>, <B><A HREF="db_intro.html">db_intro(3)</A></B>,
+       <B><A HREF="db_appinit.html">db_appinit(3)</A></B>, <B><A HREF="db_cursor.html">db_cursor(3)</A></B>, <B><A HREF="db_dbm.html">db_dbm(3)</A></B>, <B><A HREF="db_internal.html">db_internal(3)</A></B>,
+       <B><A HREF="db_lock.html">db_lock(3)</A></B>, <B><A HREF="db_log.html">db_log(3)</A></B>, <B><A HREF="db_mpool.html">db_mpool(3)</A></B>, <B><A HREF="db_open.html">db_open(3)</A></B>, <B><A HREF="db_thread.html">db_thread(3)</A></B>,
+       <B><A HREF="db_txn.html">db_txn(3)</A></B>
+
 </PRE>
+<HR>
+<ADDRESS>
+Man(1) output converted with
+<a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>
+</ADDRESS>
 </BODY>
 </HTML>

@@ -1,4 +1,4 @@
-# @(#)run	8.13 (Sleepycat) 11/2/97
+# @(#)run	8.14 (Sleepycat) 11/6/97
 
 # run --
 #	A mother of a shell script.  It creates lists of functions which
@@ -185,11 +185,11 @@ echo "final cleanup of error files..."
 for i in $edir/*; do
 	cnt=`wc -l $i | awk '{print $1}'`
 	if [ $cnt -gt 1 ] ; then
-		sed -e '1i\' -e '.na\' -e '.nh' -e '$s/,/./' \
-		    -e '$i\' -e 'and' -e '$a\' -e '.hy\' -e '.ad' < $i > _1
+		sed -e '1i\' -e '.na\' -e '.Nh' -e '$s/,/./' \
+		    -e '$i\' -e 'and' -e '$a\' -e '.Hy\' -e '.ad' < $i > _1
 	else
-		sed -e '1i\' -e '.na\' -e '.nh' -e '$s/,/./' \
-		    -e '$a\' -e '.hy\' -e '.ad' < $i > _1
+		sed -e '1i\' -e '.na\' -e '.Nh' -e '$s/,/./' \
+		    -e '$a\' -e '.Hy\' -e '.ad' < $i > _1
 	fi
 	mv _1 $i
 done

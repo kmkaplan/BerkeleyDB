@@ -6,44 +6,38 @@
 <H1>db_hsearch</H1>
 <HR>
 <PRE>
+<!-- Manpage converted by man2html 3.0.1 -->
+       <B>#define</B> <B>DB</B>_<B>DBM</B>_<B>HSEARCH</B>
+       <B>#include</B> <B>&lt;db.h&gt;</B>
 
-</PRE>
-<H2>NAME</H2><PRE>
-       hsearch - hsearch, hcreate, hdestroy
+       <B>typedef</B> <B>enum</B> <B>{</B>
+               <B>FIND,</B> <B>ENTER</B>
+       <B>}</B> <B>ACTION;</B>
 
+       <B>typedef</B> <B>struct</B> <B>entry</B> <B>{</B>
+               <B>char</B> <B>*key;</B>
+               <B>void</B> <B>*data;</B>
+       <B>}</B> <B>ENTRY;</B>
 
-</PRE>
-<H2>SYNOPSIS</H2><PRE>
-       <STRONG>#define</STRONG> <STRONG>DB_DBM_HSEARCH</STRONG>
-       <STRONG>#include</STRONG> <STRONG>&lt;db.h&gt;</STRONG>
+       <B>ENTRY</B> <B>*</B>
+       <B>hsearch(ENTRY</B> <B>item,</B> <B>ACTION</B> <B>action);</B>
 
-       <STRONG>typedef</STRONG> <STRONG>enum</STRONG> <STRONG>{</STRONG>
-               <STRONG>FIND,</STRONG> <STRONG>ENTER</STRONG>
-       <STRONG>}</STRONG> <STRONG>ACTION;</STRONG>
+       <B>int</B>
+       <B>hcreate(unsigned</B> <B>int</B> <B>nelem);</B>
 
-       <STRONG>typedef</STRONG> <STRONG>struct</STRONG> <STRONG>entry</STRONG> <STRONG>{</STRONG>
-               <STRONG>char</STRONG> <STRONG>*key;</STRONG>
-               <STRONG>void</STRONG> <STRONG>*data;</STRONG>
-       <STRONG>}</STRONG> <STRONG>ENTRY;</STRONG>
-
-       <STRONG>ENTRY</STRONG> <STRONG>*</STRONG>
-       <STRONG>hsearch(ENTRY</STRONG> <STRONG>item,</STRONG> <STRONG>ACTION</STRONG> <STRONG>action);</STRONG>
-
-       <STRONG>int</STRONG>
-       <STRONG>hcreate(unsigned</STRONG> <STRONG>int</STRONG> <STRONG>nelem);</STRONG>
-
-       <STRONG>void</STRONG>
-       <STRONG>hdestroy(void);</STRONG>
+       <B>void</B>
+       <B>hdestroy(void);</B>
 
 
 </PRE>
 <H2>DESCRIPTION</H2><PRE>
-       The  <EM>hsearch</EM>  interface  to  the DB library is intended to
-       provide source code compatibility  for  historic  applica-
-       tions.  It is not recommended for any other purpose.
+       The  hsearch  interface  to  the DB library is intended to
+       provide   source   code   compatibility    for    historic
+       applications.    It  is  not  recommended  for  any  other
+       purpose.
 
-       To compile <EM>hsearch</EM> applications, replace the application's
-       <EM>#include</EM> of the hsearch  include  file  (e.g.,  ``#include
+       To compile hsearch applications, replace the application's
+       #include  of  the  hsearch  include file (e.g., ``#include
        &lt;search.h&gt;'') with the following two lines:
 
               #define DB_DBM_HSEARCH
@@ -51,81 +45,98 @@
 
        and recompile.
 
-       The  <EM>hcreate</EM>  function creates an in-memory database.  The
-       <EM>nelem</EM> argument is an estimation of the maximum  number  of
+       The hcreate function creates an in-memory  database.   The
+       nelem  argument  is an estimation of the maximum number of
        key/data pairs that will be stored in the database.
 
-       The <EM>hdestroy</EM> function discards the database.
+       The hdestroy function discards the database.
 
-       Database elements are structures of type <EM>ENTRY</EM>, which con-
-       tain at least two fields: <EM>key</EM> and <EM>data</EM>.  The field <EM>key</EM>  is
-       declared  to be of type ``char *'' and is the key used for
-       storage and retrieval.  The field <EM>data</EM> is declared  to  be
-       of type ``void *'' and is its associated data.
+       Database elements are  structures  of  type  ENTRY,  which
+       contain  at least two fields: key and data.  The field key
+       is declared to be of type ``char *'' and is the  key  used
+       for  storage and retrieval.  The field data is declared to
+       be of type ``void *'' and is its associated data.
 
-       The  <EM>hsearch</EM>  function  retrieves key/data pairs from, and
+       The hsearch function retrieves key/data  pairs  from,  and
        stores key/data pairs into, the database.
 
-            database.
+       The action argument must be set to one of two values:
 
+       ENTER
+            If  the  key does not already appear in the database,
+            insert the key/data pair into the database.   If  the
+            key   already  appears  in  the  database,  return  a
+            reference  to  an  ENTRY  structure  referencing  the
+            existing key and its associated data element.
+
+       FIND
+            Retrieve   the   specified  key/data  pair  from  the
+            database.
 
 
 </PRE>
 <H2>COMPATIBILITY NOTES</H2><PRE>
-       Historically,  <EM>hsearch</EM>  required  applications to maintain
-       the keys and data in the application's memory for as  long
-       as  the  <EM>hsearch</EM>  database existed.  As DB handles key and
-       data management internally, there is no  requirement  that
-       applications  maintain local copies of key and data items,
-       although the only effect of doing so should be the alloca-
-       tion of additional memory.
+       Historically, hsearch required  applications  to  maintain
+       the  keys and data in the application's memory for as long
+       as the hsearch database existed.  As DB  handles  key  and
+       data  management  internally, there is no requirement that
+       applications maintain local copies of key and data  items,
+       although  the  only  effect  of  doing  so  should  be the
+       allocation of additional memory.
 
 
 </PRE>
 <H2>DIAGNOSTICS</H2><PRE>
-       The  <EM>hcreate</EM> function returns 0 on failure, setting <EM>errno</EM>,
+       The hcreate function returns 0 on failure, setting  errno,
        and non-zero on success.
 
-       The <EM>hsearch</EM> function returns a pointer to an ENTRY  struc-
-       ture  on  success,  and NULL, setting <EM>errno</EM>, if the <EM>action</EM>
-       specified was FIND and the item  did  not  appear  in  the
-       database.
+       The  hsearch  function  returns  a  pointer  to  an  ENTRY
+       structure on success, and  NULL,  setting  errno,  if  the
+       action  specified  was FIND and the item did not appear in
+       the database.
 
 
 </PRE>
 <H2>ERRORS</H2><PRE>
-       The  <EM>hcreate</EM> function may fail and return <EM>errno</EM> for any of
-       the errors specified for  the  following  DB  and  library
-       functions: <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>, and <STRONG><A HREF="memset.html">memset(3)</A></STRONG>.
+       The hcreate function may fail and return errno for any  of
+       the  errors  specified  for  the  following DB and library
+       functions: <B><A HREF="db_open.html">db_open(3)</A></B>, and <B>memset(3)</B>.
 
-       The  <EM>hsearch</EM> function may fail and return <EM>errno</EM> for any of
-       the errors specified for  the  following  DB  and  library
-       functions: DB-&gt;<STRONG><A HREF="get.html">get(3)</A></STRONG>, DB-&gt;<STRONG><A HREF="put.html">put(3)</A></STRONG>, <STRONG><A HREF="memset.html">memset(3)</A></STRONG>, and
-       <STRONG><A HREF="strlen.html">strlen(3)</A></STRONG>.
+       The hsearch function may fail and return errno for any  of
+       the  errors  specified  for  the  following DB and library
+       functions: <B><A HREF="db_open.html">DB-&gt;get(3)</A></B>, <B><A HREF="db_open.html">DB-&gt;put(3)</A></B>, <B>memset(3)</B>, and
+       <B>strlen(3)</B>.
 
-       In addition, the <EM>hsearch</EM> function will fail, setting <EM>errno</EM>
-       to  0,  if  the <EM>action</EM> specified was FIND and the item did
+       In addition, the hsearch function will fail, setting errno
+       to 0, if the action specified was FIND and  the  item  did
        not appear in the database.
 
 
 </PRE>
 <H2>SEE ALSO</H2><PRE>
-       The DB library is a family of  groups  of  functions  that
-       provides  a  modular programming interface to transactions
-       and record-oriented file  access.   The  library  includes
-       support  for  transactions, locking, logging and file page
-       caching, as well as various indexed access methods.   Many
-       of  the  functional  groups  (e.g.,  the file page caching
-       functions) are useful independent of the  other  DB  func-
-       tions,  although  some  functional  groups  are explicitly
-       based on other functional groups (e.g.,  transactions  and
-       logging).   For  a  general description of the DB package,
-       see <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>.
+       The  DB  library  is  a family of groups of functions that
+       provides a modular programming interface  to  transactions
+       and  record-oriented  file  access.   The library includes
+       support for transactions, locking, logging and  file  page
+       caching,  as well as various indexed access methods.  Many
+       of the functional groups  (e.g.,  the  file  page  caching
+       functions)   are   useful  independent  of  the  other  DB
+       functions, although some functional groups are  explicitly
+       based  on  other functional groups (e.g., transactions and
+       logging).  For a general description of  the  DB  package,
+       see <B><A HREF="db_intro.html">db_intro(3)</A></B>.
 
-       <STRONG><A HREF="db_archive.html">db_archive(1)</A></STRONG>, <STRONG><A HREF="db_checkpoint.html">db_checkpoint(1)</A></STRONG>, <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG>, <STRONG><A HREF="db_dump.html">db_dump(1)</A></STRONG>,
-       <STRONG><A HREF="db_load.html">db_load(1)</A></STRONG>, <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG>, <STRONG><A HREF="db_stat.html">db_stat(1)</A></STRONG>, <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>,
-       <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>, <STRONG><A HREF="db_cursor.html">db_cursor(3)</A></STRONG>, <STRONG><A HREF="db_dbm.html">db_dbm(3)</A></STRONG>, <STRONG><A HREF="db_jump.html">db_jump(3)</A></STRONG>, <STRONG><A HREF="db_lock.html">db_lock(3)</A></STRONG>,
-       <STRONG><A HREF="db_log.html">db_log(3)</A></STRONG>, <STRONG><A HREF="db_mpool.html">db_mpool(3)</A></STRONG>, <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>, <STRONG><A HREF="db_thread.html">db_thread(3)</A></STRONG>, <STRONG><A HREF="db_txn.html">db_txn(3)</A></STRONG>
+       <B><A HREF="db_archive.html">db_archive(1)</A></B>, <B><A HREF="db_checkpoint.html">db_checkpoint(1)</A></B>, <B><A HREF="db_deadlock.html">db_deadlock(1)</A></B>, <B><A HREF="db_dump.html">db_dump(1)</A></B>,
+       <B><A HREF="db_load.html">db_load(1)</A></B>, <B><A HREF="db_recover.html">db_recover(1)</A></B>, <B><A HREF="db_stat.html">db_stat(1)</A></B>, <B><A HREF="db_intro.html">db_intro(3)</A></B>,
+       <B><A HREF="db_appinit.html">db_appinit(3)</A></B>, <B><A HREF="db_cursor.html">db_cursor(3)</A></B>, <B><A HREF="db_dbm.html">db_dbm(3)</A></B>, <B><A HREF="db_internal.html">db_internal(3)</A></B>,
+       <B><A HREF="db_lock.html">db_lock(3)</A></B>, <B><A HREF="db_log.html">db_log(3)</A></B>, <B><A HREF="db_mpool.html">db_mpool(3)</A></B>, <B><A HREF="db_open.html">db_open(3)</A></B>, <B><A HREF="db_thread.html">db_thread(3)</A></B>,
+       <B><A HREF="db_txn.html">db_txn(3)</A></B>
+
 </PRE>
+<HR>
+<ADDRESS>
+Man(1) output converted with
+<a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>
+</ADDRESS>
 </BODY>
 </HTML>

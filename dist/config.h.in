@@ -112,6 +112,9 @@
 /* Define if you have the strsep function.  */
 #undef HAVE_STRSEP
 
+/* Define if you have the sysconf function.  */
+#undef HAVE_SYSCONF
+
 /* Define if you have the vsnprintf function.  */
 #undef HAVE_VSNPRINTF
 

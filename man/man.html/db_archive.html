@@ -6,20 +6,13 @@
 <H1>db_archive</H1>
 <HR>
 <PRE>
-
-</PRE>
-<H2>NAME</H2><PRE>
-       db_archive - the DB database archiver
-
-
-</PRE>
-<H2>SYNOPSIS</H2><PRE>
-       <STRONG>db_archive</STRONG> [<STRONG>-alsv</STRONG>] [<STRONG>-h</STRONG> <STRONG>home</STRONG>]
+<!-- Manpage converted by man2html 3.0.1 -->
+       <B>db</B>_<B>archive</B> [<B>-alsv</B>] [<B>-h</B> <B>home</B>]
 
 
 </PRE>
 <H2>DESCRIPTION</H2><PRE>
-       The  <EM>db</EM><STRONG>_</STRONG><EM>archive</EM>  utility writes the pathnames of log files
+       The  db_archive  utility writes the pathnames of log files
        that are no longer in use (e.g.,  no  longer  involved  in
        active transactions), to the standard output, one pathname
        per line.  These log files should  be  written  to  backup
@@ -30,70 +23,83 @@
 
        The options are as follows:
 
-       <STRONG>-a</STRONG>   Write all pathnames as absolute pathnames, instead of
+       <B>-a</B>   Write all pathnames as absolute pathnames, instead of
             relative to the database home directories.
 
-       <STRONG>-h</STRONG>   Specify a home directory for the database.
+       <B>-h</B>   Specify a home directory for the database.
 
-       <STRONG>-l</STRONG>   Write  out  the  pathnames of all of the database log
+       <B>-l</B>   Write  out  the  pathnames of all of the database log
             files, whether or not they  are  involved  in  active
             transactions.
 
-       <STRONG>-s</STRONG>   Write the pathnames of all of the database files that
+       <B>-s</B>   Write the pathnames of all of the database files that
             need to be archived in order to recover the  database
             from  catastrophic  failure.   If any of the database
             files have not been accessed during the  lifetime  of
-            the  current  log  files, <EM>db</EM><STRONG>_</STRONG><EM>archive</EM> will not include
+            the  current  log  files, db_archive will not include
             them in this output.
 
             It is possible that some of the files  referenced  in
             the  log have since been deleted from the system.  In
-            this  case,  <EM>db</EM><STRONG>_</STRONG><EM>archive</EM>  will  ignore   them.    When
-            <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG> is run, any files referenced in the log
+            this  case,  db_archive  will  ignore   them.    When
+            <B><A HREF="db_recover.html">db_recover(1)</A></B> is run, any files referenced in the log
             that are not present during recovery are  assumed  to
             have been deleted and will not be recovered.
 
-       <STRONG>-v</STRONG>   Run  in  verbose mode, listing the checkpoints in the
+       <B>-v</B>   Run  in  verbose mode, listing the checkpoints in the
             log files as they are reviewed.
 
-       The  <EM>db</EM><STRONG>_</STRONG><EM>archive</EM>  utility  attaches  to  DB  shared  memory
+       The  db_archive  utility  attaches  to  DB  shared  memory
        regions.   In  order to avoid region corruption, it should
        always be given the chance to detach and exit  gracefully.
-       To  cause  <EM>db</EM><STRONG>_</STRONG><EM>archive</EM>  to  clean up after itself and exit,
+       To  cause  db_archive  to  clean up after itself and exit,
        send it an interrupt signal (SIGINT).
 
-       The <EM>db</EM><STRONG>_</STRONG><EM>archive</EM> utility exits 0 on success, and  &gt;0  if  an
+       The db_archive utility exits 0 on success, and  &gt;0  if  an
        error occurs.
 
 
+</PRE>
+<H2>DB ARCHIVAL PROCEDURES</H2><PRE>
+       There  are  two aspects to managing the recoverability and
+       disk consumption of your DB  databases.   First,  you  may
+       want to periodically create snapshots of your databases to
+       make  it  possible  to  recover  them  from   catastrophic
+       failure.   Second,  you'll want to periodically remove log
+       files in  order  to  conserve  on  disk  space.   The  two
+       procedures  are  distinct  from each other, and you cannot
+       remove the current  log  files  simply  because  you  have
+       created a database snapshot.
+
+       To  create a snapshot of your database that can be used to
        recover from catastrophic  failure,  the  following  steps
        should be taken:
 
-       1.   Run  <EM>db</EM><STRONG>_</STRONG><EM>archive</EM>  -s  to  identify all of the database
+       1.   Run  db_archive  -s  to  identify all of the database
             data files that must be saved, and  copy  them  to  a
             backup  device,  (e.g., tape).  If the database files
             are stored in a separate  directory  from  the  other
             database  files,  it  may  be  simpler to archive the
             directory itself instead of the individual files.
 
-            <STRONG>More</STRONG> <STRONG>importantly,</STRONG> <STRONG>if</STRONG> <STRONG>any</STRONG> <STRONG>of</STRONG> <STRONG>the</STRONG> <STRONG>database</STRONG>  <STRONG>files</STRONG>  <STRONG>have</STRONG>
-            <STRONG>not</STRONG>  <STRONG>been</STRONG> <STRONG>accessed</STRONG> <STRONG>during</STRONG> <STRONG>the</STRONG> <STRONG>lifetime</STRONG> <STRONG>of</STRONG> <STRONG>the</STRONG> <STRONG>current</STRONG>
-            <STRONG>log</STRONG> <STRONG>files,</STRONG> <STRONG>db_archive</STRONG> <STRONG>will</STRONG> <STRONG>not</STRONG> <STRONG>list</STRONG> <STRONG>them</STRONG> <STRONG>in</STRONG> <STRONG>its</STRONG>  <STRONG>out-</STRONG>
-            <STRONG>put!</STRONG>   For  this reason, it may be important to use a
-            separate  database  file  directory,   archiving   it
-            instead of the files listed by <EM>db</EM><STRONG>_</STRONG><EM>archive</EM>.
+            <B>More</B> <B>importantly,</B> <B>if</B> <B>any</B> <B>of</B> <B>the</B> <B>database</B>  <B>files</B>  <B>have</B>
+            <B>not</B>  <B>been</B> <B>accessed</B> <B>during</B> <B>the</B> <B>lifetime</B> <B>of</B> <B>the</B> <B>current</B>
+            <B>log</B> <B>files,</B> <B>db</B>_<B>archive</B>  <B>will</B>  <B>not</B>  <B>list</B>  <B>them</B>  <B>in</B>  <B>its</B>
+            <B>output!</B>   For this reason, it may be important to use
+            a separate  database  file  directory,  archiving  it
+            instead of the files listed by db_archive.
 
        2.   If  your  database is currently active, i.e., you are
             reading and writing to the database files  while  the
-            snapshot  is  being taken, run <EM>db</EM><STRONG>_</STRONG><EM>archive</EM> -l to iden-
-            tify the database log  files,  and  copy  them  to  a
+            snapshot   is  being  taken,  run  db_archive  -l  to
+            identify the database log files, and copy them  to  a
             backup  device,  (e.g.,  tape).   If the database log
             files are stored in a  separate  directory  from  the
             other  database  files,  it may be simpler to archive
             the directory itself instead of the individual files.
 
        Note  that the order of these operations is important, and
-       that the database files <STRONG>must</STRONG> be archived  before  the  log
+       that the database files <B>must</B> be archived  before  the  log
        files.
 
        The  DB  library  supports  on-line backups, and it is not
@@ -113,29 +119,40 @@
        that  recovery from catastrophic failure is possible up to
        a new point in time, repeat step #2, copying all  existing
        log files to a backup device.
-
        Each  time  that  a  complete  snapshot  is made, i.e. all
        database and log files are copied to backup media, you may
        discard all previous snapshots and saved log files.
 
-       The  time  to restore from catastrophic failure is a func-
-       tion of the number of log records that have  been  written
+       The  time  to  restore  from  catastrophic  failure  is  a
+       function of the number  of  log  records  that  have  been
+       written   since   the  snapshot  was  originally  created.
+       Perhaps more importantly,  the  more  separate  pieces  of
+       backup media you use, the more likely that you will have a
+       problem reading from one of them.  For these  reasons,  it
+       is often best to make snapshots on a regular basis.
+
+       <B>For</B>  <B>archival</B>  <B>safety</B>  <B>remember</B>  <B>to</B>  <B>ensure</B>  <B>that</B> <B>you</B> <B>have</B>
+       <B>multiple</B> <B>copies</B> <B>of</B> <B>your</B> <B>database</B> <B>backups,</B> <B>that</B> <B>you</B>  <B>verify</B>
+       <B>that</B> <B>your</B> <B>archival</B> <B>media</B> <B>is</B> <B>error-free,</B> <B>and</B> <B>that</B> <B>copies</B> <B>of</B>
+       <B>your</B> <B>backups</B> <B>are</B> <B>stored</B> <B>off-site!</B>
+
+       To restore your database after catastrophic  failure,  the
        following steps should be taken:
 
        1.   Restore  the  copies  of  the database files from the
             backup media.
 
        2.   Restore the copies of the log files from  the  backup
-            media,  <STRONG>in</STRONG>  <STRONG>the</STRONG>  <STRONG>order</STRONG>  <STRONG>in</STRONG>  <STRONG>which</STRONG>  <STRONG>they</STRONG> <STRONG>were</STRONG> <STRONG>written</STRONG>.
-            (It's possible that the same log file appears on mul-
-            tiple backups, and you only want the most recent ver-
-            sion of that log file!)
+            media,  <B>in</B>  <B>the</B>  <B>order</B>  <B>in</B>  <B>which</B>  <B>they</B> <B>were</B> <B>written</B>.
+            (It's possible that the  same  log  file  appears  on
+            multiple  backups,  and you only want the most recent
+            version of that log file!)
 
-       3.   Run <EM>db</EM><STRONG>_</STRONG><EM>recover</EM> -c to recover the database.
+       3.   Run db_recover -c to recover the database.
 
-       It is possible to recreate the database in a location dif-
-       ferent  than the original, by specifying appropriate path-
-       names to the -h option of the <EM>db</EM><STRONG>_</STRONG><EM>recover</EM> utility.
+       It is possible to recreate  the  database  in  a  location
+       different  than  the  original,  by specifying appropriate
+       pathnames to the -h option of the db_recover utility.
 
        To remove log files, the following steps should be taken:
 
@@ -144,7 +161,7 @@
             above.  This is because log files are  necessary  for
             recovery from catastrophic failure.
 
-       2.   Run  <EM>db</EM><STRONG>_</STRONG><EM>archive</EM>,  without options, to identify all of
+       2.   Run  db_archive,  without options, to identify all of
             the log files  that  are  no  longer  in  use  (e.g.,
             involved in an active transaction).
 
@@ -154,12 +171,12 @@
 </PRE>
 <H2>ENVIRONMENT VARIABLES</H2><PRE>
        The  following  environment variables affect the execution
-       of <EM>db</EM><STRONG>_</STRONG><EM>archive</EM>:
+       of db_archive:
 
        DB_HOME
-            If the <STRONG>-h</STRONG> option is not specified and the environment
-            variable  <EM>DB</EM><STRONG>_</STRONG><EM>HOME</EM>  is  set, it is used as the path of
-            the database home, as described in <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>.
+            If the <B>-h</B> option is not specified and the environment
+            variable  DB_HOME  is  set, it is used as the path of
+            the database home, as described in <B><A HREF="db_appinit.html">db_appinit(3)</A></B>.
 
 
 </PRE>
@@ -170,14 +187,23 @@
        support  for  transactions, locking, logging and file page
        caching, as well as various indexed access methods.   Many
        of  the  functional  groups  (e.g.,  the file page caching
-       functions) are useful independent of the  other  DB  func-
-       tions,  although  some  functional  groups  are explicitly
+       functions)  are  useful  independent  of  the   other   DB
+       functions,  although some functional groups are explicitly
        based on other functional groups (e.g.,  transactions  and
        logging).   For  a  general description of the DB package,
-       see <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>.
+       see <B><A HREF="db_intro.html">db_intro(3)</A></B>.
 
-       <STRONG><A HREF="db_archive.html">db_archive(1)</A></STRONG>, <STRONG><A HREF="db_checkpoint.html">db_checkpoint(1)</A></STRONG>, <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG>, <STRONG><A HREF="db_dump.html">db_dump(1)</A></STRONG>,
-       <STRONG><A HREF="db_load.html">db_load(1)</A></STRONG>, <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG>, <STRONG><A HREF="db_stat.html">db_stat(1)</A></STRONG>, <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>,
+       <B><A HREF="db_archive.html">db_archive(1)</A></B>, <B><A HREF="db_checkpoint.html">db_checkpoint(1)</A></B>, <B><A HREF="db_deadlock.html">db_deadlock(1)</A></B>, <B><A HREF="db_dump.html">db_dump(1)</A></B>,
+       <B><A HREF="db_load.html">db_load(1)</A></B>, <B><A HREF="db_recover.html">db_recover(1)</A></B>, <B><A HREF="db_stat.html">db_stat(1)</A></B>, <B><A HREF="db_intro.html">db_intro(3)</A></B>,
+       <B><A HREF="db_appinit.html">db_appinit(3)</A></B>, <B><A HREF="db_cursor.html">db_cursor(3)</A></B>, <B><A HREF="db_dbm.html">db_dbm(3)</A></B>, <B><A HREF="db_internal.html">db_internal(3)</A></B>,
+       <B><A HREF="db_lock.html">db_lock(3)</A></B>, <B><A HREF="db_log.html">db_log(3)</A></B>, <B><A HREF="db_mpool.html">db_mpool(3)</A></B>, <B><A HREF="db_open.html">db_open(3)</A></B>, <B><A HREF="db_thread.html">db_thread(3)</A></B>,
+       <B><A HREF="db_txn.html">db_txn(3)</A></B>
+
 </PRE>
+<HR>
+<ADDRESS>
+Man(1) output converted with
+<a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>
+</ADDRESS>
 </BODY>
 </HTML>

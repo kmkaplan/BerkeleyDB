@@ -1,5 +1,5 @@
 #!/bin/sh -
-#	@(#)distrib	10.13 (Sleepycat) 10/25/97
+#	@(#)distrib	10.15 (Sleepycat) 11/25/97
 
 # Build autoconf structure.
 echo "Running autoheader"
@@ -82,7 +82,7 @@ echo "Building $f"
 chmod 444 $f
 
 # Build the Java files.
-f=../java/DbConstants.java
+f=../java/src/com/sleepycat/db/DbConstants.java
 echo "Building $f"
 (echo "$msgcxx" && \
  echo &&
@@ -97,33 +97,33 @@ echo "Building $f"
 chmod 444 $f
 
 # Build the MacOS files.
-f=../build.macos/db.h
-echo "Building $f"
-(echo "$msgc" && sed \
-    -e 's/@u_int8_decl@/typedef unsigned char u_int8_t;/' \
-    -e 's/@int16_decl@/typedef short int16_t;/' \
-    -e 's/@u_int16_decl@/typedef unsigned short u_int16_t;/' \
-    -e 's/@int32_decl@/typedef int int32_t;/' \
-    -e 's/@u_int32_decl@/typedef unsigned int u_int32_t;/' \
-    -e '/@u_char_decl@/d' \
-    -e '/@u_short_decl@/d' \
-    -e '/@u_int_decl@/d' \
-    -e '/@u_long_decl@/d' \
-    -e 's/@enable_dbm@/0/' \
-    -e 's/@enable_hsearch@/0/' \
-    < ../include/db.h.src) > $f
-chmod 444 $f
+#f=../build.macos/db.h
+#echo "Building $f"
+#(echo "$msgc" && sed \
+#    -e 's/@u_int8_decl@/typedef unsigned char u_int8_t;/' \
+#    -e 's/@int16_decl@/typedef short int16_t;/' \
+#    -e 's/@u_int16_decl@/typedef unsigned short u_int16_t;/' \
+#    -e 's/@int32_decl@/typedef int int32_t;/' \
+#    -e 's/@u_int32_decl@/typedef unsigned int u_int32_t;/' \
+#    -e '/@u_char_decl@/d' \
+#    -e '/@u_short_decl@/d' \
+#    -e '/@u_int_decl@/d' \
+#    -e '/@u_long_decl@/d' \
+#    -e 's/@enable_dbm@/0/' \
+#    -e 's/@enable_hsearch@/0/' \
+#    < ../include/db.h.src) > $f
+#chmod 444 $f
 
-f=../build.macos/db_int.h
-echo "Building $f"
-(echo "$msgc" && sed \
-    -e 's/^#include."db.h".*/#include "::build.macintosh:db.h"/' \
-    -e 's/\(PATH_SEPARATOR[^"]*"\)\/"/\1:"/' \
-    -e 's/@spin_line1@/typedef unsigned char tsl_t;/' \
-    -e '/@spin_line2@/d' \
-    -e 's/@mutex_align@/sizeof(unsigned char)/' \
-    < ../include/db_int.h.src) > $f
-chmod 444 $f
+#f=../build.macos/db_int.h
+#echo "Building $f"
+#(echo "$msgc" && sed \
+#    -e 's/^#include."db.h".*/#include "::build.macintosh:db.h"/' \
+#    -e 's/\(PATH_SEPARATOR[^"]*"\)\/"/\1:"/' \
+#    -e 's/@spin_line1@/typedef unsigned char tsl_t;/' \
+#    -e '/@spin_line2@/d' \
+#    -e 's/@mutex_align@/sizeof(unsigned char)/' \
+#    < ../include/db_int.h.src) > $f
+#chmod 444 $f
 
 # Build the Tcl test files.
 f=../test/include.tcl.src

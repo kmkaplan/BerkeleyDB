@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)log.tcl	10.3 (Sleepycat) 10/4/97
+#	@(#)log.tcl	10.4 (Sleepycat) 11/22/97
 #
 # Options are:
 # -dir <directory in which to store memp>
@@ -49,6 +49,7 @@ proc logtest { args } {
 	log002 $testdir $maxfile $iterations
 	log002 $testdir $maxfile $multi_log
 	log003 $testdir $maxfile
+	log004 $testdir $maxfile
 }
 
 proc log001 { dir max } {
@@ -209,6 +210,107 @@ source ./include.tcl
 	log_cleanup $dir
 
 	puts "Test003 Complete"
+}
+
+proc log004 { dir {max 32768} } {
+puts "Log004: Verify log_flush behavior"
+source ./include.tcl
+
+	log_unlink "" 1
+	log_cleanup $dir
+	set short_rec "abcdefghijklmnopqrstuvwxyz"
+	set long_rec [repeat $short_rec 200]
+	set very_long_rec [repeat $long_rec 4]
+
+	foreach rec "$short_rec $long_rec $very_long_rec" {
+		puts "Log004.a: Verify flush on [string length $rec] byte rec"
+
+		set lp [ log "" $DB_CREATE 0644 -maxsize $max ]
+		error_check_bad log:$dir $lp NULL
+		error_check_good log:$dir [is_substr $lp log] 1
+
+		set lsn [$lp put $rec 0]
+		error_check_bad log_put [lindex $lsn 0] "ERROR:"
+		set ret [$lp flush $lsn]
+		error_check_good log_flush $ret 0
+
+		# Now, we want to crash the region and recheck.  Closing the
+		# log does not flush any records, so we'll use a close to
+		# do the "crash"
+		set ret [$lp close]
+		error_check_good log_close $ret 0
+
+		# Now, remove the log region
+		set ret [log_unlink "" 0]
+		error_check_good log_unlink $ret 0
+
+		# Re-open the log and try to read the record.
+		set lp [ log "" $DB_CREATE 0644 -maxsize $max ]
+		error_check_bad log:$dir $lp NULL
+		error_check_good log:$dir [is_substr $lp log] 1
+
+		set gotrec [$lp get "0 0" $DB_FIRST]
+		error_check_good lp_get $gotrec $rec
+
+		# Close and unlink the file
+		error_check_good log_close:$lp [$lp close] 0
+		error_check_good log_unlink:$dir [log_unlink "" 0] 0
+		log_cleanup $dir
+	}
+
+	foreach rec "$short_rec $long_rec $very_long_rec" {
+		puts "Log004.b: Verify flush on non-last record [string length $rec]"
+		set lp [ log "" $DB_CREATE 0644 -maxsize $max ]
+		error_check_bad log:$dir $lp NULL
+		error_check_good log:$dir [is_substr $lp log] 1
+
+		# Put 10 random records
+		for { set i 0 } { $i < 10 } { incr i} {
+			set r [random_data 450 0 0]
+			set lsn [$lp put $r 0]
+			error_check_bad log_put [lindex $lsn 0] "ERROR:"
+		}
+
+		# Put the record we are interested in
+		set save_lsn [$lp put $rec 0]
+		error_check_bad log_put [lindex $save_lsn 0] "ERROR:"
+
+		# Put 10 more random records
+		for { set i 0 } { $i < 10 } { incr i} {
+			set r [random_data 450 0 0]
+			set lsn [$lp put $r 0]
+			error_check_bad log_put [lindex $lsn 0] "ERROR:"
+		}
+
+		# Now check the flush
+		set ret [$lp flush $save_lsn]
+		error_check_good log_flush $ret 0
+
+		# Now, we want to crash the region and recheck.  Closing the
+		# log does not flush any records, so we'll use a close to
+		# do the "crash"
+		set ret [$lp close]
+		error_check_good log_close $ret 0
+
+		# Now, remove the log region
+		set ret [log_unlink "" 0]
+		error_check_good log_unlink $ret 0
+
+		# Re-open the log and try to read the record.
+		set lp [ log "" $DB_CREATE 0644 -maxsize $max ]
+		error_check_bad log:$dir $lp NULL
+		error_check_good log:$dir [is_substr $lp log] 1
+
+		set gotrec [$lp get $save_lsn $DB_SET]
+		error_check_good lp_get $gotrec $rec
+
+		# Close and unlink the file
+		error_check_good log_close:$lp [$lp close] 0
+		error_check_good log_unlink:$dir [log_unlink "" 0] 0
+		log_cleanup $dir
+	}
+
+	puts "Test004 Complete"
 }
 
 proc log_cleanup { dir } {

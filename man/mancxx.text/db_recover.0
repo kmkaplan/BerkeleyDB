@@ -1,9 +1,5 @@
 
 
-
-DB_RECOVER(1)                                       DB_RECOVER(1)
-
-
 NNAAMMEE
        db_recover - the DB database recovery utility
 
@@ -58,7 +54,6 @@ FFIILLEESSYYSSTTEEMM OOPPEERRAATTIIOONNSS
        son, _d_b___r_e_c_o_v_e_r cannot re-create, delete or  rename  files
        as part of recovery.
 
-
        If  _d_b___r_e_c_o_v_e_r  cannot  find a database file referenced in
        the log, it will output a  warning  message  that  it  was
        unable to locate a file it expected to find.  This message
@@ -69,8 +64,8 @@ FFIILLEESSYYSSTTEEMM OOPPEERRAATTIIOONNSS
        tthhoouugghh tthhee ffiilleess wweerree nnoott ffoouunndd..  IIff tthhee  ffiilleess  wweerree  nnoott
        iinntteennttiioonnaallllyy  ddeelleetteedd  ((ee..gg..,, tthheeyy wweerree ccrreeaatteedd aafftteerr tthhee
        llaasstt ddaattaabbaassee ssnnaappsshhoott,, bbuutt wweerree lloosstt dduurriinngg  aa  ffaaiilluurree)),,
-       tthheeyy  mmuusstt  bbee  mmaannuuaallllyy  ccrreeaatteedd  ((uussiinngg ddbb__ooppeenn((33)))),, aanndd
-       ddbb__rreeccoovveerr mmuusstt bbee rreerruunn..
+       tthheeyy  mmuusstt  bbee  mmaannuuaallllyy  ccrreeaatteedd  ((uussiinngg _d_b___o_p_e_n(3)), and
+       _d_b___r_e_c_o_v_e_r must be rerun.
 
        Generally, it is simplest to perform filesystem operations
        at the same time as making a snapshot of the database.  To
@@ -166,5 +161,6 @@ SSEEEE AALLSSOO
 
        _d_b___a_r_c_h_i_v_e(1), _d_b___c_h_e_c_k_p_o_i_n_t(1), _d_b___d_e_a_d_l_o_c_k(1), _d_b___d_u_m_p(1),
        _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3),
-       _d_b___a_p_p_i_n_i_t(3), _d_b___c_u_r_s_o_r(3), _d_b___d_b_m(3), _d_b___j_u_m_p(3), _d_b___l_o_c_k(3),
-       _d_b___l_o_g(3), _d_b___m_p_o_o_l(3), _d_b___o_p_e_n(3), _d_b___t_h_r_e_a_d(3), _d_b___t_x_n(3)
+       _d_b___a_p_p_i_n_i_t(3), _d_b___c_u_r_s_o_r(3), _d_b___d_b_m(3), _d_b___i_n_t_e_r_n_a_l(3),
+       _d_b___l_o_c_k(3), _d_b___l_o_g(3), _d_b___m_p_o_o_l(3), _d_b___o_p_e_n(3), _d_b___t_h_r_e_a_d(3),
+       _d_b___t_x_n(3)

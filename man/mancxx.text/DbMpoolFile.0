@@ -1,9 +1,5 @@
 
 
-
-DbMpoolFile(3)                                     DbMpoolFile(3)
-
-
 NNAAMMEE
        DbMpoolFile - shared memory buffer pool
 
@@ -47,29 +43,31 @@ DDEESSCCRRIIPPTTIIOONN
 
        The  _D_b_M_p_o_o_l(3) and _D_b_M_p_o_o_l_F_i_l_e(3) classes are the library
        interface intended to provide  general-purpose,  page-ori-
-       ented  buffer  management  of  one  or  more files.  While
-       designed to work with the other Db functions, these  func-
-       tions are also useful for more general purposes.  The mem-
-       ory pools (_D_b_M_p_o_o_l_:_:'s) are referred to in  this  document
-       as  simply  ``pools''.   Pools  may be shared between pro-
-       cesses.  Pools are usually filled by  pages  from  one  or
-       more   files  (_D_b_M_p_o_o_l_F_i_l_e's).   Pages  in  the  pool  are
+       ented buffer management of one or more files.
+
+       While  designed to work with the other Db functions, these
+       functions are also useful for more general purposes.   The
+       memory  pools  (_D_b_M_p_o_o_l_:_:'s) are referred to in this docu-
+       ment as simply ``pools''.  Pools  may  be  shared  between
+       processes.   Pools are usually filled by pages from one or
+       more  files  (_D_b_M_p_o_o_l_F_i_l_e's).   Pages  in  the  pool   are
        replaced in LRU (least-recently-used) order, with each new
-       page  replacing the page that has been unused the longest.
-       Pages retrieved from the pool using  _D_b_M_p_o_o_l_F_i_l_e_:_:_g_e_t  are
+       page replacing the page that has been unused the  longest.
+       Pages  retrieved  from the pool using _D_b_M_p_o_o_l_F_i_l_e_:_:_g_e_t are
        ``pinned''  in  the  pool,  by  default,  until  they  are
-       returned to the pool's control using the  _D_b_M_p_o_o_l_F_i_l_e_:_:_p_u_t
+       returned  to the pool's control using the _D_b_M_p_o_o_l_F_i_l_e_:_:_p_u_t
        method.
 
   _D_b_M_p_o_o_l_F_i_l_e_:_:_o_p_e_n
-       The  _D_b_M_p_o_o_l_F_i_l_e_:_:_o_p_e_n  method  opens  a  file in the pool
-       specified by the  _D_b_M_p_o_o_l_:_:  argument,  copying  the  DbM-
-       poolFile  pointer representing it into the memory location
+       The _D_b_M_p_o_o_l_F_i_l_e_:_:_o_p_e_n method opens  a  file  in  the  pool
+       specified  by  the  _D_b_M_p_o_o_l_:_:  argument,  copying the DbM-
+       poolFile pointer representing it into the memory  location
        referenced by _m_p_f.
 
-       The _f_i_l_e argument is the name of the file  to  be  opened.
-       If  _f_i_l_e is NULL, a private file is created that cannot be
-       shared with any other process or thread.
+       The  _f_i_l_e  argument  is the name of the file to be opened.
+       If _f_i_l_e is NULL, a private file is created that cannot  be
+       shared  with  any other process (although it may be shared
+       with other threads).
 
        The _f_t_y_p_e argument should be the same as a _f_t_y_p_e  argument
        previously  specified  to the _D_b_M_p_o_o_l_:_:_d_b___r_e_g_i_s_t_e_r method,
@@ -111,7 +109,6 @@ DDEESSCCRRIIPPTTIIOONN
        of transfer between the application and the pool, although
        it  is  not  necessarily  the unit of transfer between the
        pool and the source file.
-
 
        The _l_s_n___o_f_f_s_e_t argument is the zero-based byte  offset  in
        the page of the page's log sequence number (LSN), or -1 if
@@ -221,6 +218,8 @@ DDEESSCCRRIIPPTTIIOONN
        DB_MPOOL_DIRTY
             The page has been modified and must be written to the
             source file before being evicted from the pool.
+
+
        DB_MPOOL_DISCARD
             The page is unlikely to be useful in the near future,
             and should be discarded before  other  pages  in  the
@@ -263,18 +262,21 @@ EERRRROORRSS
        default error behavior can be changed, see _D_b_E_x_c_e_p_t_i_o_n(3).
 
        The _D_b_M_p_o_o_l_F_i_l_e_:_:_o_p_e_n method may fail and throw a _D_b_E_x_c_e_p_-
-       _t_i_o_n(3) or return _e_r_r_n_o for any of  the  errors  specified
-       for the following DB and library functions:
-       DBmemp->pgin(3), DBmemp->pgout(3), DbLog::compare(3),
-       DbLog::flush(3), close(2), fcntl(2), fflush(3), fsync(2),
-       lseek(2), malloc(3), memcmp(3), memcpy(3), memset(3),
-       mmap(2), open(2), sigfillset(3), sigprocmask(2), stat(2),
-       strcpy(3), strdup(3), strerror(3), strlen(3), time(3),
-       unlink(2), and write(2).
+       _t_i_o_n(3)
+
+       or return _e_r_r_n_o for any of the errors  specified  for  the
+       following DB and library functions: DBmemp->pgin(3),
+       DBmemp->pgout(3), DbLog::compare(3), DbLog::flush(3),
+       close(2), fcntl(2), fflush(3), fsync(2), lseek(2), mal-
+       loc(3), memcmp(3), memcpy(3), memset(3), mmap(2), open(2),
+       sigfillset(3), sigprocmask(2), stat(2), strcpy(3),
+       strdup(3), strerror(3), strlen(3), time(3), unlink(2), and
+       write(2).
 
        In  addition,  the  _D_b_M_p_o_o_l_F_i_l_e_:_:_o_p_e_n  method may fail and
        throw a _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for  the  following
        conditions:
+
        [EINVAL]
             An invalid flag value or parameter was specified.
 
@@ -287,19 +289,23 @@ EERRRROORRSS
             pool.
 
        The  _D_b_M_p_o_o_l_F_i_l_e_:_:_c_l_o_s_e  method may fail and throw a _D_b_E_x_-
-       _c_e_p_t_i_o_n(3) or return _e_r_r_n_o for any of the errors specified
-       for the following DB and library functions: close(2),
-       fcntl(2), fflush(3), munmap(2), and strerror(3).
+       _c_e_p_t_i_o_n(3)
+
+       or return _e_r_r_n_o for any of the errors  specified  for  the
+       following DB and library functions: close(2), fcntl(2),
+       fflush(3), munmap(2), and strerror(3).
 
        The _D_b_M_p_o_o_l_F_i_l_e_:_:_g_e_t method may fail and throw a  _D_b_E_x_c_e_p_-
-       _t_i_o_n(3)  or  return  _e_r_r_n_o for any of the errors specified
-       for the following DB and library functions:
-       DBmemp->pgin(3), DBmemp->pgout(3), DbLog::compare(3),
-       DbLog::flush(3), close(2), fcntl(2), fflush(3), fsync(2),
-       lseek(2), malloc(3), memcmp(3), memcpy(3), memset(3),
-       mmap(2), open(2), read(2), sigfillset(3), sigprocmask(2),
-       stat(2), strcpy(3), strdup(3), strerror(3), strlen(3),
-       time(3), unlink(2), and write(2).
+       _t_i_o_n(3)
+
+       or  return  _e_r_r_n_o  for any of the errors specified for the
+       following DB and library functions: DBmemp->pgin(3),
+       DBmemp->pgout(3), DbLog::compare(3), DbLog::flush(3),
+       close(2), fcntl(2), fflush(3), fsync(2), lseek(2), mal-
+       loc(3), memcmp(3), memcpy(3), memset(3), mmap(2), open(2),
+       read(2), sigfillset(3), sigprocmask(2), stat(2), str-
+       cpy(3), strdup(3), strerror(3), strlen(3), time(3),
+       unlink(2), and write(2).
 
        In addition, the  _D_b_M_p_o_o_l_F_i_l_e_:_:_g_e_t  method  may  fail  and
        throw  a  _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for the following
@@ -307,8 +313,8 @@ EERRRROORRSS
 
        [EAGAIN]
             The  page  reference  count  has  overflowed.   (This
-            should  never  happen unless there's a bug in the ap-
-            plication.)
+            should  never  happen  unless  there's  a  bug in the
+            application.)
 
        [EINVAL]
             An invalid flag value or parameter was specified.
@@ -327,14 +333,16 @@ EERRRROORRSS
             pool.
 
        The _D_b_M_p_o_o_l_F_i_l_e_:_:_p_u_t method may fail and throw a  _D_b_E_x_c_e_p_-
-       _t_i_o_n(3)  or  return  _e_r_r_n_o for any of the errors specified
-       for the following DB and library functions:
-       DBmemp->pgin(3), DBmemp->pgout(3), DbLog::compare(3),
-       DbLog::flush(3), close(2), fcntl(2), fflush(3), fsync(2),
-       lseek(2), malloc(3), memcmp(3), memcpy(3), memset(3),
-       mmap(2), open(2), sigfillset(3), sigprocmask(2), stat(2),
-       strcpy(3), strdup(3), strerror(3), strlen(3), time(3),
-       unlink(2), and write(2).
+       _t_i_o_n(3)
+
+       or  return  _e_r_r_n_o  for any of the errors specified for the
+       following DB and library functions: DBmemp->pgin(3),
+       DBmemp->pgout(3), DbLog::compare(3), DbLog::flush(3),
+       close(2), fcntl(2), fflush(3), fsync(2), lseek(2), mal-
+       loc(3), memcmp(3), memcpy(3), memset(3), mmap(2), open(2),
+       sigfillset(3), sigprocmask(2), stat(2), strcpy(3),
+       strdup(3), strerror(3), strlen(3), time(3), unlink(2), and
+       write(2).
 
        In addition, the  _D_b_M_p_o_o_l_F_i_l_e_:_:_p_u_t  method  may  fail  and
        throw  a  _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for the following
@@ -347,15 +355,17 @@ EERRRROORRSS
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-            The  _p_g_a_d_d_r  parameter  does not reference a page re-
-            turned by _D_b_M_p_o_o_l_F_i_l_e_:_:_g_e_t.
+            The  _p_g_a_d_d_r  parameter  does  not  reference  a  page
+            returned by _D_b_M_p_o_o_l_F_i_l_e_:_:_g_e_t.
 
             More than one of  DB_MPOOL_CLEAN  and  DB_MPOOL_DIRTY
             was set.
 
        The  _D_b_M_p_o_o_l_F_i_l_e_:_:_s_e_t method may fail and throw a _D_b_E_x_c_e_p_-
-       _t_i_o_n(3) or return _e_r_r_n_o for any of  the  errors  specified
-       for the following DB and library functions: fcntl(2), and
+       _t_i_o_n(3)
+
+       or return _e_r_r_n_o for any of the errors  specified  for  the
+       following DB and library functions: fcntl(2), and
        fflush(3).
 
        In addition, the  _D_b_M_p_o_o_l_F_i_l_e_:_:_s_e_t  method  may  fail  and
@@ -366,19 +376,22 @@ EERRRROORRSS
             An invalid flag value or parameter was specified.
 
        The _D_b_M_p_o_o_l_F_i_l_e_:_:_s_y_n_c method may fail and throw a _D_b_E_x_c_e_p_-
-       _t_i_o_n(3)  or  return  _e_r_r_n_o for any of the errors specified
-       for the following DB and library functions:
-       DBmemp->pgin(3), DBmemp->pgout(3), DbLog::compare(3),
-       DbLog::flush(3), close(2), fcntl(2), fflush(3), fsync(2),
-       lseek(2), malloc(3), memcpy(3), memset(3), open(2),
-       qsort(3), realloc(3), sigfillset(3), sigprocmask(2),
-       stat(2), strcpy(3), strdup(3), strerror(3), strlen(3),
-       unlink(2), and write(2).
+       _t_i_o_n(3)
+
+       or  return  _e_r_r_n_o  for any of the errors specified for the
+       following DB and library functions: DBmemp->pgin(3),
+       DBmemp->pgout(3), DbLog::compare(3), DbLog::flush(3),
+       close(2), fcntl(2), fflush(3), fsync(2), lseek(2),
+       malloc(3), memcpy(3), memset(3), open(2), qsort(3), real-
+       loc(3), sigfillset(3), sigprocmask(2), stat(2), strcpy(3),
+       strdup(3), strerror(3), strlen(3), unlink(2), and
+       write(2).
 
 
 SSEEEE AALLSSOO
        _d_b___a_r_c_h_i_v_e(1), _d_b___c_h_e_c_k_p_o_i_n_t(1), _d_b___d_e_a_d_l_o_c_k(1), _d_b___d_u_m_p(1),
-       _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3), _d_b___j_u_m_p(3),
-       _d_b___t_h_r_e_a_d(3), _D_b(3), _D_b_c(3), _D_b_E_n_v(3), _D_b_E_x_c_e_p_t_i_o_n(3), _D_b_I_n_f_o(3),
-       _D_b_L_o_c_k(3), _D_b_L_o_c_k_t_a_b(3), _D_b_L_o_g(3), _D_b_L_s_n(3), _D_b_M_p_o_o_l(3),
-       _D_b_M_p_o_o_l_F_i_l_e(3), _D_b_t(3), _D_b_T_x_n(3), _D_b_T_x_n_M_g_r(3)
+       _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3),
+       _d_b___i_n_t_e_r_n_a_l(3), _d_b___t_h_r_e_a_d(3), _D_b(3), _D_b_c(3), _D_b_E_n_v(3),
+       _D_b_E_x_c_e_p_t_i_o_n(3), _D_b_I_n_f_o(3), _D_b_L_o_c_k(3), _D_b_L_o_c_k_T_a_b(3), _D_b_L_o_g(3),
+       _D_b_L_s_n(3), _D_b_M_p_o_o_l(3), _D_b_M_p_o_o_l_F_i_l_e(3), _D_b_t(3), _D_b_T_x_n(3),
+       _D_b_T_x_n_M_g_r(3)

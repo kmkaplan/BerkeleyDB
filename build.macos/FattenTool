@@ -1,7 +1,0 @@
-#
-# FattenTool - Merge 68K and PPC tools
-#
-Duplicate -y {1}.PPC {1}
-Echo 'Include "'{1}'.68K" '¶''CODE'¶'';Include "'{1}'.68K" '¶''DATA'¶'';' ¶
-	| Rez -a -c 'MPS ' -t MPST -o {1}
-

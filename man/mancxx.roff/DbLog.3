@@ -5,17 +5,33 @@
 .\" Copyright (c) 1997
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)DbLog.sox	10.6 (Sleepycat) 10/14/97
+.\"	@(#)DbLog.sox	10.7 (Sleepycat) 11/24/97
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1996, 1997
+.\" Copyright (c) 1997
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)macros.so	10.27 (Sleepycat) 10/25/97
+.\"	@(#)macros.so	10.36 (Sleepycat) 11/28/97
 .\"
-.\" The general information text macro.
+.\" We don't want hyphenation for any HTML documents.
+.ie '\*[HTML]'YES'\{\
+.nh
+\}
+.el\{\
+.ds Hy
+.hy
+..
+.ds Nh
+.nh
+..
+\}
+.\" The alternative text macro
+.\" This macro takes two arguments:
+.\"	+ the text produced if this is a "C" manpage
+.\"	+ the text produced if this is a "CXX" or "JAVA" manpage
+.\"
 .de Al
 .ie '\*[TYPE]'C'\{\\$1
 \}
@@ -37,18 +53,24 @@
 \}
 \}
 ..
+.\" Scoped name for Java.
+.\" Produces a.b, for Java, otherwise just b.
+.\" This macro is used for constants that must
+.\" be scoped in Java, but are global otherwise.
+.\" This macro takes two arguments:
+.\"	+ the class
+.\"	+ the name within the class or following the prefix
+.de Sj
+.ie '\*[TYPE]'JAVA'\{\
+.TP 5
+\\$1.\\$2\}
+.el\{\
+.TP 5
+\\$2\}
+..
 .\" The general information text macro.
 .de Gn
-.ie '\*[TYPE]'CXX'\{The DB library is a family of classes that provides a modular
-programming interface to transactions and record-oriented file access.
-The library includes support for transactions, locking, logging and file
-page caching, as well as various indexed access methods.
-Many of the classes (e.g., the file page caching class)
-are useful independent of the other DB classes,
-although some classes are explicitly based on other classes
-(e.g., transactions and logging).
-\}
-.el\{The DB library is a family of groups of functions that provides a modular
+.ie '\*[TYPE]'C'\{The DB library is a family of groups of functions that provides a modular
 programming interface to transactions and record-oriented file access.
 The library includes support for transactions, locking, logging and file
 page caching, as well as various indexed access methods.
@@ -56,6 +78,15 @@ Many of the functional groups (e.g., the file page caching functions)
 are useful independent of the other DB functions,
 although some functional groups are explicitly based on other functional
 groups (e.g., transactions and logging).
+\}
+.el\{The DB library is a family of classes that provides a modular
+programming interface to transactions and record-oriented file access.
+The library includes support for transactions, locking, logging and file
+page caching, as well as various indexed access methods.
+Many of the classes (e.g., the file page caching class)
+are useful independent of the other DB classes,
+although some classes are explicitly based on other classes
+(e.g., transactions and logging).
 \}
 For a general description of the DB package, see
 .IR db_intro (3).
@@ -67,24 +98,32 @@ For a general description of the DB package, see
 The
 .I \\$1
 .ie '\*[TYPE]'C'\{function may fail and return
+.I errno
 \}
 .el\{method may fail and throw a
 .IR DbException (3)
+.if '\*[TYPE]'CXX'\{
 or return
-\}
 .I errno
+\}
+\}
 for any of the errors specified for the following DB and library functions:
 ..
 .de Ec
 In addition, the
 .I \\$1
 .ie '\*[TYPE]'C'\{function may fail and return
+.I errno
 \}
 .el\{method may fail and throw a
 .IR DbException (3)
-or return
-\}
+.ie '\*[TYPE]'CXX'\{or return
 .I errno
+\}
+.el\{encapsulating an
+.I errno
+\}
+\}
 for the following conditions:
 ..
 .de Ea
@@ -124,11 +163,13 @@ All subsequent database calls (other than
 will return EPERM.
 ..
 .de Ek
+.if '\*[TYPE]'CXX'\{\
 Methods marked as returning
 .I errno
 will, by default, throw an exception that encapsulates the error information.
 The default error behavior can be changed, see
 .IR DbException (3).
+\}
 ..
 .\" The SEE ALSO text macro
 .de Sa
@@ -144,8 +185,20 @@ The default error behavior can be changed, see
 .IR db_recover (1),
 .IR db_stat (1),
 .IR db_intro (3),
-.ie '\*[TYPE]'CXX'\{\
-.IR db_jump (3),
+.ie '\*[TYPE]'C'\{\
+.IR db_appinit (3),
+.IR db_cursor (3),
+.IR db_dbm (3),
+.IR db_internal (3),
+.IR db_lock (3),
+.IR db_log (3),
+.IR db_mpool (3),
+.IR db_open (3),
+.IR db_thread (3),
+.IR db_txn (3)
+\}
+.el\{\
+.IR db_internal (3),
 .IR db_thread (3),
 .IR Db (3),
 .IR Dbc (3),
@@ -153,7 +206,7 @@ The default error behavior can be changed, see
 .IR DbException (3),
 .IR DbInfo (3),
 .IR DbLock (3),
-.IR DbLocktab (3),
+.IR DbLockTab (3),
 .IR DbLog (3),
 .IR DbLsn (3),
 .IR DbMpool (3),
@@ -162,20 +215,8 @@ The default error behavior can be changed, see
 .IR DbTxn (3),
 .IR DbTxnMgr (3)
 \}
-.el\{\
-.IR db_appinit (3),
-.IR db_cursor (3),
-.IR db_dbm (3),
-.IR db_jump (3),
-.IR db_lock (3),
-.IR db_log (3),
-.IR db_mpool (3),
-.IR db_open (3),
-.IR db_thread (3),
-.IR db_txn (3)
-\}
 .ad
-.hy
+.Hy
 ..
 .\" The function header macro.
 .\" This macro takes one argument:
@@ -190,27 +231,7 @@ The default error behavior can be changed, see
 .\"	+ the interface, e.g., "transaction region"
 .\"	+ the prefix, e.g., "txn" (or the class name for C++, e.g., "DbTxn")
 .de Co
-.ie '\*[TYPE]'CXX'\{\
-.Fn \\$2::open
-The
-.I \\$2::open
-method copies a pointer, to the \\$1 identified by the
-.B directory
-.IR dir ,
-into the memory location referenced by
-.IR regionp .
-.PP
-If the
-.I dbenv
-argument to
-.I \\$2::open
-was initialized using
-.IR DbEnv::appinit ,
-.I dir
-is interpreted as described by
-.IR DbEnv (3).
-\}
-.el\{\
+.ie '\*[TYPE]'C'\{\
 .Fn \\$2_open
 The
 .I \\$2_open
@@ -229,6 +250,33 @@ was initialized using
 .I dir
 is interpreted as described by
 .IR db_appinit (3).
+\}
+.el\{\
+.Fn \\$2::open
+The
+.I \\$2::open
+.ie '\*[TYPE]'CXX'\{\
+method copies a pointer, to the \\$1 identified by the
+.B directory
+.IR dir ,
+into the memory location referenced by
+.IR regionp .
+\}
+.el\{\
+method returns a \\$1 identified by the
+.B directory
+.IR dir .
+\}
+.PP
+If the
+.I dbenv
+argument to
+.I \\$2::open
+was initialized using
+.IR DbEnv::appinit ,
+.I dir
+is interpreted as described by
+.IR DbEnv (3).
 \}
 .PP
 Otherwise,
@@ -255,14 +303,17 @@ and
 .PP
 All files associated with the \\$1 are created in this directory.
 This directory must already exist when
-.I \\*(Vo
+.ie '\*[TYPE]'C'\{
+\\$1_open
+\}
+.el\{\
+\\$2::open
+\}
 is called.
 If the \\$1 already exists,
 the process must have permission to read and write the existing files.
 If the \\$1 does not already exist,
 it is optionally created and initialized.
-\}
-.rm Vo
 ..
 .\" The common close language macro, for discarding created regions
 .\" This macro takes one argument:
@@ -271,15 +322,15 @@ it is optionally created and initialized.
 In addition, if the
 .I dir
 argument to
-.ie '\*[TYPE]'CXX'\{\
-.ds Va DbEnv::appinit
-.ds Vo \\$1::open
-.ds Vu \\$1::unlink
-\}
-.el\{\
+.ie '\*[TYPE]'C'\{\
 .ds Va db_appinit
 .ds Vo \\$1_open
 .ds Vu \\$1_unlink
+\}
+.el\{\
+.ds Va DbEnv::appinit
+.ds Vo \\$1::open
+.ds Vu \\$1::unlink
 \}
 .I \\*(Vo
 was NULL
@@ -287,6 +338,9 @@ and
 .I dbenv
 was not initialized using
 .IR \\*(Va ,
+.if '\\$1'memp'\{\
+or the DB_MPOOL_PRIVATE flag was set,
+\}
 all files created for this shared region will be removed,
 as if
 .I \\*(Vu
@@ -300,7 +354,53 @@ were called.
 .\"	+ the function called to open, e.g., "txn_open"
 .\"	+ the function called to close, e.g., "txn_close"
 .de En
-.ie '\*[TYPE]'CXX'\{\
+.ie '\*[TYPE]'C'\{\
+based on the
+.I dbenv
+argument to
+.IR \\$1 ,
+which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
+It is expected that applications will use a single DB_ENV structure as the
+argument to all of the subsystems in the DB package.
+In order to ensure compatibility with future releases of DB, all fields of
+the DB_ENV structure that are not explicitly set should be initialized to 0
+before the first time the structure is used.
+Do this by declaring the structure external or static, or by calling the C
+library routine
+.IR bzero (3)
+or
+.IR memset (3).
+.PP
+The fields of the DB_ENV structure used by
+.I \\$1
+are described below.
+.if '\*[TYPE]'CXX'\{\
+As references to the DB_ENV structure may be maintained by
+.IR \\$1 ,
+it is necessary that the DB_ENV structure and memory it references be valid
+until the
+.I \\$2
+function is called.
+\}
+.ie '\\$1'db_appinit'\{The
+.I dbenv
+argument may not be NULL.
+If any of the fields of the
+.I dbenv
+are set to 0,
+defaults appropriate for the system are used where possible.
+\}
+.el\{If
+.I dbenv
+is NULL
+or any of its fields are set to 0,
+defaults appropriate for the system are used where possible.
+\}
+.PP
+The following fields in the DB_ENV structure may be initialized before calling
+.IR \\$1 :
+\}
+.el\{\
 based on which set methods have been used.
 It is expected that applications will use a single DbEnv object as the
 argument to all of the subsystems in the DB package.
@@ -329,54 +429,24 @@ The following fields in the DbEnv object may be initialized, using the
 appropriate set method, before calling
 .IR \\$1 :
 \}
-.el\{\
-based on the
-.I dbenv
-argument to
-.IR \\$1 ,
-which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
-It is expected that applications will use a single DB_ENV structure as the
-argument to all of the subsystems in the DB package.
-In order to ensure compatibility with future releases of DB, all fields of
-the DB_ENV structure that are not explicitly set should be initialized to 0
-before the first time the structure is used.
-Do this by declaring the structure external or static, or by calling the C
-library routine
-.IR bzero (3)
-or
-.IR memset (3).
-.PP
-The fields of the DB_ENV structure used by
-.I \\$1
-are described below.
-As references to the DB_ENV structure may be maintained by
-.IR \\$1 ,
-it is necessary that the DB_ENV structure and memory it references be valid
-until the
-.I \\$2
-function is called.
-.ie '\\$1'db_appinit'\{The
-.I dbenv
-argument may not be NULL.
-If any of the fields of the
-.I dbenv
-are set to 0,
-defaults appropriate for the system are used where possible.
-\}
-.el\{If
-.I dbenv
-is NULL
-or any of its fields are set to 0,
-defaults appropriate for the system are used where possible.
-\}
-.PP
-The following fields in the DB_ENV structure may be initialized before calling
-.IR \\$1 :
-\}
 ..
 .\" The DB_ENV common fields macros.
 .de Se
-.ie '\*[TYPE]'CXX'\{.TP 5
+.ie '\*[TYPE]'JAVA'\{\
+.TP 5
+DbErrcall db_errcall;
+.ns
+.TP 5
+String db_errpfx;
+.ns
+.TP 5
+int db_verbose;
+The error fields of the DbEnv behave as described for
+.IR DbEnv (3).
+\}
+.el\{\
+.ie '\*[TYPE]'CXX'\{\
+.TP 5
 void *(*db_errcall)(char *db_errpfx, char *buffer);
 .ns
 .TP 5
@@ -393,7 +463,7 @@ int db_verbose;
 The error fields of the DbEnv behave as described for
 .IR DbEnv (3).
 \}
-.el\{
+.el\{\
 void *(*db_errcall)(char *db_errpfx, char *buffer);
 .ns
 .TP 5
@@ -407,6 +477,7 @@ int db_verbose;
 The error fields of the DB_ENV behave as described for
 .IR db_appinit (3).
 \}
+\}
 ..
 .\" The open flags.
 .de Fm
@@ -419,8 +490,7 @@ don't already exist.
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
-.TP 5
-DB_CREATE
+.Sj Db DB_CREATE
 Create any underlying files, as necessary.
 If the files do not already exist and the DB_CREATE flag is not specified,
 the call will fail.
@@ -431,7 +501,7 @@ the call will fail.
 .\"	+ the object it returns.
 .de Ft
 .TP 5
-DB_THREAD
+.Sj Db DB_THREAD
 Cause the \\$2 handle returned by the
 .I \\$1
 .Al function method
@@ -502,11 +572,11 @@ TMPDIR
 If the
 .I dbenv
 argument to
-.ie '\*[TYPE]'CXX'\{\
-.ds Vo \\$2::open
+.ie '\*[TYPE]'C'\{\
+.ds Vo \\$2_open
 \}
 .el\{\
-.ds Vo \\$2_open
+.ds Vo \\$2::open
 \}
 .I \\*(Vo
 was NULL or not initialized using
@@ -540,38 +610,60 @@ parameter is currently unused, and must be set to 0.
 The
 .I \\$1
 .ie '\*[TYPE]'C'\{function returns the value of
-\}
-.el\{method throws a
-.IR DbException (3)
-or returns the value of
-\}
 .I errno
 on failure,
 0 on success,
+\}
+.el\{method throws a
+.IR DbException (3)
+.ie '\*[TYPE]'CXX'\{or returns the value of
+.I errno
+on failure,
+0 on success,
+\}
+.el\{that encapsulates an
+.I errno
+on failure,
+\}
+\}
 ..
 .de Ro
 Otherwise, the
 .I \\$1
 .ie '\*[TYPE]'C'\{function returns the value of
+.I errno
+on failure and 0 on success.
 \}
 .el\{method throws a
 .IR DbException (3)
-or returns the value of
-\}
+.ie '\*[TYPE]'CXX'\{or returns the value of
 .I errno
 on failure and 0 on success.
+\}
+.el\{that encapsulates an
+.I errno
+on failure,
+\}
+\}
 ..
 .de Rt
 The
 .I \\$1
 .ie '\*[TYPE]'C'\{function returns the value of
+.I errno
+on failure and 0 on success.
 \}
 .el\{method throws a
 .IR DbException (3)
-or returns the value of
-\}
+.ie '\*[TYPE]'CXX'\{or returns the value of
 .I errno
 on failure and 0 on success.
+\}
+.el\{that encapsulates an
+.I errno
+on failure.
+\}
+\}
 ..
 .\" The TXN id macro.
 .de Tx
@@ -588,17 +680,17 @@ otherwise, NULL.
 .\"	+ the interface, e.g., "transaction region"
 .\"	+ the prefix (for C++, this is the class name)
 .de Un
-.ie '\*[TYPE]'CXX'\{\
-.ds Va DbEnv::appinit
-.ds Vc \\$2::close
-.ds Vo \\$2::open
-.ds Vu \\$2::unlink
-\}
-.el\{\
+.ie '\*[TYPE]'C'\{\
 .ds Va db_appinit
 .ds Vc \\$2_close
 .ds Vo \\$2_open
 .ds Vu \\$2_unlink
+\}
+.el\{\
+.ds Va DbEnv::appinit
+.ds Vc \\$2::close
+.ds Vo \\$2::open
+.ds Vu \\$2::unlink
 \}
 .Fn \\*(Vu
 The
@@ -643,7 +735,7 @@ the region removal will fail.
 .PP
 In the case of catastrophic or system failure,
 database recovery must be performed (see
-.IR db_recovery (1)
+.IR db_recover (1)
 or the DB_RECOVER flags to
 .IR \\*(Va (3)).
 Alternatively, if recovery is not required because no database state is
@@ -696,6 +788,7 @@ This file will be removed if the \\$1 utility exits gracefully.
 .\" This macro takes one argument:
 .\"	+ the allocated object
 .de Ma
+.if !'\*[TYPE]'JAVA'\{\
 \\$1 are created in allocated memory.
 If
 .I db_malloc
@@ -715,6 +808,7 @@ the caller is responsible for deallocating the returned memory.
 To deallocate the returned memory,
 free each returned memory pointer;
 pointers inside the memory do not need to be individually freed.
+\}
 ..
 .\" Underlying function paragraph.
 .\" This macro takes two arguments:
@@ -753,13 +847,14 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH DbLog 3 "October 14, 1997"
+.TH DbLog 3 "November 24, 1997"
 .UC 7
 .SH NAME
 DbLog \- log management class
 .SH SYNOPSIS
 .nf
 .ft B
+.ie '\*[TYPE]'CXX'\{
 #include <db_cxx.h>
 
 static int
@@ -794,7 +889,7 @@ DbLog::archive(char **list[],
 int flags, void *(*db_malloc)(size_t));
 
 int
-DbLog::db_register(const Db *dbp, 
+DbLog::db_register(const Db *dbp,
 .ti +5
 const char *name, DBTYPE type, u_int32_t *fidp);
 
@@ -803,6 +898,48 @@ DbLog::db_unregister(u_int32_t fid);
 
 int
 DbLog::stat(DB_LOG_STAT **spp, void *(*db_malloc)(size_t));
+\}
+.el\{\
+import com.sleepycat.db.*;
+
+public static DbLog open(String dir, int flags, int mode, DbEnv dbenv)
+.ti +5
+throws DbException;
+
+public void close()
+.ti +5
+throws DbException;
+
+public static int compare(DbLsn lsn0, DbLsn lsn1);
+
+public String file(DbLsn lsn)
+.ti +5
+throws DbException;
+
+public void flush(DbLsn lsn)
+.ti +5
+throws DbException;
+
+public void get(DbLsn lsn, Dbt data, int flags)
+.ti +5
+throws DbException;
+
+public void put(DbLsn lsn, Dbt data, int flags)
+.ti +5
+throws DbException;
+
+public int db_register(Db dbp, String name, int dbtype)
+.ti +5
+throws DbException;
+
+public void db_unregister(int fid)
+.ti +5
+throws DbException;
+
+public static void unlink(String dir, int force, DbEnv dbenv)
+.ti +5
+throws DbException;
+\}
 .ft R
 .fi
 .SH DESCRIPTION
@@ -850,8 +987,12 @@ The logging subsystem is configured
 .En "DbLog::open" "DbLog::close"
 .TP 5
 .Se
+.ie '\*[TYPE]'CXX'\{\
 .TP 5
-u_int32_t lg_max;
+u_int32_t lg_max;\}
+.el\{\
+.TP 5
+int lg_max;\}
 The maximum size of a single file in the log.
 Because DbLsn file offsets are unsigned 4-byte values,
 .I lg_max
@@ -920,7 +1061,7 @@ The
 .I flags
 parameter must be set to exactly one of the following values:
 .TP 5
-DB_CHECKPOINT
+.Sj Db DB_CHECKPOINT
 The last record written with the DB_CHECKPOINT flag specified to the
 .I DbLog::put
 method is returned in the
@@ -937,7 +1078,7 @@ If the log is empty the
 .I DbLog::get
 method will return DB_NOTFOUND.
 .TP 5
-DB_FIRST
+.Sj Db DB_FIRST
 The first record from any of the log files found in the log directory
 is returned in the
 .I data
@@ -950,7 +1091,7 @@ If the log is empty the
 .I DbLog::get
 method will return DB_NOTFOUND.
 .TP 5
-DB_LAST
+.Sj Db DB_LAST
 The last record in the log is returned in the
 .I data
 argument.
@@ -963,7 +1104,7 @@ the
 .I DbLog::get
 method will return DB_NOTFOUND.
 .TP 5
-DB_NEXT
+.Sj Db DB_NEXT
 The current log position is advanced to the next record in the log and that
 record is returned in the
 .I data
@@ -986,7 +1127,7 @@ calls to
 .I DbLog::get
 with the DB_NEXT flag set will return EINVAL.
 .TP 5
-DB_PREV
+.Sj Db DB_PREV
 The current log position is moved to the previous record in the log and that
 record is returned in the
 .I data
@@ -1009,15 +1150,14 @@ calls to
 .I DbLog::get
 with the DB_PREV flag set will return EINVAL.
 .TP 5
-DB_CURRENT
+.Sj Db DB_CURRENT
 Return the log record currently referenced by the log.
 .IP
 If the log pointer has not been initialized via DB_FIRST, DB_LAST, DB_SET,
 DB_NEXT, or DB_PREV, or if the log was opened with the DB_THREAD flag set,
 .I DbLog::get
 will return EINVAL.
-.TP 5
-DB_SET
+.Sj Db DB_SET
 Retrieve the record specified by the
 .I lsn
 argument.
@@ -1047,7 +1187,9 @@ The
 method maps DbLsn's to file names.
 The
 .I DbLog::file
-method copies the name of the file containing the record named by
+method
+.ie '\*[TYPE]'CXX'\{\
+copies the name of the file containing the record named by
 .I lsn
 into the memory location referenced by
 .IR namep .
@@ -1070,6 +1212,16 @@ will return ENOMEM.
 Note, as described above,
 log file names are quite short,
 on the order of 10 characters.
+\}
+.el\{\
+returns the name of the file containing the record named by
+.IR lsn .
+(This mapping of DbLsn to file is needed for database administration.
+For example, a transaction manager typically records the earliest DbLsn
+needed for restart, and the database administrator may want to archive
+log files to tape when they contain only DbLsn's before the earliest one
+needed for restart.)
+\}
 .PP
 .Rt DbLog::file
 .PP
@@ -1084,11 +1236,11 @@ The
 .I flags
 parameter may be set to one of the following values:
 .TP 5
-DB_CHECKPOINT
+.Sj Db DB_CHECKPOINT
 The log should write a checkpoint record, recording any information
 necessary to make the log structures recoverable after a crash.
 .TP 5
-DB_FLUSH
+.Sj Db DB_FLUSH
 The log is forced to disk after this record is written, guaranteeing
 that all records with DbLsns less than or equal to the one being put
 are on disk
@@ -1118,9 +1270,16 @@ during undo.)
 .Fn DbLog::archive
 The
 .I DbLog::archive
-method creates a NULL-terminated array of log or database file names
+method creates
+.ie '\*[TYPE]'CXX'\{\
+a NULL-terminated
+array of log or database file names
 and copies a pointer to them into the user-specified memory location
 .IR list .
+\}
+.el \{\
+and returns an array of log or database file names.
+\}
 .PP
 By default,
 .I DbLog::archive
@@ -1132,7 +1291,9 @@ If there were no file names to return,
 .I list
 will be set to NULL.
 .PP
+.if '\*[TYPE]'CXX'\{\
 .Ma "Arrays of log file names"
+\}
 .PP
 The
 .I flags
@@ -1140,11 +1301,11 @@ argument is specified by
 .BR or 'ing
 together one or more of the following values:
 .TP 5
-DB_ARCH_ABS
+.Sj Db DB_ARCH_ABS
 All pathnames are returned as absolute pathnames,
 instead of relative to the database home directory.
 .TP 5
-DB_ARCH_DATA
+.Sj Db DB_ARCH_DATA
 Return the database files that need to be archived in order to recover
 the database from catastrophic failure.
 If any of the database files have not been accessed during the lifetime of
@@ -1154,7 +1315,7 @@ will not include them in this list.
 It is also possible that some of the files referenced in the log have
 since been deleted from the system.
 .TP 5
-DB_ARCH_LOG
+.Sj Db DB_ARCH_LOG
 Return all the log file names regardless of whether or not they are in
 use.
 .PP
@@ -1170,9 +1331,15 @@ manual page for more information on database archival procedures.
 .Fn DbLog::db_register
 The
 .I DbLog::db_register
-method registers a file name with the log manager and copies a file
+method registers a file name with the log manager and
+.ie '\*[TYPE]'CXX'\{\
+copies a file
 identification number into the memory location referenced by
 .IR fidp .
+\}
+.el\{\
+returns a file identification number.
+\}
 This file identification number should be used in all subsequent log
 messages that refer to operations on this file.
 The log manager records all file name to file identification number mappings
@@ -1184,7 +1351,11 @@ The
 method is called when an access method registers the open of a file.
 The
 .I dbp
-parameter should be a pointer to the Db object which is being returned
+parameter should be a
+.if '\*[TYPE]'CXX'\{\
+pointer to the
+\}
+Db object which is being returned
 by the access method.
 .PP
 The
@@ -1206,6 +1377,7 @@ parameter.
 The file identification number may then be reused.
 .PP
 .Rt DbLog::db_unregister
+.if '\*[TYPE]'CXX'\{\
 .PP
 .Fn DbLog::stat
 The
@@ -1243,6 +1415,7 @@ the region lock without waiting.
 u_long st_region_nowait;
 The number of times that a process was forced to wait before
 obtaining the region lock.
+\}
 .SH "ENVIRONMENT VARIABLES"
 The following environment variables affect the execution of
 .IR db_log :
@@ -1255,7 +1428,7 @@ The following environment variables affect the execution of
 .PP
 .Ee DbLog::open
 .na
-.nh
+.Nh
 DbLog::close(3), 
 DbLog::unlink(3), 
 atoi(3), 
@@ -1286,7 +1459,7 @@ strncmp(3),
 unlink(2), 
 and
 write(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec DbLog::open
@@ -1301,19 +1474,19 @@ The specified file size was too large.
 .PP
 .Ee DbLog::close
 .na
-.nh
+.Nh
 close(2), 
 fcntl(2), 
 fflush(3), 
 munmap(2), 
 and
 strerror(3). 
-.hy
+.Hy
 .ad
 .PP
 .Ee DbLog::flush
 .na
-.nh
+.Nh
 close(2), 
 fcntl(2), 
 fflush(3), 
@@ -1333,7 +1506,7 @@ strlen(3),
 unlink(2), 
 and
 write(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec DbLog::flush
@@ -1342,7 +1515,7 @@ write(2).
 .PP
 .Ee DbLog::get
 .na
-.nh
+.Nh
 atoi(3), 
 close(2), 
 fcntl(2), 
@@ -1367,7 +1540,7 @@ strlen(3),
 strncmp(3), 
 and
 unlink(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec DbLog::get
@@ -1378,7 +1551,7 @@ The DB_FIRST flag was specified and no log files were found.
 .PP
 .Ee DbLog::file
 .na
-.nh
+.Nh
 close(2), 
 fcntl(2), 
 fflush(3), 
@@ -1395,7 +1568,7 @@ strerror(3),
 strlen(3), 
 and
 unlink(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec DbLog::file
@@ -1405,7 +1578,7 @@ The supplied buffer was too small to hold the log file name.
 .PP
 .Ee DbLog::put
 .na
-.nh
+.Nh
 close(2), 
 fcntl(2), 
 fflush(3), 
@@ -1426,7 +1599,7 @@ time(3),
 unlink(2), 
 and
 write(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec DbLog::put
@@ -1437,7 +1610,7 @@ The record to be logged is larger than the maximum log record.
 .PP
 .Ee DbLog::unlink
 .na
-.nh
+.Nh
 close(2), 
 fcntl(2), 
 fflush(3), 
@@ -1456,7 +1629,7 @@ strerror(3),
 strlen(3), 
 and
 unlink(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec DbLog::unlink
@@ -1465,13 +1638,12 @@ unlink(2).
 .PP
 .Ee DbLog::archive
 .na
-.nh
+.Nh
 DbLog::compare(3), 
 DbLog::get(3), 
 close(2), 
 fcntl(2), 
 fflush(3), 
-func(3), 
 getcwd(3), 
 malloc(3), 
 memcpy(3), 
@@ -1490,7 +1662,7 @@ strerror(3),
 strlen(3), 
 and
 unlink(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec DbLog::archive
@@ -1501,7 +1673,7 @@ The log was corrupted.
 .PP
 .Ee DbLog::db_register
 .na
-.nh
+.Nh
 close(2), 
 fcntl(2), 
 fflush(3), 
@@ -1524,7 +1696,7 @@ time(3),
 unlink(2), 
 and
 write(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec DbLog::db_register
@@ -1533,7 +1705,7 @@ write(2).
 .PP
 .Ee DbLog::db_unregister
 .na
-.nh
+.Nh
 close(2), 
 fcntl(2), 
 fflush(3), 
@@ -1554,7 +1726,7 @@ time(3),
 unlink(2), 
 and
 write(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec DbLog::db_unregister

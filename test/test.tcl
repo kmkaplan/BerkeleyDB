@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test.tcl	10.16 (Sleepycat) 11/2/97
+#	@(#)test.tcl	10.18 (Sleepycat) 11/18/97
 
 # Load everything that we need
 set parms(test001) 10000
@@ -33,6 +33,7 @@ set parms(test024) 10000
 set parms(test025) 10000
 set parms(test026) {2000 5 26}
 set parms(test027) {100}
+set parms(test028) ""
 
 source ./include.tcl
 source ../test/testutils.tcl
@@ -46,11 +47,11 @@ if { [file exists $testdir] != 1 } {
 set alphabet "abcdefghijklmnopqrstuvwxyz"
 set recd_debug 0
 
-set loadtests 31
-set runtests 27
+set loadtests 32
+set runtests 28
 set recdtests 4
 set deadtests 2
-set bugtests 6
+set bugtests 7
 set rsrctests 1
 for { set i 1 } { $i <= $loadtests } {incr i} {
 	set name [format "test%03d.tcl" $i]

@@ -5,17 +5,33 @@
 .\" Copyright (c) 1997
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)DbLockTab.sox	10.6 (Sleepycat) 11/1/97
+.\"	@(#)DbLockTab.sox	10.9 (Sleepycat) 11/25/97
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1996, 1997
+.\" Copyright (c) 1997
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)macros.so	10.27 (Sleepycat) 10/25/97
+.\"	@(#)macros.so	10.36 (Sleepycat) 11/28/97
 .\"
-.\" The general information text macro.
+.\" We don't want hyphenation for any HTML documents.
+.ie '\*[HTML]'YES'\{\
+.nh
+\}
+.el\{\
+.ds Hy
+.hy
+..
+.ds Nh
+.nh
+..
+\}
+.\" The alternative text macro
+.\" This macro takes two arguments:
+.\"	+ the text produced if this is a "C" manpage
+.\"	+ the text produced if this is a "CXX" or "JAVA" manpage
+.\"
 .de Al
 .ie '\*[TYPE]'C'\{\\$1
 \}
@@ -37,18 +53,24 @@
 \}
 \}
 ..
+.\" Scoped name for Java.
+.\" Produces a.b, for Java, otherwise just b.
+.\" This macro is used for constants that must
+.\" be scoped in Java, but are global otherwise.
+.\" This macro takes two arguments:
+.\"	+ the class
+.\"	+ the name within the class or following the prefix
+.de Sj
+.ie '\*[TYPE]'JAVA'\{\
+.TP 5
+\\$1.\\$2\}
+.el\{\
+.TP 5
+\\$2\}
+..
 .\" The general information text macro.
 .de Gn
-.ie '\*[TYPE]'CXX'\{The DB library is a family of classes that provides a modular
-programming interface to transactions and record-oriented file access.
-The library includes support for transactions, locking, logging and file
-page caching, as well as various indexed access methods.
-Many of the classes (e.g., the file page caching class)
-are useful independent of the other DB classes,
-although some classes are explicitly based on other classes
-(e.g., transactions and logging).
-\}
-.el\{The DB library is a family of groups of functions that provides a modular
+.ie '\*[TYPE]'C'\{The DB library is a family of groups of functions that provides a modular
 programming interface to transactions and record-oriented file access.
 The library includes support for transactions, locking, logging and file
 page caching, as well as various indexed access methods.
@@ -56,6 +78,15 @@ Many of the functional groups (e.g., the file page caching functions)
 are useful independent of the other DB functions,
 although some functional groups are explicitly based on other functional
 groups (e.g., transactions and logging).
+\}
+.el\{The DB library is a family of classes that provides a modular
+programming interface to transactions and record-oriented file access.
+The library includes support for transactions, locking, logging and file
+page caching, as well as various indexed access methods.
+Many of the classes (e.g., the file page caching class)
+are useful independent of the other DB classes,
+although some classes are explicitly based on other classes
+(e.g., transactions and logging).
 \}
 For a general description of the DB package, see
 .IR db_intro (3).
@@ -67,24 +98,32 @@ For a general description of the DB package, see
 The
 .I \\$1
 .ie '\*[TYPE]'C'\{function may fail and return
+.I errno
 \}
 .el\{method may fail and throw a
 .IR DbException (3)
+.if '\*[TYPE]'CXX'\{
 or return
-\}
 .I errno
+\}
+\}
 for any of the errors specified for the following DB and library functions:
 ..
 .de Ec
 In addition, the
 .I \\$1
 .ie '\*[TYPE]'C'\{function may fail and return
+.I errno
 \}
 .el\{method may fail and throw a
 .IR DbException (3)
-or return
-\}
+.ie '\*[TYPE]'CXX'\{or return
 .I errno
+\}
+.el\{encapsulating an
+.I errno
+\}
+\}
 for the following conditions:
 ..
 .de Ea
@@ -124,11 +163,13 @@ All subsequent database calls (other than
 will return EPERM.
 ..
 .de Ek
+.if '\*[TYPE]'CXX'\{\
 Methods marked as returning
 .I errno
 will, by default, throw an exception that encapsulates the error information.
 The default error behavior can be changed, see
 .IR DbException (3).
+\}
 ..
 .\" The SEE ALSO text macro
 .de Sa
@@ -144,8 +185,20 @@ The default error behavior can be changed, see
 .IR db_recover (1),
 .IR db_stat (1),
 .IR db_intro (3),
-.ie '\*[TYPE]'CXX'\{\
-.IR db_jump (3),
+.ie '\*[TYPE]'C'\{\
+.IR db_appinit (3),
+.IR db_cursor (3),
+.IR db_dbm (3),
+.IR db_internal (3),
+.IR db_lock (3),
+.IR db_log (3),
+.IR db_mpool (3),
+.IR db_open (3),
+.IR db_thread (3),
+.IR db_txn (3)
+\}
+.el\{\
+.IR db_internal (3),
 .IR db_thread (3),
 .IR Db (3),
 .IR Dbc (3),
@@ -153,7 +206,7 @@ The default error behavior can be changed, see
 .IR DbException (3),
 .IR DbInfo (3),
 .IR DbLock (3),
-.IR DbLocktab (3),
+.IR DbLockTab (3),
 .IR DbLog (3),
 .IR DbLsn (3),
 .IR DbMpool (3),
@@ -162,20 +215,8 @@ The default error behavior can be changed, see
 .IR DbTxn (3),
 .IR DbTxnMgr (3)
 \}
-.el\{\
-.IR db_appinit (3),
-.IR db_cursor (3),
-.IR db_dbm (3),
-.IR db_jump (3),
-.IR db_lock (3),
-.IR db_log (3),
-.IR db_mpool (3),
-.IR db_open (3),
-.IR db_thread (3),
-.IR db_txn (3)
-\}
 .ad
-.hy
+.Hy
 ..
 .\" The function header macro.
 .\" This macro takes one argument:
@@ -190,27 +231,7 @@ The default error behavior can be changed, see
 .\"	+ the interface, e.g., "transaction region"
 .\"	+ the prefix, e.g., "txn" (or the class name for C++, e.g., "DbTxn")
 .de Co
-.ie '\*[TYPE]'CXX'\{\
-.Fn \\$2::open
-The
-.I \\$2::open
-method copies a pointer, to the \\$1 identified by the
-.B directory
-.IR dir ,
-into the memory location referenced by
-.IR regionp .
-.PP
-If the
-.I dbenv
-argument to
-.I \\$2::open
-was initialized using
-.IR DbEnv::appinit ,
-.I dir
-is interpreted as described by
-.IR DbEnv (3).
-\}
-.el\{\
+.ie '\*[TYPE]'C'\{\
 .Fn \\$2_open
 The
 .I \\$2_open
@@ -229,6 +250,33 @@ was initialized using
 .I dir
 is interpreted as described by
 .IR db_appinit (3).
+\}
+.el\{\
+.Fn \\$2::open
+The
+.I \\$2::open
+.ie '\*[TYPE]'CXX'\{\
+method copies a pointer, to the \\$1 identified by the
+.B directory
+.IR dir ,
+into the memory location referenced by
+.IR regionp .
+\}
+.el\{\
+method returns a \\$1 identified by the
+.B directory
+.IR dir .
+\}
+.PP
+If the
+.I dbenv
+argument to
+.I \\$2::open
+was initialized using
+.IR DbEnv::appinit ,
+.I dir
+is interpreted as described by
+.IR DbEnv (3).
 \}
 .PP
 Otherwise,
@@ -255,14 +303,17 @@ and
 .PP
 All files associated with the \\$1 are created in this directory.
 This directory must already exist when
-.I \\*(Vo
+.ie '\*[TYPE]'C'\{
+\\$1_open
+\}
+.el\{\
+\\$2::open
+\}
 is called.
 If the \\$1 already exists,
 the process must have permission to read and write the existing files.
 If the \\$1 does not already exist,
 it is optionally created and initialized.
-\}
-.rm Vo
 ..
 .\" The common close language macro, for discarding created regions
 .\" This macro takes one argument:
@@ -271,15 +322,15 @@ it is optionally created and initialized.
 In addition, if the
 .I dir
 argument to
-.ie '\*[TYPE]'CXX'\{\
-.ds Va DbEnv::appinit
-.ds Vo \\$1::open
-.ds Vu \\$1::unlink
-\}
-.el\{\
+.ie '\*[TYPE]'C'\{\
 .ds Va db_appinit
 .ds Vo \\$1_open
 .ds Vu \\$1_unlink
+\}
+.el\{\
+.ds Va DbEnv::appinit
+.ds Vo \\$1::open
+.ds Vu \\$1::unlink
 \}
 .I \\*(Vo
 was NULL
@@ -287,6 +338,9 @@ and
 .I dbenv
 was not initialized using
 .IR \\*(Va ,
+.if '\\$1'memp'\{\
+or the DB_MPOOL_PRIVATE flag was set,
+\}
 all files created for this shared region will be removed,
 as if
 .I \\*(Vu
@@ -300,7 +354,53 @@ were called.
 .\"	+ the function called to open, e.g., "txn_open"
 .\"	+ the function called to close, e.g., "txn_close"
 .de En
-.ie '\*[TYPE]'CXX'\{\
+.ie '\*[TYPE]'C'\{\
+based on the
+.I dbenv
+argument to
+.IR \\$1 ,
+which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
+It is expected that applications will use a single DB_ENV structure as the
+argument to all of the subsystems in the DB package.
+In order to ensure compatibility with future releases of DB, all fields of
+the DB_ENV structure that are not explicitly set should be initialized to 0
+before the first time the structure is used.
+Do this by declaring the structure external or static, or by calling the C
+library routine
+.IR bzero (3)
+or
+.IR memset (3).
+.PP
+The fields of the DB_ENV structure used by
+.I \\$1
+are described below.
+.if '\*[TYPE]'CXX'\{\
+As references to the DB_ENV structure may be maintained by
+.IR \\$1 ,
+it is necessary that the DB_ENV structure and memory it references be valid
+until the
+.I \\$2
+function is called.
+\}
+.ie '\\$1'db_appinit'\{The
+.I dbenv
+argument may not be NULL.
+If any of the fields of the
+.I dbenv
+are set to 0,
+defaults appropriate for the system are used where possible.
+\}
+.el\{If
+.I dbenv
+is NULL
+or any of its fields are set to 0,
+defaults appropriate for the system are used where possible.
+\}
+.PP
+The following fields in the DB_ENV structure may be initialized before calling
+.IR \\$1 :
+\}
+.el\{\
 based on which set methods have been used.
 It is expected that applications will use a single DbEnv object as the
 argument to all of the subsystems in the DB package.
@@ -329,54 +429,24 @@ The following fields in the DbEnv object may be initialized, using the
 appropriate set method, before calling
 .IR \\$1 :
 \}
-.el\{\
-based on the
-.I dbenv
-argument to
-.IR \\$1 ,
-which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
-It is expected that applications will use a single DB_ENV structure as the
-argument to all of the subsystems in the DB package.
-In order to ensure compatibility with future releases of DB, all fields of
-the DB_ENV structure that are not explicitly set should be initialized to 0
-before the first time the structure is used.
-Do this by declaring the structure external or static, or by calling the C
-library routine
-.IR bzero (3)
-or
-.IR memset (3).
-.PP
-The fields of the DB_ENV structure used by
-.I \\$1
-are described below.
-As references to the DB_ENV structure may be maintained by
-.IR \\$1 ,
-it is necessary that the DB_ENV structure and memory it references be valid
-until the
-.I \\$2
-function is called.
-.ie '\\$1'db_appinit'\{The
-.I dbenv
-argument may not be NULL.
-If any of the fields of the
-.I dbenv
-are set to 0,
-defaults appropriate for the system are used where possible.
-\}
-.el\{If
-.I dbenv
-is NULL
-or any of its fields are set to 0,
-defaults appropriate for the system are used where possible.
-\}
-.PP
-The following fields in the DB_ENV structure may be initialized before calling
-.IR \\$1 :
-\}
 ..
 .\" The DB_ENV common fields macros.
 .de Se
-.ie '\*[TYPE]'CXX'\{.TP 5
+.ie '\*[TYPE]'JAVA'\{\
+.TP 5
+DbErrcall db_errcall;
+.ns
+.TP 5
+String db_errpfx;
+.ns
+.TP 5
+int db_verbose;
+The error fields of the DbEnv behave as described for
+.IR DbEnv (3).
+\}
+.el\{\
+.ie '\*[TYPE]'CXX'\{\
+.TP 5
 void *(*db_errcall)(char *db_errpfx, char *buffer);
 .ns
 .TP 5
@@ -393,7 +463,7 @@ int db_verbose;
 The error fields of the DbEnv behave as described for
 .IR DbEnv (3).
 \}
-.el\{
+.el\{\
 void *(*db_errcall)(char *db_errpfx, char *buffer);
 .ns
 .TP 5
@@ -407,6 +477,7 @@ int db_verbose;
 The error fields of the DB_ENV behave as described for
 .IR db_appinit (3).
 \}
+\}
 ..
 .\" The open flags.
 .de Fm
@@ -419,8 +490,7 @@ don't already exist.
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
-.TP 5
-DB_CREATE
+.Sj Db DB_CREATE
 Create any underlying files, as necessary.
 If the files do not already exist and the DB_CREATE flag is not specified,
 the call will fail.
@@ -431,7 +501,7 @@ the call will fail.
 .\"	+ the object it returns.
 .de Ft
 .TP 5
-DB_THREAD
+.Sj Db DB_THREAD
 Cause the \\$2 handle returned by the
 .I \\$1
 .Al function method
@@ -502,11 +572,11 @@ TMPDIR
 If the
 .I dbenv
 argument to
-.ie '\*[TYPE]'CXX'\{\
-.ds Vo \\$2::open
+.ie '\*[TYPE]'C'\{\
+.ds Vo \\$2_open
 \}
 .el\{\
-.ds Vo \\$2_open
+.ds Vo \\$2::open
 \}
 .I \\*(Vo
 was NULL or not initialized using
@@ -540,38 +610,60 @@ parameter is currently unused, and must be set to 0.
 The
 .I \\$1
 .ie '\*[TYPE]'C'\{function returns the value of
-\}
-.el\{method throws a
-.IR DbException (3)
-or returns the value of
-\}
 .I errno
 on failure,
 0 on success,
+\}
+.el\{method throws a
+.IR DbException (3)
+.ie '\*[TYPE]'CXX'\{or returns the value of
+.I errno
+on failure,
+0 on success,
+\}
+.el\{that encapsulates an
+.I errno
+on failure,
+\}
+\}
 ..
 .de Ro
 Otherwise, the
 .I \\$1
 .ie '\*[TYPE]'C'\{function returns the value of
+.I errno
+on failure and 0 on success.
 \}
 .el\{method throws a
 .IR DbException (3)
-or returns the value of
-\}
+.ie '\*[TYPE]'CXX'\{or returns the value of
 .I errno
 on failure and 0 on success.
+\}
+.el\{that encapsulates an
+.I errno
+on failure,
+\}
+\}
 ..
 .de Rt
 The
 .I \\$1
 .ie '\*[TYPE]'C'\{function returns the value of
+.I errno
+on failure and 0 on success.
 \}
 .el\{method throws a
 .IR DbException (3)
-or returns the value of
-\}
+.ie '\*[TYPE]'CXX'\{or returns the value of
 .I errno
 on failure and 0 on success.
+\}
+.el\{that encapsulates an
+.I errno
+on failure.
+\}
+\}
 ..
 .\" The TXN id macro.
 .de Tx
@@ -588,17 +680,17 @@ otherwise, NULL.
 .\"	+ the interface, e.g., "transaction region"
 .\"	+ the prefix (for C++, this is the class name)
 .de Un
-.ie '\*[TYPE]'CXX'\{\
-.ds Va DbEnv::appinit
-.ds Vc \\$2::close
-.ds Vo \\$2::open
-.ds Vu \\$2::unlink
-\}
-.el\{\
+.ie '\*[TYPE]'C'\{\
 .ds Va db_appinit
 .ds Vc \\$2_close
 .ds Vo \\$2_open
 .ds Vu \\$2_unlink
+\}
+.el\{\
+.ds Va DbEnv::appinit
+.ds Vc \\$2::close
+.ds Vo \\$2::open
+.ds Vu \\$2::unlink
 \}
 .Fn \\*(Vu
 The
@@ -643,7 +735,7 @@ the region removal will fail.
 .PP
 In the case of catastrophic or system failure,
 database recovery must be performed (see
-.IR db_recovery (1)
+.IR db_recover (1)
 or the DB_RECOVER flags to
 .IR \\*(Va (3)).
 Alternatively, if recovery is not required because no database state is
@@ -696,6 +788,7 @@ This file will be removed if the \\$1 utility exits gracefully.
 .\" This macro takes one argument:
 .\"	+ the allocated object
 .de Ma
+.if !'\*[TYPE]'JAVA'\{\
 \\$1 are created in allocated memory.
 If
 .I db_malloc
@@ -715,6 +808,7 @@ the caller is responsible for deallocating the returned memory.
 To deallocate the returned memory,
 free each returned memory pointer;
 pointers inside the memory do not need to be individually freed.
+\}
 ..
 .\" Underlying function paragraph.
 .\" This macro takes two arguments:
@@ -753,13 +847,22 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH DbLockTab 3 "November 1, 1997"
+.de Vc
+.ie '\*[TYPE]'CXX'\{
+.I DbLockTab::vec
+\}
+.el\{\
+.I db_vec
+\}
+..
+.TH DbLockTab 3 "November 25, 1997"
 .UC 7
 .SH NAME
 DbLockTab \- lock manager
 .SH SYNOPSIS
 .nf
 .ft B
+.ie '\*[TYPE]'CXX'\{
 #include <db_cxx.h>
 
 static int
@@ -787,7 +890,35 @@ static int
 DbLockTab::unlink(const char *dir, int force, DbEnv *dbenv);
 
 int
-DbLockTab::detect(db_detect_t atype, int flags);
+DbLockTab::detect(int flags, int atype);
+\}
+.el\{\
+import com.sleepycat.db.*;
+
+public void close()
+.ti +5
+throws DbException;
+
+public void detect(int flags, int atype)
+.ti +5
+throws DbException;
+
+public DbLock get(int locker, int flags, Dbt obj, int lock_mode)
+.ti +5
+throws DbException;
+
+public int id()
+.ti +5
+throws DbException;
+
+public static DbLockTab open(String dir, int flags, int mode, DbEnv dbenv)
+.ti +5
+throws DbException;
+
+public static void unlink(String dir, int force, DbEnv dbenv)
+.ti +5
+throws DbException;
+\}
 .ft R
 .fi
 .SH DESCRIPTION
@@ -806,6 +937,18 @@ In most cases, when multiple treads or processes are using locking, the
 deadlock detector,
 .IR db_deadlock (1),
 should be run.
+.if '\*[TYPE]'JAVA'\{
+.PP
+The
+.I vec
+method (as it appears in the C and C++ APIs)
+is not yet implemented for Java and so it not described.
+However, understanding this function in the C or C++ API
+is helpful in understanding the
+.I get
+method, so please refer to lock_vec in
+.IR db_lock(3) .
+\}
 .PP
 .Co "lock table" DbLockTab
 .PP
@@ -818,8 +961,12 @@ The locking subsystem is configured
 .En "DbLockTab::open" "DbLockTab::close"
 .TP 5
 .Se
+.ie '\*[TYPE]'CXX'\{\
 .TP 5
-const u_int8_t lk_conflicts[][];
+const u_int8_t lk_conflicts[][];\}
+.el\{\
+.TP 5
+byte[][] lk_conflicts;\}
 A
 .I lk_modes
 by
@@ -839,8 +986,12 @@ is NULL, the conflicts array
 is used;
 see the section below entitled ``STANDARD LOCK MODES'' for a description
 of that array.
+.ie '\*[TYPE]'CXX'\{\
 .TP 5
-db_detect_t lk_detect;
+u_int32_t lk_detect;\}
+.el\{\
+.TP 5
+int lk_detect;\}
 If non-0,
 specifies that the deadlock detector be run whenever a lock conflict occurs,
 and specifies which transaction should be aborted in the case of a deadlock.
@@ -849,22 +1000,26 @@ The
 field must be set to one of the following values.
 .RS
 .TP 5
-DB_LOCK_DEFAULT
+.Sj Db DB_LOCK_DEFAULT
 Use the default policy as specified in the
 .IR db_deadlock (1)
 man page.
 .TP 5
-DB_LOCK_OLDEST
+.Sj Db DB_LOCK_OLDEST
 Abort the oldest transaction.
 .TP 5
-DB_LOCK_RANDOM
+.Sj Db DB_LOCK_RANDOM
 Abort a random transaction involved in the deadlock.
 .TP 5
-DB_LOCK_YOUNGEST
+.Sj Db DB_LOCK_YOUNGEST
 Abort the youngest transaction.
 .RE
+.ie '\*[TYPE]'CXX'\{\
 .TP 5
-unsigned int lk_max;
+unsigned int lk_max;\}
+.el\{\
+.TP 5
+int lk_max;\}
 The maximum number of locks to be held or requested in the table.
 This value is used by
 .I DbLockTab::open
@@ -887,10 +1042,17 @@ see below for a description of that value.
 .Fn DbLockTab::id
 The
 .I DbLockTab::id
-method copies a locker ID,
+method
+.ie '\*[TYPE]'CXX'\{\
+copies a locker ID,
 which is guaranteed to be unique in the specified lock table,
 into the memory location referenced by
 .IR idp .
+\}
+.el\{\
+returns a locker ID, which is guaranteed to be unique in
+the specified lock table.
+\}
 .PP
 The access methods
 (see
@@ -905,6 +1067,7 @@ in which case the transaction ID specified is used for locking.
 .PP
 .Rt DbLockTab::id
 .PP
+.if '\*[TYPE]'CXX'\{
 .Fn DbLockTab::vec
 The
 .I DbLockTab::vec
@@ -1048,13 +1211,15 @@ identifies the request that was granted.
 .PP
 .Ro DbLockTab::vec
 .PP
+\}
 .Fn DbLockTab::get
 The
 .I DbLockTab::get
+.ie '\*[TYPE]'CXX'\{\
 method is a simple interface to the
-.I DbLockTab::vec
+.Vc
 functionality, and is equivalent to calling the
-.I DbLockTab::vec
+.Vc
 method with the
 .I locker
 argument,
@@ -1081,8 +1246,36 @@ element found in the DB_LOCKREQ structure.
 The
 .I DbLockTab::get
 method returns success and failure as described for the
-.I DbLockTab::vec
+.Vc
 method.
+\}
+.el\{\
+method gets a lock, as defined by the values of
+.IR locker ,
+.I obj
+and
+.IR mode .
+The
+.I locker
+argument is an unsigned 32-bit integer quantity.
+It represents the entity requesting or releasing the lock.
+.PP
+The
+.I flags
+value must be set to 0 or the following value:
+.TP 5
+Db.DB_LOCK_NOWAIT
+If a lock cannot be granted because the requested lock conflicts with an
+existing lock, return immediately instead of waiting for the lock to
+become available.
+.PP
+A reference to the acquired lock is returned.
+(This reference is invalidated by any call to
+.I DbLock::put
+that releases the lock.)
+See
+.IR DbLock (3).
+\}
 .PP
 .Fn DbLockTab::close
 The
@@ -1093,10 +1286,12 @@ Note that
 .I DbLockTab::close
 does not release any locks still held by the closing process.
 (This provides functionality for long-lived locks.)
+.if '\*[TYPE]'CXX'\{
 Processes that wish to have all their locks released can do so by
 issuing the appropriate
 .I DbLockTab::vec
 call.
+\}
 .PP
 .Cc DbLockTab
 .PP
@@ -1119,15 +1314,6 @@ and if it finds one,
 marks one of the participating transactions for abort and then
 returns.
 .PP
-The
-.I atype
-parameter specifies which transaction to abort in the case of deadlock.
-It must be set to one of values described above for the
-.I lk_detect
-field of the
-.I DbEnv
-object.
-.PP
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
@@ -1136,6 +1322,15 @@ together one or more of the following values:
 DB_LOCK_CONFLICT
 Only run the deadlock detector if a lock conflict has occurred since
 the last time that the deadlock detector was run.
+.PP
+The
+.I atype
+parameter specifies which transaction to abort in the case of deadlock.
+It must be set to one of values described above for the
+.I lk_detect
+field of the
+.I DbEnv
+object.
 .PP
 .Rt DbLockTab::detect
 .PP
@@ -1148,6 +1343,7 @@ The following environment variables affect the execution of
 .TP 5
 .Ev "lock table" DbLockTab
 .SH "STANDARD LOCK MODES"
+.if '\*[TYPE]'CXX'\{
 The include file <db_cxx.h> declares two commonly used conflict arrays:
 .TP 5
 const u_int8_t db_lock_rw_conflicts[];
@@ -1159,10 +1355,19 @@ This is a conflict array that involves various intent lock modes (e.g.,
 intent shared) that are used for multigranularity locking.
 .PP
 Their associated sizes are DB_LOCK_RW_N and DB_LOCK_RIW_N.
+\}
+.ie '\*[TYPE]'CXX'\{
 .PP
 In addition, the include file <db_cxx.h> defines the type
 .IR db_lockmode_t ,
 which is the type of the lock modes used with the standard tables above:
+\}
+.el\{\
+The DbLockTab class defines the following integer constants, known
+elsewhere as
+.IR db_lockmode_t ,
+which which specify the type of the lock mode used with the standard tables above:
+\}
 .RS
 .TP 5
 DB_LOCK_NG
@@ -1179,7 +1384,7 @@ write (exclusive)
 .PP
 .Ee DbLockTab::open
 .na
-.nh
+.Nh
 DbLock::unlink(3), 
 close(2), 
 db_version(3), 
@@ -1202,7 +1407,7 @@ strlen(3),
 unlink(2), 
 and
 write(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec DbLockTab::open
@@ -1212,10 +1417,11 @@ write(2).
 .Ei
 .sp
 .Et
+.if '\*[TYPE]'CXX'\{
 .PP
 .Ee DbLockTab::vec
 .na
-.nh
+.Nh
 DbLock::detect(3), 
 fcntl(2), 
 fflush(3), 
@@ -1227,7 +1433,7 @@ munmap(2),
 strerror(3), 
 and
 write(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec DbLockTab::vec
@@ -1236,10 +1442,11 @@ write(2).
 An attempt was made to release lock held by another locker.
 .TP 5
 .Ei
+\}
 .PP
 .Ee DbLockTab::get
 .na
-.nh
+.Nh
 DbLock::detect(3), 
 fcntl(2), 
 fflush(3), 
@@ -1251,7 +1458,7 @@ munmap(2),
 strerror(3), 
 and
 write(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec DbLockTab::get
@@ -1260,19 +1467,19 @@ write(2).
 .PP
 .Ee DbLockTab::close
 .na
-.nh
+.Nh
 close(2), 
 fcntl(2), 
 fflush(3), 
 munmap(2), 
 and
 strerror(3). 
-.hy
+.Hy
 .ad
 .PP
 .Ee DbLockTab::unlink
 .na
-.nh
+.Nh
 close(2), 
 fcntl(2), 
 fflush(3), 
@@ -1291,7 +1498,7 @@ strerror(3),
 strlen(3), 
 and
 unlink(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec DbLockTab::unlink
@@ -1300,7 +1507,7 @@ unlink(2).
 .PP
 .Ee DbLockTab::detect
 .na
-.nh
+.Nh
 calloc(3), 
 fcntl(2), 
 fflush(3), 
@@ -1313,7 +1520,7 @@ munmap(2),
 strerror(3), 
 and
 write(2). 
-.hy
+.Hy
 .ad
 .SH "BUGS"
 If a process dies while holding locks, those locks remain held and are

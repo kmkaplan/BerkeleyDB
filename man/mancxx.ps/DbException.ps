@@ -1,8 +1,8 @@
 %!PS-Adobe-3.0
 %%Creator: groff version 1.10
-%%CreationDate: Mon Nov  3 11:29:55 1997
-%%DocumentNeededResources: font Times-Roman
-%%+ font Times-Bold
+%%CreationDate: Fri Nov 28 16:33:34 1997
+%%DocumentNeededResources: font Times-Bold
+%%+ font Times-Roman
 %%+ font Times-Italic
 %%DocumentSuppliedResources: procset grops 1.10 0
 %%Pages: 1
@@ -166,8 +166,8 @@ pop
 setpacking
 }if
 %%EndResource
-%%IncludeResource: font Times-Roman
 %%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
 %%IncludeResource: font Times-Italic
 grops begin/DEFS 1 dict def DEFS begin/u{.001 mul}bind def end/RES 72
 def/PL 792 def/LS false def/ENC0[/asciicircum/asciitilde/Scaron/Zcaron
@@ -197,89 +197,87 @@ def/PL 792 def/LS false def/ENC0[/asciicircum/asciitilde/Scaron/Zcaron
 /egrave/eacute/ecircumflex/edieresis/igrave/iacute/icircumflex/idieresis
 /eth/ntilde/ograve/oacute/ocircumflex/otilde/odieresis/divide/oslash
 /ugrave/uacute/ucircumflex/udieresis/yacute/thorn/ydieresis]def
-/Times-Italic@0 ENC0/Times-Italic RE/Times-Bold@0 ENC0/Times-Bold RE
-/Times-Roman@0 ENC0/Times-Roman RE
+/Times-Italic@0 ENC0/Times-Italic RE/Times-Roman@0 ENC0/Times-Roman RE
+/Times-Bold@0 ENC0/Times-Bold RE
 %%EndProlog
 %%Page: 1 1
 %%BeginPageSetup
 BP
 %%EndPageSetup
-/F0 10/Times-Roman@0 SF 336.64(DbException\(3\) DbException\(3\))72 48 R
-/F1 9/Times-Bold@0 SF -.18(NA)72 84 S(ME).18 E F0
-(DbException \255 Exception class for Db acti)108 96 Q(vity)-.25 E F1
-(SYNOPSIS)72 112.8 Q/F2 10/Times-Bold@0 SF(#include <db_cxx.h>)108 124.8
-Q(DbException::DbException\(int err\);)108 148.8 Q
-(DbException::DbException\(const char *description\);)108 160.8 Q
-(DbException::DbException\(const char *pr)108 172.8 Q
+/F0 9/Times-Bold@0 SF -.18(NA)72 28.8 S(ME).18 E/F1 10/Times-Roman@0 SF
+(DbException \255 Exception class for Db acti)108 40.8 Q(vity)-.25 E F0
+(SYNOPSIS)72 57.6 Q/F2 10/Times-Bold@0 SF(#include <db_cxx.h>)108 69.6 Q
+(DbException::DbException\(int err\);)108 93.6 Q
+(DbException::DbException\(const char *description\);)108 105.6 Q
+(DbException::DbException\(const char *pr)108 117.6 Q
 (e\214x, int err\);)-.18 E(DbException::DbException\(const char *pr)108
-184.8 Q(e\214x1,)-.18 E(const char *pr)158 196.8 Q(e\214x2, int err\);)
--.18 E(const int)108 220.8 Q(DbException::get_err)108 232.8 Q(no\(\);)
--.15 E(virtual const char *)108 256.8 Q(DbException::what\(\) const;)108
-268.8 Q F1(DESCRIPTION)72 285.6 Q F0 1.02(The DB library is a f)108
-297.6 R 1.019(amily of classes that pro)-.1 F 1.019
+129.6 Q(e\214x1,)-.18 E(const char *pr)158 141.6 Q(e\214x2, int err\);)
+-.18 E(const int)108 165.6 Q(DbException::get_err)108 177.6 Q(no\(\);)
+-.15 E(virtual const char *)108 201.6 Q(DbException::what\(\) const;)108
+213.6 Q F0(DESCRIPTION)72 230.4 Q F1 1.02(The DB library is a f)108
+242.4 R 1.019(amily of classes that pro)-.1 F 1.019
 (vides a modular programming interf)-.15 F 1.019
 (ace to transactions and)-.1 F 1.377(record-oriented \214le access.)108
-309.6 R 1.378(The library includes support for transactions, locking, logging and \214le page)
-6.377 F .443(caching, as well as v)108 321.6 R .443(arious inde)-.25 F
+254.4 R 1.378(The library includes support for transactions, locking, logging and \214le page)
+6.377 F .443(caching, as well as v)108 266.4 R .443(arious inde)-.25 F
 -.15(xe)-.15 G 2.943(da).15 G .442(ccess methods.)-2.943 F(Man)5.442 E
 2.942(yo)-.15 G 2.942(ft)-2.942 G .442
 (he classes \(e.g., the \214le page caching class\))-2.942 F .4(are useful independent of the other DB classes, although some classes are e)
-108 333.6 R .4(xplicitly based on other classes)-.15 F
-(\(e.g., transactions and logging\).)108 345.6 Q -.15(Fo)5 G 2.5(rag).15
+108 278.4 R .4(xplicitly based on other classes)-.15 F
+(\(e.g., transactions and logging\).)108 290.4 Q -.15(Fo)5 G 2.5(rag).15
 G(eneral description of the DB package, see)-2.5 E/F3 10/Times-Italic@0
-SF(db_intr)2.5 E(o)-.45 E F0(\(3\).).18 E
-(This manual page describes the DbException class and ho)108 362.4 Q 2.5
+SF(db_intr)2.5 E(o)-.45 E F1(\(3\).).18 E
+(This manual page describes the DbException class and ho)108 307.2 Q 2.5
 (wi)-.25 G 2.5(ti)-2.5 G 2.5(su)-2.5 G(sed by the v)-2.5 E
 (arious Db* classes.)-.25 E 1.076
-(Most methods in the Db classes return an int b)108 379.2 R 1.076
+(Most methods in the Db classes return an int b)108 336 R 1.076
 (ut also thro)-.2 F 3.575(wa)-.25 G 3.575(ne)-3.575 G 3.575
 (xception. This)-3.725 F(allo)3.575 E 1.075(ws for tw)-.25 F 3.575(od)
--.1 G(if)-3.575 E(ferent)-.25 E 1.405(error beha)108 391.2 R 1.405
+-.1 G(if)-3.575 E(ferent)-.25 E 1.405(error beha)108 348 R 1.405
 (viors, that are kno)-.2 F 1.405(wn as)-.25 F F3(err)3.905 E 1.405
-(or models)-.45 F F0 6.405(.B).27 G 3.905(yd)-6.405 G(ef)-3.905 E 1.406
+(or models)-.45 F F1 6.405(.B).27 G 3.905(yd)-6.405 G(ef)-3.905 E 1.406
 (ault, the error model is con\214gured to thro)-.1 F 3.906(wa)-.25 G(n)
--3.906 E -.15(ex)108 403.2 S .448(ception whene).15 F -.15(ve)-.25 G
-2.948(ra).15 G .447(serious error occurs.)-.001 F .447
-(This generally allo)5.447 F .447
-(ws for cleaner logic for transaction process-)-.25 F .397
-(ing, as a try block can surround a single transaction.)108 415.2 R
+-3.906 E -.15(ex)108 360 S .448(ception whene).15 F -.15(ve)-.25 G 2.948
+(ra).15 G .447(serious error occurs.)-.001 F .447(This generally allo)
+5.447 F .447(ws for cleaner logic for transaction process-)-.25 F .397
+(ing, as a try block can surround a single transaction.)108 372 R
 (Alternati)5.397 E -.15(ve)-.25 G(ly).15 E 2.897(,t)-.65 G .397
-(he error model can be set to not thro)-2.897 F(w)-.25 E -.15(ex)108
-427.2 S 1.354(ceptions, and instead request the indi).15 F 1.354
+(he error model can be set to not thro)-2.897 F(w)-.25 E -.15(ex)108 384
+S 1.354(ceptions, and instead request the indi).15 F 1.354
 (vidual function to return an error code.)-.25 F 1.353
-(The error model can be)6.354 F(changed using the)108 439.2 Q F3(DbEn)
-2.5 E(v::set_err)-.4 E(or_model)-.45 E F0(method, see)2.5 E F3(DbEn)2.5
-E(v)-.4 E F0(\(3\).).32 E 4.101(AD)108 456 S 1.601
+(The error model can be)6.354 F(changed using the)108 396 Q F3(DbEn)2.5
+E(v::set_err)-.4 E(or_model)-.45 E F1(method, see)2.5 E F3(DbEn)2.5 E(v)
+-.4 E F1(\(3\).).32 E 4.101(AD)108 412.8 S 1.601
 (bException object contains an informational string and an errno.)-4.101
 F 1.602(The errno can be obtained using)6.601 F F3(DbException::g)108
-468 Q(et_errno)-.1 E F0 2.5(\(\). The).18 F
+424.8 Q(et_errno)-.1 E F1 2.5(\(\). The).18 F
 (informational string can be obtained using)2.5 E F3(DbException::what)
-2.5 E F0(\(\).).68 E 2.42 -.8(We e)108 484.8 T .819(xpect in the future that this class will inherit from the standard class e)
+2.5 E F1(\(\).).68 E 2.42 -.8(We e)108 441.6 T .819(xpect in the future that this class will inherit from the standard class e)
 .65 F .819(xception, b)-.15 F .819(ut certain language)-.2 F
-(implementation b)108 496.8 Q(ugs currently pre)-.2 E -.15(ve)-.25 G
+(implementation b)108 453.6 Q(ugs currently pre)-.2 E -.15(ve)-.25 G
 (nt this on some platforms.).15 E .44
-(Some methods may return non-zero v)108 513.6 R .441
+(Some methods may return non-zero v)108 470.4 R .441
 (alues without issuing an e)-.25 F 2.941(xception. This)-.15 F .441
 (occurs in situations that are)2.941 F 1.093
-(not normally considered an error)108 525.6 R 3.592(,b)-.4 G 1.092
+(not normally considered an error)108 482.4 R 3.592(,b)-.4 G 1.092
 (ut when some informational status is returned.)-3.792 F -.15(Fo)6.092 G
-3.592(re).15 G(xample,)-3.742 E F3(Db::g)3.592 E(et)-.1 E F0
-(returns DB_KEYNO)108 537.6 Q(TFOUND when a requested k)-.4 E .3 -.15
-(ey d)-.1 H(oes not appear in the database.).15 E F1(SEE ALSO)72 554.4 Q
-F3(db_ar)108 566.4 Q -.15(ch)-.37 G(ive).15 E F0(\(1\),).18 E F3(db_c)
-2.5 E(hec)-.15 E(kpoint)-.2 E F0(\(1\),).68 E F3(db_deadloc)2.5 E(k)-.2
-E F0(\(1\),).67 E F3(db_dump)2.5 E F0(\(1\),).19 E F3(db_load)2.5 E F0
-(\(1\),).77 E F3(db_r)2.5 E(eco)-.37 E(ver)-.1 E F0(\(1\),).73 E F3
-(db_stat)2.5 E F0(\(1\),).68 E F3(db_intr)108 578.4 Q(o)-.45 E F0
-(\(3\),).18 E F3(db_jump)2.5 E F0(\(3\),).19 E F3(db_thr)2.5 E(ead)-.37
-E F0(\(3\),).77 E F3(Db)2.5 E F0(\(3\),).23 E F3(Dbc)2.5 E F0(\(3\),).31
-E F3(DbEn)2.5 E(v)-.4 E F0(\(3\),).32 E F3(DbException)2.5 E F0(\(3\),)
-.24 E F3(DbInfo)2.5 E F0(\(3\),).18 E F3(DbLoc)2.5 E(k)-.2 E F0(\(3\),)
-.67 E F3(DbLoc)108 590.4 Q(ktab)-.2 E F0(\(3\),).23 E F3(DbLo)2.5 E(g)
--.1 E F0(\(3\),).22 E F3(DbLsn)2.5 E F0(\(3\),).24 E F3(DbMpool)2.5 E F0
-(\(3\),).51 E F3(DbMpoolF)2.5 E(ile)-.45 E F0(\(3\),).18 E F3(Dbt)2.5 E
-F0(\(3\),).68 E F3(DbTxn)2.5 E F0(\(3\),).24 E F3(DbTxnMgr)2.5 E F0
-(\(3\)).73 E(September 21, 1997)265.865 768 Q(1)188.865 E EP
+3.592(re).15 G(xample,)-3.742 E F3(Db::g)3.592 E(et)-.1 E F1
+(returns DB_KEYNO)108 494.4 Q(TFOUND when a requested k)-.4 E .3 -.15
+(ey d)-.1 H(oes not appear in the database.).15 E F0(SEE ALSO)72 511.2 Q
+F3(db_ar)108 523.2 Q -.15(ch)-.37 G(ive).15 E F1(\(1\),).18 E F3(db_c)
+2.5 E(hec)-.15 E(kpoint)-.2 E F1(\(1\),).68 E F3(db_deadloc)2.5 E(k)-.2
+E F1(\(1\),).67 E F3(db_dump)2.5 E F1(\(1\),).19 E F3(db_load)2.5 E F1
+(\(1\),).77 E F3(db_r)2.5 E(eco)-.37 E(ver)-.1 E F1(\(1\),).73 E F3
+(db_stat)2.5 E F1(\(1\),).68 E F3(db_intr)108 535.2 Q(o)-.45 E F1
+(\(3\),).18 E F3(db_internal)2.5 E F1(\(3\),).51 E F3(db_thr)2.5 E(ead)
+-.37 E F1(\(3\),).77 E F3(Db)2.5 E F1(\(3\),).23 E F3(Dbc)2.5 E F1
+(\(3\),).31 E F3(DbEn)2.5 E(v)-.4 E F1(\(3\),).32 E F3(DbException)2.5 E
+F1(\(3\),).24 E F3(DbInfo)2.5 E F1(\(3\),).18 E F3(DbLoc)108 547.2 Q(k)
+-.2 E F1(\(3\),).67 E F3(DbLoc)2.5 E(kT)-.2 E(ab)-.92 E F1(\(3\),).23 E
+F3(DbLo)2.5 E(g)-.1 E F1(\(3\),).22 E F3(DbLsn)2.5 E F1(\(3\),).24 E F3
+(DbMpool)2.5 E F1(\(3\),).51 E F3(DbMpoolF)2.5 E(ile)-.45 E F1(\(3\),)
+.18 E F3(Dbt)2.5 E F1(\(3\),).68 E F3(DbTxn)2.5 E F1(\(3\),).24 E F3
+(DbTxnMgr)108 559.2 Q F1(\(3\)).73 E(1)535 768 Q EP
 %%Trailer
 end
 %%EOF

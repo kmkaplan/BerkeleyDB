@@ -1,4 +1,4 @@
-# @(#)db.sed	8.5 (Sleepycat) 11/2/97
+# @(#)db.sed	8.6 (Sleepycat) 11/12/97
 #
 # Various corrections for the DB package.
 
@@ -154,6 +154,9 @@ s/^__ram_get$/xxxDB->get/
 s/^__ram_put$/xxxDB->put/
 s/^__ram_stat$/xxxDB->stat/
 s/^__ram_sync$/xxxDB->sync/
+
+# Log.
+/^cmpfunc$/d
 
 # Mpool.
 s/^mpreg->pgin$/xxxDBmemp->pgin/

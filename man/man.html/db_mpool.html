@@ -6,132 +6,150 @@
 <H1>db_mpool</H1>
 <HR>
 <PRE>
+<!-- Manpage converted by man2html 3.0.1 -->
+       <B>#include</B> <B>&lt;db.h&gt;</B>
 
-</PRE>
-<H2>NAME</H2><PRE>
-       db_mpool - shared memory buffer pool
+       <B>int</B>
+       <B>memp</B>_<B>open(char</B> <B>*dir,</B>
+            <B>int</B> <B>flags,</B> <B>int</B> <B>mode,</B> <B>DB</B>_<B>ENV</B> <B>*dbenv,</B> <B>DB</B>_<B>MPOOL</B> <B>**regionp);</B>
 
+       <B>int</B>
+       <B>memp</B>_<B>close(DB</B>_<B>MPOOL</B> <B>*mp);</B>
 
-</PRE>
-<H2>SYNOPSIS</H2><PRE>
-       <STRONG>#include</STRONG> <STRONG>&lt;db.h&gt;</STRONG>
+       <B>int</B>
+       <B>memp</B>_<B>fopen(DB</B>_<B>MPOOL</B> <B>*mp,</B> <B>char</B> <B>*file,</B> <B>int</B> <B>ftype,</B> <B>int</B> <B>flags,</B>
+            <B>int</B> <B>mode,</B> <B>size</B>_<B>t</B> <B>pagesize,</B> <B>int</B> <B>lsn</B>_<B>offset,</B> <B>DBT</B> <B>*pgcookie,</B>
+            <B>u</B>_<B>int8</B>_<B>t</B> <B>*uid,</B> <B>DB</B>_<B>MPOOLFILE</B> <B>**mpf);</B>
 
-       <STRONG>int</STRONG>
-       <STRONG>memp_open(char</STRONG> <STRONG>*dir,</STRONG>
-            <STRONG>int</STRONG> <STRONG>flags,</STRONG> <STRONG>int</STRONG> <STRONG>mode,</STRONG> <STRONG>DB_ENV</STRONG> <STRONG>*dbenv,</STRONG> <STRONG>DB_MPOOL</STRONG> <STRONG>**regionp);</STRONG>
+       <B>int</B>
+       <B>memp</B>_<B>fclose(DB</B>_<B>MPOOLFILE</B> <B>*mpf);</B>
 
-       <STRONG>int</STRONG>
-       <STRONG>memp_close(DB_MPOOL</STRONG> <STRONG>*mp);</STRONG>
+       <B>int</B>
+       <B>memp</B>_<B>fget(DB</B>_<B>MPOOLFILE</B> <B>*mpf,</B>
+            <B>db</B>_<B>pgno</B>_<B>t</B> <B>*pgnoaddr,</B> <B>int</B> <B>flags,</B> <B>void</B> <B>**pagep);</B>
 
-       <STRONG>int</STRONG>
-       <STRONG>memp_fopen(DB_MPOOL</STRONG> <STRONG>*mp,</STRONG> <STRONG>char</STRONG> <STRONG>*file,</STRONG> <STRONG>int</STRONG> <STRONG>ftype,</STRONG> <STRONG>int</STRONG> <STRONG>flags,</STRONG>
-            <STRONG>int</STRONG> <STRONG>mode,</STRONG> <STRONG>size_t</STRONG> <STRONG>pagesize,</STRONG> <STRONG>int</STRONG> <STRONG>lsn_offset,</STRONG> <STRONG>DBT</STRONG> <STRONG>*pgcookie,</STRONG>
-            <STRONG>u_int8_t</STRONG> <STRONG>*uid,</STRONG> <STRONG>DB_MPOOLFILE</STRONG> <STRONG>**mpf);</STRONG>
+       <B>int</B>
+       <B>memp</B>_<B>fput(DB</B>_<B>MPOOLFILE</B> <B>*mpf,</B> <B>void</B> <B>*pgaddr,</B> <B>int</B> <B>flags);</B>
 
-       <STRONG>int</STRONG>
-       <STRONG>memp_fclose(DB_MPOOLFILE</STRONG> <STRONG>*mpf);</STRONG>
+       <B>int</B>
+       <B>memp</B>_<B>fset(DB</B>_<B>MPOOLFILE</B> <B>*mpf,</B> <B>void</B> <B>*pgaddr,</B> <B>int</B> <B>flags);</B>
 
-       <STRONG>int</STRONG>
-       <STRONG>memp_fget(DB_MPOOLFILE</STRONG> <STRONG>*mpf,</STRONG>
-            <STRONG>db_pgno_t</STRONG> <STRONG>*pgnoaddr,</STRONG> <STRONG>int</STRONG> <STRONG>flags,</STRONG> <STRONG>void</STRONG> <STRONG>**pagep);</STRONG>
+       <B>int</B>
+       <B>memp</B>_<B>fsync(DB</B>_<B>MPOOLFILE</B> <B>*mpf);</B>
 
-       <STRONG>int</STRONG>
-       <STRONG>memp_fput(DB_MPOOLFILE</STRONG> <STRONG>*mpf,</STRONG> <STRONG>void</STRONG> <STRONG>*pgaddr,</STRONG> <STRONG>int</STRONG> <STRONG>flags);</STRONG>
+       <B>int</B>
+       <B>memp</B>_<B>unlink(const</B> <B>char</B> <B>*dir,</B> <B>int</B> <B>force,</B> <B>DB</B>_<B>ENV</B> <B>*);</B>
 
-       <STRONG>int</STRONG>
-       <STRONG>memp_fset(DB_MPOOLFILE</STRONG> <STRONG>*mpf,</STRONG> <STRONG>void</STRONG> <STRONG>*pgaddr,</STRONG> <STRONG>int</STRONG> <STRONG>flags);</STRONG>
+       <B>int</B>
+       <B>memp</B>_<B>register(DB</B>_<B>MPOOL</B> <B>*mp,</B> <B>int</B> <B>ftype,</B>
+            <B>int</B> <B>(*pgin)(db</B>_<B>pgno</B>_<B>t</B> <B>pgno,</B> <B>void</B> <B>*pgaddr,</B> <B>DBT</B> <B>*pgcookie),</B>
+            <B>int</B> <B>(*pgout)(db</B>_<B>pgno</B>_<B>t</B> <B>pgno,</B> <B>void</B> <B>*pgaddr,</B> <B>DBT</B> <B>*pgcookie));</B>
 
-       <STRONG>int</STRONG>
-       <STRONG>memp_fsync(DB_MPOOLFILE</STRONG> <STRONG>*mpf);</STRONG>
+       <B>int</B>
+       <B>memp</B>_<B>trickle(DB</B>_<B>MPOOL</B> <B>*mp,</B> <B>int</B> <B>pct,</B> <B>int</B> <B>*nwrotep);</B>
 
-       <STRONG>int</STRONG>
-       <STRONG>memp_unlink(const</STRONG> <STRONG>char</STRONG> <STRONG>*dir,</STRONG> <STRONG>int</STRONG> <STRONG>force,</STRONG> <STRONG>DB_ENV</STRONG> <STRONG>*);</STRONG>
+       <B>int</B>
+       <B>memp</B>_<B>sync(DB</B>_<B>MPOOL</B> <B>*mp,</B> <B>LSN</B> <B>*lsn);</B>
 
-       <STRONG>int</STRONG>
-       <STRONG>memp_register(DB_MPOOL</STRONG> <STRONG>*mp,</STRONG> <STRONG>int</STRONG> <STRONG>ftype,</STRONG>
-            <STRONG>int</STRONG> <STRONG>(*pgin)(db_pgno_t</STRONG> <STRONG>pgno,</STRONG> <STRONG>void</STRONG> <STRONG>*pgaddr,</STRONG> <STRONG>DBT</STRONG> <STRONG>*pgcookie),</STRONG>
-            <STRONG>int</STRONG> <STRONG>(*pgout)(db_pgno_t</STRONG> <STRONG>pgno,</STRONG> <STRONG>void</STRONG> <STRONG>*pgaddr,</STRONG> <STRONG>DBT</STRONG> <STRONG>*pgcookie));</STRONG>
-
-       <STRONG>int</STRONG>
-       <STRONG>memp_trickle(DB_MPOOL</STRONG> <STRONG>*mp,</STRONG> <STRONG>int</STRONG> <STRONG>pct,</STRONG> <STRONG>int</STRONG> <STRONG>*nwrotep);</STRONG>
-
-       <STRONG>int</STRONG>
-       <STRONG>memp_sync(DB_MPOOL</STRONG> <STRONG>*mp,</STRONG> <STRONG>LSN</STRONG> <STRONG>*lsn);</STRONG>
-
-       <STRONG>int</STRONG>
-       <STRONG>memp_stat(DB_MPOOL</STRONG> <STRONG>*mp,</STRONG> <STRONG>DB_MPOOL_STAT</STRONG> <STRONG>**gsp,</STRONG>
-            <STRONG>DB_MPOOL_FSTAT</STRONG> <STRONG>*(*fsp)[],</STRONG> <STRONG>void</STRONG> <STRONG>*(*db_malloc)(size_t));</STRONG>
+       <B>int</B>
+       <B>memp</B>_<B>stat(DB</B>_<B>MPOOL</B> <B>*mp,</B> <B>DB</B>_<B>MPOOL</B>_<B>STAT</B> <B>**gsp,</B>
+            <B>DB</B>_<B>MPOOL</B>_<B>FSTAT</B> <B>*(*fsp)[],</B> <B>void</B> <B>*(*db</B>_<B>malloc)(size</B>_<B>t));</B>
 
 
 </PRE>
 <H2>DESCRIPTION</H2><PRE>
        The  DB  library  is  a family of groups of functions that
+       provides a modular programming interface  to  transactions
+       and  record-oriented  file  access.   The library includes
+       support for transactions, locking, logging and  file  page
+       caching,  as well as various indexed access methods.  Many
+       of the functional groups  (e.g.,  the  file  page  caching
+       functions)   are   useful  independent  of  the  other  DB
+       functions, although some functional groups are  explicitly
+       based  on  other functional groups (e.g., transactions and
+       logging).  For a general description of  the  DB  package,
+       see <B><A HREF="db_intro.html">db_intro(3)</A></B>.
+
+       This  manual  page  describes  the specific details of the
        memory pool interface.
 
-       The <EM>db</EM><STRONG>_</STRONG><EM>mpool</EM> functions are the library interface  intended
-       to  provide  general-purpose, page-oriented buffer manage-
-       ment of one or more files.  While designed  to  work  with
-       the  other  DB  functions, these functions are also useful
-       for more general purposes.  The memory pools  (DB_MPOOL's)
-       are  referred  to  in  this  document as simply ``pools''.
-       Pools may be shared between processes.  Pools are  usually
-       filled  by  pages from one or more files (DB_MPOOLFILE's).
-       Pages in the pool are  replaced  in  LRU  (least-recently-
-       used)  order,  with  each new page replacing the page that
-       has been unused the longest.   Pages  retrieved  from  the
-       pool  using  <EM>memp</EM><STRONG>_</STRONG><EM>fget</EM>  are  ``pinned''  in  the  pool, by
-       default, until they are returned  to  the  pool's  control
-       using the <EM>memp</EM><STRONG>_</STRONG><EM>fput</EM> function.
+       The db_mpool functions are the library interface  intended
+       to    provide    general-purpose,   page-oriented   buffer
+       management of one or more files.  While designed  to  work
+       with  the  other  DB  functions,  these functions are also
+       useful  for  more  general  purposes.   The  memory  pools
+       (DB_MPOOL's)  are  referred  to in this document as simply
+       ``pools''.  Pools may be shared between processes.   Pools
+       are  usually  filled  by  pages  from  one  or  more files
+       (DB_MPOOLFILE's).  Pages in the pool are replaced  in  LRU
+       (least-recently-used)  order, with each new page replacing
+       the  page  that  has  been  unused  the  longest.    Pages
+       retrieved  from the pool using memp_fget are ``pinned'' in
+       the pool, by default,  until  they  are  returned  to  the
+       pool's control using the memp_fput function.
 
-  <EM>mpool</EM><STRONG>_</STRONG><EM>open</EM>
-       The  <EM>mpool</EM><STRONG>_</STRONG><EM>open</EM>  function  copies a pointer, to the memory
-       pool identified by the  <STRONG>directory</STRONG>  <EM>dir</EM>,  into  the  memory
-       location referenced by <EM>regionp</EM>.
+  mpool_open
+       The  mpool_open  function  copies a pointer, to the memory
+       pool identified by the  <B>directory</B>  dir,  into  the  memory
+       location referenced by regionp.
 
-       If  the <EM>dbenv</EM> argument to <EM>mpool</EM><STRONG>_</STRONG><EM>open</EM> was initialized using
-       <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>,   <EM>dir</EM>   is   interpreted   as   described   by
-       <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>.
+       If  the dbenv argument to mpool_open was initialized using
+       db_appinit,   dir   is   interpreted   as   described   by
+       <B><A HREF="db_appinit.html">db_appinit(3)</A></B>.
 
-       Otherwise,  if <EM>dir</EM> is not NULL, it is interpreted relative
-       to the current working directory of the process.   If  <EM>dir</EM>
+       Otherwise,  if dir is not NULL, it is interpreted relative
+       to the current working directory of the process.   If  dir
        is  NULL,  the following environment variables are checked
        in order: ``TMPDIR'', ``TEMP'', and ``TMP''.   If  one  of
        them is set, memory pool files are created relative to the
        directory it specifies.  If none  of  them  are  set,  the
        first  possible  one of the following directories is used:
-       <EM>/var/tmp</EM>, <EM>/usr/tmp</EM>, <EM>/temp</EM>, <EM>/tmp</EM>, <EM>C:/temp</EM> and <EM>C:/tmp</EM>.
+       /var/tmp, /usr/tmp, /temp, /tmp, C:/temp and C:/tmp.
 
        All files associated with the memory pool are  created  in
-       this directory.  This directory must already exist when <EM>is</EM>
-       <EM>called.</EM>  If the memory pool already  exists,  the  process
-       must have permission to read and write the existing files.
-       If the memory pool does not already exist, it  is  option-
-       ally created and initialized.
+       this directory.  This directory must already exist when
 
+       memory  pool_open  is  called.  If the memory pool already
+       exists, the process must have permission to read and write
+       the  existing  files.  If the memory pool does not already
+       exist, it is optionally created and initialized.
 
-       The  <EM>flags</EM>  and  <EM>mode</EM>  arguments specify how files will be
-       opened and/or created when they don't already exist.   The
-       flags value is specified by <STRONG>or</STRONG>'ing together one or more of
+       The flags and mode arguments specify  how  files  will  be
+       opened  and/or created when they don't already exist.  The
+       flags value is specified by <B>or</B>'ing together one or more of
        the following values:
 
        DB_CREATE
-            Create any underlying files, as  necessary.   If  the
-            files  do not already exist and the DB_CREATE flag is
+            Create  any  underlying  files, as necessary.  If the
+            files do not already exist and the DB_CREATE flag  is
             not specified, the call will fail.
 
        DB_MPOOL_PRIVATE
+            Create  a  private  MPOOL that is not shared with any
+            other process (although it may be shared  with  other
+            threads).
+
+       DB_NOMMAP
+            Always  copy files in this memory pool into the local
+            cache instead of mapping  them  into  process  memory
+            (see  the description of the mp_mmapsize field of the
+            DB_ENV structure for further information).
+
+       DB_THREAD
+            Cause the DB_MPOOL handle returned by  the  memp_open
+            function  to  be useable by multiple threads within a
             single address space, i.e., to be  ``free-threaded''.
 
        All files created by the memory pool subsystem (other than
-       files created by the <EM>memp</EM><STRONG>_</STRONG><EM>fopen</EM> function, which are  sepa-
-       rately specified) are created with mode <EM>mode</EM> (as described
-       in <STRONG><A HREF="chmod.html">chmod(2)</A></STRONG>) and modified by the process' umask  value  at
-       the  time of creation (see <STRONG><A HREF="umask.html">umask(2)</A></STRONG>).  The group ownership
-       of created files is based  on  the  system  and  directory
-       defaults, and is not further specified by DB.
+       files  created  by  the  memp_fopen  function,  which  are
+       separately  specified)  are  created  with  mode  mode (as
+       described in <B>chmod(2)</B>) and modified by the process'  umask
+       value  at  the time of creation (see <B>umask(2)</B>).  The group
+       ownership of created files is  based  on  the  system  and
+       directory defaults, and is not further specified by DB.
 
-       The memory pool subsystem is configured based on the <EM>dbenv</EM>
-       argument to <EM>memp</EM><STRONG>_</STRONG><EM>open</EM>, which is a pointer to  a  structure
+       The memory pool subsystem is configured based on the dbenv
+       argument to memp_open, which is a pointer to  a  structure
        of type DB_ENV (typedef'd in &lt;db.h&gt;).  It is expected that
        applications will use a single  DB_ENV  structure  as  the
        argument  to  all of the subsystems in the DB package.  In
@@ -140,193 +158,229 @@
        set should be initialized to 0 before the first  time  the
        structure  is  used.   Do  this by declaring the structure
        external or static, or by calling the  C  library  routine
-       <STRONG><A HREF="bzero.html">bzero(3)</A></STRONG> or <STRONG><A HREF="memset.html">memset(3)</A></STRONG>.
+       <B>bzero(3)</B> or <B>memset(3)</B>.
 
-       The  fields  of the DB_ENV structure used by <EM>memp</EM><STRONG>_</STRONG><EM>open</EM> are
-       described below.  As references to  the  DB_ENV  structure
-       may  be  maintained by <EM>memp</EM><STRONG>_</STRONG><EM>open</EM>, it is necessary that the
-       DB_ENV structure and memory it references be  valid  until
-       the  <EM>memp</EM><STRONG>_</STRONG><EM>closed</EM>  function is called.  If <EM>dbenv</EM> is NULL or
-       any of its fields are set to 0, defaults  appropriate  for
-       the system are used where possible.
+       The  fields  of the DB_ENV structure used by memp_open are
+       described below.  If dbenv is NULL or any  of  its  fields
+       are set to 0, defaults appropriate for the system are used
+       where possible.
 
-       The  following  fields  in  the  DB_ENV  structure  may be
-       initialized before calling <EM>memp</EM><STRONG>_</STRONG><EM>open</EM>:
-
+       The following  fields  in  the  DB_ENV  structure  may  be
+       initialized before calling memp_open:
 
        void *(*db_errcall)(char *db_errpfx, char *buffer);
+
        FILE *db_errfile;
        const char *db_errpfx;
        int db_verbose;
-            The error fields of the DB_ENV  behave  as  described
-            for <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>.
+            The  error  fields  of the DB_ENV behave as described
+            for <B><A HREF="db_appinit.html">db_appinit(3)</A></B>.
 
        size_t mp_mmapsize;
             Files that are opened read-only in the pool (and that
             satisfy a few other criteria) are, by default, mapped
-            into  the  process  address  space  instead  of being
-            copied into the local cache.  This can result in bet-
-            ter-than-usual performance, as available virtual mem-
-            ory is normally much larger than the local cache, and
-            page faults are faster than page copying on many sys-
-            tems.  However, in the presence  of  limited  virtual
-            memory  it  can cause resource starvation, and in the
+            into the  process  address  space  instead  of  being
+            copied  into  the  local  cache.   This can result in
+            better-than-usual performance, as  available  virtual
+            memory  is normally much larger than the local cache,
+            and page faults are faster than page copying on  many
+            systems.  However, in the presence of limited virtual
+            memory it can cause resource starvation, and  in  the
             presence of large databases, it can result in immense
-            process sizes.  If <EM>mp</EM><STRONG>_</STRONG><EM>mmapsize</EM> is non-zero, it speci-
-            fies the maximum file size for a file  to  be  mapped
+            process  sizes.   If  mp_mmapsize  is  non-zero,   it
+            specifies  the  maximum  file  size  for a file to be
+            mapped into the process address space.   By  default,
+            it is set to 10Mb.
 
-       The <EM>memp</EM><STRONG>_</STRONG><EM>open</EM> function returns the value of <EM>errno</EM> on fail-
-       ure and 0 on success.
+       size_t mp_size;
+            The  suggested  size  of  the  pool,  in bytes.  This
+            should be the size of the normal working data set  of
+            the application, with some small amount of additional
+            memory for unusual situations.   (Note,  the  working
+            set  is  not the same as the number of simultaneously
+            referenced pages, and should be quite a bit  larger!)
+            The  default  cache  size  is  128K bytes (16 8K byte
+            pages), and may not be less than 20K bytes.
 
-  <EM>memp</EM><STRONG>_</STRONG><EM>close</EM>
-       The <EM>memp</EM><STRONG>_</STRONG><EM>close</EM> function closes the pool indicated  by  the
-       DB_MPOOL pointer <EM>mp</EM>, as returned by <EM>memp</EM><STRONG>_</STRONG><EM>open</EM>.  This func-
-       tion  does  not  imply  a  call  to  <EM>memp</EM><STRONG>_</STRONG><EM>fsync</EM>   (or   to
-       <EM>memp</EM><STRONG>_</STRONG><EM>fclose</EM>)  i.e. no pages are written to the source file
-       as as a result of calling <EM>memp</EM><STRONG>_</STRONG><EM>close</EM>.
-
-       In addition, if the <EM>dir</EM> argument to <EM>memp</EM><STRONG>_</STRONG><EM>open</EM> was NULL and
-       <EM>dbenv</EM> was not initialized using <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>, all files cre-
-       ated for  this  shared  region  will  be  removed,  as  if
-       <EM>memp</EM><STRONG>_</STRONG><EM>unlink</EM> were called.
-
-       When  multiple  threads are using the DB_MPOOL handle con-
-       currently, only a single thread may  call  the  <EM>memp</EM><STRONG>_</STRONG><EM>close</EM>
-       function.
-
-       The  <EM>memp</EM><STRONG>_</STRONG><EM>close</EM>  function  returns  the  value of <EM>errno</EM> on
+       The memp_open function  returns  the  value  of  errno  on
        failure and 0 on success.
 
-  <EM>memp</EM><STRONG>_</STRONG><EM>fopen</EM>
-       The <EM>memp</EM><STRONG>_</STRONG><EM>fopen</EM> function opens a file in the pool specified
+  memp_close
+       The  memp_close  function closes the pool indicated by the
+       DB_MPOOL pointer  mp,  as  returned  by  memp_open.   This
+       function  does  not  imply  a  call  to  memp_fsync (or to
+       memp_fclose) i.e. no pages are written to the source  file
+       as as a result of calling memp_close.
+
+       In addition, if the dir argument to memp_open was NULL and
+       dbenv  was  not  initialized  using  db_appinit,  or   the
+       DB_MPOOL_PRIVATE  flag was set, all files created for this
+       shared region will be  removed,  as  if  memp_unlink  were
+       called.
+
+       When  multiple  threads  are  using  the  DB_MPOOL  handle
+       concurrently, only a single thread may call the memp_close
+       function.
+
+       The  memp_close  function  returns  the  value of errno on
+       failure and 0 on success.
+
+  memp_fopen
+       The memp_fopen function opens a file in the pool specified
        by the DB_MPOOL argument, copying the DB_MPOOLFILE pointer
        representing it into the  memory  location  referenced  by
-       <EM>mpf</EM>.
+       mpf.
 
-       The  <EM>file</EM>  argument  is the name of the file to be opened.
-       If <EM>file</EM> is NULL, a private file is created that cannot  be
-       shared with any other process or thread.
+       The  file  argument  is the name of the file to be opened.
+       If file is NULL, a private file is created that cannot  be
+       shared  with  any other process (although it may be shared
+       with other threads).
 
-       The  <EM>ftype</EM> argument should be the same as a <EM>ftype</EM> argument
-       previously specified to the <EM>memp</EM><STRONG>_</STRONG><EM>register</EM> function, unless
-       no input or output processing of the file's pages are nec-
-       essary, in which case it should be 0.  (See  the  descrip-
-       tion  of the <EM>memp</EM><STRONG>_</STRONG><EM>register</EM> function for more information.)
+       The ftype argument should be the same as a ftype  argument
+       previously specified to the memp_register function, unless
+       no input or output processing  of  the  file's  pages  are
+       necessary,  in  which  case  it  should  be  0.   (See the
+       description  of  the  memp_register  function   for   more
+       information.)
 
-       The <EM>flags</EM> and <EM>mode</EM> arguments specify  how  files  will  be
-       opened  and/or created when they don't already exist.  The
-       flags value is specified by <STRONG>or</STRONG>'ing together one or more of
+       The  flags  and  mode  arguments specify how files will be
+       opened and/or created when they don't already exist.   The
+       flags value is specified by <B>or</B>'ing together one or more of
        the following values:
 
        DB_CREATE
-            Create  any  underlying  files, as necessary.  If the
-            files do not already exist and the DB_CREATE flag  is
+            Create any underlying files, as  necessary.   If  the
+            files  do not already exist and the DB_CREATE flag is
             not specified, the call will fail.
 
        DB_NOMMAP
             Always copy this file into the local cache instead of
-            mapping it into process memory (see  the  description
-            of  the <EM>mp</EM><STRONG>_</STRONG><EM>mmapsize</EM> field of the DB_ENV structure for
+            mapping  it  into process memory (see the description
+            of the mp_mmapsize field of the DB_ENV structure  for
             further information).
 
+       DB_RDONLY
+            Open  any  underlying  files  for  reading only.  Any
+            attempt to write the file using  the  pool  functions
+            will  fail,  regardless  of the actual permissions of
+            the file.
+
+       All files created by the function memp_fopen  are  created
+       with  mode mode (as described in <B>chmod(2)</B>) and modified by
+       the process' umask value at  the  time  of  creation  (see
+       <B>umask(2)</B>).   The group ownership of created files is based
+       on the system and directory defaults, and is  not  further
        specified by DB.
 
-       The <EM>pagesize</EM> argument is the size, in bytes, of  the  unit
+       The  pagesize  argument is the size, in bytes, of the unit
        of transfer between the application and the pool, although
-       it is not necessarily the unit  of  transfer  between  the
+       it  is  not  necessarily  the unit of transfer between the
        pool and the source file.
 
-       The  <EM>lsn</EM><STRONG>_</STRONG><EM>offset</EM>  argument is the zero-based byte offset in
+       The lsn_offset argument is the zero-based byte  offset  in
        the page of the page's log sequence number (LSN), or -1 if
-       no  LSN  offset is specified.  (See the description of the
-       <EM>memp</EM><STRONG>_</STRONG><EM>sync</EM> function for more information.)
+       no LSN offset is specified.  (See the description  of  the
+       memp_sync function for more information.)
 
-       The <EM>pgcookie</EM> argument contains the  byte  string  that  is
-       passed  to  the <EM>pgin</EM> and <EM>pgout</EM> functions for this file, if
-       any.  (See the description of the  <EM>memp</EM><STRONG>_</STRONG><EM>register</EM>  function
+       The  pgcookie  argument  contains  the byte string that is
+       passed to the pgin and pgout functions for this  file,  if
+       any.   (See  the description of the memp_register function
        for more information.)
 
-       The <EM>uid</EM> argument is a unique identifier for the file.  The
+       The uid argument is a unique identifier for the file.  The
        mpool functions must be able to uniquely identify files in
-       order  that  multiple  processes  sharing a file will cor-
-       rectly share its  underlying  pages.   Normally,  the  <EM>uid</EM>
-       argument  should  be NULL and the mpool functions will use
-       the file's device and inode numbers (see <STRONG><A HREF="stat.html">stat(2)</A></STRONG>) for this
-       purpose.   On  some  filesystems,  (e.g., FAT or NFS) file
+       order  that  multiple  processes  sharing  a   file   will
+       correctly  share  its underlying pages.  Normally, the uid
+       argument should be NULL and the mpool functions  will  use
+       the file's device and inode numbers (see <B>stat(2)</B>) for this
+       purpose.  On some filesystems, (e.g.,  FAT  or  NFS)  file
        device and inode numbers are not necessarily unique across
-       system reboots.  <STRONG>Applications</STRONG> <STRONG>wanting</STRONG> <STRONG>to</STRONG> <STRONG>maintain</STRONG> <STRONG>a</STRONG> <STRONG>shared</STRONG>
-       <STRONG>memory</STRONG> <STRONG>buffer</STRONG> <STRONG>pool</STRONG> <STRONG>across</STRONG> <STRONG>system</STRONG> <STRONG>reboots,</STRONG> <STRONG>where</STRONG>  <STRONG>the</STRONG>  <STRONG>pool</STRONG>
-       <STRONG>contains</STRONG> <STRONG>pages</STRONG> <STRONG>from</STRONG> <STRONG>files</STRONG> <STRONG>stored</STRONG> <STRONG>on</STRONG> <STRONG>such</STRONG> <STRONG>filesystems,</STRONG> <STRONG>must</STRONG>
-       <STRONG>specify</STRONG> <STRONG>a</STRONG> <STRONG>unique</STRONG> <STRONG>file</STRONG> <STRONG>identifier</STRONG> <STRONG>to</STRONG>  <STRONG>the</STRONG>  <STRONG>memp_fopen</STRONG>  <STRONG>call</STRONG>
-       <STRONG>and</STRONG> <STRONG>each</STRONG> <STRONG>process</STRONG> <STRONG>opening</STRONG> <STRONG>or</STRONG> <STRONG>registering</STRONG> <STRONG>the</STRONG> <STRONG>file</STRONG> <STRONG>must</STRONG> <STRONG>pro-</STRONG>
-       <STRONG>vide</STRONG> <STRONG>the</STRONG> <STRONG>same</STRONG> <STRONG>unique</STRONG> <STRONG>identifier.</STRONG>  If the <EM>uid</EM>  argument  is
-       non-NULL,  it  must reference a DB_FILE_ID_LEN (as defined
-       in &lt;db.h&gt;) length array of bytes  that  will  be  used  to
-       uniquely  identify the file.  This should not be necessary
-       for most applications.  Specifically, it is not  necessary
-       if  the  memory  pool is re-instantiated after each system
-       reboot, the application is using  the  DB  access  methods
-       instead  of  calling the pool functions explicitly, or the
-       files in the memory pool are stored on  filesystems  where
-       the  file  device  and  inode numbers do not change across
-       system reboots.
+       system reboots.  <B>Applications</B> <B>wanting</B> <B>to</B> <B>maintain</B> <B>a</B> <B>shared</B>
+       <B>memory</B>  <B>buffer</B>  <B>pool</B> <B>across</B> <B>system</B> <B>reboots,</B> <B>where</B> <B>the</B> <B>pool</B>
+       <B>contains</B> <B>pages</B> <B>from</B> <B>files</B> <B>stored</B> <B>on</B> <B>such</B> <B>filesystems,</B> <B>must</B>
+       <B>specify</B>  <B>a</B>  <B>unique</B>  <B>file</B> <B>identifier</B> <B>to</B> <B>the</B> <B>memp</B>_<B>fopen</B> <B>call</B>
+       <B>and</B> <B>each</B> <B>process</B> <B>opening</B>  <B>or</B>  <B>registering</B>  <B>the</B>  <B>file</B>  <B>must</B>
+       <B>provide</B>  <B>the</B>  <B>same</B> <B>unique</B> <B>identifier.</B>  If the uid argument
+       is  non-NULL,  it  must  reference  a  DB_FILE_ID_LEN  (as
+       defined in &lt;db.h&gt;) length array of bytes that will be used
+       to  uniquely  identify  the  file.   This  should  not  be
+       necessary  for most applications.  Specifically, it is not
+       necessary if the memory pool is re-instantiated after each
+       system  reboot,  the  application  is  using the DB access
+       methods instead of calling the pool functions  explicitly,
+       or  the files in the memory pool are stored on filesystems
+       where the file device and  inode  numbers  do  not  change
+       across system reboots.
 
-       The <EM>memp</EM><STRONG>_</STRONG><EM>fopen</EM> function returns  the  value  of  <EM>errno</EM>  on
+       The  memp_fopen  function  returns  the  value of errno on
        failure and 0 on success.
 
-  <EM>memp</EM><STRONG>_</STRONG><EM>fclose</EM>
-       The  <EM>memp</EM><STRONG>_</STRONG><EM>fclose</EM> function closes the source file indicated
-       by the DB_MPOOLFILE pointer <EM>mpf</EM>.  This function  does  not
-       imply  a  call to <EM>memp</EM><STRONG>_</STRONG><EM>fsync</EM>, i.e. no pages are written to
-       the source file as as a result of calling <EM>memp</EM><STRONG>_</STRONG><EM>fclose</EM>.
+  memp_fclose
+       The memp_fclose function closes the source file  indicated
+       by  the  DB_MPOOLFILE pointer mpf.  This function does not
+       imply a call to memp_fsync, i.e. no pages are  written  to
+       the source file as as a result of calling memp_fclose.
 
-       In addition, if the <EM>file</EM> argument to <EM>memp</EM><STRONG>_</STRONG><EM>fopen</EM> was  NULL,
+       In  addition, if the file argument to memp_fopen was NULL,
        any underlying files created for this DB_MPOOLFILE will be
        removed.
 
-       <STRONG>Page</STRONG>  <STRONG>numbers</STRONG> <STRONG>begin</STRONG> <STRONG>at</STRONG> <STRONG>0,</STRONG> <STRONG>e.g.,</STRONG> <STRONG>the</STRONG> <STRONG>first</STRONG> <STRONG>page</STRONG> <STRONG>in</STRONG> <STRONG>the</STRONG> <STRONG>file</STRONG>
-       <STRONG>is</STRONG> <STRONG>page</STRONG> <STRONG>number</STRONG> <STRONG>0,</STRONG> <STRONG>not</STRONG> <STRONG>page</STRONG> <STRONG>number</STRONG> <STRONG>1.</STRONG>
+       The  memp_fclose  function  returns  the value of errno on
+       failure and 0 on success.
 
-       The <EM>flags</EM> argument is specified by <STRONG>or</STRONG>'ing together one  or
+  memp_fget
+       The memp_fget function copies a pointer to the  page  with
+       the  page  number  specified  by pgnoaddr, from the source
+       file specified by the DB_MPOOLFILE pointer mpf,  into  the
+       memory location referenced by pagep.  If the page does not
+       exist or cannot be retrieved, memp_fget will fail.
+
+       The returned page is size_t type aligned.
+
+       <B>Page</B> <B>numbers</B> <B>begin</B> <B>at</B> <B>0,</B> <B>e.g.,</B> <B>the</B> <B>first</B> <B>page</B> <B>in</B> <B>the</B>  <B>file</B>
+       <B>is</B> <B>page</B> <B>number</B> <B>0,</B> <B>not</B> <B>page</B> <B>number</B> <B>1.</B>
+
+       The  flags argument is specified by <B>or</B>'ing together one or
        more of the following values:
 
        DB_MPOOL_CREATE
-            If  the specified page does not exist, create it.  In
-            this  case,  the  <EM>pgin</EM>  function,  if  specified,  is
+            If the specified page does not exist, create it.   In
+            this  case,  the  pgin  function,  if  specified,  is
             called.
 
        DB_MPOOL_LAST
-            Return  the last page of the source file and copy its
-            page number to the location referenced by <EM>pgnoaddr</EM>.
+            Return the last page of the source file and copy  its
+            page number to the location referenced by pgnoaddr.
 
        DB_MPOOL_NEW
-            Create a new page in the file and copy its page  num-
-            ber  to the location referenced by <EM>pgnoaddr</EM>.  In this
-            case, the <EM>pgin</EM> function, if specified, is not called.
+            Create  a  new  page  in  the  file and copy its page
+            number to the location referenced  by  pgnoaddr.   In
+            this  case,  the  pgin function, if specified, is not
+            called.
 
-       The  DB_MPOOL_CREATE, DB_MPOOL_LAST and DB_MPOOL_NEW flags
+       The DB_MPOOL_CREATE, DB_MPOOL_LAST and DB_MPOOL_NEW  flags
        are mutually exclusive.
 
        Created pages have all their bytes set to 0.
 
-       All pages returned by <EM>memp</EM><STRONG>_</STRONG><EM>fget</EM>  will  be  retained  (i.e.
+       All  pages  returned  by  memp_fget will be retained (i.e.
        ``pinned'')  in  the  pool  until  a  subsequent  call  to
-       <EM>memp</EM><STRONG>_</STRONG><EM>fput</EM>.
+       memp_fput.
 
-       The <EM>memp</EM><STRONG>_</STRONG><EM>fget</EM> function returns the value of <EM>errno</EM> on fail-
-       ure and 0 on success.
+       The  memp_fget  function  returns  the  value  of errno on
+       failure and 0 on success.
 
-  <EM>memp</EM><STRONG>_</STRONG><EM>fput</EM>
-       The  <EM>memp</EM><STRONG>_</STRONG><EM>fput</EM> function indicates that the page referenced
-       by <EM>pgaddr</EM> can be evicted from the pool.  <EM>Pgaddr</EM> must be an
-       address previously returned by <EM>memp</EM><STRONG>_</STRONG><EM>fget</EM>.
+  memp_fput
+       The memp_fput function indicates that the page  referenced
+       by pgaddr can be evicted from the pool.  Pgaddr must be an
+       address previously returned by memp_fget.
 
-       The  <EM>flags</EM> argument is specified by <STRONG>or</STRONG>'ing together one or
+       The flags argument is specified by <B>or</B>'ing together one  or
        more of the following values:
 
        DB_MPOOL_CLEAN
-            Clear any  previously  set  modification  information
-            (i.e.,  don't  bother  writing  the  page back to the
+            Clear  any  previously  set  modification information
+            (i.e., don't bother writing  the  page  back  to  the
             source file).
 
        DB_MPOOL_DIRTY
@@ -335,162 +389,197 @@
 
        DB_MPOOL_DISCARD
             The page is unlikely to be useful in the near future,
-            and should be discarded before  other  pages  in  the
+            and  should  be  discarded  before other pages in the
             pool.
 
-       by  <STRONG>or</STRONG>'ing together one or more of the values specified as
-       flags for the <EM>memp</EM><STRONG>_</STRONG><EM>fput</EM> call.
+       The DB_MPOOL_CLEAN and DB_MPOOL_DIRTY flags  are  mutually
+       exclusive.
 
-       The <EM>memp</EM><STRONG>_</STRONG><EM>fset</EM> function returns the value of <EM>errno</EM> on fail-
-       ure and 0 on success.
-
-  <EM>memp</EM><STRONG>_</STRONG><EM>fsync</EM>
-       The  <EM>memp</EM><STRONG>_</STRONG><EM>fsync</EM>  function writes all pages associated with
-       the DB_MPOOLFILE pointer <EM>mpf</EM>, that were marked as modified
-       using <EM>memp</EM><STRONG>_</STRONG><EM>fput</EM> or <EM>memp</EM><STRONG>_</STRONG><EM>fset</EM>, back to the source file.  If
-       any of the modified pages are also pinned (i.e., currently
-       referenced  by  this  or  another process) <EM>memp</EM><STRONG>_</STRONG><EM>fsync</EM> will
-       ignore them.
-
-       The <EM>memp</EM><STRONG>_</STRONG><EM>fsync</EM> function returns  the  value  of  <EM>errno</EM>  on
-       failure,  0  on  success,  and DB_INCOMPLETE if there were
-       pages which were modified but which <EM>memp</EM><STRONG>_</STRONG><EM>fsync</EM> was  unable
-       to write.
-
-
-  <EM>mpool</EM><STRONG>_</STRONG><EM>unlink</EM>
-       The <EM>mpool</EM><STRONG>_</STRONG><EM>unlink</EM> function destroys the memory pool identi-
-       fied by the directory <EM>dir</EM>,  removing  all  files  used  to
-       implement  the  memory  pool.   (The  directory <EM>dir</EM> is not
-       removed.)   If  there  are  processes  that  have   called
-       <EM>mpool</EM><STRONG>_</STRONG><EM>open</EM>  without  calling  <EM>mpool</EM><STRONG>_</STRONG><EM>close</EM> (i.e., there are
-       processes currently using the memory  pool),  <EM>mpool</EM><STRONG>_</STRONG><EM>unlink</EM>
-       will fail without further action, unless the force flag is
-       set, in which case <EM>mpool</EM><STRONG>_</STRONG><EM>unlink</EM> will attempt to remove the
-       memory  pool files regardless of any processes still using
-       the memory pool.
-
-       The result of attempting to forcibly  destroy  the  region
-       when  a  process has the region open is unspecified.  Pro-
-       cesses using a shared memory region maintain an open  file
-       descriptor  for  it.   On UNIX systems, the region removal
-       should succeed and processes that have already joined  the
-       region  should  continue  to  run  in  the  region without
-       change, however processes attempting to  join  the  memory
-       pool  will  either fail or attempt to create a new region.
-       On other systems, e.g., WNT, where  the  <STRONG><A HREF="unlink.html">unlink(2)</A></STRONG>  system
-       call  will fail if any process has an open file descriptor
-       for the file, the region removal will fail.
-
-       In the case of catastrophic or  system  failure,  database
-       recovery  must  be  performed  (see  <STRONG><A HREF="db_recovery.html">db_recovery(1)</A></STRONG> or the
-       DB_RECOVER flags  to  <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>).   Alternatively,  if
-       recovery  is  not  required  because  no database state is
-       maintained across failures, it is possible to clean  up  a
-       memory  pool by removing all of the files in the directory
-       specified to the <EM>mpool</EM><STRONG>_</STRONG><EM>open</EM> function, as memory pool files
-       are  never  created  in  any  directory other than the one
-       specified to <EM>mpool</EM><STRONG>_</STRONG><EM>open</EM>.  Note, however, that this has the
-       potential  to remove files created by the other DB subsys-
-       the  DB_MPOOL_CREATE flag for the <EM>memp</EM><STRONG>_</STRONG><EM>fget</EM> function).  If
-       the <EM>pgout</EM> function is non-NULL, it is called each  time  a
-       page is written to a file of type <EM>ftype</EM>.
-
-       Both the <EM>pgin</EM> and <EM>pgout</EM> functions are called with the page
-       number, a pointer to the page being read or  written,  and
-       any argument <EM>pgcookie</EM> that was specified to the <EM>memp</EM><STRONG>_</STRONG><EM>fopen</EM>
-       function when the file was opened.   The  <EM>pgin</EM>  and  <EM>pgout</EM>
-       functions  should  return  0 on success, and an applicable
-       non-zero  <EM>errno</EM>  value  on  failure,  in  which  case  the
-       <EM>db</EM><STRONG>_</STRONG><EM>mpool</EM>  function  calling  it  will also fail, returning
-       that <EM>errno</EM> value.
-
-       The purpose of the <EM>memp</EM><STRONG>_</STRONG><EM>register</EM> function  is  to  support
-       processing  when  pages are entered into, or flushed from,
-       the pool.  A file type must be specified to make it possi-
-       ble for unrelated threads or processes, that are sharing a
-       pool, to evict each other's pages from the pool.  Applica-
-       tions  should  call  <EM>memp</EM><STRONG>_</STRONG><EM>register</EM>, during initialization,
-       for each type of file requiring input or output processing
-       that will be sharing the underlying pool.  (No registry is
-       necessary for the standard  access  method  types,  btree,
-       hash  and recno, as <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG> registers them separately.)
-
-       If a thread or process does not call <EM>memp</EM><STRONG>_</STRONG><EM>register</EM>  for  a
-       file  type, it is impossible for it to evict pages for any
-       file requiring input or output processing from  the  pool.
-       For  this reason, <EM>memp</EM><STRONG>_</STRONG><EM>register</EM> should always be called by
-       each application sharing a pool  for  each  type  of  file
-       included  in  the  pool,  regardless of whether or not the
-       application itself uses files of that type.
-
-       There are no standard values for <EM>ftype</EM>,  <EM>pgin</EM>,  <EM>pgout</EM>  and
-       <EM>pgcookie</EM>, except that the <EM>ftype</EM> value for a file must be a
-       non-zero positive number, as negative numbers are reserved
-       for  internal  use  by  the  DB library.  For this reason,
-       applications sharing a pool must coordinate  their  values
-       amongst themselves.
-
-       The  <EM>memp</EM><STRONG>_</STRONG><EM>register</EM>  function returns the value of <EM>errno</EM> on
+       The  memp_fput  function  returns  the  value  of errno on
        failure and 0 on success.
 
-  <EM>memp</EM><STRONG>_</STRONG><EM>trickle</EM>
-       The <EM>memp</EM><STRONG>_</STRONG><EM>trickle</EM> function ensures that at least  <EM>pct</EM>  per-
-       cent  of  the pages in the shared memory pool are clean by
-       writing dirty  pages  to  their  backing  files.   If  the
-       <EM>nwrotep</EM>  argument  is  non-NULL,  the number of pages that
-       were written to reach the correct percentage  is  returned
+  memp_fset
+       The memp_fset function sets the flags associated with  the
+       page  referenced  by  pgaddr without unpinning it from the
+       pool.  Pgaddr must be an address  previously  returned  by
+       memp_fget.   The  flags argument to memp_fset is specified
+       by <B>or</B>'ing together one or more of the values specified  as
+       flags for the memp_fput call.
+
+       The  memp_fset  function  returns  the  value  of errno on
+       failure and 0 on success.
+
+  memp_fsync
+       The memp_fsync function writes all pages  associated  with
+       the DB_MPOOLFILE pointer mpf, that were marked as modified
+       using memp_fput or memp_fset, back to the source file.  If
+       any of the modified pages are also pinned (i.e., currently
+       referenced by this or  another  process)  memp_fsync  will
+       ignore them.
+
+       The  memp_fsync  function  returns  the  value of errno on
+       failure, 0 on success, and  DB_INCOMPLETE  if  there  were
+       pages  which were modified but which memp_fsync was unable
+       to write.
+
+  mpool_unlink
+       The  mpool_unlink  function  destroys  the   memory   pool
+       identified  by  the directory dir, removing all files used
+       to implement the memory pool.  (The directory dir  is  not
+       removed.)    If  there  are  processes  that  have  called
+       mpool_open without calling mpool_close  (i.e.,  there  are
+       processes  currently  using the memory pool), mpool_unlink
+       will fail without further action, unless the force flag is
+       set, in which case mpool_unlink will attempt to remove the
+       memory pool files regardless of any processes still  using
+       the memory pool.
+
+       The  result  of  attempting to forcibly destroy the region
+       when  a  process  has  the  region  open  is  unspecified.
+       Processes  using  a  shared memory region maintain an open
+       file descriptor for  it.   On  UNIX  systems,  the  region
+       removal  should  succeed  and  processes that have already
+       joined the region should continue to  run  in  the  region
+       without  change,  however processes attempting to join the
+       memory pool will either fail or attempt to  create  a  new
+       region.   On other systems, e.g., WNT, where the <B>unlink(2)</B>
+       system call will fail if any  process  has  an  open  file
+       descriptor for the file, the region removal will fail.
+
+       In  the  case  of catastrophic or system failure, database
+       recovery must  be  performed  (see  <B><A HREF="db_recover.html">db_recover(1)</A></B>  or  the
+       DB_RECOVER  flags  to  <B><A HREF="db_appinit.html">db_appinit(3)</A></B>).   Alternatively, if
+       recovery is not required  because  no  database  state  is
+       maintained  across  failures, it is possible to clean up a
+       memory pool by removing all of the files in the  directory
+       specified to the mpool_open function, as memory pool files
+       are never created in any  directory  other  than  the  one
+       specified to mpool_open.  Note, however, that this has the
+       potential  to  remove  files  created  by  the  other   DB
+       subsystems in this database environment.
+
+       The  mpool_unlink  function  returns the value of errno on
+       failure and 0 on success.
+
+  memp_register
+       The memp_register function registers page-in and  page-out
+       functions for files of type ftype in the specified pool.
+
+       If the pgin function is non-NULL, it is called each time a
+       page is read into the memory pool  from  a  file  of  type
+       ftype,  or a page is created for a file of type ftype (see
+       the DB_MPOOL_CREATE flag for the memp_fget function).   If
+       the  pgout  function is non-NULL, it is called each time a
+       page is written to a file of type ftype.
+
+       Both the pgin and pgout functions are called with the page
+       number,  a  pointer to the page being read or written, and
+       any argument pgcookie that was specified to the memp_fopen
+       function  when  the  file  was opened.  The pgin and pgout
+       functions should return 0 on success,  and  an  applicable
+       non-zero  errno  value  on  failure,  in  which  case  the
+       db_mpool function calling it  will  also  fail,  returning
+       that errno value.
+
+       The  purpose  of  the memp_register function is to support
+       processing when pages are entered into, or  flushed  from,
+       the  pool.   A  file  type  must  be  specified to make it
+       possible for unrelated  threads  or  processes,  that  are
+       sharing a pool, to evict each other's pages from the pool.
+       Applications    should    call    memp_register,    during
+       initialization,  for  each type of file requiring input or
+       output processing that  will  be  sharing  the  underlying
+       pool.   (No  registry is necessary for the standard access
+       method  types,  btree,  hash  and  recno,  as   <B><A HREF="db_open.html">db_open(3)</A></B>
+       registers them separately.)
+
+       If  a  thread or process does not call memp_register for a
+       file type, it is impossible for it to evict pages for  any
+       file  requiring  input or output processing from the pool.
+       For this reason, memp_register should always be called  by
+       each  application  sharing  a  pool  for each type of file
+       included in the pool, regardless of  whether  or  not  the
+       application itself uses files of that type.
+
+       There  are  no  standard values for ftype, pgin, pgout and
+       pgcookie, except that the ftype value for a file must be a
+       non-zero positive number, as negative numbers are reserved
+       for internal use by the  DB  library.   For  this  reason,
+       applications  sharing  a pool must coordinate their values
+       amongst themselves.
+
+       The memp_register function returns the value of  errno  on
+       failure and 0 on success.
+
+  memp_trickle
+       The  memp_trickle  function  ensures  that  at  least  pct
+       percent of the pages in the shared memory pool  are  clean
+       by  writing  dirty  pages  to their backing files.  If the
+       nwrotep argument is non-NULL, the  number  of  pages  that
+       were  written  to reach the correct percentage is returned
        in the memory location it references.
 
-       The  purpose  of  the <EM>memp</EM><STRONG>_</STRONG><EM>trickle</EM> function is to enable a
-       memory pool manager to ensure that a page is always avail-
-       able for reading in new information without having to wait
-       for a write.
-       write immediately.  In addition, if <EM>memp</EM><STRONG>_</STRONG><EM>sync</EM> returns suc-
-       cess,  the  value  of  <EM>lsn</EM>  will  be  overwritten with the
-       largest LSN from any page which was written  by  <EM>memp</EM><STRONG>_</STRONG><EM>sync</EM>
-       to satisfy this request.
+       The purpose of the memp_trickle function is  to  enable  a
+       memory  pool  manager  to  ensure  that  a  page is always
+       available for reading in new information without having to
+       wait for a write.
 
-       The  purpose  of  the  <EM>memp</EM><STRONG>_</STRONG><EM>sync</EM>  function  is to enable a
-       transaction manager to ensure, as part  of  a  checkpoint,
-       that  all pages modified by a certain time have been writ-
-       ten to disk.  Pages in the pool which  cannot  be  written
-       back  to disk immediately (e.g., are currently pinned) are
-       written to disk as soon as it is possible to do  so.   The
-       expected  behavior  of  the transaction manager is to call
-       the <EM>memp</EM><STRONG>_</STRONG><EM>sync</EM> function and then, if the  return  indicates
-       that  some pages could not be written immediately, to wait
-       briefly and retry  again  with  the  same  LSN  until  the
-       <EM>memp</EM><STRONG>_</STRONG><EM>sync</EM>  function returns that all pages have been writ-
-       ten.
+       The  memp_trickle  function  returns the value of errno on
+       failure and 0 on success.
 
-       To support the <EM>memp</EM><STRONG>_</STRONG><EM>sync</EM> functionality,  it  is  necessary
-       that  the  pool  functions know the location of the LSN on
-       the page for each file  type.   This  location  should  be
-       specified  when  the  file  is opened using the <EM>memp</EM><STRONG>_</STRONG><EM>fopen</EM>
-       function.  (Note, it is  not  required  that  the  LSN  be
+  memp_sync
+       The memp_sync function ensures that all the modified pages
+       in the pool with log sequence numbers (LSNs) less than the
+       lsn argument are written to disk.
+
+       The memp_sync function  returns  the  value  of  errno  on
+       failure,  0  on  success,  and DB_INCOMPLETE if there were
+       pages which need to be written  but  which  memp_sync  was
+       unable  to  write  immediately.  In addition, if memp_sync
+       returns success, the value of lsn will be overwritten with
+       the  largest  LSN  from  any  page  which  was  written by
+       memp_sync to satisfy this request.
+
+       The purpose of the  memp_sync  function  is  to  enable  a
+       transaction  manager  to  ensure, as part of a checkpoint,
+       that all pages  modified  by  a  certain  time  have  been
+       written  to  disk.   Pages  in  the  pool  which cannot be
+       written back to  disk  immediately  (e.g.,  are  currently
+       pinned)  are  written to disk as soon as it is possible to
+       do so.  The expected behavior of the  transaction  manager
+       is  to call the memp_sync function and then, if the return
+       indicates  that  some   pages   could   not   be   written
+       immediately, to wait briefly and retry again with the same
+       LSN until the memp_sync function returns  that  all  pages
+       have been written.
+
+       To  support  the  memp_sync functionality, it is necessary
+       that the pool functions know the location of  the  LSN  on
+       the  page  for  each  file  type.  This location should be
+       specified when the file is  opened  using  the  memp_fopen
+       function.   (Note,  it  is  not  required  that the LSN be
        aligned on the page in any way.)
 
-  <EM>memp</EM><STRONG>_</STRONG><EM>stat</EM>
-       The  <EM>memp</EM><STRONG>_</STRONG><EM>stat</EM> function creates statistical structures and
-       copies pointers to them into user-specified  memory  loca-
-       tions.  The statistics include the number of files partic-
-       ipating in the pool, the active pages  in  the  pool,  and
-       information as to how effective the cache has been.
+  memp_stat
+       The memp_stat function creates statistical structures  and
+       copies   pointers   to  them  into  user-specified  memory
+       locations.  The statistics include  the  number  of  files
+       participating  in  the pool, the active pages in the pool,
+       and information as to how effective the cache has been.
 
-       Statistical  structures  are  created in allocated memory.
-       If <EM>db</EM><STRONG>_</STRONG><EM>malloc</EM> is non-NULL, it is  called  to  allocate  the
-       memory, otherwise, the library function <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG> is used.
-       The function <EM>db</EM><STRONG>_</STRONG><EM>malloc</EM> must match the calling  conventions
-       of  the <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG> library routine.  Regardless, the caller
-       is responsible for deallocating the returned  memory.   To
-       deallocate  the returned memory, free each returned memory
-       pointer; pointers inside the memory  do  not  need  to  be
+       Statistical structures are created  in  allocated  memory.
+       If  db_malloc  is  non-NULL,  it is called to allocate the
+       memory, otherwise, the library function <B>malloc(3)</B> is used.
+       The  function db_malloc must match the calling conventions
+       of the <B>malloc(3)</B> library routine.  Regardless, the  caller
+       is  responsible  for deallocating the returned memory.  To
+       deallocate the returned memory, free each returned  memory
+       pointer;  pointers  inside  the  memory  do not need to be
        individually freed.
 
-       If  <EM>gsp</EM>  is non-NULL, the global statistics for the memory
-       pool <EM>mp</EM> are copied into the memory location it references.
-       The  global  statistics  are stored in a structure of type
+       If gsp is non-NULL, the global statistics for  the  memory
+       pool mp are copied into the memory location it references.
+       The global statistics are stored in a  structure  of  type
        DB_MPOOL_STAT (typedef'd in &lt;db.h&gt;).
 
        The following DB_MPOOL_STAT fields will be filled in:
@@ -500,6 +589,18 @@
        u_int32_t st_cache_hit;
             Requested pages found in the cache.
        u_int32_t st_cache_miss;
+            Requested pages not found in the cache.
+       u_int32_t st_map;
+            Requested  pages  mapped  into  the  process' address
+            space  (there  is  no  available  information  as  to
+            whether or not this request caused disk I/O, although
+            examining the application  page  fault  rate  may  be
+            helpful).
+       u_int32_t st_page_create;
+            Pages created in the cache.
+       u_int32_t st_page_in;
+            Pages read into the cache.
+       u_int32_t st_page_out;
             Pages written from the cache to the backing file.
 
        u_int32_t st_ro_evict;
@@ -511,33 +612,33 @@
        u_int32_t st_hash_searches;
             Total number of buffer hash table lookups.
        u_int32_t st_hash_longest;
-            The longest chain ever  encountered  in  buffer  hash
+            The  longest  chain  ever  encountered in buffer hash
             table lookups.
        u_int32_t st_hash_examined;
-            Total  number  of hash elements traversed during hash
+            Total number of hash elements traversed  during  hash
             table lookups.
        u_int32_t st_page_clean;
             Clean pages currently in the cache.
        u_int32_t st_page_dirty;
             Dirty pages currently in the cache.
        u_int32_t st_page_trickle;
-            Dirty pages written using the <EM>memp</EM><STRONG>_</STRONG><EM>trickle</EM> interface.
+            Dirty pages written using the memp_trickle interface.
        u_int32_t st_region_wait;
-            The  number  of  times  that  a thread of control was
+            The number of times that  a  thread  of  control  was
             forced to wait before obtaining the region lock.
        u_int32_t st_region_nowait;
             The number of times that a thread of control was able
             to obtain the region lock without waiting.
 
-       If  <EM>fsp</EM>  is non-NULL, a pointer to a NULL-terminated vari-
-       able length array of statistics for individual  files,  in
-       the  memory pool <EM>mp</EM>, is copied into the memory location it
-       references.  If no individual files currently exist in the
-       memory pool, <EM>fsp</EM> will be set to NULL.
+       If  fsp  is  non-NULL,  a  pointer  to  a  NULL-terminated
+       variable  length array of statistics for individual files,
+       in the memory pool mp, is copied into the memory  location
+       it  references.  If no individual files currently exist in
+       the memory pool, fsp will be set to NULL.
 
-       The  per-file  statistics are stored in structures of type
-       DB_MPOOL_FSTAT  (typedef'd  in  &lt;db.h&gt;).   The   following
-       DB_MPOOL_FSTAT  fields  will be filled in for each file in
+       The per-file statistics are stored in structures  of  type
+       DB_MPOOL_FSTAT   (typedef'd  in  &lt;db.h&gt;).   The  following
+       DB_MPOOL_FSTAT fields will be filled in for each  file  in
        the pool, i.e., each element of the array:
 
        char *file_name;
@@ -549,49 +650,63 @@
        u_int32_t st_cache_miss;
             Requested pages not found in the cache.
        u_int32_t st_map;
-            Requested pages  mapped  into  the  process'  address
+            Requested  pages  mapped  into  the  process' address
             space.
        u_int32_t st_page_create;
             Pages created in the cache.
        u_int32_t st_page_in;
+            Pages read into the cache.
+
+       u_int32_t st_page_out;
+            Pages written from the cache to the backing file.
+
+       The memp_stat function  returns  the  value  of  errno  on
+       failure and 0 on success.
+
+
+</PRE>
+<H2>ENVIRONMENT VARIABLES</H2><PRE>
+       The  following  environment variables affect the execution
+       of db_mpool:
+
        DB_HOME
-            If  the  <EM>dbenv</EM>  argument to <EM>memp</EM><STRONG>_</STRONG><EM>open</EM> was initialized
-            using <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>, the  environment  variable  DB_HOME
-            may  be used as the path of the database home for the
-            interpretation of the <EM>dir</EM> argument to  <EM>memp</EM><STRONG>_</STRONG><EM>open</EM>,  as
-            described in <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>.
+            If the dbenv argument to  memp_open  was  initialized
+            using  db_appinit,  the  environment variable DB_HOME
+            may be used as the path of the database home for  the
+            interpretation  of  the dir argument to memp_open, as
+            described in <B><A HREF="db_appinit.html">db_appinit(3)</A></B>.
 
        TMPDIR
-            If  the  <EM>dbenv</EM> argument to <EM>mpool</EM><STRONG>_</STRONG><EM>open</EM> was NULL or not
-            initialized using <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>, the  environment  vari-
-            able  TMPDIR may be used as the directory in which to
-            create  the  memory  pool,  as   described   in   the
-            <EM>mpool</EM><STRONG>_</STRONG><EM>open</EM> section above.
+            If the dbenv argument to mpool_open was NULL  or  not
+            initialized   using   db_appinit,   the   environment
+            variable TMPDIR may be used as the directory in which
+            to  create  the  memory  pool,  as  described  in the
+            mpool_open section above.
 
 
 </PRE>
 <H2>ERRORS</H2><PRE>
-       The  <EM>memp</EM><STRONG>_</STRONG><EM>open</EM>  function may fail and return <EM>errno</EM> for any
-       of the errors specified for the following DB  and  library
-       functions: DBmemp-&gt;<STRONG><A HREF="pgin.html">pgin(3)</A></STRONG>, DBmemp-&gt;<STRONG><A HREF="pgout.html">pgout(3)</A></STRONG>, <STRONG><A HREF="close.html">close(2)</A></STRONG>,
-       <STRONG><A HREF="db_version.html">db_version(3)</A></STRONG>, <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="fsync.html">fsync(2)</A></STRONG>,
-       <STRONG><A HREF="log_compare.html">log_compare(3)</A></STRONG>, <STRONG><A HREF="log_flush.html">log_flush(3)</A></STRONG>, <STRONG><A HREF="lseek.html">lseek(2)</A></STRONG>, <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>,
-       <STRONG><A HREF="memcmp.html">memcmp(3)</A></STRONG>, <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>, <STRONG><A HREF="memp_close.html">memp_close(3)</A></STRONG>, <STRONG><A HREF="memp_unlink.html">memp_unlink(3)</A></STRONG>,
-       <STRONG><A HREF="memset.html">memset(3)</A></STRONG>, <STRONG><A HREF="mmap.html">mmap(2)</A></STRONG>, <STRONG><A HREF="munmap.html">munmap(2)</A></STRONG>, <STRONG><A HREF="open.html">open(2)</A></STRONG>, <STRONG><A HREF="sigfillset.html">sigfillset(3)</A></STRONG>,
-       <STRONG><A HREF="sigprocmask.html">sigprocmask(2)</A></STRONG>, <STRONG><A HREF="stat.html">stat(2)</A></STRONG>, <STRONG><A HREF="strcpy.html">strcpy(3)</A></STRONG>, <STRONG><A HREF="strdup.html">strdup(3)</A></STRONG>,
-       <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>,  <STRONG><A HREF="strlen.html">strlen(3)</A></STRONG>, <STRONG><A HREF="time.html">time(3)</A></STRONG>, <STRONG><A HREF="unlink.html">unlink(2)</A></STRONG>, and <STRONG><A HREF="write.html">write(2)</A></STRONG>.
+       The memp_open function may fail and return errno  for  any
+       of  the  errors specified for the following DB and library
+       functions: <B><A HREF="db_mpool.html">DBmemp-&gt;pgin(3)</A></B>, <B><A HREF="db_mpool.html">DBmemp-&gt;pgout(3)</A></B>, <B>close(2)</B>,
+       <B><A HREF="db_appinit.html">db_version(3)</A></B>, <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>fsync(2)</B>,
+       <B><A HREF="db_log.html">log_compare(3)</A></B>, <B><A HREF="db_log.html">log_flush(3)</A></B>, <B>lseek(2)</B>, <B>malloc(3)</B>,
+       <B>memcmp(3)</B>, <B>memcpy(3)</B>, <B><A HREF="db_mpool.html">memp_close(3)</A></B>, <B><A HREF="db_mpool.html">memp_unlink(3)</A></B>,
+       <B>memset(3)</B>, <B>mmap(2)</B>, <B>munmap(2)</B>, <B>open(2)</B>, <B>sigfillset(3)</B>,
+       <B>sigprocmask(2)</B>, <B>stat(2)</B>, <B>strcpy(3)</B>, <B>strdup(3)</B>,
+       <B>strerror(3)</B>, <B>strlen(3)</B>, <B>time(3)</B>, <B>unlink(2)</B>, and  <B>write(2)</B>.
 
-       In addition, the <EM>memp</EM><STRONG>_</STRONG><EM>open</EM> function may  fail  and  return
-       <EM>errno</EM> for the following conditions:
+       In  addition,  the  memp_open function may fail and return
+       errno for the following conditions:
 
        [EAGAIN]
-            The  shared memory region was locked and (repeatedly)
+            The shared memory region was locked and  (repeatedly)
             unavailable.
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-            The DB_THREAD flag was specified  and  spinlocks  are
+            The  DB_THREAD  flag  was specified and spinlocks are
             not implemented for this architecture.
 
             A   NULL   pathname   was   specified   without   the
@@ -599,145 +714,185 @@
 
             The specified cache size was impossibly small.
 
-       The <EM>memp</EM><STRONG>_</STRONG><EM>close</EM> function may fail and return <EM>errno</EM> for  any
-       of  the  errors specified for the following DB and library
-       functions: <STRONG><A HREF="close.html">close(2)</A></STRONG>, <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="memp_fclose.html">memp_fclose(3)</A></STRONG>,
-       <STRONG><A HREF="munmap.html">munmap(2)</A></STRONG>, and <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>.
-
-       The  <EM>memp</EM><STRONG>_</STRONG><EM>fopen</EM> function may fail and return <EM>errno</EM> for any
+       The  memp_close function may fail and return errno for any
        of the errors specified for the following DB  and  library
-       functions: DBmemp-&gt;<STRONG><A HREF="pgin.html">pgin(3)</A></STRONG>, DBmemp-&gt;<STRONG><A HREF="pgout.html">pgout(3)</A></STRONG>, <STRONG><A HREF="close.html">close(2)</A></STRONG>,
-       <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="fsync.html">fsync(2)</A></STRONG>, <STRONG><A HREF="log_compare.html">log_compare(3)</A></STRONG>,
-       <STRONG><A HREF="log_flush.html">log_flush(3)</A></STRONG>, <STRONG><A HREF="lseek.html">lseek(2)</A></STRONG>, <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>, <STRONG><A HREF="memcmp.html">memcmp(3)</A></STRONG>, <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>,
-       <STRONG><A HREF="memset.html">memset(3)</A></STRONG>, <STRONG><A HREF="mmap.html">mmap(2)</A></STRONG>, <STRONG><A HREF="open.html">open(2)</A></STRONG>, <STRONG><A HREF="sigfillset.html">sigfillset(3)</A></STRONG>,
-            is not zero or a multiple of the <EM>pagesize</EM>.
+       functions: <B>close(2)</B>, <B>fcntl(2)</B>, <B>fflush(3)</B>, <B><A HREF="db_mpool.html">memp_fclose(3)</A></B>,
+       <B>munmap(2)</B>, and <B>strerror(3)</B>.
 
-            The  DB_RDONLY  flag  was  specified for an in-memory
+       The memp_fopen function may fail and return errno for  any
+       of  the  errors specified for the following DB and library
+       functions: <B><A HREF="db_mpool.html">DBmemp-&gt;pgin(3)</A></B>, <B><A HREF="db_mpool.html">DBmemp-&gt;pgout(3)</A></B>, <B>close(2)</B>,
+       <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>fsync(2)</B>, <B><A HREF="db_log.html">log_compare(3)</A></B>,
+       <B><A HREF="db_log.html">log_flush(3)</A></B>, <B>lseek(2)</B>, <B>malloc(3)</B>, <B>memcmp(3)</B>, <B>memcpy(3)</B>,
+       <B>memset(3)</B>, <B>mmap(2)</B>, <B>open(2)</B>, <B>sigfillset(3)</B>,
+       <B>sigprocmask(2)</B>, <B>stat(2)</B>, <B>strcpy(3)</B>, <B>strdup(3)</B>,
+       <B>strerror(3)</B>,  <B>strlen(3)</B>, <B>time(3)</B>, <B>unlink(2)</B>, and <B>write(2)</B>.
+
+       In addition, the memp_fopen function may fail  and  return
+       errno for the following conditions:
+
+       [EINVAL]
+            An invalid flag value or parameter was specified.
+
+            The  file has already been entered into the pool, and
+            the pagesize value is not the same as when  the  file
+            was  entered into the pool, or the length of the file
+            is not zero or a multiple of the pagesize.
+
+            The DB_RDONLY flag was  specified  for  an  in-memory
             pool.
 
-       The <EM>memp</EM><STRONG>_</STRONG><EM>fclose</EM> function may fail and return <EM>errno</EM> for any
-       of  the  errors specified for the following DB and library
-       functions: <STRONG><A HREF="close.html">close(2)</A></STRONG>, <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="munmap.html">munmap(2)</A></STRONG>, and
-       <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>.
-
-       The  <EM>memp</EM><STRONG>_</STRONG><EM>fget</EM>  function may fail and return <EM>errno</EM> for any
+       The memp_fclose function may fail and return errno for any
        of the errors specified for the following DB  and  library
-       functions: DBmemp-&gt;<STRONG><A HREF="pgin.html">pgin(3)</A></STRONG>, DBmemp-&gt;<STRONG><A HREF="pgout.html">pgout(3)</A></STRONG>, <STRONG><A HREF="close.html">close(2)</A></STRONG>,
-       <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="fsync.html">fsync(2)</A></STRONG>, <STRONG><A HREF="log_compare.html">log_compare(3)</A></STRONG>,
-       <STRONG><A HREF="log_flush.html">log_flush(3)</A></STRONG>, <STRONG><A HREF="lseek.html">lseek(2)</A></STRONG>, <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>, <STRONG><A HREF="memcmp.html">memcmp(3)</A></STRONG>, <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>,
-       <STRONG><A HREF="memset.html">memset(3)</A></STRONG>, <STRONG><A HREF="mmap.html">mmap(2)</A></STRONG>, <STRONG><A HREF="open.html">open(2)</A></STRONG>, <STRONG><A HREF="read.html">read(2)</A></STRONG>, <STRONG><A HREF="sigfillset.html">sigfillset(3)</A></STRONG>,
-       <STRONG><A HREF="sigprocmask.html">sigprocmask(2)</A></STRONG>, <STRONG><A HREF="stat.html">stat(2)</A></STRONG>, <STRONG><A HREF="strcpy.html">strcpy(3)</A></STRONG>, <STRONG><A HREF="strdup.html">strdup(3)</A></STRONG>,
-       <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>, <STRONG><A HREF="strlen.html">strlen(3)</A></STRONG>, <STRONG><A HREF="time.html">time(3)</A></STRONG>, <STRONG><A HREF="unlink.html">unlink(2)</A></STRONG>, and  <STRONG><A HREF="write.html">write(2)</A></STRONG>.
+       functions: <B>close(2)</B>, <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>munmap(2)</B>, and
+       <B>strerror(3)</B>.
 
-       In  addition,  the  <EM>memp</EM><STRONG>_</STRONG><EM>fget</EM> function may fail and return
-       <EM>errno</EM> for the following conditions:
+       The memp_fget function may fail and return errno  for  any
+       of  the  errors specified for the following DB and library
+       functions: <B><A HREF="db_mpool.html">DBmemp-&gt;pgin(3)</A></B>, <B><A HREF="db_mpool.html">DBmemp-&gt;pgout(3)</A></B>, <B>close(2)</B>,
+       <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>fsync(2)</B>, <B><A HREF="db_log.html">log_compare(3)</A></B>,
+       <B><A HREF="db_log.html">log_flush(3)</A></B>, <B>lseek(2)</B>, <B>malloc(3)</B>, <B>memcmp(3)</B>, <B>memcpy(3)</B>,
+       <B>memset(3)</B>, <B>mmap(2)</B>, <B>open(2)</B>, <B>read(2)</B>, <B>sigfillset(3)</B>,
+       <B>sigprocmask(2)</B>, <B>stat(2)</B>, <B>strcpy(3)</B>, <B>strdup(3)</B>,
+       <B>strerror(3)</B>,  <B>strlen(3)</B>, <B>time(3)</B>, <B>unlink(2)</B>, and <B>write(2)</B>.
+
+       In addition, the memp_fget function may  fail  and  return
+       errno for the following conditions:
 
        [EAGAIN]
             The  page  reference  count  has  overflowed.   (This
-            should  never  happen unless there's a bug in the ap-
-            plication.)
+            should never happen  unless  there's  a  bug  in  the
+            application.)
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
             The DB_MPOOL_NEW flag was set and the source file was
             not opened for writing.
-
             The requested page does not exist and DB_MPOOL_CREATE
             was not set.
 
-            More than one of DB_MPOOL_CREATE,  DB_MPOOL_LAST  and
+            More  than  one of DB_MPOOL_CREATE, DB_MPOOL_LAST and
             DB_MPOOL_NEW was set.
 
        [ENOMEM]
-            The  cache  is full and no more pages will fit in the
+            The cache is full and no more pages will fit  in  the
             pool.
 
-       The <EM>memp</EM><STRONG>_</STRONG><EM>fput</EM> function may fail and return <EM>errno</EM>  for  any
-       of  the  errors specified for the following DB and library
-       functions: DBmemp-&gt;<STRONG><A HREF="pgin.html">pgin(3)</A></STRONG>, DBmemp-&gt;<STRONG><A HREF="pgout.html">pgout(3)</A></STRONG>, <STRONG><A HREF="close.html">close(2)</A></STRONG>,
-       <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="fsync.html">fsync(2)</A></STRONG>, <STRONG><A HREF="log_compare.html">log_compare(3)</A></STRONG>,
-       <STRONG><A HREF="log_flush.html">log_flush(3)</A></STRONG>, <STRONG><A HREF="lseek.html">lseek(2)</A></STRONG>, <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>, <STRONG><A HREF="memcmp.html">memcmp(3)</A></STRONG>, <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>,
-       <STRONG><A HREF="memset.html">memset(3)</A></STRONG>, <STRONG><A HREF="mmap.html">mmap(2)</A></STRONG>, <STRONG><A HREF="open.html">open(2)</A></STRONG>, <STRONG><A HREF="sigfillset.html">sigfillset(3)</A></STRONG>,
-       <STRONG><A HREF="sigprocmask.html">sigprocmask(2)</A></STRONG>, <STRONG><A HREF="stat.html">stat(2)</A></STRONG>, <STRONG><A HREF="strcpy.html">strcpy(3)</A></STRONG>, <STRONG><A HREF="strdup.html">strdup(3)</A></STRONG>,
-       <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>,  <STRONG><A HREF="strlen.html">strlen(3)</A></STRONG>, <STRONG><A HREF="time.html">time(3)</A></STRONG>, <STRONG><A HREF="unlink.html">unlink(2)</A></STRONG>, and <STRONG><A HREF="write.html">write(2)</A></STRONG>.
+       The  memp_fput  function may fail and return errno for any
+       of the errors specified for the following DB  and  library
+       functions: <B><A HREF="db_mpool.html">DBmemp-&gt;pgin(3)</A></B>, <B><A HREF="db_mpool.html">DBmemp-&gt;pgout(3)</A></B>, <B>close(2)</B>,
+       <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>fsync(2)</B>, <B><A HREF="db_log.html">log_compare(3)</A></B>,
+       <B><A HREF="db_log.html">log_flush(3)</A></B>, <B>lseek(2)</B>, <B>malloc(3)</B>, <B>memcmp(3)</B>, <B>memcpy(3)</B>,
+       <B>memset(3)</B>, <B>mmap(2)</B>, <B>open(2)</B>, <B>sigfillset(3)</B>,
+       <B>sigprocmask(2)</B>, <B>stat(2)</B>, <B>strcpy(3)</B>, <B>strdup(3)</B>,
+       <B>strerror(3)</B>, <B>strlen(3)</B>, <B>time(3)</B>, <B>unlink(2)</B>, and  <B>write(2)</B>.
 
-       In addition, the <EM>memp</EM><STRONG>_</STRONG><EM>fput</EM> function may  fail  and  return
-       <EM>errno</EM> for the following conditions:
+       In  addition,  the  memp_fput function may fail and return
+       errno for the following conditions:
+
+       [EACCES]
+            The DB_MPOOL_DIRTY flag was set and the  source  file
+            was not opened for writing.
+
+       [EINVAL]
+            An invalid flag value or parameter was specified.
+
+            The  pgaddr  parameter  does  not  reference  a  page
+            returned by memp_fget.
+
+            More than one of  DB_MPOOL_CLEAN  and  DB_MPOOL_DIRTY
             was set.
 
-       The <EM>memp</EM><STRONG>_</STRONG><EM>fset</EM> function may fail and return <EM>errno</EM>  for  any
-       of  the  errors specified for the following DB and library
-       functions: <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, and <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>.
+       The  memp_fset  function may fail and return errno for any
+       of the errors specified for the following DB  and  library
+       functions: <B>fcntl(2)</B>, and <B>fflush(3)</B>.
 
-       In addition, the <EM>memp</EM><STRONG>_</STRONG><EM>fset</EM> function may  fail  and  return
-       <EM>errno</EM> for the following conditions:
+       In  addition,  the  memp_fset function may fail and return
+       errno for the following conditions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-       The  <EM>memp</EM><STRONG>_</STRONG><EM>fsync</EM> function may fail and return <EM>errno</EM> for any
-       of the errors specified for the following DB  and  library
-       functions: DBmemp-&gt;<STRONG><A HREF="pgin.html">pgin(3)</A></STRONG>, DBmemp-&gt;<STRONG><A HREF="pgout.html">pgout(3)</A></STRONG>, <STRONG><A HREF="close.html">close(2)</A></STRONG>,
-       <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="fsync.html">fsync(2)</A></STRONG>, <STRONG><A HREF="log_compare.html">log_compare(3)</A></STRONG>,
-       <STRONG><A HREF="log_flush.html">log_flush(3)</A></STRONG>, <STRONG><A HREF="lseek.html">lseek(2)</A></STRONG>, <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>, <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>, <STRONG><A HREF="memset.html">memset(3)</A></STRONG>,
-       <STRONG><A HREF="open.html">open(2)</A></STRONG>, <STRONG><A HREF="qsort.html">qsort(3)</A></STRONG>, <STRONG><A HREF="realloc.html">realloc(3)</A></STRONG>, <STRONG><A HREF="sigfillset.html">sigfillset(3)</A></STRONG>,
-       <STRONG><A HREF="sigprocmask.html">sigprocmask(2)</A></STRONG>, <STRONG><A HREF="stat.html">stat(2)</A></STRONG>, <STRONG><A HREF="strcpy.html">strcpy(3)</A></STRONG>, <STRONG><A HREF="strdup.html">strdup(3)</A></STRONG>,
-       <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>, <STRONG><A HREF="strlen.html">strlen(3)</A></STRONG>, <STRONG><A HREF="unlink.html">unlink(2)</A></STRONG>, and <STRONG><A HREF="write.html">write(2)</A></STRONG>.
-
-
-       The <EM>memp</EM><STRONG>_</STRONG><EM>unlink</EM> function may fail and return <EM>errno</EM> for any
+       The memp_fsync function may fail and return errno for  any
        of  the  errors specified for the following DB and library
-       functions: <STRONG><A HREF="close.html">close(2)</A></STRONG>, <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>,
-       <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>, <STRONG><A HREF="memset.html">memset(3)</A></STRONG>, <STRONG><A HREF="mmap.html">mmap(2)</A></STRONG>, <STRONG><A HREF="munmap.html">munmap(2)</A></STRONG>, <STRONG><A HREF="open.html">open(2)</A></STRONG>,
-       <STRONG><A HREF="sigfillset.html">sigfillset(3)</A></STRONG>, <STRONG><A HREF="sigprocmask.html">sigprocmask(2)</A></STRONG>, <STRONG><A HREF="stat.html">stat(2)</A></STRONG>, <STRONG><A HREF="strcpy.html">strcpy(3)</A></STRONG>,
-       <STRONG><A HREF="strdup.html">strdup(3)</A></STRONG>, <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>, <STRONG><A HREF="strlen.html">strlen(3)</A></STRONG>, and <STRONG><A HREF="unlink.html">unlink(2)</A></STRONG>.
+       functions: <B><A HREF="db_mpool.html">DBmemp-&gt;pgin(3)</A></B>, <B><A HREF="db_mpool.html">DBmemp-&gt;pgout(3)</A></B>, <B>close(2)</B>,
+       <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>fsync(2)</B>, <B><A HREF="db_log.html">log_compare(3)</A></B>,
+       <B><A HREF="db_log.html">log_flush(3)</A></B>, <B>lseek(2)</B>, <B>malloc(3)</B>, <B>memcpy(3)</B>, <B>memset(3)</B>,
+       <B>open(2)</B>, <B>qsort(3)</B>, <B>realloc(3)</B>, <B>sigfillset(3)</B>,
+       <B>sigprocmask(2)</B>, <B>stat(2)</B>, <B>strcpy(3)</B>, <B>strdup(3)</B>,
+       <B>strerror(3)</B>, <B>strlen(3)</B>, <B>unlink(2)</B>, and <B>write(2)</B>.
 
-       In  addition, the <EM>memp</EM><STRONG>_</STRONG><EM>unlink</EM> function may fail and return
-       <EM>errno</EM> for the following conditions:
+       The memp_unlink function may fail and return errno for any
+       of the errors specified for the following DB  and  library
+       functions: <B>close(2)</B>, <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>malloc(3)</B>,
+       <B>memcpy(3)</B>, <B>memset(3)</B>, <B>mmap(2)</B>, <B>munmap(2)</B>, <B>open(2)</B>,
+       <B>sigfillset(3)</B>, <B>sigprocmask(2)</B>, <B>stat(2)</B>, <B>strcpy(3)</B>,
+       <B>strdup(3)</B>, <B>strerror(3)</B>, <B>strlen(3)</B>, and <B>unlink(2)</B>.
+
+       In addition, the memp_unlink function may fail and  return
+       errno for the following conditions:
 
        [EBUSY]
-            The shared memory region was in  use  and  the  force
+            The  shared  memory  region  was in use and the force
             flag was not set.
 
-       The  <EM>memp</EM><STRONG>_</STRONG><EM>register</EM>  function may fail and return <EM>errno</EM> for
-       any of the errors specified for the following DB  and  li-
-       brary functions: <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, and <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>.
+       The memp_register function may fail and return  errno  for
+       any  of  the  errors  specified  for  the following DB and
+       library functions: <B>fcntl(2)</B>, and <B>malloc(3)</B>.
 
-       The  <EM>memp</EM><STRONG>_</STRONG><EM>trickle</EM>  function  may fail and return <EM>errno</EM> for
-       any of the errors specified for the following DB  and  li-
-       brary functions: DBmemp-&gt;<STRONG><A HREF="pgin.html">pgin(3)</A></STRONG>, DBmemp-&gt;<STRONG><A HREF="pgout.html">pgout(3)</A></STRONG>,
-       <STRONG><A HREF="close.html">close(2)</A></STRONG>, <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="fsync.html">fsync(2)</A></STRONG>, <STRONG><A HREF="log_compare.html">log_compare(3)</A></STRONG>,
-       <STRONG><A HREF="log_flush.html">log_flush(3)</A></STRONG>, <STRONG><A HREF="lseek.html">lseek(2)</A></STRONG>, <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>, <STRONG><A HREF="memcmp.html">memcmp(3)</A></STRONG>, <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>,
-       <STRONG><A HREF="memset.html">memset(3)</A></STRONG>, <STRONG><A HREF="mmap.html">mmap(2)</A></STRONG>, <STRONG><A HREF="open.html">open(2)</A></STRONG>, <STRONG><A HREF="sigfillset.html">sigfillset(3)</A></STRONG>,
-       <STRONG><A HREF="sigprocmask.html">sigprocmask(2)</A></STRONG>, <STRONG><A HREF="stat.html">stat(2)</A></STRONG>, <STRONG><A HREF="strcpy.html">strcpy(3)</A></STRONG>, <STRONG><A HREF="strdup.html">strdup(3)</A></STRONG>,
-       <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>, <STRONG><A HREF="strlen.html">strlen(3)</A></STRONG>, <STRONG><A HREF="time.html">time(3)</A></STRONG>, <STRONG><A HREF="unlink.html">unlink(2)</A></STRONG>, and  <STRONG><A HREF="write.html">write(2)</A></STRONG>.
+       The memp_trickle function may fail and  return  errno  for
+       any  of  the  errors  specified  for  the following DB and
+       library functions: <B><A HREF="db_mpool.html">DBmemp-&gt;pgin(3)</A></B>, <B><A HREF="db_mpool.html">DBmemp-&gt;pgout(3)</A></B>,
+       <B>close(2)</B>, <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>fsync(2)</B>, <B><A HREF="db_log.html">log_compare(3)</A></B>,
+       <B><A HREF="db_log.html">log_flush(3)</A></B>, <B>lseek(2)</B>, <B>malloc(3)</B>, <B>memcmp(3)</B>, <B>memcpy(3)</B>,
+       <B>memset(3)</B>, <B>mmap(2)</B>, <B>open(2)</B>, <B>sigfillset(3)</B>,
+       <B>sigprocmask(2)</B>, <B>stat(2)</B>, <B>strcpy(3)</B>, <B>strdup(3)</B>,
+       <B>strerror(3)</B>,  <B>strlen(3)</B>, <B>time(3)</B>, <B>unlink(2)</B>, and <B>write(2)</B>.
 
-       In addition, the <EM>memp</EM><STRONG>_</STRONG><EM>trickle</EM> function may fail and return
-       <EM>errno</EM> for the following conditions:
-
-       [EINVAL]
-            An invalid flag value or parameter was specified.
-
-       <EM>errno</EM> for the following conditions:
+       In addition, the memp_trickle function may fail and return
+       errno for the following conditions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-            The  <EM>memp</EM><STRONG>_</STRONG><EM>sync</EM>  function  was  called without logging
+       The  memp_sync  function may fail and return errno for any
+       of the errors specified for the following DB  and  library
+       functions: <B><A HREF="db_mpool.html">DBmemp-&gt;pgin(3)</A></B>, <B><A HREF="db_mpool.html">DBmemp-&gt;pgout(3)</A></B>, <B>close(2)</B>,
+       <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>fsync(2)</B>, <B><A HREF="db_log.html">log_compare(3)</A></B>,
+       <B><A HREF="db_log.html">log_flush(3)</A></B>, <B>lseek(2)</B>, <B>malloc(3)</B>, <B>memcmp(3)</B>, <B>memcpy(3)</B>,
+       <B>memset(3)</B>, <B>mmap(2)</B>, <B>open(2)</B>, <B>qsort(3)</B>, <B>realloc(3)</B>,
+       <B>sigfillset(3)</B>, <B>sigprocmask(2)</B>, <B>stat(2)</B>, <B>strcpy(3)</B>,
+       <B>strdup(3)</B>, <B>strerror(3)</B>, <B>strlen(3)</B>, <B>time(3)</B>, <B>unlink(2)</B>, and
+       <B>write(2)</B>.
+
+       In  addition,  the  memp_sync function may fail and return
+       errno for the following conditions:
+
+       [EINVAL]
+            An invalid flag value or parameter was specified.
+
+            The memp_sync function  was  called  without  logging
             having been initialized in the environment.
 
-       The <EM>memp</EM><STRONG>_</STRONG><EM>stat</EM> function may fail and return <EM>errno</EM>  for  any
-       of  the  errors specified for the following DB and library
-       functions: <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>, <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>, and  <STRONG><A HREF="strlen.html">strlen(3)</A></STRONG>.
+       The  memp_stat  function may fail and return errno for any
+       of the errors specified for the following DB  and  library
+       functions:  <B>fcntl(2)</B>, <B>malloc(3)</B>, <B>memcpy(3)</B>, and <B>strlen(3)</B>.
 
 
 </PRE>
 <H2>SEE ALSO</H2><PRE>
-       <STRONG><A HREF="db_archive.html">db_archive(1)</A></STRONG>, <STRONG><A HREF="db_checkpoint.html">db_checkpoint(1)</A></STRONG>, <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG>, <STRONG><A HREF="db_dump.html">db_dump(1)</A></STRONG>,
-       <STRONG><A HREF="db_load.html">db_load(1)</A></STRONG>, <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG>, <STRONG><A HREF="db_stat.html">db_stat(1)</A></STRONG>, <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>,
-       <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>, <STRONG><A HREF="db_cursor.html">db_cursor(3)</A></STRONG>, <STRONG><A HREF="db_dbm.html">db_dbm(3)</A></STRONG>, <STRONG><A HREF="db_jump.html">db_jump(3)</A></STRONG>, <STRONG><A HREF="db_lock.html">db_lock(3)</A></STRONG>,
-       <STRONG><A HREF="db_log.html">db_log(3)</A></STRONG>, <STRONG><A HREF="db_mpool.html">db_mpool(3)</A></STRONG>, <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>, <STRONG><A HREF="db_thread.html">db_thread(3)</A></STRONG>, <STRONG><A HREF="db_txn.html">db_txn(3)</A></STRONG>
+       <B><A HREF="db_archive.html">db_archive(1)</A></B>, <B><A HREF="db_checkpoint.html">db_checkpoint(1)</A></B>, <B><A HREF="db_deadlock.html">db_deadlock(1)</A></B>, <B><A HREF="db_dump.html">db_dump(1)</A></B>,
+       <B><A HREF="db_load.html">db_load(1)</A></B>, <B><A HREF="db_recover.html">db_recover(1)</A></B>, <B><A HREF="db_stat.html">db_stat(1)</A></B>, <B><A HREF="db_intro.html">db_intro(3)</A></B>,
+       <B><A HREF="db_appinit.html">db_appinit(3)</A></B>, <B><A HREF="db_cursor.html">db_cursor(3)</A></B>, <B><A HREF="db_dbm.html">db_dbm(3)</A></B>, <B><A HREF="db_internal.html">db_internal(3)</A></B>,
+       <B><A HREF="db_lock.html">db_lock(3)</A></B>, <B><A HREF="db_log.html">db_log(3)</A></B>, <B><A HREF="db_mpool.html">db_mpool(3)</A></B>, <B><A HREF="db_open.html">db_open(3)</A></B>, <B><A HREF="db_thread.html">db_thread(3)</A></B>,
+       <B><A HREF="db_txn.html">db_txn(3)</A></B>
+
 </PRE>
+<HR>
+<ADDRESS>
+Man(1) output converted with
+<a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>
+</ADDRESS>
 </BODY>
 </HTML>

@@ -5,7 +5,7 @@
 # Copyright (c) 1996, 1997
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)db_gen.sh	10.9 (Sleepycat) 10/25/97
+#	@(#)db_gen.sh	10.10 (Sleepycat) 11/23/97
 #
 
 # This script generates all the log, print, and read routines for the db
@@ -270,7 +270,7 @@ awk  '
 	# PUBLIC declaration
 	printf("/*\n * PUBLIC: int __%s_print\n * PUBLIC:", funcname) >> CFILE;
 	printf("    __P((DB_LOG *, DBT *, DB_LSN *, int, void *));\n") >> CFILE;
-	printf(" */\n\n") >> CFILE;
+	printf(" */\n") >> CFILE;
 
 	# Function declaration
 	printf("int\n__%s_print(notused1, ", funcname) >> CFILE;

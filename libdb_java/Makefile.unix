@@ -1,0 +1,64 @@
+# @(#)Makefile.unix	10.2 (Sleepycat) 11/25/97
+
+JAVAINSDIR=	/files/java
+DBINSDIR=	..
+DBBUILDDIR=	$(DBINSDIR)/build.unix
+NCLASSPATH=	../java/classes:$(CLASSPATH)
+
+LINK=		gcc
+LINKFLAGS=	-shared -symbolic -g -o libdb_java.so
+#LINK=		ld
+#LINKFLAGS=	-G -o libdb_java.so \
+		-L/usr/local/lib/gcc-lib/sparc-sun-solaris2.5/2.7.2.2
+CXX=		gcc
+INCFILES=	-I$(JAVAINSDIR)/include -I$(JAVAINSDIR)/include/solaris \
+		-I$(DBINSDIR)/include -I$(DBBUILDDIR)
+CXXFLAGS=	-c -g $(INCFILES) -fpic -D_REENTRANT
+PERL=		perl
+LIBS=		$(DBBUILDDIR)/libdb.so -lthread -lgcc -lc
+
+JPACKAGE=	com.sleepycat.db.
+
+JCLASSES=	$(JPACKAGE)Db $(JPACKAGE)DbBtreeStat $(JPACKAGE)DbEnv \
+		$(JPACKAGE)DbInfo $(JPACKAGE)DbLock $(JPACKAGE)DbLockTab \
+		$(JPACKAGE)DbLog $(JPACKAGE)DbLsn $(JPACKAGE)DbMpool \
+		$(JPACKAGE)DbMpoolFStat $(JPACKAGE)DbMpoolFile \
+		$(JPACKAGE)DbMpoolStat $(JPACKAGE)DbTxn $(JPACKAGE)DbTxnMgr \
+		$(JPACKAGE)DbTxnStat $(JPACKAGE)Dbc $(JPACKAGE)Dbt
+
+CPPFILES=	java_Db.cpp java_DbBtreeStat.cpp java_DbEnv.cpp \
+		java_DbInfo.cpp java_DbLock.cpp java_DbLockTab.cpp \
+		java_DbLog.cpp java_DbLsn.cpp java_DbMpool.cpp \
+		java_DbMpoolFStat.cpp java_DbMpoolFile.cpp \
+		java_DbMpoolStat.cpp java_DbTxn.cpp java_DbTxnMgr.cpp \
+		java_DbTxnStat.cpp java_Dbc.cpp java_Dbt.cpp
+
+OBJECTS=	java_Db.o java_DbBtreeStat.o java_DbEnv.o java_DbInfo.o \
+		java_DbLock.o java_DbLockTab.o java_DbLog.o java_DbLsn.o \
+		java_DbMpool.o java_DbMpoolFStat.o java_DbMpoolFile.o \
+		java_DbMpoolStat.o java_DbTxn.o java_DbTxnMgr.o \
+		java_DbTxnStat.o java_Dbc.o java_Dbt.o java_util.o
+
+all:	java_db.so
+
+rebuild: run_javah check_api java_db.so
+
+java_db.so: $(OBJECTS)
+	$(LINK) $(LINKFLAGS) $(OBJECTS) $(LIBS)
+
+run_javah:
+	javah -classpath "$(NCLASSPATH)" -jni $(JCLASSES)
+
+.SUFFIXES: .o .cpp
+
+.cpp.o:
+	$(CXX) $(CXXFLAGS) $*.cpp
+
+# This is really an optional step and is not run in the standard
+# distribution because not everyone has perl.  If you have perl,
+# and you are making changes to the .h and .cpp files in this
+# directory (as the maintainers do), you may want to run this
+# after the run_javah step.
+#
+check_api:
+	$(PERL) checkapi.prl com_sleepycat_*.h java_*.cpp

@@ -1,9 +1,5 @@
 
 
-
-DB_DBM(3)                                               DB_DBM(3)
-
-
 NNAAMMEE
        dbm - dbminit, fetch, store, delete, firstkey, nextkey
 
@@ -62,7 +58,6 @@ NNDDBBMM FFUUNNCCTTIIOONNSS
 
        iinntt
        ddbbmm__eerrrroorr((DDBBMM **ddbb));;
-
        iinntt
        ddbbmm__cclleeaarreerrrr((DDBBMM **ddbb));;
 
@@ -112,10 +107,12 @@ DDBBMM FFUUNNCCTTIIOONNSS
 
               for (key = firstkey();
                    key.dptr != NULL; key = nextkey(key))
+
 NNDDBBMM FFUUNNCCTTIIOONNSS
        Before a database can be accessed, it must  be  opened  by
        _d_b_m___o_p_e_n.   This will open and/or create the database file
        _f_i_l_e.db depending on the flags  parameter  (see  _o_p_e_n(2)).
+
        If  created,  the  database file is created with mode _m_o_d_e
        (as described in _c_h_m_o_d(2)) and modified  by  the  process'
        umask  value  at the time of creation (see _u_m_a_s_k(2)).  The
@@ -166,12 +163,11 @@ CCOOMMPPAATTIIBBIILLIITTYY NNOOTTEESS
        descriptors for locking may require additional source code
        modifications.
 
-
        If  an  application using the _n_d_b_m interface exits without
        closing the database, it may lose updates because  the  DB
        library   buffers  all  writes.   Such  applications  will
-       require additional source code modifications to work  cor-
-       rectly with the DB library.
+       require  additional  source  code  modifications  to  work
+       correctly with the DB library.
 
 DDBBMM DDIIAAGGNNOOSSTTIICCSS
        The _d_b_m_i_n_i_t function returns -1 on failure, setting _e_r_r_n_o,
@@ -221,9 +217,9 @@ NNDDBBMM DDIIAAGGNNOOSSTTIICCSS
        The _d_b_m___e_r_r_o_r function  returns  -1  on  failure,  setting
        _e_r_r_n_o, and 0 on success.
 
-
        The  _d_b_m___c_l_e_a_r_e_r_r  function returns -1 on failure, setting
        _e_r_r_n_o, and 0 on success.
+
 
 EERRRROORRSS
        The _d_b_m_i_n_i_t function may fail and return _e_r_r_n_o for any  of
@@ -271,12 +267,13 @@ EERRRROORRSS
        functions: memset(3).
 
        The _d_b_m___f_i_r_s_t_k_e_y function may fail and  return  _e_r_r_n_o  for
-       any  of  the errors specified for the following DB and li-
-       brary functions: DB->cursor(3), and memset(3).
+       any  of  the  errors  specified  for  the following DB and
+       library functions: DB->cursor(3), and memset(3).
 
        The _d_b_m___n_e_x_t_k_e_y function may fail and return _e_r_r_n_o for any
        of  the  errors specified for the following DB and library
        functions: DB->cursor(3), and memset(3).
+
 
 SSEEEE AALLSSOO
        The DB library is a family of  groups  of  functions  that
@@ -293,5 +290,6 @@ SSEEEE AALLSSOO
 
        _d_b___a_r_c_h_i_v_e(1), _d_b___c_h_e_c_k_p_o_i_n_t(1), _d_b___d_e_a_d_l_o_c_k(1), _d_b___d_u_m_p(1),
        _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3),
-       _d_b___a_p_p_i_n_i_t(3), _d_b___c_u_r_s_o_r(3), _d_b___d_b_m(3), _d_b___j_u_m_p(3), _d_b___l_o_c_k(3),
-       _d_b___l_o_g(3), _d_b___m_p_o_o_l(3), _d_b___o_p_e_n(3), _d_b___t_h_r_e_a_d(3), _d_b___t_x_n(3)
+       _d_b___a_p_p_i_n_i_t(3), _d_b___c_u_r_s_o_r(3), _d_b___d_b_m(3), _d_b___i_n_t_e_r_n_a_l(3),
+       _d_b___l_o_c_k(3), _d_b___l_o_g(3), _d_b___m_p_o_o_l(3), _d_b___o_p_e_n(3), _d_b___t_h_r_e_a_d(3),
+       _d_b___t_x_n(3)

@@ -1,9 +1,5 @@
 
 
-
-DB_APPINIT(3)                                       DB_APPINIT(3)
-
-
 NNAAMMEE
        db_appinit - initializing the DB environment
 
@@ -57,7 +53,6 @@ DDEESSCCRRIIPPTTIIOONN
        among other things.   The  flags  value  is  specified  by
        oorr'ing together one or more of the following values:
 
-
        DB_CREATE
             Cause  subsystems  to create any underlying files, as
             necessary.  (See _d_b___l_o_c_k(3), _d_b___l_o_g(3),  _d_b___m_p_o_o_l(3),
@@ -66,11 +61,13 @@ DDEESSCCRRIIPPTTIIOONN
        DB_INIT_LOCK
             Initialize  the lock subsystem; see _d_b___l_o_c_k(3).  This
             subsystem should be used when multiple  processes  or
-            threads  are  going  to  be  reading  or writing a DB
+            threads  are  going  to  be  reading and writing a DB
             database, so that they do  not  interfere  with  each
-            other.   When  the DB_INIT_LOCK flag is specified, it
-            is usually necessary to run  the  deadlock  detector,
-            _d_b___d_e_a_d_l_o_c_k(1), as well.
+            other.   If all threads are accessing the database(s)
+            read-only, then locking  is  unnecessary.   When  the
+            DB_INIT_LOCK  flag is specified, it is usually neces-
+            sary to run the deadlock detector, _d_b___d_e_a_d_l_o_c_k(1), as
+            well.
 
        DB_INIT_LOG
             Initialize  the  log  subsystem; see _d_b___l_o_g(3).  This
@@ -113,6 +110,7 @@ DDEESSCCRRIIPPTTIIOONN
             also be set since the regions  will  be  removed  and
             recreated.   For further information, consult the man
             page for _d_b___r_e_c_o_v_e_r(1).
+
 
        DB_THREAD
             Ensure that handles returned by the DB subsystems are
@@ -159,13 +157,9 @@ DDEESSCCRRIIPPTTIIOONN
        _b_z_e_r_o(3) or _m_e_m_s_e_t(3).
 
        The fields of the DB_ENV structure used by _d_b___a_p_p_i_n_i_t  are
-       described  below.   As  references to the DB_ENV structure
-       may be maintained by _d_b___a_p_p_i_n_i_t, it is necessary that  the
-       DB_ENV  structure  and memory it references be valid until
-       the _d_b___a_p_p_e_x_i_t function is called.  The _d_b_e_n_v argument may
-       not be NULL.  If any of the fields of the _d_b_e_n_v are set to
-       0, defaults appropriate for the system are used where pos-
-       sible.
+       described  below.  The _d_b_e_n_v argument may not be NULL.  If
+       any of the fields of the _d_b_e_n_v  are  set  to  0,  defaults
+       appropriate for the system are used where possible.
 
        The  following  fields in the DB_ENV structure may be ini-
        tialized before calling _d_b___a_p_p_i_n_i_t:
@@ -225,11 +219,11 @@ DDEESSCCRRIIPPTTIIOONN
 
        In  addition,  the  _d_b_e_n_v  argument  is passed to the open
        functions of any  subsystems  initialized  by  _d_b___a_p_p_i_n_i_t.
-       For  this  reason the fields of the DB_ENV structure rele-
-       vant to the subsystems being initialized  must  themselves
-       be  initialized before _d_b___a_p_p_i_n_i_t is called.  See the man-
-       ual page for each subsystem for a list of these fields and
-       their uses.
+       For  this  reason  the  fields  of  the  DB_ENV  structure
+       relevant to the subsystems being  initialized  must  them-
+       selves  be  initialized  before _d_b___a_p_p_i_n_i_t is called.  See
+       the manual page for each subsystem for  a  list  of  these
+       fields and their uses.
 
        The return value from each of these calls is placed in the
        appropriate field of the DB_ENV structure:
@@ -279,6 +273,7 @@ DDEESSCCRRIIPPTTIIOONN
        When  multiple threads are using the DB_ENV handle concur-
        rently, only a single thread may call the _d_b___a_p_p_e_x_i_t func-
        tion.
+
 
        The  _d_b___a_p_p_e_x_i_t  function  returns  the  value of _e_r_r_n_o on
        failure and 0 on success.
@@ -333,8 +328,8 @@ FFIILLEE NNAAMMIINNGG
             more <space> or <tab> characters.  (Leading or trail-
             ing  <space>  and  <tab>  characters  are discarded.)
             Each entry must specify both the NAME and  the  VALUE
-            of the pair.  All entries with unrecognized NAME val-
-            ues will be ignored.  The  _d_b___c_o_n_f_i_g  array  must  be
+            of  the  pair.   All  entries  with unrecognized NAME
+            values will be ignored.  The _d_b___c_o_n_f_i_g array must  be
             NULL terminated.
 
        DB_CONFIG
@@ -438,6 +433,7 @@ FFIILLEE NNAAMMIINNGG
             and  log files in different directories, or instanti-
             ate a new log directory  each  time  the  application
             runs.
+
        DB_HOME
             If the DB_HOME environment variable was set, (and the
             application has set the appropriate DB_USE_ENVIRON or
@@ -504,8 +500,8 @@ EEXXAAMMPPLLEESS
        _/_a_/_d_a_t_a_b_a_s_e:
 
               char *config[] = {
-                  "DB_DATA datadir",
-                  "DB_LOG logdir",
+                  "DB_DATA_DIR datadir",
+                  "DB_LOG_DIR logdir",
                   NULL
               };
 
@@ -516,8 +512,8 @@ EEXXAAMMPPLLEESS
        files that are created will be created in _/_b_/_d_a_t_a_2:
 
               char *config[] = {
-                  "DB_DATA /b/data2",
-                  "DB_DATA data1",
+                  "DB_DATA_DIR /b/data2",
+                  "DB_DATA_DIR data1",
                   NULL
               };
 
@@ -535,9 +531,9 @@ EERRRROORRSS
        lock_open(3), lock_unlink(3), log_compare(3), log_get(3),
        log_open(3), log_unlink(3), malloc(3), memcpy(3),
        memp_open(3), memp_unlink(3), memset(3), realloc(3),
-       stat(2), strchr(3), strcmp(3), strcpy(3), strdup(3),
-       strerror(3), strlen(3), strsep(3), time(3),
-       txn_checkpoint(3), txn_open(3), and txn_unlink(3).
+       stat(2), strchr(3), strcmp(3), strcpy(3), strdup(3), str-
+       error(3), strlen(3), strsep(3), time(3), txn_check-
+       point(3), txn_open(3), and txn_unlink(3).
 
        In addition, the _d_b___a_p_p_i_n_i_t function may fail  and  return
        _e_r_r_n_o for the following conditions:
@@ -565,14 +561,15 @@ EERRRROORRSS
 
 BBUUGGSS
        Due to the constraints of the PA-RISC memory architecture,
-       HP-UX  does not allow a process to map a file into its ad-
-       dress space multiple times.  For this reason, each DB  en-
-       vironment  may  be opened only once by a process on HP-UX,
+       HP-UX  does  not  allow  a  process to map a file into its
+       address space multiple times.  For this  reason,  each  DB
+       environment may be opened only once by a process on HP-UX,
        i.e., calls to _a_p_p_i_n_i_t will fail if the specified DB envi-
        ronment has been opened and not subsequently closed.
 
 SSEEEE AALLSSOO
        _d_b___a_r_c_h_i_v_e(1), _d_b___c_h_e_c_k_p_o_i_n_t(1), _d_b___d_e_a_d_l_o_c_k(1), _d_b___d_u_m_p(1),
        _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3),
-       _d_b___a_p_p_i_n_i_t(3), _d_b___c_u_r_s_o_r(3), _d_b___d_b_m(3), _d_b___j_u_m_p(3), _d_b___l_o_c_k(3),
-       _d_b___l_o_g(3), _d_b___m_p_o_o_l(3), _d_b___o_p_e_n(3), _d_b___t_h_r_e_a_d(3), _d_b___t_x_n(3)
+       _d_b___a_p_p_i_n_i_t(3), _d_b___c_u_r_s_o_r(3), _d_b___d_b_m(3), _d_b___i_n_t_e_r_n_a_l(3),
+       _d_b___l_o_c_k(3), _d_b___l_o_g(3), _d_b___m_p_o_o_l(3), _d_b___o_p_e_n(3), _d_b___t_h_r_e_a_d(3),
+       _d_b___t_x_n(3)

@@ -1,9 +1,5 @@
 
 
-
-DB_DUMP(1)                                             DB_DUMP(1)
-
-
 NNAAMMEE
        db_dump - the DB database dump utility
 
@@ -57,10 +53,11 @@ DDEESSCCRRIIPPTTIIOONN
 
        Dumping  and  reloading  btree  databases  that  use user-
        defined prefix or comparison functions will result in  new
-       databases  that  use  the  default  prefix  and comparison
-       functions.  IInn tthhiiss ccaassee,, iitt  iiss  qquuiittee  lliikkeellyy  tthhaatt  tthhee
-       ddaattaabbaassee  wwiillll bbee ddaammaaggeedd bbeeyyoonndd rreeppaaiirr ppeerrmmiittttiinngg nneeiitthheerr
-       rreeccoorrdd ssttoorraaggee oorr rreettrriieevvaall..
+       databases that use the default prefix and comparison func-
+       tions.  IInn tthhiiss ccaassee,, iitt iiss qquuiittee lliikkeellyy tthhaatt tthhee ddaattaabbaassee
+       wwiillll  bbee  ddaammaaggeedd  bbeeyyoonndd rreeppaaiirr ppeerrmmiittttiinngg nneeiitthheerr rreeccoorrdd
+       ssttoorraaggee oorr rreettrriieevvaall..
+
 
        The only available workaround for either case is to modify
        the  sources  for  the  _d_b___l_o_a_d(3)  utility  to  load  the
@@ -102,5 +99,6 @@ SSEEEE AALLSSOO
 
        _d_b___a_r_c_h_i_v_e(1), _d_b___c_h_e_c_k_p_o_i_n_t(1), _d_b___d_e_a_d_l_o_c_k(1), _d_b___d_u_m_p(1),
        _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3),
-       _d_b___a_p_p_i_n_i_t(3), _d_b___c_u_r_s_o_r(3), _d_b___d_b_m(3), _d_b___j_u_m_p(3), _d_b___l_o_c_k(3),
-       _d_b___l_o_g(3), _d_b___m_p_o_o_l(3), _d_b___o_p_e_n(3), _d_b___t_h_r_e_a_d(3), _d_b___t_x_n(3)
+       _d_b___a_p_p_i_n_i_t(3), _d_b___c_u_r_s_o_r(3), _d_b___d_b_m(3), _d_b___i_n_t_e_r_n_a_l(3),
+       _d_b___l_o_c_k(3), _d_b___l_o_g(3), _d_b___m_p_o_o_l(3), _d_b___o_p_e_n(3), _d_b___t_h_r_e_a_d(3),
+       _d_b___t_x_n(3)

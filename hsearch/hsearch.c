@@ -47,7 +47,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)hsearch.c	10.2 (Sleepycat) 6/21/97";
+static const char sccsid[] = "@(#)hsearch.c	10.3 (Sleepycat) 11/4/97";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -115,7 +115,6 @@ hsearch(item, action)
 
 		if (errno == DB_NOTFOUND)	/* XXX: can't happen. */
 			errno = EINVAL;
-		return (NULL);
 		break;
 	case FIND:
 		if ((errno = dbp->get(dbp, NULL, &key, &val, 0)) != 0) {

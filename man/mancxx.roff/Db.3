@@ -5,17 +5,33 @@
 .\" Copyright (c) 1997
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)Db.sox	10.7 (Sleepycat) 10/14/97
+.\"	@(#)Db.sox	10.10 (Sleepycat) 11/25/97
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1996, 1997
+.\" Copyright (c) 1997
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)macros.so	10.27 (Sleepycat) 10/25/97
+.\"	@(#)macros.so	10.36 (Sleepycat) 11/28/97
 .\"
-.\" The general information text macro.
+.\" We don't want hyphenation for any HTML documents.
+.ie '\*[HTML]'YES'\{\
+.nh
+\}
+.el\{\
+.ds Hy
+.hy
+..
+.ds Nh
+.nh
+..
+\}
+.\" The alternative text macro
+.\" This macro takes two arguments:
+.\"	+ the text produced if this is a "C" manpage
+.\"	+ the text produced if this is a "CXX" or "JAVA" manpage
+.\"
 .de Al
 .ie '\*[TYPE]'C'\{\\$1
 \}
@@ -37,18 +53,24 @@
 \}
 \}
 ..
+.\" Scoped name for Java.
+.\" Produces a.b, for Java, otherwise just b.
+.\" This macro is used for constants that must
+.\" be scoped in Java, but are global otherwise.
+.\" This macro takes two arguments:
+.\"	+ the class
+.\"	+ the name within the class or following the prefix
+.de Sj
+.ie '\*[TYPE]'JAVA'\{\
+.TP 5
+\\$1.\\$2\}
+.el\{\
+.TP 5
+\\$2\}
+..
 .\" The general information text macro.
 .de Gn
-.ie '\*[TYPE]'CXX'\{The DB library is a family of classes that provides a modular
-programming interface to transactions and record-oriented file access.
-The library includes support for transactions, locking, logging and file
-page caching, as well as various indexed access methods.
-Many of the classes (e.g., the file page caching class)
-are useful independent of the other DB classes,
-although some classes are explicitly based on other classes
-(e.g., transactions and logging).
-\}
-.el\{The DB library is a family of groups of functions that provides a modular
+.ie '\*[TYPE]'C'\{The DB library is a family of groups of functions that provides a modular
 programming interface to transactions and record-oriented file access.
 The library includes support for transactions, locking, logging and file
 page caching, as well as various indexed access methods.
@@ -56,6 +78,15 @@ Many of the functional groups (e.g., the file page caching functions)
 are useful independent of the other DB functions,
 although some functional groups are explicitly based on other functional
 groups (e.g., transactions and logging).
+\}
+.el\{The DB library is a family of classes that provides a modular
+programming interface to transactions and record-oriented file access.
+The library includes support for transactions, locking, logging and file
+page caching, as well as various indexed access methods.
+Many of the classes (e.g., the file page caching class)
+are useful independent of the other DB classes,
+although some classes are explicitly based on other classes
+(e.g., transactions and logging).
 \}
 For a general description of the DB package, see
 .IR db_intro (3).
@@ -67,24 +98,32 @@ For a general description of the DB package, see
 The
 .I \\$1
 .ie '\*[TYPE]'C'\{function may fail and return
+.I errno
 \}
 .el\{method may fail and throw a
 .IR DbException (3)
+.if '\*[TYPE]'CXX'\{
 or return
-\}
 .I errno
+\}
+\}
 for any of the errors specified for the following DB and library functions:
 ..
 .de Ec
 In addition, the
 .I \\$1
 .ie '\*[TYPE]'C'\{function may fail and return
+.I errno
 \}
 .el\{method may fail and throw a
 .IR DbException (3)
-or return
-\}
+.ie '\*[TYPE]'CXX'\{or return
 .I errno
+\}
+.el\{encapsulating an
+.I errno
+\}
+\}
 for the following conditions:
 ..
 .de Ea
@@ -124,11 +163,13 @@ All subsequent database calls (other than
 will return EPERM.
 ..
 .de Ek
+.if '\*[TYPE]'CXX'\{\
 Methods marked as returning
 .I errno
 will, by default, throw an exception that encapsulates the error information.
 The default error behavior can be changed, see
 .IR DbException (3).
+\}
 ..
 .\" The SEE ALSO text macro
 .de Sa
@@ -144,8 +185,20 @@ The default error behavior can be changed, see
 .IR db_recover (1),
 .IR db_stat (1),
 .IR db_intro (3),
-.ie '\*[TYPE]'CXX'\{\
-.IR db_jump (3),
+.ie '\*[TYPE]'C'\{\
+.IR db_appinit (3),
+.IR db_cursor (3),
+.IR db_dbm (3),
+.IR db_internal (3),
+.IR db_lock (3),
+.IR db_log (3),
+.IR db_mpool (3),
+.IR db_open (3),
+.IR db_thread (3),
+.IR db_txn (3)
+\}
+.el\{\
+.IR db_internal (3),
 .IR db_thread (3),
 .IR Db (3),
 .IR Dbc (3),
@@ -153,7 +206,7 @@ The default error behavior can be changed, see
 .IR DbException (3),
 .IR DbInfo (3),
 .IR DbLock (3),
-.IR DbLocktab (3),
+.IR DbLockTab (3),
 .IR DbLog (3),
 .IR DbLsn (3),
 .IR DbMpool (3),
@@ -162,20 +215,8 @@ The default error behavior can be changed, see
 .IR DbTxn (3),
 .IR DbTxnMgr (3)
 \}
-.el\{\
-.IR db_appinit (3),
-.IR db_cursor (3),
-.IR db_dbm (3),
-.IR db_jump (3),
-.IR db_lock (3),
-.IR db_log (3),
-.IR db_mpool (3),
-.IR db_open (3),
-.IR db_thread (3),
-.IR db_txn (3)
-\}
 .ad
-.hy
+.Hy
 ..
 .\" The function header macro.
 .\" This macro takes one argument:
@@ -190,27 +231,7 @@ The default error behavior can be changed, see
 .\"	+ the interface, e.g., "transaction region"
 .\"	+ the prefix, e.g., "txn" (or the class name for C++, e.g., "DbTxn")
 .de Co
-.ie '\*[TYPE]'CXX'\{\
-.Fn \\$2::open
-The
-.I \\$2::open
-method copies a pointer, to the \\$1 identified by the
-.B directory
-.IR dir ,
-into the memory location referenced by
-.IR regionp .
-.PP
-If the
-.I dbenv
-argument to
-.I \\$2::open
-was initialized using
-.IR DbEnv::appinit ,
-.I dir
-is interpreted as described by
-.IR DbEnv (3).
-\}
-.el\{\
+.ie '\*[TYPE]'C'\{\
 .Fn \\$2_open
 The
 .I \\$2_open
@@ -229,6 +250,33 @@ was initialized using
 .I dir
 is interpreted as described by
 .IR db_appinit (3).
+\}
+.el\{\
+.Fn \\$2::open
+The
+.I \\$2::open
+.ie '\*[TYPE]'CXX'\{\
+method copies a pointer, to the \\$1 identified by the
+.B directory
+.IR dir ,
+into the memory location referenced by
+.IR regionp .
+\}
+.el\{\
+method returns a \\$1 identified by the
+.B directory
+.IR dir .
+\}
+.PP
+If the
+.I dbenv
+argument to
+.I \\$2::open
+was initialized using
+.IR DbEnv::appinit ,
+.I dir
+is interpreted as described by
+.IR DbEnv (3).
 \}
 .PP
 Otherwise,
@@ -255,14 +303,17 @@ and
 .PP
 All files associated with the \\$1 are created in this directory.
 This directory must already exist when
-.I \\*(Vo
+.ie '\*[TYPE]'C'\{
+\\$1_open
+\}
+.el\{\
+\\$2::open
+\}
 is called.
 If the \\$1 already exists,
 the process must have permission to read and write the existing files.
 If the \\$1 does not already exist,
 it is optionally created and initialized.
-\}
-.rm Vo
 ..
 .\" The common close language macro, for discarding created regions
 .\" This macro takes one argument:
@@ -271,15 +322,15 @@ it is optionally created and initialized.
 In addition, if the
 .I dir
 argument to
-.ie '\*[TYPE]'CXX'\{\
-.ds Va DbEnv::appinit
-.ds Vo \\$1::open
-.ds Vu \\$1::unlink
-\}
-.el\{\
+.ie '\*[TYPE]'C'\{\
 .ds Va db_appinit
 .ds Vo \\$1_open
 .ds Vu \\$1_unlink
+\}
+.el\{\
+.ds Va DbEnv::appinit
+.ds Vo \\$1::open
+.ds Vu \\$1::unlink
 \}
 .I \\*(Vo
 was NULL
@@ -287,6 +338,9 @@ and
 .I dbenv
 was not initialized using
 .IR \\*(Va ,
+.if '\\$1'memp'\{\
+or the DB_MPOOL_PRIVATE flag was set,
+\}
 all files created for this shared region will be removed,
 as if
 .I \\*(Vu
@@ -300,7 +354,53 @@ were called.
 .\"	+ the function called to open, e.g., "txn_open"
 .\"	+ the function called to close, e.g., "txn_close"
 .de En
-.ie '\*[TYPE]'CXX'\{\
+.ie '\*[TYPE]'C'\{\
+based on the
+.I dbenv
+argument to
+.IR \\$1 ,
+which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
+It is expected that applications will use a single DB_ENV structure as the
+argument to all of the subsystems in the DB package.
+In order to ensure compatibility with future releases of DB, all fields of
+the DB_ENV structure that are not explicitly set should be initialized to 0
+before the first time the structure is used.
+Do this by declaring the structure external or static, or by calling the C
+library routine
+.IR bzero (3)
+or
+.IR memset (3).
+.PP
+The fields of the DB_ENV structure used by
+.I \\$1
+are described below.
+.if '\*[TYPE]'CXX'\{\
+As references to the DB_ENV structure may be maintained by
+.IR \\$1 ,
+it is necessary that the DB_ENV structure and memory it references be valid
+until the
+.I \\$2
+function is called.
+\}
+.ie '\\$1'db_appinit'\{The
+.I dbenv
+argument may not be NULL.
+If any of the fields of the
+.I dbenv
+are set to 0,
+defaults appropriate for the system are used where possible.
+\}
+.el\{If
+.I dbenv
+is NULL
+or any of its fields are set to 0,
+defaults appropriate for the system are used where possible.
+\}
+.PP
+The following fields in the DB_ENV structure may be initialized before calling
+.IR \\$1 :
+\}
+.el\{\
 based on which set methods have been used.
 It is expected that applications will use a single DbEnv object as the
 argument to all of the subsystems in the DB package.
@@ -329,54 +429,24 @@ The following fields in the DbEnv object may be initialized, using the
 appropriate set method, before calling
 .IR \\$1 :
 \}
-.el\{\
-based on the
-.I dbenv
-argument to
-.IR \\$1 ,
-which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
-It is expected that applications will use a single DB_ENV structure as the
-argument to all of the subsystems in the DB package.
-In order to ensure compatibility with future releases of DB, all fields of
-the DB_ENV structure that are not explicitly set should be initialized to 0
-before the first time the structure is used.
-Do this by declaring the structure external or static, or by calling the C
-library routine
-.IR bzero (3)
-or
-.IR memset (3).
-.PP
-The fields of the DB_ENV structure used by
-.I \\$1
-are described below.
-As references to the DB_ENV structure may be maintained by
-.IR \\$1 ,
-it is necessary that the DB_ENV structure and memory it references be valid
-until the
-.I \\$2
-function is called.
-.ie '\\$1'db_appinit'\{The
-.I dbenv
-argument may not be NULL.
-If any of the fields of the
-.I dbenv
-are set to 0,
-defaults appropriate for the system are used where possible.
-\}
-.el\{If
-.I dbenv
-is NULL
-or any of its fields are set to 0,
-defaults appropriate for the system are used where possible.
-\}
-.PP
-The following fields in the DB_ENV structure may be initialized before calling
-.IR \\$1 :
-\}
 ..
 .\" The DB_ENV common fields macros.
 .de Se
-.ie '\*[TYPE]'CXX'\{.TP 5
+.ie '\*[TYPE]'JAVA'\{\
+.TP 5
+DbErrcall db_errcall;
+.ns
+.TP 5
+String db_errpfx;
+.ns
+.TP 5
+int db_verbose;
+The error fields of the DbEnv behave as described for
+.IR DbEnv (3).
+\}
+.el\{\
+.ie '\*[TYPE]'CXX'\{\
+.TP 5
 void *(*db_errcall)(char *db_errpfx, char *buffer);
 .ns
 .TP 5
@@ -393,7 +463,7 @@ int db_verbose;
 The error fields of the DbEnv behave as described for
 .IR DbEnv (3).
 \}
-.el\{
+.el\{\
 void *(*db_errcall)(char *db_errpfx, char *buffer);
 .ns
 .TP 5
@@ -407,6 +477,7 @@ int db_verbose;
 The error fields of the DB_ENV behave as described for
 .IR db_appinit (3).
 \}
+\}
 ..
 .\" The open flags.
 .de Fm
@@ -419,8 +490,7 @@ don't already exist.
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
-.TP 5
-DB_CREATE
+.Sj Db DB_CREATE
 Create any underlying files, as necessary.
 If the files do not already exist and the DB_CREATE flag is not specified,
 the call will fail.
@@ -431,7 +501,7 @@ the call will fail.
 .\"	+ the object it returns.
 .de Ft
 .TP 5
-DB_THREAD
+.Sj Db DB_THREAD
 Cause the \\$2 handle returned by the
 .I \\$1
 .Al function method
@@ -502,11 +572,11 @@ TMPDIR
 If the
 .I dbenv
 argument to
-.ie '\*[TYPE]'CXX'\{\
-.ds Vo \\$2::open
+.ie '\*[TYPE]'C'\{\
+.ds Vo \\$2_open
 \}
 .el\{\
-.ds Vo \\$2_open
+.ds Vo \\$2::open
 \}
 .I \\*(Vo
 was NULL or not initialized using
@@ -540,38 +610,60 @@ parameter is currently unused, and must be set to 0.
 The
 .I \\$1
 .ie '\*[TYPE]'C'\{function returns the value of
-\}
-.el\{method throws a
-.IR DbException (3)
-or returns the value of
-\}
 .I errno
 on failure,
 0 on success,
+\}
+.el\{method throws a
+.IR DbException (3)
+.ie '\*[TYPE]'CXX'\{or returns the value of
+.I errno
+on failure,
+0 on success,
+\}
+.el\{that encapsulates an
+.I errno
+on failure,
+\}
+\}
 ..
 .de Ro
 Otherwise, the
 .I \\$1
 .ie '\*[TYPE]'C'\{function returns the value of
+.I errno
+on failure and 0 on success.
 \}
 .el\{method throws a
 .IR DbException (3)
-or returns the value of
-\}
+.ie '\*[TYPE]'CXX'\{or returns the value of
 .I errno
 on failure and 0 on success.
+\}
+.el\{that encapsulates an
+.I errno
+on failure,
+\}
+\}
 ..
 .de Rt
 The
 .I \\$1
 .ie '\*[TYPE]'C'\{function returns the value of
+.I errno
+on failure and 0 on success.
 \}
 .el\{method throws a
 .IR DbException (3)
-or returns the value of
-\}
+.ie '\*[TYPE]'CXX'\{or returns the value of
 .I errno
 on failure and 0 on success.
+\}
+.el\{that encapsulates an
+.I errno
+on failure.
+\}
+\}
 ..
 .\" The TXN id macro.
 .de Tx
@@ -588,17 +680,17 @@ otherwise, NULL.
 .\"	+ the interface, e.g., "transaction region"
 .\"	+ the prefix (for C++, this is the class name)
 .de Un
-.ie '\*[TYPE]'CXX'\{\
-.ds Va DbEnv::appinit
-.ds Vc \\$2::close
-.ds Vo \\$2::open
-.ds Vu \\$2::unlink
-\}
-.el\{\
+.ie '\*[TYPE]'C'\{\
 .ds Va db_appinit
 .ds Vc \\$2_close
 .ds Vo \\$2_open
 .ds Vu \\$2_unlink
+\}
+.el\{\
+.ds Va DbEnv::appinit
+.ds Vc \\$2::close
+.ds Vo \\$2::open
+.ds Vu \\$2::unlink
 \}
 .Fn \\*(Vu
 The
@@ -643,7 +735,7 @@ the region removal will fail.
 .PP
 In the case of catastrophic or system failure,
 database recovery must be performed (see
-.IR db_recovery (1)
+.IR db_recover (1)
 or the DB_RECOVER flags to
 .IR \\*(Va (3)).
 Alternatively, if recovery is not required because no database state is
@@ -696,6 +788,7 @@ This file will be removed if the \\$1 utility exits gracefully.
 .\" This macro takes one argument:
 .\"	+ the allocated object
 .de Ma
+.if !'\*[TYPE]'JAVA'\{\
 \\$1 are created in allocated memory.
 If
 .I db_malloc
@@ -715,6 +808,7 @@ the caller is responsible for deallocating the returned memory.
 To deallocate the returned memory,
 free each returned memory pointer;
 pointers inside the memory do not need to be individually freed.
+\}
 ..
 .\" Underlying function paragraph.
 .\" This macro takes two arguments:
@@ -753,13 +847,21 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH Db 3 "October 14, 1997"
+.\" Stat field macro
+.de Sf
+.ie '\*[TYPE]'CXX'\{\
+u_int32_t \\$1;\}
+.el\{\
+int get_\\$1();\}
+..
+.TH Db 3 "November 25, 1997"
 .UC 7
 .SH NAME
 Db \- database access class
 .SH SYNOPSIS
 .nf
 .ft B
+.ie '\*[TYPE]'CXX'\{
 #include <db_cxx.h>
 
 static int
@@ -793,6 +895,47 @@ Db::stat(void *sp, void *(*db_malloc)(size_t), int flags);
 
 int
 Db::sync(int flags);
+\}
+.el\{\
+import com.sleepycat.db.*;
+
+public static Db open(
+.ti +5
+String fname, int type,
+.ti +5
+int flags, int mode, DbEnv dbenv, DbInfo dbinfo)
+throws DbException;
+
+public int get_type();
+
+public void close(int flags)
+.ti +5
+throws DbException;
+
+public Dbc cursor(DbTxn txnid)
+.ti +5
+throws DbException;
+
+public void del(Dbt key, DbTxn txnid)
+.ti +5
+throws DbException;
+
+public int fd()
+.ti +5
+throws DbException;
+
+public void get(DbTxn txnid, Dbt key, Dbt data, int flags)
+.ti +5
+throws DbException;
+
+public void put(DbTxn txnid, Dbt key, Dbt data, int flags)
+.ti +5
+throws DbException;
+
+public void sync(int flags)
+.ti +5
+throws DbException;
+\}
 .ft R
 .fi
 .SH DESCRIPTION
@@ -808,7 +951,7 @@ The recno format supports fixed or variable length records (optionally
 retrieved from a flat text file).
 .PP
 Storage and retrieval for the Db access methods are based on key/data pairs,
-or the Dbt class as they are typedef'd in the <db_cxx.h> include file.
+using the Dbt class.
 See
 .IR Dbt (3)
 for specific information on the structure and capabilities of a Dbt.
@@ -823,9 +966,14 @@ setting the file parameter to NULL.
 .PP
 The
 .I Db::open
-method copies a pointer to a Db object (as typedef'd in the <db_cxx.h>
-include file), into the memory location referenced by
+method
+.ie '\*[TYPE]'CXX'\{\
+copies a pointer to a Db object into the memory location referenced by
 .IR dbpp .
+\}
+.el\{\
+returns a Db object.
+\}
 The methods of this object allow you to perform various database actions,
 as described below.
 .Rt Db::open
@@ -843,8 +991,13 @@ long time rather than opening and closing them on each query.)
 .PP
 The
 .I type
-argument is of type DBTYPE (as defined in the <db_cxx.h> include file)
+argument is of type
+.ie '\*[TYPE]'CXX'\{DBTYPE (as defined in the <db_cxx.h> include file)
 and must be set to one of DB_BTREE, DB_HASH, DB_RECNO or DB_UNKNOWN.
+\}
+.el\{int
+and must be set to one of Db.DB_BTREE, Db.DB_HASH, Db.DB_RECNO or Db.DB_UNKNOWN.
+\}
 If
 .I type
 is DB_UNKNOWN,
@@ -854,18 +1007,18 @@ will then determine if it is of type DB_BTREE, DB_HASH or DB_RECNO.
 .PP
 .Fm
 .TP 5
-DB_NOMMAP
+.Sj Db DB_NOMMAP
 Do not map this file (see
 .IR DbMpool (3)
 for further information).
 .TP 5
-DB_RDONLY
+.Sj Db DB_RDONLY
 Open the database for reading only.
 Any attempt to write the database using the access methods will fail
 regardless of the actual permissions of any underlying files.
 .Ft Db::open Db
 .TP 5
-DB_TRUNCATE
+.Sj Db DB_TRUNCATE
 ``Truncate'' the database if it exists, i.e.,
 behave as if the database were just created,
 discarding any previous contents.
@@ -888,8 +1041,12 @@ describes a database type,
 and includes a set of functions to perform various actions,
 as described below.
 The methods for Db are as follows:
+.ie '\*[TYPE]'CXX'\{
 .TP 5
-DBTYPE Db::get_type(void);
+DBTYPE Db::get_type(void);\}
+.el\{
+.TP 5
+int Db.get_type();\}
 The type of the underlying access method (and file format).
 Returns one of DB_BTREE, DB_HASH or DB_RECNO.
 This value may be used to determine the type of the database after a
@@ -898,8 +1055,12 @@ return from
 with the
 .I type
 argument set to DB_UNKNOWN.
+.ie '\*[TYPE]'CXX'\{
 .TP 5
-int Db::close(int flags);
+int Db::close(int flags);\}
+.el\{
+.TP 5
+public void Db.close(int flags);\}
 A method to flush any cached information to disk,
 close any open cursors (see
 .IR Dbc (3)),
@@ -921,8 +1082,8 @@ Do not flush cached information to disk.
 .RE
 .IP
 The DB_NOSYNC flag is a dangerous option.
-It should only be set if the application is doing logging (with or
-without transactions) so that the database is recoverable after a
+It should only be set if the application is doing logging (with
+transactions) so that the database is recoverable after a
 system or application crash,
 or if the database is always generated from scratch after any system or
 application crash.
@@ -946,11 +1107,18 @@ When multiple threads are using the Db handle concurrently,
 only a single thread may call the Db handle close method.
 .IP
 .Rt close
+.ie '\*[TYPE]'CXX'\{
 .TP 5
 int Db::cursor(DbTxn *txnid, Dbc **cursorp);
 A method to create a cursor and copy a pointer to it into
 the memory referenced by
 .IR cursorp .
+\}
+.el\{
+.TP 5
+public Dbc Db.cursor(DbTxn txnid);
+A method to create a cursor.
+\}
 .IP
 A cursor is an object used to provide sequential access through a database.
 .IP
@@ -965,8 +1133,12 @@ See
 for more information.
 .IP
 .Rt cursor
+.ie '\*[TYPE]'CXX'\{
 .TP 5
-int Db::del(DbTxn *txnid, Dbt *key, int flags);
+int Db::del(DbTxn *txnid, Dbt *key, int flags);\}
+.el\{
+.TP 5
+public void Db.del(DbTxn txnid, Dbt key, int flags);\}
 .br
 A method to remove key/data pairs from the database.
 The key/data pair associated with the specified
@@ -982,6 +1154,7 @@ all records associated with the designated key will be discarded.
 and DB_NOTFOUND if the specified
 .I key
 did not exist in the file.
+.ie '\*[TYPE]'CXX'\{
 .TP 5
 int Db::fd(int *fdp);
 A method that copies a file descriptor representative
@@ -1004,15 +1177,34 @@ underlying files used by the access method.
 The
 .I fd
 method only supports a coarse-grained form of locking.
+\}
+.el\{
+.TP 5
+public int Db.fd();
+A method that returns a file descriptor representative
+of the underlying database.
+This method does not fit well into the Java framework and
+may not appear in subsequent releases.
+\}
 Applications should use the lock manager where possible.
 .IP
 .Rt fd
+.ie '\*[TYPE]'CXX'\{
 .TP 5
-int Db::get(DbTxn *txnid, Dbt *key, Dbt *data, int flags);
+int Db::get(DbTxn *txnid, Dbt *key, Dbt *data, int flags);\}
+.el\{
+.TP 5
+public int Db.get(DbTxn txnid, Dbt key, Dbt data, int flags);\}
 .br
 A method that is an interface for keyed retrieval from
 the database.
-The address and length of the data associated with the specified
+.ie '\*[TYPE]'CXX'\{\
+The address
+\}
+.el\{\
+The byte array
+\}
+and length of the data associated with the specified
 .I key
 are returned in the object referenced by
 .IR data .
@@ -1021,7 +1213,7 @@ In the presence of duplicate key values,
 .I get
 will return the first data item for the designated key.
 Duplicates are sorted by insert order except where this order has been
-overwritten by cursor operations.
+overridden by cursor operations.
 .ft B
 Retrieval of duplicates requires the use of cursor operations.
 .ft R
@@ -1055,8 +1247,14 @@ In this case, the
 .I data
 field of the
 .I key
+.ie '\*[TYPE]'CXX'\{\
 must be a pointer to a memory location of type
 .IR db_recno_t ,
+\}
+.el\{\
+must be byte array to a memory location large enough to
+hold an int,
+\}
 as described in
 .IR Dbt (3).
 .RE
@@ -1070,8 +1268,12 @@ Otherwise, if the requested key isn't in the database, the
 .I get
 method returns DB_NOTFOUND.
 .Ro get
+.ie '\*[TYPE]'CXX'\{
 .TP 5
-int Db::put(DbTxn *txnid, Dbt *key, Dbt *data, int flags);
+int Db::put(DbTxn *txnid, Dbt *key, Dbt *data, int flags);\}
+.el\{
+.TP 5
+public int Db::put(DbTxn txnid, Dbt key, Dbt data, int flags);\}
 .br
 A method to store key/data pairs in the database.
 If the database supports duplicates,
@@ -1085,14 +1287,14 @@ The flags value is specified by
 together one or more of the following values:
 .RS
 .TP 5
-DB_APPEND
+.Sj Db DB_APPEND
 Append the key/data pair to the end of the database.
 For DB_APPEND to be specified,
 the underlying database must be of type recno.
 The record number allocated to the record is returned in the specified
 .IR key .
 .TP 5
-DB_NOOVERWRITE
+.Sj Db DB_NOOVERWRITE
 Enter the new key/data pair only if the key does not already appear
 in the database.
 .RE
@@ -1113,8 +1315,12 @@ the database.
 and DB_KEYEXIST if the DB_NOOVERWRITE
 .I flag
 was set and the key already exists in the file.
+.ie '\*[TYPE]'CXX'\{
 .TP 5
-int Db::sync(int flags);
+int Db::sync(int flags);\}
+.el\{
+.TP 5
+public void Db.sync(int flags);\}
 A method to flush any cached information to disk.
 If the database is in memory only, the
 .I sync
@@ -1127,6 +1333,7 @@ See the
 method description above for a discussion of Db and cached data.
 .IP
 .Rt sync
+.ie '\*[TYPE]'CXX'\{
 .TP 5
 int Db::stat(void *sp,
 .ti +5
@@ -1139,6 +1346,14 @@ Specifically, if
 is non-NULL,
 a pointer to the statistics for the database are copied into the memory
 location it references.
+\}
+.el\{
+.TP 5
+public int DbBtreeStat Db.stat(int flags);
+.br
+A method to create a statistical structure and fill it with
+statistics for the database.
+\}
 .sp
 .Ma "Statistical structures"
 .sp
@@ -1172,19 +1387,26 @@ a database without incurring a performance penalty.
 .IP
 .Rt stat
 .IP
+.ie '\*[TYPE]'CXX'\{
 In the case of a btree or recno database,
 the statistics are stored in a structure of type DB_BTREE_STAT
 (typedef'd in <db_cxx.h>).
 The following fields will be filled in:
+\}
+.el\{\
+In the case of a btree or recno database,
+the statistics are returned in an instance of DbBtreeStat.
+The following methods are available on DbBtreeStat:
+\}
 .RS
 .TP 5
-u_int32_t bt_magic;
+.Sf bt_magic
 Magic number that identifies the file as a btree file.
 .Nt
-u_int32_t bt_version;
+.Sf bt_version
 The version of the btree file type.
 .Nt
-u_int32_t bt_flags;
+.Sf bt_flags
 Permanent database flags,
 including DB_DUP, DB_FIXEDLEN, DB_RECNUM and DB_RENUMBER.
 .\".Nt
@@ -1195,77 +1417,77 @@ including DB_DUP, DB_FIXEDLEN, DB_RECNUM and DB_RENUMBER.
 .\".IR Db::open (3),
 .\"if any.
 .Nt
-u_int32_t bt_minkey;
+.Sf bt_minkey
 The
 .I bt_minkey
 value specified to
 .IR Db::open (3),
 if any.
 .Nt
-u_int32_t bt_re_len;
+.Sf bt_re_len
 The
 .I re_len
 value specified to
 .IR Db::open (3),
 if any.
 .Nt
-u_int32_t bt_re_pad;
+.Sf bt_re_pad
 The
 .I re_pad
 value specified to
 .IR Db::open (3),
 if any.
 .Nt
-u_int32_t bt_pagesize;
+.Sf bt_pagesize
 Underlying tree page size.
 .Nt
-u_int32_t bt_levels;
+.Sf bt_levels
 Number of levels in the tree.
 .Nt
-u_int32_t bt_nrecs;
+.Sf bt_nrecs
 Number of data items in the tree (since there may be multiple data items
 per key, this number may not be the same as the number of keys).
 .Nt
-u_int32_t bt_int_pg;
+.Sf bt_int_pg
 Number of tree internal pages.
 .Nt
-u_int32_t bt_leaf_pg;
+.Sf bt_leaf_pg
 Number of tree leaf pages.
 .Nt
-u_int32_t bt_dup_pg;
+.Sf bt_dup_pg
 Number of tree duplicate pages.
 .Nt
-u_int32_t bt_over_pg;
+.Sf bt_over_pg
 Number of tree overflow pages.
 .Nt
-u_int32_t bt_free;
+.Sf bt_free
 Number of pages on the free list.
 .Nt
-u_int32_t bt_freed;
+.Sf bt_freed
 Number of pages made available for reuse because they were emptied.
 .Nt
-u_int32_t bt_int_pgfree;
+.Sf bt_int_pgfree
 Number of bytes free in tree internal pages.
 .Nt
-u_int32_t bt_leaf_pgfree;
+.Sf bt_leaf_pgfree
 Number of bytes free in tree leaf pages.
 .Nt
-u_int32_t bt_dup_pgfree;
+.Sf bt_dup_pgfree
 Number of bytes free in tree duplicate pages.
 .Nt
-u_int32_t bt_over_pgfree;
+.Sf bt_over_pgfree
 Number of bytes free in tree overflow pages.
 .Nt
-u_int32_t bt_pfxsaved;
+.Sf bt_pfxsaved
 Number of bytes saved by prefix compression.
 .Nt
-u_int32_t bt_split;
+.Sf bt_split
 Total number of tree page splits (includes fast and root splits).
 .Nt
-u_int32_t bt_rootsplit;
+.Sf bt_rootsplit
 Number of root page splits.
 .Nt
-u_int32_t bt_fastsplit;
+.Sf bt_fastsplit
 Number of fast splits.
 When sorted keys are added to the database,
 the Db btree implementation will split left or right to increase the
@@ -1273,26 +1495,26 @@ page-fill factor.
 This number is a measure of how often it was possible to make such a
 split.
 .Nt
-u_int32_t bt_added;
+.Sf bt_added
 Number of keys added.
 .Nt
-u_int32_t bt_deleted;
+.Sf bt_deleted
 Number of keys deleted.
 .Nt
-u_int32_t bt_get;
+.Sf bt_get
 Number of keys retrieved.
 (Note, this value will not reflect any keys retrieved when the database was
 open for read-only access, as there is no permanent location to store the
 information in this case.)
 .Nt
-u_int32_t bt_cache_hit;
+.Sf bt_cache_hit
 Number of hits in tree fast-insert code.
 When sorted keys are added to the database,
 the Db btree implementation will check the last page where an insert
 occurred before doing a full lookup.
 This number is a measure of how often the lookup was successful.
 .Nt
-u_int32_t bt_cache_miss;
+.Sf bt_cache_miss
 Number of misses in tree fast-insert code.
 See the description of bt_cache_hit;
 this number is a measure of how often the lookup failed.
@@ -1313,15 +1535,22 @@ Such applications will only be concerned with the Db access methods.
 The Db access methods will use the memory pool subsystem,
 but the application is unlikely to be aware of this.
 See the file
+.ie '\*[TYPE]'CXX'\{\
 .I examples_cxx/AccessExample.cpp
-in the Db source distribution for a C++ language code example of how such
+in the Db source distribution for a C++
+\}
+.el\{\
+.I java/src/com/sleepycat/examples/AccessExample.java
+in the Db source distribution for a Java
+\}
+language code example of how such
 an application might use the Db library.
 .SH ERRORS
 .Ek
 .PP
 .Ee Db::open
 .na
-.nh
+.Nh
 Db::sync(3), 
 DbLock::get(3), 
 DbLock::put(3), 
@@ -1361,7 +1590,7 @@ strlen(3),
 time(3), 
 and
 unlink(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec Db::open
@@ -1397,7 +1626,7 @@ file was specified.
 .PP
 .Ee Db::close
 .na
-.nh
+.Nh
 Db::sync(3), 
 DbLock::get(3), 
 DbLock::put(3), 
@@ -1421,14 +1650,14 @@ munmap(2),
 realloc(3), 
 and
 strerror(3). 
-.hy
+.Hy
 .ad
 .PP
 .Ee Db::cursor
 .na
-.nh
+.Nh
 calloc(3). 
-.hy
+.Hy
 .ad
 .PP
 .Ec Db::cursor
@@ -1439,7 +1668,7 @@ calloc(3).
 .PP
 .Ee Db::del
 .na
-.nh
+.Nh
 DbLock::get(3), 
 DbLock::put(3), 
 DbLockTab::id(3), 
@@ -1459,7 +1688,7 @@ memset(3),
 realloc(3), 
 and
 strerror(3). 
-.hy
+.Hy
 .ad
 .PP
 .Ec Db::del
@@ -1482,7 +1711,7 @@ or no underlying file has yet been created.
 .PP
 .Ee Db::get
 .na
-.nh
+.Nh
 DbLock::get(3), 
 DbLock::put(3), 
 DbLockTab::id(3), 
@@ -1503,7 +1732,7 @@ memset(3),
 realloc(3), 
 and
 strerror(3). 
-.hy
+.Hy
 .ad
 .PP
 .Ec Db::get
@@ -1523,7 +1752,7 @@ A record number of 0 was specified.
 .PP
 .Ee Db::put
 .na
-.nh
+.Nh
 DbLock::get(3), 
 DbLock::put(3), 
 DbLockTab::id(3), 
@@ -1543,7 +1772,7 @@ memset(3),
 realloc(3), 
 and
 strerror(3). 
-.hy
+.Hy
 .ad
 .PP
 .Ec Db::put
@@ -1568,7 +1797,7 @@ A btree exceeded the maximum btree depth (255).
 .PP
 .Ee Db::stat
 .na
-.nh
+.Nh
 DbLock::get(3), 
 DbLock::put(3), 
 DbLockTab::id(3), 
@@ -1582,12 +1811,12 @@ malloc(3),
 memcpy(3), 
 and
 memset(3). 
-.hy
+.Hy
 .ad
 .PP
 .Ee Db::sync
 .na
-.nh
+.Nh
 Db::get(3), 
 Db::sync(3), 
 DbLock::get(3), 
@@ -1614,7 +1843,7 @@ strerror(3),
 unlink(2), 
 and
 write(2). 
-.hy
+.Hy
 .ad
 .PP
 .Ec Db::sync

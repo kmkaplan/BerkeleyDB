@@ -1,13 +1,12 @@
-# @(#)README	10.36 (Sleepycat) 11/3/97
+# @(#)README	10.39 (Sleepycat) 11/28/97
 
-This is version 2.3.12 (11/3/97) of the DB library.
+This is version 2.3.14 (11/28/97) of the DB library.
 
 The directory layout is as follows:
 
     LICENSE ......... Copyright, use and redistribution information.
     README .......... This file.
     btree ........... B+tree access method source code.
-    build.macos ..... MacOS build directory		(*** INCOMPLETE ***)
     build.unix ...... UNIX build directory.
     build.win32 ..... WIN32/WNT build directory.
     clib ............ C library replacement source code.

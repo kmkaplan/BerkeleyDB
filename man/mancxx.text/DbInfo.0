@@ -1,9 +1,5 @@
 
 
-
-DbInfo(3)                                               DbInfo(3)
-
-
 NNAAMMEE
        DbInfo - informational parameters for database open
 
@@ -112,6 +108,7 @@ DDEESSCCRRIIPPTTIIOONN
             bytes.  If _c_a_c_h_e_s_i_z_e is not explicitly set, an appro-
             priate default is used.  If the _m_p___i_n_f_o field is also
             specified, this field is ignored.
+
             NNoottee,, tthhee mmiinniimmuumm nnuummbbeerr ooff ppaaggeess iinn tthhee ccaacchhee sshhoouulldd
             bbee nnoo lleessss tthhaann 1100,, aanndd tthhee aacccceessss mmeetthhooddss wwiillll  ffaaiill
             iiff  aann  iinnssuuffffiicciieennttllyy  llaarrggee ccaacchhee iiss ssppeecciiffiieedd..  In
@@ -168,14 +165,14 @@ DDEESSCCRRIIPPTTIIOONN
 
 BBTTRREEEE
        The btree data structure is a sorted, balanced tree struc-
-       ture  storing associated key/data pairs.  Searches, inser-
-       tions, and deletions in the btree will all complete  in  O
-       (lg  base  N) where base is the average number of keys per
-       page.  Often, inserting ordered data into  btrees  results
-       in pages that are half-full.  This implementation has been
-       modified to make ordered (or  inverse  ordered)  insertion
-       the best case, resulting in nearly perfect page space uti-
-       lization.
+       ture   storing   associated   key/data  pairs.   Searches,
+       insertions, and deletions in the btree will  all  complete
+       in  O (lg base N) where base is the average number of keys
+       per page.   Often,  inserting  ordered  data  into  btrees
+       results  in pages that are half-full.  This implementation
+       has been modified to make  ordered  (or  inverse  ordered)
+       insertion  the best case, resulting in nearly perfect page
+       space utilization.
 
        Space freed by deleting key/data pairs from  the  database
        is  never  reclaimed  from  the filesystem, although it is
@@ -275,6 +272,7 @@ HHAASSHH
        The following additional fields and flags may be  initial-
        ized  in  the  DbInfo object before calling _D_b_:_:_o_p_e_n, when
        using the hash access method:
+
 
        unsigned int h_ffactor;
             The desired density within the hash table.  It is  an
@@ -381,15 +379,14 @@ RREECCNNOO
 
             By  default,  the backing source file is read lazily,
             i.e., records are not read from the file  until  they
-            are   requested  by  the  application.   IIff  mmuullttiippllee
-            pprroocceesssseess  ((nnoott  tthhrreeaaddss))  aarree  aacccceessssiinngg   aa   rreeccnnoo
-            ddaattaabbaassee  ccoonnccuurrrreennttllyy aanndd eeiitthheerr iinnsseerrttiinngg oorr ddeelleett--
-            iinngg rreeccoorrddss,, tthhee bbaacckkiinngg ssoouurrccee ffiillee mmuusstt bbee rreeaadd  iinn
-            iittss  eennttiirreettyy  bbeeffoorree  mmoorree  tthhaann  aa  ssiinnggllee  pprroocceessss
-            aacccceesssseess tthhee ddaattaabbaassee,, aanndd oonnllyy tthhaatt  pprroocceessss  sshhoouulldd
-            ssppeecciiffyy  tthhee  bbaacckkiinngg  ssoouurrccee  ffiillee  aass  ppaarrtt  ooff tthhee
-            _D_b_:_:_o_p_e_n call.  See the DB_SNAPSHOT  flag  below  for
-            more information.
+            are  requested  by the application.  IIff mmuullttiippllee pprroo--
+            cceesssseess ((nnoott tthhrreeaaddss)) aarree aacccceessssiinngg aa  rreeccnnoo  ddaattaabbaassee
+            ccoonnccuurrrreennttllyy   aanndd   eeiitthheerr   iinnsseerrttiinngg  oorr  ddeelleettiinngg
+            rreeccoorrddss,, tthhee bbaacckkiinngg ssoouurrccee ffiillee mmuusstt bbee rreeaadd iinn  iittss
+            eennttiirreettyy  bbeeffoorree  mmoorree tthhaann aa ssiinnggllee pprroocceessss aacccceesssseess
+            tthhee ddaattaabbaassee,, aanndd oonnllyy tthhaatt  pprroocceessss  sshhoouulldd  ssppeecciiffyy
+            tthhee bbaacckkiinngg ssoouurrccee ffiillee aass ppaarrtt ooff tthhee _D_b_:_:_o_p_e_n call.
+            See the DB_SNAPSHOT flag below for more  information.
 
             RReeaaddiinngg aanndd wwrriittiinngg tthhee bbaacckkiinngg ssoouurrccee ffiillee ssppeecciiffiieedd
             bbyy  rree__ssoouurrccee  ccaannnnoott  bbee  ttrraannssaaccttiioonnaallllyy  pprrootteecctteedd
@@ -419,8 +416,10 @@ RREECCNNOO
             The  following  additional  flags may be specified by
             oorr'ing together one or more of the following values:
 
+
             DB_DELIMITER
                  The _r_e___d_e_l_i_m field is set.
+
 
             DB_FIXEDLEN
                  The records are fixed-length,  not  byte  delim-
@@ -437,7 +436,9 @@ RREECCNNOO
 
 
             DB_PAD
+
                  The _r_e___p_a_d field is set.
+
 
             DB_RENUMBER
                  Specifying the DB_RENUMBER flag causes the logi-
@@ -481,6 +482,7 @@ RREECCNNOO
                  be largely  meaningless,  although  it  is  sup-
                  ported.
 
+
             DB_SNAPSHOT
                  This flag specifies that any specified _r_e___s_o_u_r_c_e
                  file be read in its entirety  when  _D_b_:_:_o_p_e_n  is
@@ -488,9 +490,11 @@ RREECCNNOO
                  _r_e___s_o_u_r_c_e file may be read lazily.
 
 
+
 SSEEEE AALLSSOO
        _d_b___a_r_c_h_i_v_e(1), _d_b___c_h_e_c_k_p_o_i_n_t(1), _d_b___d_e_a_d_l_o_c_k(1), _d_b___d_u_m_p(1),
-       _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3), _d_b___j_u_m_p(3),
-       _d_b___t_h_r_e_a_d(3), _D_b(3), _D_b_c(3), _D_b_E_n_v(3), _D_b_E_x_c_e_p_t_i_o_n(3), _D_b_I_n_f_o(3),
-       _D_b_L_o_c_k(3), _D_b_L_o_c_k_t_a_b(3), _D_b_L_o_g(3), _D_b_L_s_n(3), _D_b_M_p_o_o_l(3),
-       _D_b_M_p_o_o_l_F_i_l_e(3), _D_b_t(3), _D_b_T_x_n(3), _D_b_T_x_n_M_g_r(3)
+       _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3),
+       _d_b___i_n_t_e_r_n_a_l(3), _d_b___t_h_r_e_a_d(3), _D_b(3), _D_b_c(3), _D_b_E_n_v(3),
+       _D_b_E_x_c_e_p_t_i_o_n(3), _D_b_I_n_f_o(3), _D_b_L_o_c_k(3), _D_b_L_o_c_k_T_a_b(3), _D_b_L_o_g(3),
+       _D_b_L_s_n(3), _D_b_M_p_o_o_l(3), _D_b_M_p_o_o_l_F_i_l_e(3), _D_b_t(3), _D_b_T_x_n(3),
+       _D_b_T_x_n_M_g_r(3)
