@@ -1,0 +1,484 @@
+<HTML>
+<HEAD>
+<TITLE>db_lock</TITLE>
+</HEAD>
+<BODY>
+<H1>db_lock</H1>
+<HR>
+<PRE>
+
+</PRE>
+<H2>NAME</H2><PRE>
+       db_lock - lock manager
+
+
+</PRE>
+<H2>SYNOPSIS</H2><PRE>
+       <STRONG>#include</STRONG> <STRONG>&lt;db.h&gt;</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>lock_open(const</STRONG> <STRONG>char</STRONG> <STRONG>*dir,</STRONG>
+            <STRONG>int</STRONG> <STRONG>flags,</STRONG> <STRONG>int</STRONG> <STRONG>mode,</STRONG> <STRONG>DB_ENV</STRONG> <STRONG>*dbenv,</STRONG> <STRONG>DB_LOCKTAB</STRONG> <STRONG>**regionp);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>lock_id(DB_LOCKTAB</STRONG> <STRONG>*lt,</STRONG> <STRONG>u_int32_t</STRONG> <STRONG>*idp);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>lock_vec(DB_LOCKTAB</STRONG> <STRONG>*lt,</STRONG> <STRONG>u_int32_t</STRONG> <STRONG>locker,</STRONG> <STRONG>int</STRONG> <STRONG>flags,</STRONG>
+            <STRONG>DB_LOCKREQ</STRONG> <STRONG>list[],</STRONG> <STRONG>int</STRONG> <STRONG>nlist,</STRONG> <STRONG>DB_LOCKREQ</STRONG> <STRONG>**elistp);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>lock_get(DB_LOCKTAB</STRONG> <STRONG>*lt,</STRONG> <STRONG>u_int32_t</STRONG> <STRONG>locker,</STRONG> <STRONG>int</STRONG> <STRONG>flags,</STRONG>
+            <STRONG>const</STRONG> <STRONG>DBT</STRONG> <STRONG>*obj,</STRONG> <STRONG>const</STRONG> <STRONG>db_lockmode_t</STRONG> <STRONG>lock_mode,</STRONG> <STRONG>DB_LOCK</STRONG> <STRONG>*lock);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>lock_put(DB_LOCKTAB</STRONG> <STRONG>*lt,</STRONG> <STRONG>DB_LOCK</STRONG> <STRONG>lock);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>lock_close(DB_LOCKTAB</STRONG> <STRONG>*lt);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>lock_unlink(const</STRONG> <STRONG>char</STRONG> <STRONG>*dir,</STRONG> <STRONG>int</STRONG> <STRONG>force,</STRONG> <STRONG>DB_ENV</STRONG> <STRONG>*dbenv);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>lock_detect(DB_LOCKTAB</STRONG> <STRONG>*lt,</STRONG> <STRONG>db_detect_t</STRONG> <STRONG>atype,</STRONG> <STRONG>int</STRONG> <STRONG>flags);</STRONG>
+
+
+</PRE>
+<H2>DESCRIPTION</H2><PRE>
+       The  DB  library  is  a family of groups of functions that
+       provides a modular programming interface  to  transactions
+       and  record-oriented  file  access.   The library includes
+       support for transactions, locking, logging and  file  page
+       caching,  as well as various indexed access methods.  Many
+       of the functional groups  (e.g.,  the  file  page  caching
+       functions)  are  useful  independent of the other DB func-
+       tions, although  some  functional  groups  are  explicitly
+       based  on  other functional groups (e.g., transactions and
+       logging).  For a general description of  the  DB  package,
+       see <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>.
+
+       This  manual  page  describes  the specific details of the
+       locking interface.
+
+       The <EM>db</EM><STRONG>_</STRONG><EM>lock</EM> functions are the library  interface  intended
+       to  provide  general-purpose  locking.   While designed to
+       work with the other DB functions, these functions are also
+       useful  for  more  general locking purposes.  Locks can be
+       shared between processes.  In most  cases,  when  multiple
+       Otherwise, if <EM>dir</EM> is not NULL, it is interpreted  relative
+       to  the  current working directory of the process.  If <EM>dir</EM>
+       is NULL, the following environment variables  are  checked
+       in  order:  ``TMPDIR'',  ``TEMP'', and ``TMP''.  If one of
+       them is set, lock table files are created relative to  the
+       directory  it  specifies.   If  none  of them are set, the
+       first possible one of the following directories  is  used:
+       <EM>/var/tmp</EM>, <EM>/usr/tmp</EM>, <EM>/temp</EM>, <EM>/tmp</EM>, <EM>C:/temp</EM> and <EM>C:/tmp</EM>.
+
+       All  files  associated  with the lock table are created in
+       this directory.  This directory must already exist when <EM>is</EM>
+       <EM>called.</EM>   If  the  lock  table already exists, the process
+       must have permission to read and write the existing files.
+       If the lock table does not already exist, it is optionally
+       created and initialized.
+
+       The <EM>flags</EM> and <EM>mode</EM> arguments specify  how  files  will  be
+       opened  and/or created when they don't already exist.  The
+       flags value is specified by <STRONG>or</STRONG>'ing together one or more of
+       the following values:
+
+       DB_CREATE
+            Create  any  underlying  files, as necessary.  If the
+            files do not already exist and the DB_CREATE flag  is
+            not specified, the call will fail.
+
+       DB_THREAD
+            Cause the DB_LOCKTAB handle returned by the <EM>lock</EM><STRONG>_</STRONG><EM>open</EM>
+            function to be useable by multiple threads  within  a
+            single  address space, i.e., to be ``free-threaded''.
+
+       All files created by the lock subsystem are  created  with
+       mode  <EM>mode</EM>  (as described in <STRONG><A HREF="chmod.html">chmod(2)</A></STRONG>) and modified by the
+       process'  umask  value  at  the  time  of  creation   (see
+       <STRONG><A HREF="umask.html">umask(2)</A></STRONG>).   The group ownership of created files is based
+       on the system and directory defaults, and is  not  further
+       specified by DB.
+
+       The  locking  subsystem  is  configured based on the <EM>dbenv</EM>
+       argument to <EM>lock</EM><STRONG>_</STRONG><EM>open</EM>, which is a pointer to  a  structure
+       of type DB_ENV (typedef'd in &lt;db.h&gt;).  It is expected that
+       applications will use a single  DB_ENV  structure  as  the
+       argument  to  all of the subsystems in the DB package.  In
+       order to ensure compatibility with future releases of  DB,
+       all fields of the DB_ENV structure that are not explicitly
+       set should be initialized to 0 before the first  time  the
+       structure  is  used.   Do  this by declaring the structure
+       external or static, or by calling the  C  library  routine
+       <STRONG><A HREF="bzero.html">bzero(3)</A></STRONG> or <STRONG><A HREF="memset.html">memset(3)</A></STRONG>.
+
+       The  fields  of the DB_ENV structure used by <EM>lock</EM><STRONG>_</STRONG><EM>open</EM> are
+       described below.  As references to  the  DB_ENV  structure
+       may  be  maintained by <EM>lock</EM><STRONG>_</STRONG><EM>open</EM>, it is necessary that the
+       DB_ENV structure and memory it references be  valid  until
+            The error fields of the DB_ENV  behave  as  described
+            for <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>.
+
+       const u_int8_t lk_conflicts[][];
+            A  <EM>lk</EM><STRONG>_</STRONG><EM>modes</EM> by <EM>lk</EM><STRONG>_</STRONG><EM>modes</EM> array.  A non-0 value for the
+            array element:
+
+                 lk_conflicts[requested_mode][held_mode]
+
+            indicates that requested_mode and held_mode conflict.
+            The  ``not-granted''  mode  must be represented by 0.
+            If  <EM>lk</EM><STRONG>_</STRONG><EM>conflicts</EM>  is  NULL,   the   conflicts   array
+            <EM>db</EM><STRONG>_</STRONG><EM>rw</EM><STRONG>_</STRONG><EM>conflicts</EM>  is used; see the section below enti-
+            tled ``STANDARD LOCK MODES''  for  a  description  of
+            that array.
+
+       db_detect_t lk_detect;
+            If non-0, specifies that the deadlock detector be run
+            whenever a lock conflict occurs, and specifies  which
+            transaction  should be aborted in the case of a dead-
+            lock.  The <EM>lk</EM><STRONG>_</STRONG><EM>detect</EM> field must be set to one of  the
+            following values.
+
+            DB_LOCK_DEFAULT
+                 Use  the  default  policy  as  specified  in the
+                 <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG> man page.
+
+            DB_LOCK_OLDEST
+                 Abort the oldest transaction.
+
+            DB_LOCK_RANDOM
+                 Abort a random transaction involved in the dead-
+                 lock.
+
+            DB_LOCK_YOUNGEST
+                 Abort the youngest transaction.
+
+       unsigned int lk_max;
+            The  maximum  number of locks to be held or requested
+            in the table.  This value is  used  by  <EM>lock</EM><STRONG>_</STRONG><EM>open</EM>  to
+            estimate how much space to allocate for various lock-
+            table data structures.  If <EM>lk</EM><STRONG>_</STRONG><EM>max</EM>  is  0,  a  default
+            value is used.
+
+       int lk_modes;
+            The number of lock modes to be recognized by the lock
+            table  (including  the  ``not-granted''  mode).    If
+            <EM>lk</EM><STRONG>_</STRONG><EM>modes</EM>  is  0,  the value DB_LOCK_RW_N is used; see
+            below for a description of that value.
+
+       The <EM>lock</EM><STRONG>_</STRONG><EM>open</EM> function returns the value of <EM>errno</EM> on fail-
+       ure and 0 on success.
+
+  <EM>lock</EM><STRONG>_</STRONG><EM>id</EM>
+       and 0 on success.
+
+  <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM>
+       The  <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM> function atomically obtains and releases one
+       or more locks from the specified table, <EM>lt</EM>.  The  <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM>
+       function  is intended to support acquisition or trading of
+       multiple locks under  one  lock  table  semaphore,  as  is
+       needed  for  lock  coupling or in multigranularity locking
+       for lock escalation.
+
+       The <EM>locker</EM> argument specified to <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM> is  an  unsigned
+       32-bit   integer   quantity.   It  represents  the  entity
+       requesting or releasing the lock.
+
+       The <EM>flags</EM> value must be set to 0 or the following value:
+
+       DB_LOCK_NOWAIT
+            If a lock cannot be  granted  because  the  requested
+            lock  conflicts with an existing lock, return immedi-
+            ately instead of  waiting  for  the  lock  to  become
+            available.
+
+       The <EM>list</EM> array provided to <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM> is typedef'd in &lt;db.h&gt;
+       as DB_LOCKREQ.  A DB_LOCKREQ structure has  at  least  the
+       following fields, which must be initialized before calling
+       <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM>:
+
+       lockop_t op;
+            The operation to be performed, which must be  set  to
+            one of the following values:
+
+            DB_LOCK_GET
+                 Get  a lock, as defined by the values of <EM>locker</EM>,
+                 <EM>obj</EM> and <EM>mode</EM>.  Upon return from <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM>, if the
+                 <EM>lock</EM>  field  is  non-NULL,  a  reference  to the
+                 acquired lock is stored there.  (This  reference
+                 is  invalidated  by  any  call  to  <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM>  or
+                 <EM>lock</EM><STRONG>_</STRONG><EM>put</EM> that releases the lock.)
+
+            DB_LOCK_PUT
+                 The lock referenced by the contents of the  <EM>lock</EM>
+                 field is released.
+
+            DB_LOCK_PUT_ALL
+                 All locks held by the <EM>locker</EM> are released.  (Any
+                 locks acquired as a part of the current call  to
+                 <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM>  that  appear after the DB_LOCK_PUT_ALL
+                 entry are not considered for this operation).
+
+            DB_LOCK_PUT_OBJ
+                 All locks held by the <EM>locker</EM>, on the object <EM>obj</EM>,
+                 with   the  mode  specified  by  <EM>lock</EM><STRONG>_</STRONG><EM>mode</EM>,  are
+                 released.  A <EM>lock</EM><STRONG>_</STRONG><EM>mode</EM> of  DB_LOCK_NG  indicates
+                 that all locks on the object should be released.
+
+       DB_LOCK lock;
+            A lock reference.
+
+       The <EM>nlist</EM> argument specifies the number of elements in the
+       <EM>list</EM> array.
+
+       If any of the requested locks cannot be acquired,  or  any
+       of the locks to be released cannot be released, the opera-
+       tions before the failing operation are guaranteed to  have
+       completed  successfully,  and  <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM> returns a non-zero
+       value.  In addition, if <EM>elistp</EM> is not NULL, it is  set  to
+       point  to  the  DB_LOCKREQ  entry that was being processed
+       when the error occurred.
+
+       In the case of an error, <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM> may return  one  of  the
+       following values:
+
+       DB_LOCK_DEADLOCK
+            The  specified  <EM>locker</EM>  was  selected  as a victim in
+            order to resolve a deadlock.
+
+       DB_LOCK_NOTHELD
+            The lock cannot be released, as it was  not  held  by
+            the <EM>locker</EM>.
+
+       DB_LOCK_NOTGRANTED
+            A  lock  was  requested that could not be granted and
+            the <EM>flag</EM> parameter was  set  to  DB_LOCK_NOWAIT.   In
+            this case, if non-NULL, <EM>elistp</EM> identifies the request
+            that was granted.
+
+       Otherwise, the <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM>  function  returns  the  value  of
+       <EM>errno</EM> on failure and 0 on success.
+
+  <EM>lock</EM><STRONG>_</STRONG><EM>get</EM>
+       The  <EM>lock</EM><STRONG>_</STRONG><EM>get</EM>  function  is  a  simple  interface  to  the
+       <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM> functionality, and is equivalent to  calling  the
+       <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM> function with the <EM>lt</EM> and <EM>locker</EM> arguments, <EM>elistp</EM>
+       and <EM>conflict</EM> arguments, and a single element  <EM>list</EM>  array,
+       for  which  the  <EM>op</EM>  field  is  DB_LOCK_GET,  and the <EM>obj</EM>,
+       <EM>lock</EM><STRONG>_</STRONG><EM>mode</EM> and <EM>lock</EM> fields are represented by the arguments
+       of  the same name.  Note that the type of the <EM>obj</EM> argument
+       to <EM>lock</EM><STRONG>_</STRONG><EM>get</EM> is different from the <EM>obj</EM> element found in the
+       DB_LOCKREQ  structure.  The <EM>lock</EM><STRONG>_</STRONG><EM>get</EM> function returns suc-
+       cess and failure as described for the <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM> function.
+
+  <EM>lock</EM><STRONG>_</STRONG><EM>put</EM>
+       The  <EM>lock</EM><STRONG>_</STRONG><EM>put</EM>  function  is  a  simple  interface  to  the
+       <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM>  functionality,  and is equivalent to calling the
+       <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM> function with a single element  <EM>list</EM>  array,  for
+       which  the  <EM>op</EM>  field is DB_LOCK_PUT and the <EM>lock</EM> field is
+       represented  by  the  argument  of  the  same  name.   The
+       <EM>lock</EM><STRONG>_</STRONG><EM>put</EM> function returns success and failure as described
+       <EM>dbenv</EM> was not initialized using <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>, all files cre-
+       ated  for  this  shared  region  will  be  removed,  as if
+       <EM>lock</EM><STRONG>_</STRONG><EM>unlink</EM> were called.
+
+       When multiple threads are using the DB_LOCKTAB handle con-
+       currently,  only  a  single thread may call the <EM>lock</EM><STRONG>_</STRONG><EM>close</EM>
+       function.
+
+       The <EM>lock</EM><STRONG>_</STRONG><EM>close</EM> function returns  the  value  of  <EM>errno</EM>  on
+       failure and 0 on success.
+
+
+  <EM>lock</EM><STRONG>_</STRONG><EM>unlink</EM>
+       The  <EM>lock</EM><STRONG>_</STRONG><EM>unlink</EM>  function destroys the lock table identi-
+       fied by the directory <EM>dir</EM>,  removing  all  files  used  to
+       implement  the  lock  table.   (The  directory  <EM>dir</EM> is not
+       removed.)   If  there  are  processes  that  have   called
+       <EM>lock</EM><STRONG>_</STRONG><EM>open</EM> without calling <EM>lock</EM><STRONG>_</STRONG><EM>close</EM> (i.e., there are pro-
+       cesses currently using the lock table),  <EM>lock</EM><STRONG>_</STRONG><EM>unlink</EM>  will
+       fail without further action, unless the force flag is set,
+       in which case <EM>lock</EM><STRONG>_</STRONG><EM>unlink</EM> will attempt to remove the  lock
+       table  files  regardless  of any processes still using the
+       lock table.
+
+       The result of attempting to forcibly  destroy  the  region
+       when  a  process has the region open is unspecified.  Pro-
+       cesses using a shared memory region maintain an open  file
+       descriptor  for  it.   On UNIX systems, the region removal
+       should succeed and processes that have already joined  the
+       region  should  continue  to  run  in  the  region without
+       change, however processes  attempting  to  join  the  lock
+       table  will either fail or attempt to create a new region.
+       On other systems, e.g., WNT, where  the  <STRONG><A HREF="unlink.html">unlink(2)</A></STRONG>  system
+       call  will fail if any process has an open file descriptor
+       for the file, the region removal will fail.
+
+       In the case of catastrophic or  system  failure,  database
+       recovery  must  be  performed  (see  <STRONG><A HREF="db_recovery.html">db_recovery(1)</A></STRONG> or the
+       DB_RECOVER flags  to  <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>).   Alternatively,  if
+       recovery  is  not  required  because  no database state is
+       maintained across failures, it is possible to clean  up  a
+       lock  table  by removing all of the files in the directory
+       specified to the <EM>lock</EM><STRONG>_</STRONG><EM>open</EM> function, as lock  table  files
+       are  never  created  in  any  directory other than the one
+       specified to <EM>lock</EM><STRONG>_</STRONG><EM>open</EM>.  Note, however, that this has  the
+       potential  to remove files created by the other DB subsys-
+       tems in this database environment.
+
+       The <EM>lock</EM><STRONG>_</STRONG><EM>unlink</EM> function returns the  value  of  <EM>errno</EM>  on
+       failure and 0 on success.
+  <EM>lock</EM><STRONG>_</STRONG><EM>detect</EM>
+       The  <EM>lock</EM><STRONG>_</STRONG><EM>detect</EM>  function runs one iteration of the dead-
+       lock detector on the specified table,  <EM>lt</EM>.   The  deadlock
+       detector  traverses the lock table, detects deadlocks, and
+       DB_LOCK_CONFLICT
+            Only run the deadlock detector if a lock conflict has
+            occurred since the last time that the deadlock detec-
+            tor was run.
+
+       The  <EM>lock</EM><STRONG>_</STRONG><EM>detect</EM>  function  returns  the value of <EM>errno</EM> on
+       failure and 0 on success.
+
+       The <EM>lock</EM><STRONG>_</STRONG><EM>detect</EM> function is the underlying  function  used
+       by  the  <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG>  utility.  See the source code for
+       the  <EM>db</EM><STRONG>_</STRONG><EM>deadlock</EM>  utility  for   an   example   of   using
+       <EM>lock</EM><STRONG>_</STRONG><EM>detect</EM> in a UNIX environment.
+
+
+</PRE>
+<H2>ENVIRONMENT VARIABLES</H2><PRE>
+       The  following  environment variables affect the execution
+       of <EM>db</EM><STRONG>_</STRONG><EM>lock</EM>:
+
+       DB_HOME
+            If the <EM>dbenv</EM> argument to  <EM>lock</EM><STRONG>_</STRONG><EM>open</EM>  was  initialized
+            using  <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>,  the  environment variable DB_HOME
+            may be used as the path of the database home for  the
+            interpretation  of  the <EM>dir</EM> argument to <EM>lock</EM><STRONG>_</STRONG><EM>open</EM>, as
+            described in <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>.
+
+       TMPDIR
+            If the <EM>dbenv</EM> argument to <EM>lock</EM><STRONG>_</STRONG><EM>open</EM> was  NULL  or  not
+            initialized  using  <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>, the environment vari-
+            able TMPDIR may be used as the directory in which  to
+            create  the lock table, as described in the <EM>lock</EM><STRONG>_</STRONG><EM>open</EM>
+            section above.
+
+
+</PRE>
+<H2>STANDARD LOCK MODES</H2><PRE>
+       The include file &lt;db.h&gt; declares two  commonly  used  con-
+       flict arrays:
+
+       const u_int8_t db_lock_rw_conflicts[];
+            This  is  a  conflict array for a simple scheme using
+            shared and exclusive lock modes.
+       const u_int8_t db_lock_riw_conflicts[];
+            This is a conflict array that involves various intent
+            lock  modes  (e.g.,  intent shared) that are used for
+            multigranularity locking.
+
+       Their associated sizes are DB_LOCK_RW_N and DB_LOCK_RIW_N.
+
+       In  addition,  the  include  file  &lt;db.h&gt; defines the type
+       <EM>db</EM><STRONG>_</STRONG><EM>lockmode</EM><STRONG>_</STRONG><EM>t</EM>, which is the type of the  lock  modes  used
+       with the standard tables above:
+
+              DB_LOCK_NG
+                   not granted (always 0)
+
+              DB_LOCK_READ
+                   read (shared)
+
+       In  addition,  the  <EM>lock</EM><STRONG>_</STRONG><EM>open</EM> function may fail and return
+       <EM>errno</EM> for the following conditions:
+
+       [EAGAIN]
+            The shared memory region was locked and  (repeatedly)
+            unavailable.
+
+       [EINVAL]
+            An invalid flag value or parameter was specified.
+
+            The  DB_THREAD  flag  was specified and spinlocks are
+            not implemented for this architecture.
+
+       The <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM> function may fail and return <EM>errno</EM> for any of
+       the  errors  specified  for  the  following DB and library
+       functions: <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="lock_detect.html">lock_detect(3)</A></STRONG>, <STRONG><A HREF="lseek.html">lseek(2)</A></STRONG>,
+       <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>, <STRONG><A HREF="memset.html">memset(3)</A></STRONG>, <STRONG><A HREF="mmap.html">mmap(2)</A></STRONG>, <STRONG><A HREF="munmap.html">munmap(2)</A></STRONG>, <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>, and
+       <STRONG><A HREF="write.html">write(2)</A></STRONG>.
+
+       In addition, the <EM>lock</EM><STRONG>_</STRONG><EM>vec</EM> function may fail and return <EM>er-</EM>
+       <EM>rno</EM> for the following conditions:
+
+       [EACCES]
+            An  attempt  was made to release lock held by another
+            locker.
+       [EINVAL]
+            An invalid flag value or parameter was specified.
+
+       The <EM>lock</EM><STRONG>_</STRONG><EM>get</EM> function may fail and return <EM>errno</EM> for any of
+       the  errors  specified  for  the  following DB and library
+       functions: <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="lock_detect.html">lock_detect(3)</A></STRONG>, <STRONG><A HREF="lseek.html">lseek(2)</A></STRONG>,
+       <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>, <STRONG><A HREF="memset.html">memset(3)</A></STRONG>, <STRONG><A HREF="mmap.html">mmap(2)</A></STRONG>, <STRONG><A HREF="munmap.html">munmap(2)</A></STRONG>, <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>, and
+       <STRONG><A HREF="write.html">write(2)</A></STRONG>.
+
+       In addition, the <EM>lock</EM><STRONG>_</STRONG><EM>get</EM> function may fail and return <EM>er-</EM>
+       <EM>rno</EM> for the following conditions:
+
+       [EINVAL]
+            An invalid flag value or parameter was specified.
+
+       The <EM>lock</EM><STRONG>_</STRONG><EM>put</EM> function may fail and return <EM>errno</EM> for any of
+       the errors specified for  the  following  DB  and  library
+       functions: <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="lock_detect.html">lock_detect(3)</A></STRONG>, <STRONG><A HREF="lseek.html">lseek(2)</A></STRONG>,
+       <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>, <STRONG><A HREF="memset.html">memset(3)</A></STRONG>, <STRONG><A HREF="mmap.html">mmap(2)</A></STRONG>, <STRONG><A HREF="munmap.html">munmap(2)</A></STRONG>, <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>, and
+       <STRONG><A HREF="write.html">write(2)</A></STRONG>.
+
+       In addition, the <EM>lock</EM><STRONG>_</STRONG><EM>put</EM> function may fail and return <EM>er-</EM>
+       <EM>rno</EM> for the following conditions:
+
+       [EACCES]
+            An attempt was made to release lock held  by  another
+            locker.
+
+       <STRONG><A HREF="sigfillset.html">sigfillset(3)</A></STRONG>, <STRONG><A HREF="sigprocmask.html">sigprocmask(2)</A></STRONG>, <STRONG><A HREF="stat.html">stat(2)</A></STRONG>, <STRONG><A HREF="strcpy.html">strcpy(3)</A></STRONG>,
+       <STRONG><A HREF="strdup.html">strdup(3)</A></STRONG>, <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>, <STRONG><A HREF="strlen.html">strlen(3)</A></STRONG>, and <STRONG><A HREF="unlink.html">unlink(2)</A></STRONG>.
+
+       In  addition, the <EM>lock</EM><STRONG>_</STRONG><EM>unlink</EM> function may fail and return
+       <EM>errno</EM> for the following conditions:
+
+       [EBUSY]
+            The shared memory region was in  use  and  the  force
+            flag was not set.
+
+       The <EM>lock</EM><STRONG>_</STRONG><EM>detect</EM> function may fail and return <EM>errno</EM> for any
+       of the errors specified for the following DB  and  library
+       functions: <STRONG><A HREF="calloc.html">calloc(3)</A></STRONG>, <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="lseek.html">lseek(2)</A></STRONG>,
+       <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>, <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>, <STRONG><A HREF="memset.html">memset(3)</A></STRONG>, <STRONG><A HREF="mmap.html">mmap(2)</A></STRONG>, <STRONG><A HREF="munmap.html">munmap(2)</A></STRONG>,
+       <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>, and <STRONG><A HREF="write.html">write(2)</A></STRONG>.
+
+
+</PRE>
+<H2>BUGS</H2><PRE>
+       If  a process dies while holding locks, those locks remain
+       held and are <STRONG>never</STRONG> released.  In this case, all  processes
+       should exit as quickly as possible, so that <EM>db</EM><STRONG>_</STRONG><EM>recover</EM> can
+       be run.
+
+
+</PRE>
+<H2>SEE ALSO</H2><PRE>
+       <STRONG><A HREF="db_archive.html">db_archive(1)</A></STRONG>, <STRONG><A HREF="db_checkpoint.html">db_checkpoint(1)</A></STRONG>, <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG>, <STRONG><A HREF="db_dump.html">db_dump(1)</A></STRONG>,
+       <STRONG><A HREF="db_load.html">db_load(1)</A></STRONG>, <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG>, <STRONG><A HREF="db_stat.html">db_stat(1)</A></STRONG>, <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>,
+       <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>, <STRONG><A HREF="db_cursor.html">db_cursor(3)</A></STRONG>, <STRONG><A HREF="db_dbm.html">db_dbm(3)</A></STRONG>, <STRONG><A HREF="db_jump.html">db_jump(3)</A></STRONG>, <STRONG><A HREF="db_lock.html">db_lock(3)</A></STRONG>,
+       <STRONG><A HREF="db_log.html">db_log(3)</A></STRONG>, <STRONG><A HREF="db_mpool.html">db_mpool(3)</A></STRONG>, <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>, <STRONG><A HREF="db_thread.html">db_thread(3)</A></STRONG>, <STRONG><A HREF="db_txn.html">db_txn(3)</A></STRONG>
+</PRE>
+</BODY>
+</HTML>

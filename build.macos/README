@@ -1,0 +1,35 @@
+This is the Macintosh build directory for Metrowerks C (I used CodeWarrior
+11) running under MPW.
+
+To compile, you need 
+
+ - The dmake MPW tool, available from 
+ 
+ftp://sunsite.cnlab-switch.ch//software/platform/macos/src/mpw_c/dmake_40m2.sit.bin
+
+ - The GUSI library, available from
+ 
+ftp://sunsite.cnlab-switch.ch//software/platform/macos/src/mw_c/CWGUSI_180.sit.bin
+
+ (by the time you read this, a later version of CWGUSI might be available).
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+KNOWN LIMITATIONS
+
+dbtest doesn't really work well, partially because I didn't manage to get
+a good build of Tcl with CWGUSI done. I therefore have excluded it from
+the build.
+
+Globally (inter-process) shared memory regions do not yet work, but should
+get fixed soon.
+
+The Mac port is not very throughly tested yet; I rely on your reports
+(both positive and negative to improve it).
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+BUG REPORTS
+
+If you think the bugs you see are related to the Mac port, please contact
+neeri@iis.ee.ethz.ch.
+
+Matthias Neeracher

@@ -1,0 +1,75 @@
+<HTML>
+<HEAD>
+<TITLE>db_stat</TITLE>
+</HEAD>
+<BODY>
+<H1>db_stat</H1>
+<HR>
+<PRE>
+
+</PRE>
+<H2>NAME</H2><PRE>
+       db_stat - display DB statistics
+
+
+</PRE>
+<H2>SYNOPSIS</H2><PRE>
+       <STRONG>db_stat</STRONG> [<STRONG>-lmt</STRONG>] [<STRONG>-d</STRONG> <STRONG>file</STRONG>] [<STRONG>-h</STRONG> <STRONG>home</STRONG>]
+
+
+</PRE>
+<H2>DESCRIPTION</H2><PRE>
+       The  <EM>db</EM><STRONG>_</STRONG><EM>stat</EM>  utility  displays statistics for DB environ-
+       ments.
+
+       The options are as follows:
+
+       <STRONG>-d</STRONG>   Display  database  statistics   for   the   specified
+            database, as described in <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>.
+
+       <STRONG>-h</STRONG>   Specify a home directory for the database.
+
+       <STRONG>-l</STRONG>   Display   log   region  statistics  as  described  in
+            <STRONG><A HREF="db_log.html">db_log(3)</A></STRONG>.
+
+       <STRONG>-m</STRONG>   Display  shared  memory  buffer  pool  statistics  as
+            described in <STRONG><A HREF="db_mpool.html">db_mpool(3)</A></STRONG>.
+
+       <STRONG>-t</STRONG>   Display transaction region statistics as described in
+            <STRONG><A HREF="db_txn.html">db_txn(3)</A></STRONG>.
+
+       The <EM>db</EM><STRONG>_</STRONG><EM>stat</EM> utility attaches to DB shared memory  regions.
+       In  order  to avoid region corruption, it should always be
+       given the chance to detach and exit gracefully.  To  cause
+       <EM>db</EM><STRONG>_</STRONG><EM>stat</EM>  to  clean  up  after  itself and exit, send it an
+       interrupt signal (SIGINT).
+
+       The <EM>db</EM><STRONG>_</STRONG><EM>stat</EM> utility exits 0 on success, and &gt;0 if an error
+       occurs.
+
+
+</PRE>
+<H2>ENVIRONMENT VARIABLES</H2><PRE>
+       The  following  environment variables affect the execution
+       of <EM>db</EM><STRONG>_</STRONG><EM>stat</EM>:
+
+       DB_HOME
+            If the <STRONG>-h</STRONG> option is not specified and the environment
+            variable  <EM>DB</EM><STRONG>_</STRONG><EM>HOME</EM>  is  set, it is used as the path of
+            the database home, as described in <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>.
+
+
+</PRE>
+<H2>SEE ALSO</H2><PRE>
+       The DB library is a family of  groups  of  functions  that
+       provides  a  modular programming interface to transactions
+       and record-oriented file  access.   The  library  includes
+       support  for  transactions, locking, logging and file page
+       caching, as well as various indexed access methods.   Many
+       of  the  functional  groups  (e.g.,  the file page caching
+       functions) are useful independent of the  other  DB  func-
+       tions,  although  some  functional  groups  are explicitly
+       based on other functional groups (e.g.,  transactions  and
+</PRE>
+</BODY>
+</HTML>

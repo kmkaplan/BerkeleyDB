@@ -1,0 +1,423 @@
+<HTML>
+<HEAD>
+<TITLE>db_intro</TITLE>
+</HEAD>
+<BODY>
+<H1>db_intro</H1>
+<HR>
+<PRE>
+
+</PRE>
+<H2>NAME</H2><PRE>
+       db - the DB library overview and introduction
+
+
+</PRE>
+<H2>DESCRIPTION</H2><PRE>
+       The  DB  library  is  a family of groups of functions that
+       provides a modular programming interface  to  transactions
+       and  record-oriented  file  access.   The library includes
+       support for transactions, locking, logging and  file  page
+       caching,  as well as various indexed access methods.  Many
+       of the functional groups  (e.g.,  the  file  page  caching
+       functions)  are  useful  independent of the other DB func-
+       tions, although  some  functional  groups  are  explicitly
+       based  on  other functional groups (e.g., transactions and
+       logging).  For a general description of  the  DB  package,
+       see <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>.
+
+       The  DB  library  does  not  provide user interfaces, data
+       entry GUI's, SQL support or  any  of  the  other  standard
+       user-level  database interfaces.  What it does provide are
+       the programmatic building blocks that allow you to  easily
+       embed  database-style functionality and support into other
+       objects or interfaces.
+
+
+</PRE>
+<H2>ARCHITECTURE</H2><PRE>
+       The DB library supports two different models  of  applica-
+       tions: client-server and embedded.
+
+       In  the  client-server model, a database server is created
+       by writing an application that accepts requests  via  some
+       form  of IPC and issues calls to the DB functions based on
+       those queries.  In this  model,  applications  are  client
+       programs that attach to the server and issue queries.  The
+       client-server model trades performance for protection,  as
+       it  does not require that the applications share a protec-
+       tion domain with the  server,  but  IPC/RPC  is  generally
+       slower than a function call.  In addition, this model sim-
+       plifies the creation  of  network  client-server  applica-
+       tions.
+
+       In the embedded model, an application links the DB library
+       directly into its address space.  This provides for faster
+       access  to  database  functionality,  but  means  that the
+       applications sharing log files, lock manager,  transaction
+       manager  or  memory pool manager have the ability to read,
+       write, and corrupt each other's data.
+
+       It is the application designer's responsibility to  select
+       the appropriate model for their application.
+
+       Applications  require a single include file, <EM>&lt;db.h&gt;</EM>, which
+       must be installed in an appropriate location on  the  sys-
+       tem.
+
+
+       As a rule, each C++ object has exactly one structure  from
+       the  underlying C API associated with it.  The C structure
+       is allocated with each constructor  call  and  deallocated
+       with each destructor call.  Thus, the rules the user needs
+       to follow in allocating and  deallocating  structures  are
+       the same between the C and C++ interfaces.
+
+       To ensure portability to many platforms, both new and old,
+       we  make  few  assumptions  about  the  C++  compiler  and
+       library.   For example, we do not expect STL, templates or
+       namespaces to be available.  The newest C++  feature  used
+       is  exceptions, which are used liberally to transmit error
+       information.  Even the use of exceptions can  be  disabled
+       at   runtime,   by   using  <EM>DbEnv::set</EM><STRONG>_</STRONG><EM>error</EM><STRONG>_</STRONG><EM>model</EM>()  (see
+       <STRONG><A HREF="DbEnv.html">DbEnv(3)</A></STRONG>).  For a discussion of the  exception  mechanism,
+       see <STRONG><A HREF="DbException.html">DbException(3)</A></STRONG>.
+
+       For  the rest of this manual page, C interfaces are listed
+       as the primary reference,  and  C++  interfaces  following
+       parenthetically, e.g., <EM>db</EM><STRONG>_</STRONG><EM>open</EM> (<EM>Db::open</EM>).
+
+
+</PRE>
+<H2>SUBSYSTEMS</H2><PRE>
+       The  DB  library  is  made up of five major subsystems, as
+       follows:
+
+       Access methods
+            The access methods subsystem is made up  of  general-
+            purpose support for creating and accessing files for-
+            matted as B+tree's, hashed files, and fixed and vari-
+            able length records.  These modules are useful in the
+            absence of transactions for processes that need fast,
+            formatted  file  support.  See <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG> and <EM>db</EM><STRONG>_</STRONG><EM>cur-</EM>
+            <STRONG><A HREF="sor.html">sor(3)</A></STRONG> (<STRONG><A HREF="Db.html">Db(3)</A></STRONG> and <STRONG><A HREF="Dbc.html">Dbc(3)</A></STRONG>) for more information.
+
+       Locking
+            The locking subsystem is a general-purpose lock  man-
+            ager  used  by  DB.   This  module  is  useful in the
+            absence of the rest of the DB package  for  processes
+            that  require a fast, configurable lock manager.  See
+            <STRONG><A HREF="db_lock.html">db_lock(3)</A></STRONG>  (<STRONG><A HREF="DbLockTab.html">DbLockTab(3)</A></STRONG>  and  <STRONG><A HREF="DbLock.html">DbLock(3)</A></STRONG>)  for  more
+            information.
+
+
+       Logging
+            The  logging subsystem is the logging support used to
+            support the DB transaction model.  It is largely spe-
+            cific  to  the  DB  package,  and unlikely to be used
+            elsewhere.  See <STRONG><A HREF="db_log.html">db_log(3)</A></STRONG> (<STRONG><A HREF="DbLog.html">DbLog(3)</A></STRONG>) for more  infor-
+            mation.
+
+       Memory Pool
+            The  memory  pool  subsystem  is  the general-purpose
+            shared memory buffer pool used by DB.  This module is
+            useful  outside  of the DB package for processes that
+
+       db_archive
+            The  <EM>db</EM><STRONG>_</STRONG><EM>archive</EM>  utility  supports  database  backup,
+            archival    and   log   file   administration.    See
+            <STRONG><A HREF="db_archive.html">db_archive(1)</A></STRONG> for more information.
+
+       db_recover
+            The <EM>db</EM><STRONG>_</STRONG><EM>recover</EM> utility runs after an unexpected DB or
+            system  failure  to restore the database to a consis-
+            tent state.  See <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG> for more  information.
+
+       db_checkpoint
+            The  <EM>db</EM><STRONG>_</STRONG><EM>checkpoint</EM>  utility runs as a daemon process,
+            monitoring the database log and periodically  issuing
+            checkpoints.   See <STRONG><A HREF="db_checkpoint.html">db_checkpoint(1)</A></STRONG> for more informa-
+            tion.
+
+       db_deadlock
+            The <EM>db</EM><STRONG>_</STRONG><EM>deadlock</EM> utility runs  as  a  daemon  process,
+            periodically  traversing the database lock structures
+            and aborting transactions when it detects a deadlock.
+            See <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG> for more information.
+
+       db_dump
+            The  <EM>db</EM><STRONG>_</STRONG><EM>dump</EM> utility writes a copy of the database to
+            a  flat-text  file  in  a   portable   format.    See
+            <STRONG><A HREF="db_dump.html">db_dump(1)</A></STRONG> for more information.
+
+       db_load
+            The <EM>db</EM><STRONG>_</STRONG><EM>load</EM> utility reads the flat-text file produced
+            by <EM>db</EM><STRONG>_</STRONG><EM>dump</EM>, and loads it into a database  file.   See
+            <STRONG><A HREF="db_load.html">db_load(1)</A></STRONG> for more information.
+
+       db_stat
+            The <EM>db</EM><STRONG>_</STRONG><EM>stat</EM> utility displays statistics for databases
+            and database environments.  See <STRONG><A HREF="db_stat.html">db_stat(1)</A></STRONG>  for  more
+            information.
+
+
+</PRE>
+<H2>NAMING AND THE DB ENVIRONMENT</H2><PRE>
+       The   DB  application  environment  is  described  by  the
+       <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>  (<STRONG><A HREF="DbEnv.html">DbEnv(3)</A></STRONG>)  manual  page.   The  <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>
+       (<EM>DbEnv::appinit</EM>)  function  is used to create a consistent
+       naming scheme for all of the subsystems sharing a DB envi-
+       ronment.   If <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM> (<EM>DbEnv::appinit</EM>) is not called by
+       a DB application, naming is performed as specified by  the
+       manual page for the specific subsystem.
+
+       DB  applications that run with additional privilege should
+       always call the <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>  (<EM>DbEnv::appinit</EM>)  function  to
+       initialize  DB naming for their application.  This ensures
+       that the environment variables  DB_HOME  and  TMPDIR  will
+       only  be used if the application explicitly specifies that
+       they are safe.
+
+       details.    After   application  or  system  failure,  the
+       <EM>db</EM><STRONG>_</STRONG><EM>recover</EM> utility must be run before any applications are
+       restarted  to  return  the  database to a consistent state
+       (see <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG> for details).
+
+       The simplest way to administer a DB  application  environ-
+       ment is to create a single ``home'' directory which houses
+       all the files for the applications that are sharing the DB
+       environment.   In  this  model,  the shared memory regions
+       (i.e., the locking, logging, memory pool, and  transaction
+       regions)  and  log  files  will be stored in the specified
+       directory hierarchy.  In addition, all data  files  speci-
+       fied  using  relative  pathnames will be named relative to
+       this home directory.  When recovery needs to be run (e.g.,
+       after  system  or  application failure), this directory is
+       specified as the home directory to <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG>, and  the
+       system  is  restored  to a consistent state, ready for the
+       applications to be restarted.
+
+
+       In situations where further customization is desired, such
+       as  placing the log files on a separate device, it is rec-
+       ommended that the application installation process  create
+       a  configuration  file named ``DB_CONFIG'' in the database
+       home  directory,  specifying   the   customization.    See
+       <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG> (<STRONG><A HREF="DbEnv.html">DbEnv(3)</A></STRONG>) for details on this procedure.
+
+       The  DB  architecture  does not support placing the shared
+       memory regions on remote filesystems,  e.g.,  the  Network
+       File  System  (NFS) and the Andrew File System (AFS).  For
+       this reason, the database home directory must reside on  a
+       local  filesystem.   Databases,  log  files  and temporary
+       files may be placed on remote  filesystems,  although  the
+       application  may incur a performance penalty for so doing.
+
+       It is important to realize that all applications sharing a
+       single  home  directory implicitly trust each other.  They
+       have access to each other's data  as  it  resides  in  the
+       shared memory buffer pool and will share resources such as
+       buffer space and locks.  At the same  time,  any  applica-
+       tions that access the same files <STRONG>must</STRONG> share an environment
+       if consistency is to be maintained  across  the  different
+       applications.
+
+
+</PRE>
+<H2>ERROR RETURNS</H2><PRE>
+       Except  for  the  historic <EM>dbm</EM> and <EM>hsearch</EM> interfaces (see
+       <STRONG><A HREF="db_dbm.html">db_dbm(3)</A></STRONG> and <STRONG><A HREF="db_hsearch.html">db_hsearch(3)</A></STRONG>), DB does not use  the  global
+       variable  <EM>errno</EM> to return error values.  The return values
+       for all DB functions can be grouped into three categories:
+
+        0   A  return value of 0 indicates that the operation was
+            successful.
+
+       &gt;0   A return value that is greater than 0 indicates  that
+            found  in  the  database.   All  such  special values
+            returned by DB functions are less than 0 in order  to
+            avoid conflict with possible values of <EM>errno</EM>.
+
+       There are two special return values that are somewhat sim-
+       ilar in meaning, are returned in similar  situations,  and
+       therefore  might be confused: DB_NOTFOUND and DB_KEYEMPTY.
+       The DB_NOTFOUND error return indicates that the  requested
+       key/data pair did not exist in the database or that start-
+       or end-of-file has been reached.   The  DB_KEYEMPTY  error
+       return  indicates  that  the requested key/data pair logi-
+       cally exists but  was  never  explicitly  created  by  the
+       application  (the  recno  access method will automatically
+       create  key/data  pairs  under  some  circumstances,   see
+       <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>  (<STRONG><A HREF="Db.html">Db(3)</A></STRONG>)  for  more  information),  or that the
+       requested key/data pair was deleted and is currently in  a
+       deleted state.
+
+
+</PRE>
+<H2>SIGNALS</H2><PRE>
+       When  applications  using DB receive signals, it is impor-
+       tant that they exit gracefully, discarding  any  DB  locks
+       that  they  may  hold.  This is normally done by setting a
+       flag when a signal arrives, and  then  checking  for  that
+       flag  periodically  within the application.  Specifically,
+       the signal handler should not  attempt  to  release  locks
+       and/or  close  the  database  handles itself.  This is not
+       guaranteed to work correctly and  the  results  are  unde-
+       fined.
+
+       If  an  application exits holding a lock, the situation is
+       no different than if  the  application  crashed,  and  all
+       applications  participating  in  the  database environment
+       must be shutdown, and then recovery must be performed.  If
+       this  is not done, the locks that the application held can
+       cause unresolvable  deadlocks  inside  the  database,  and
+       applications may then hang.
+
+
+</PRE>
+<H2>MULTI-THREADING</H2><PRE>
+       See  <STRONG><A HREF="db_thread.html">db_thread(3)</A></STRONG>  for information on using DB in threaded
+       applications.
+
+
+</PRE>
+<H2>DATABASE AND PAGE SIZES</H2><PRE>
+       DB stores database file page numbers  as  unsigned  32-bit
+       numbers  and  database  file page sizes as unsigned 16-bit
+       numbers.  This results in a maximum database size of 2^48.
+       The  minimum database page size is 512 bytes, resulting in
+       a minimum maximum database size of 2^41.
+
+       DB is potentially further limited if the host system  does
+       not  have  filesystem  support for files larger than 2^32,
+       including seeking to absolute offsets within such files.
+
+       The maximum btree depth is 255.
+
+       will  automatically  create  logging  functions (functions
+       that take the values as parameters and construct a  single
+       record  that is written to the log), read functions (func-
+       tions that read a log record  and  unmarshall  the  values
+       into  a  structure  that maps onto the values you chose to
+       log), a print function (for debugging), templates for  the
+       recovery  functions,  and  automatic  dispatching  to your
+       recovery functions.
+
+
+</PRE>
+<H2>EXAMPLES</H2><PRE>
+       There are a  number  of  examples  included  with  the  DB
+       library distribution, intended to demonstrate various ways
+       of using the DB library.
+
+       Some applications require the use of  formatted  files  to
+       store  data,  but do not require concurrent access and can
+       cope with the loss of data due  to  catastrophic  failure.
+       Generally, these applications create short-lived databases
+       that are discarded or recreated  when  the  system  fails.
+       Such  applications  need  only  use the DB access methods.
+       The DB access methods will use the memory pool  subsystem,
+       but  the application is unlikely to do so explicitly.  See
+       the files  <EM>examples/ex</EM><STRONG>_</STRONG><EM>access.c</EM>,  <EM>examples/ex</EM><STRONG>_</STRONG><EM>btrec.c</EM>  and
+       <EM>examples</EM><STRONG>_</STRONG><EM>cxx/AccessExample.cpp</EM>  in the DB source distribu-
+       tion for C and C++ language  code  examples  of  how  such
+       applications might use the DB library.
+
+       Some applications require the use formatted files to store
+       data,    but    also    need    to    use    <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>
+       (<EM>DbEnv::</EM><STRONG><A HREF="appinit.html">appinit(3)</A></STRONG>)  for  environment initialization.  See
+       the file <EM>examples/ex</EM><STRONG>_</STRONG><EM>appinit.c</EM> or  <EM>examples</EM><STRONG>_</STRONG><EM>cxx/AppinitEx-</EM>
+       <EM>ample.cpp</EM> in the DB source distribution for C and C++ lan-
+       guage code examples of how such an application  might  use
+       the DB library.
+
+       Some  applications use the DB access methods, but are also
+       concerned about catastrophic failure, and  therefore  need
+       to  transaction  protect the underlying DB files.  See the
+       file <EM>examples/ex</EM><STRONG>_</STRONG><EM>tpcb.c</EM> or <EM>examples</EM><STRONG>_</STRONG><EM>cxx/TpcbExample.cpp</EM> in
+       the  DB  source  distribution  for C and C++ language code
+       examples of how such  an  application  might  use  the  DB
+       library.
+
+       Some  applications will benefit from the ability to buffer
+       input files other than the  underlying  DB  access  method
+       files.    See   the   file  <EM>examples/ex</EM><STRONG>_</STRONG><EM>mpool.c</EM>  or  <EM>exam-</EM>
+       <EM>ples</EM><STRONG>_</STRONG><EM>cxx/MpoolExample.cpp</EM> in the  DB  source  distribution
+       for C and C++ language code examples of how such an appli-
+       cation might use the DB library.
+
+
+       Some applications need a general-purpose lock manager sep-
+       arate from locking support for the DB access methods.  See
+       the  file  <EM>examples/ex</EM><STRONG>_</STRONG><EM>lock.c</EM>  or   <EM>examples</EM><STRONG>_</STRONG><EM>cxx/LockExam-</EM>
+       The DB 2.0 library provides backward compatible interfaces
+       for  the  historic  UNIX  <STRONG><A HREF="dbm.html">dbm(3)</A></STRONG>,  <STRONG><A HREF="ndbm.html">ndbm(3)</A></STRONG>  and <STRONG><A HREF="hsearch.html">hsearch(3)</A></STRONG>
+       interfaces.  See <STRONG><A HREF="db_dbm.html">db_dbm(3)</A></STRONG> and <STRONG><A HREF="db_hsearch.html">db_hsearch(3)</A></STRONG>  for  further
+       information on these interfaces.  It also provides a back-
+       ward  compatible  interface  for  the  historic  DB   1.85
+       release.   <STRONG>DB</STRONG>  <STRONG>2.0</STRONG> <STRONG>does</STRONG> <STRONG>not</STRONG> <STRONG>provide</STRONG> <STRONG>database</STRONG> <STRONG>compatibility</STRONG>
+       <STRONG>for</STRONG> <STRONG>any</STRONG> <STRONG>of</STRONG> <STRONG>the</STRONG> <STRONG>above</STRONG> <STRONG>interfaces,</STRONG>  <STRONG>and</STRONG>  <STRONG>existing</STRONG>  <STRONG>databases</STRONG>
+       <STRONG>must</STRONG> <STRONG>be</STRONG> <STRONG>converted</STRONG> <STRONG>manually.</STRONG>  To convert existing databases
+       from the DB 1.85 format to the DB 2.0 format,  review  the
+       <STRONG><A HREF="db_dump185.html">db_dump185(1)</A></STRONG> and <STRONG><A HREF="db_load.html">db_load(1)</A></STRONG> manual pages.
+
+       The  name  space  in  DB 2.0 has been changed from that of
+       previous DB versions, notably version 1.85, for  portabil-
+       ity  and consistency reasons.  The only name collisions in
+       the two libraries  are  the  names  used  by  the  <STRONG><A HREF="dbm.html">dbm(3)</A></STRONG>,
+       <STRONG><A HREF="ndbm.html">ndbm(3)</A></STRONG>,  <STRONG><A HREF="hsearch.html">hsearch(3)</A></STRONG>  and the DB 1.85 compatibility inter-
+       faces.  To include both DB 1.85 and DB  2.0  in  a  single
+       library,  remove the <STRONG><A HREF="dbm.html">dbm(3)</A></STRONG>, <STRONG><A HREF="ndbm.html">ndbm(3)</A></STRONG> and <STRONG><A HREF="hsearch.html">hsearch(3)</A></STRONG> inter-
+       faces from either of the two libraries, and  the  DB  1.85
+       compatibility interface from the DB 2.0 library.  This can
+       be done by editing the library Makefiles and reconfiguring
+       and  rebuilding the DB 2.0 library.  Obviously, if you use
+       the historic interfaces, you will get the version  in  the
+       library  from which you did not remove it.  Similarly, you
+       will not be able to access DB 2.0 files using the DB  1.85
+       compatibility  interface, since you have removed that from
+       the library as well.
+
+       It is possible to simply relink  applications  written  to
+       the  DB 1.85 interface against the DB 2.0 library.  Recom-
+       pilation of such applications is  slightly  more  complex.
+       When  the  DB  2.0  library  is installed, it installs two
+       include files, <EM>db.h</EM> and  <EM>db</EM><STRONG>_</STRONG><EM>185.h</EM>.   The  former  file  is
+       likely to replace the DB 1.85 version's include file which
+       had the same name.  If this did not happen, recompiling DB
+       1.85  applications  to  use  the DB 2.0 library is simple:
+       recompile as done historically, and load  against  the  DB
+       2.0  library instead of the DB 1.85 library.  If, however,
+       the DB 2.0 installation process has replaced the  system's
+       <EM>db.h</EM>  include  file,  replace the application's include of
+       <EM>db.h</EM> with inclusion of <EM>db</EM><STRONG>_</STRONG><EM>185.h</EM>, recompile as done histor-
+       ically, and then load against the DB 2.0 library.
+
+       Applications  written using the historic interfaces of the
+       DB library should not require significant effort  to  port
+       to  the  DB  2.0  interfaces.  While the functionality has
+       been greatly enhanced in DB 2.0,  the  historic  interface
+       and functionality and is largely unchanged.  Reviewing the
+       application's calls into the DB library and updating those
+       calls  to the new names, flags and return values should be
+       sufficient.
+
+       While loading applications that use the DB 1.85 interfaces
+       against the DB 2.0 library, or converting DB 1.85 function
+       <STRONG><A HREF="db_mpool.html">db_mpool(3)</A></STRONG>, <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>, <STRONG><A HREF="db_txn.html">db_txn(3)</A></STRONG>
+
+
+</PRE>
+<H2>SEE ALSO: C++ API</H2><PRE>
+       <STRONG><A HREF="Db.html">Db(3)</A></STRONG>, <STRONG><A HREF="Dbc.html">Dbc(3)</A></STRONG>, <STRONG><A HREF="DbEnv.html">DbEnv(3)</A></STRONG>, <STRONG><A HREF="DbException.html">DbException(3)</A></STRONG>, <STRONG><A HREF="DbInfo.html">DbInfo(3)</A></STRONG>, <STRONG><A HREF="DbLock.html">DbLock(3)</A></STRONG>,
+       <STRONG><A HREF="DbLocktab.html">DbLocktab(3)</A></STRONG>, <STRONG><A HREF="DbLog.html">DbLog(3)</A></STRONG>, <STRONG><A HREF="DbLsn.html">DbLsn(3)</A></STRONG>, <STRONG><A HREF="DbMpool.html">DbMpool(3)</A></STRONG>, <STRONG><A HREF="DbMpoolFile.html">DbMpoolFile(3)</A></STRONG>,
+       <STRONG><A HREF="Dbt.html">Dbt(3)</A></STRONG>, <STRONG><A HREF="DbTxn.html">DbTxn(3)</A></STRONG>, <STRONG><A HREF="DbTxnMgr.html">DbTxnMgr(3)</A></STRONG>
+
+
+</PRE>
+<H2>SEE ALSO: ADDITIONAL REFERENCES</H2><PRE>
+       <EM>LIBTP:</EM> <EM>Portable,</EM> <EM>Modular</EM> <EM>Transactions</EM> <EM>for</EM> <EM>UNIX</EM>, Margo Seltzer,
+       Michael Olson, USENIX proceedings, Winter 1992.
+</PRE>
+</BODY>
+</HTML>
