@@ -1,0 +1,78 @@
+<!--$Id: notes.so,v 1.17 2003/10/27 15:52:48 merrells Exp $-->
+<!--Copyright 1997-2003 by Sleepycat Software, Inc.-->
+<!--All rights reserved.-->
+<!--See the file LICENSE for redistribution information.-->
+<html>
+<head>
+<title>Berkeley DB Reference Guide: Using Berkeley DB XML on Win32</title>
+<meta name="description" content="Berkeley DB: An embedded database programmatic toolkit.">
+<meta name="keywords" content="embedded,database,programmatic,toolkit,b+tree,btree,hash,hashing,transaction,transactions,locking,logging,access method,access methods,Java,C,C++">
+</head>
+<body bgcolor=white>
+<table width="100%"><tr valign=top>
+<td><h3><dl><dt>Berkeley DB Reference Guide:<dd>Building Berkeley DB XML for Windows systems</dl></h3></td>
+<td align=right><a href="../../ref/xml_win/test.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/upgrade/version.html"><img src="../../images/next.gif" alt="Next"></a>
+</td></tr></table>
+<p>
+<h3 align=center>Using Berkeley DB XML on Win32</h3>
+<p>An application which uses Berkeley DB XML relies on four libraries: Berkeley DB XML,
+Berkeley DB, Pathan and Xerces C++.  When compiling, the include files from
+these packages must be available, and the libraries must be included
+when linking the application.  The location of the include files and
+libraries differs between the binary and source code download
+packages.</p>
+<p>When running the application, each of the DLLs must be available in a
+directory in the <b>PATH</b>.  You can achieve this either by copying
+all of the DLLs into a directory that is already in your <b>PATH</b>,
+such as <b>windows/system32</b>, or by adding each of the directories
+containing one of the DLLs to your <b>PATH</b> variable.</p>
+<h3>Berkeley DB XML Binary Download Package</h3>
+<p>The binary download package contains include files and prebuilt binaries
+for Berkeley DB XML, Berkeley DB and Pathan.  The include files are in the
+<b>include</b> directory and the DLLs are in the <b>bin</b>
+directory.</p>
+<p>The binaries have been compiled with the Microsoft Visual C++ version 6
+service pack 5 compiler and linked with the multithreaded DLL C runtime.
+They are in the <b>lib</b> directory:
+<blockquote><pre><b>dbxml-../lib/libdbxml.lib</b>
+<b>dbxml-../lib/libdb42.lib</b>
+<b>dbxml-../lib/libpathan12.lib</b></pre></blockquote></p>
+<h3>Berkeley DB XML Source Code Download Package</h3>
+<p>Once the source code package has been built, the Berkeley DB XML library files
+are in the <b>build_win32</b> directory:
+<blockquote><pre><b>dbxml-../build_win32/release/libdbxml.lib</b>
+<b>dbxml-../build_win32/release/libdbxml.dll</b></pre></blockquote></p>
+<h3>Berkeley DB Download Packages</h3>
+<p>Berkeley DB <b>is not</b> included in the source code download package.
+Berkeley DB must be downloaded and built per the Berkeley DB XML build instructions.
+Once built, the Berkeley DB library files can be found here:
+<blockquote><pre><b>dbxml-../lib/db-4.2.45/build_win32/release/libdb42.lib</b>
+<b>dbxml-../lib/db-4.2.45/build_win32/release/libdb42.dll</b></pre></blockquote></p>
+<h3>Pathan Download Packages</h3>
+<p>Pathan <b>is not</b> included in the source code download package.
+Either Pathan binaries or the Pathan source must be downloaded from
+software.decisionsoft.com.</p>
+<p>In the Pathan binary package, or once the source package is built, the
+Pathan library can be found here:
+<blockquote><pre><b>libpathan-1.2/lib/pathan.lib</b>
+<b>libpathan-1.2/lib/pathan.dll</b></pre></blockquote></p>
+<h3>Xerces Download Packages</h3>
+<p>The Xerces library can be downloaded from the www.apache.org website,
+and is also available either as a binary or source code download
+package.  In all packages, the include files are in the <b>include</b>
+directory.</p>
+<p>In the binary package the library files are:
+<blockquote><pre><b>xerces-c2_3_0-win32/lib/xerces-c_2.lib</b>
+<b>xerces-c2_3_0-win32/bin/xerces-c_2_3_0.dll</b></pre></blockquote></p>
+<p>After building the source code package with Visual C++ 6.0, the library
+files are:
+<blockquote><pre><b>xerces-c-src2_3_0/build/win32/vc6/release/xerces-c_2.lib</b>
+<b>xerces-c-src2_3_0/build/win32/vc6/release/xerces-c_2_3_0.dll</b></pre></blockquote></p>
+<p>For Visual C++ .NET the library files are:
+<blockquote><pre><b>xerces-c-src2_3_0/build/win32/vc7/release/xerces-c_2.lib</b>
+<b>xerces-c-src2_3_0/build/win32/vc7/release/xerces-c_2_3_0.dll</b></pre></blockquote></p>
+<table width="100%"><tr><td><br></td><td align=right><a href="../../ref/xml_win/test.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/upgrade/version.html"><img src="../../images/next.gif" alt="Next"></a>
+</td></tr></table>
+<p><font size=1><a href="../../sleepycat/legal.html">Copyright (c) 1996-2003</a> <a href="http://www.sleepycat.com">Sleepycat Software, Inc.</a> - All rights reserved.</font>
+</body>
+</html>

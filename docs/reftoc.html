@@ -1,14 +1,14 @@
-<!--$Id: reftoc.html,v 10.224 2002/09/03 20:09:26 bostic Exp $-->
+<!--$Id: reftoc.html,v 10.254 2003/10/31 22:20:37 bostic Exp $-->
 <html>
 <head>
-<title>Berkeley DB Tutorial and Reference Guide (Version: 4.1.25)</title>
+<title>Berkeley DB Tutorial and Reference Guide (Version: 4.2.50)</title>
 <meta name="description" content="Berkeley DB: An embedded database programmatic toolkit.">
 <meta name="keywords" content="embedded,database,programmatic,toolkit,b+tree,btree,hash,hashing,transaction,transactions,locking,logging,access method,access methods,java,C,C++">
 </head>
 <body bgcolor=white>
 
 <center>
-<h1><b>Berkeley DB Tutorial and Reference Guide, Version 4.1.25</b></h1>
+<h2><b>Berkeley DB Tutorial and Reference Guide, Version 4.2.50</b></h2>
 </center>
 
 <ol>
@@ -111,6 +111,78 @@
     <li><a href="ref/am_misc/tune.html">Access method tuning</a>
     <li><a href="ref/am_misc/faq.html">Access method FAQ</a>
     </ol>
+<font size="+1"><li><a name="bdb_tut">Java Collections for Berkeley DB</a></font>
+    <ol>
+    <li><a href="ref/bdb_tut/intro.html">Introduction</a>
+    <li><a href="ref/bdb_basic/intro.html">Basic - The shipment program</a>
+        <ol>
+        <li><a href="ref/bdb_basic/keyvalue.html">Defining serialized key and value classes</a>
+        <li><a href="ref/bdb_basic/env.html">Opening and closing the database environment</a>
+        <li><a href="ref/bdb_basic/catalog.html">Opening and closing the class catalog</a>
+        <li><a href="ref/bdb_basic/stores.html">Opening and closing database stores</a>
+        <li><a href="ref/bdb_basic/views.html">Creating bindings and collections</a>
+        <li><a href="ref/bdb_basic/main.html">Implementing the main program</a>
+        <li><a href="ref/bdb_basic/transact.html">Using transactions</a>
+        <li><a href="ref/bdb_basic/write.html">Adding database items</a>
+        <li><a href="ref/bdb_basic/read.html">Retrieving database items</a>
+        <li><a href="ref/bdb_basic/except.html">Handling exceptions</a>
+        </ol>
+    <li><a href="ref/bdb_index/intro.html">Index - Indices and foreign keys</a>
+        <ol>
+        <li><a href="ref/bdb_index/second.html">Opening secondary key indices</a>
+        <li><a href="ref/bdb_index/foreign.html">Opening foreign key indices</a>
+        <li><a href="ref/bdb_index/views.html">Creating indexed collections</a>
+        <li><a href="ref/bdb_index/read.html">Retrieving items by index key</a>
+        </ol>
+    <li><a href="ref/bdb_entity/intro.html">Entity - Combining the key and value in a single object</a>
+        <ol>
+        <li><a href="ref/bdb_entity/classes.html">Defining entity classes</a>
+        <li><a href="ref/bdb_entity/bindings.html">Creating entity bindings</a>
+        <li><a href="ref/bdb_entity/views.html">Creating collections with entity bindings</a>
+        <li><a href="ref/bdb_entity/read.html">Using entities with collections</a>
+        </ol>
+    <li><a href="ref/bdb_tuple/intro.html">Tuple - Compact ordered keys</a>
+        <ol>
+        <li><a href="ref/bdb_tuple/format.html">Using the tuple format</a>
+        <li><a href="ref/bdb_tuple/extract.html">Using tuples with key extractors</a>
+        <li><a href="ref/bdb_tuple/tbinding.html">Creating tuple key bindings</a>
+        <li><a href="ref/bdb_tuple/tsbinding.html">Creating tuple-serial entity bindings</a>
+        <li><a href="ref/bdb_tuple/sorted.html">Using sorted collections</a>
+        </ol>
+    <li><a href="ref/bdb_sentity/intro.html">Serializable Entity - One serializable class for entities and values</a>
+        <ol>
+        <li><a href="ref/bdb_sentity/class.html">Using transient fields in an entity class</a>
+        <li><a href="ref/bdb_sentity/binding.html">Using transient fields in an entity binding</a>
+        <li><a href="ref/bdb_sentity/remove.html">Removing the redundant value classes</a>
+        </ol>
+    <li><a href="ref/bdb_tut/summary.html">Summary and next steps</a>
+    </ol>
+<font size="+1"><li><a name="bdb">BDB Java API</a></font>
+    <ol>
+    <li><a href="ref/bdb/overview.html">Introduction</a>
+    <li><a href="ref/bdb/cs_bdb_bind.html">Using Data Formats and Bindings</a>
+    <li><a href="ref/bdb/cs_bdb.html">Access Methods and Transaction Options</a>
+    <li><a href="ref/bdb/cs_bdb_collection.html">Using Stored Collections</a>
+    <li><a href="ref/bdb/cs_bdb_serial.html">Java serialization data format and bindings</a>
+    <li><a href="ref/bdb/faq.html">BDB Java FAQ</a>
+    </ol>
+<font size="+1"><li><a name="java">Java API</a></font>
+    <ol>
+    <li><a href="ref/java/conf.html">Java configuration</a>
+    <li><a href="ref/java/compat.html">Compatibility</a>
+    <li><a href="ref/java/program.html">Java programming notes</a>
+    <li><a href="ref/java/faq.html">Java FAQ</a>
+    </ol>
+<font size="+1"><li><a name="am_misc">Berkeley DB XML</a></font>
+    <ol>
+    <li><a href="ref/xml/intro.html">Introduction</a>
+    <li><a href="ref/xml/arch.html">Architecture</a>
+    <li><a href="ref/xml/documents.html">Documents</a>
+    <li><a href="ref/xml/env.html">Environments</a>
+    <li><a href="ref/xml/index.html">Indexing</a>
+    <li><a href="ref/xml/query.html">Query Processor</a>
+    <li><a href="ref/xml/notes.html">Programmer Notes</a>
+    </ol>
 <font size="+1"><li><a name="arch">Berkeley DB Architecture</a></font>
     <ol>
     <li><a href="ref/arch/bigpic.html">The big picture</a>
@@ -121,7 +193,7 @@
     </ol>
 <font size="+1"><li><a name="env">The Berkeley DB Environment</a></font>
     <ol>
-    <li><a href="ref/env/intro.html">Introduction</a>
+    <li><a href="ref/env/intro.html">Database environment introduction</a>
     <li><a href="ref/env/create.html">Creating a database environment</a>
     <li><a href="ref/env/open.html">Opening databases within the environment</a>
     <li><a href="ref/env/error.html">Error support</a>
@@ -205,6 +277,7 @@
     <li><a href="ref/program/mt.html">Multithreaded applications</a>
     <li><a href="ref/program/scope.html">Berkeley DB handles</a>
     <li><a href="ref/program/namespace.html">Name spaces</a>
+    <li><a href="ref/program/ram.html">RAM-only configurations</a>
     <li><a href="ref/program/cache.html">Disk drive caches</a>
     <li><a href="ref/program/copy.html">Copying databases</a>
     <li><a href="ref/program/compatible.html">Compatibility with historic UNIX interfaces</a>
@@ -251,13 +324,6 @@
     <li><a href="ref/rpc/server.html">Server program</a>
     <li><a href="ref/rpc/faq.html">RPC FAQ</a>
     </ol>
-<font size="+1"><li><a name="java">Java API</a></font>
-    <ol>
-    <li><a href="ref/java/conf.html">Java configuration</a>
-    <li><a href="ref/java/compat.html">Compatibility</a>
-    <li><a href="ref/java/program.html">Java programming notes</a>
-    <li><a href="ref/java/faq.html">Java FAQ</a>
-    </ol>
 <font size="+1"><li><a name="perl">Perl API</a></font>
     <ol>
     <li><a href="ref/perl/intro.html">Using Berkeley DB with Perl</a>
@@ -269,10 +335,6 @@
     <li><a href="ref/tcl/program.html">Tcl API programming notes</a>
     <li><a href="ref/tcl/error.html">Tcl error handling</a>
     <li><a href="ref/tcl/faq.html">Tcl FAQ</a>
-    </ol>
-<font size="+1"><li><a name="sendmail">Sendmail</a></font>
-    <ol>
-    <li><a href="ref/sendmail/intro.html">Using Berkeley DB with Sendmail</a>
     </ol>
 <font size="+1"><li><a name="dumpload">Dumping and Reloading Databases</a></font>
     <ol>
@@ -292,12 +354,13 @@
     <li><a href="ref/debug/compile.html">Compile-time configuration</a>
     <li><a href="ref/debug/runtime.html">Run-time error information</a>
     <li><a href="ref/debug/printlog.html">Reviewing Berkeley DB log files</a>
-    <li><a href="ref/debug/common.html">Common errors</a>
+    <li><a href="ref/debug/common.html">Troubleshooting common Berkeley DB problems</a>
     </ol>
-<font size="+1"><li><a name="build_unix">Berkeley DB for UNIX/POSIX systems</a></font>
+<font size="+1"><li><a name="build_unix">Building Berkeley DB for UNIX/POSIX systems</a></font>
     <ol>
     <li><a href="ref/build_unix/intro.html">Building for UNIX</a>
     <li><a href="ref/build_unix/conf.html">Configuring Berkeley DB</a>
+    <li><a href="ref/build_unix/small.html">Building a small memory footprint library</a>
     <li><a href="ref/build_unix/flags.html">Changing compile or load options</a>
     <li><a href="ref/build_unix/install.html">Installing Berkeley DB</a>
     <li><a href="ref/build_unix/shlib.html">Dynamic shared libraries</a>
@@ -305,7 +368,6 @@
     <li><a href="ref/build_unix/notes.html">Architecture independent FAQ</a>
     <li>Architecture specific FAQs:<br>
 	<a href="ref/build_unix/aix.html">AIX</a>,
-	<a href="ref/build_unix/embedix.html">Embedix</a>,
 	<a href="ref/build_unix/freebsd.html">FreeBSD</a>,
 	<a href="ref/build_unix/hpux.html">HP-UX</a>,
 	<a href="ref/build_unix/irix.html">IRIX</a>,
@@ -318,19 +380,36 @@
 	<a href="ref/build_unix/sunos.html">SunOS</a>,
 	<a href="ref/build_unix/ultrix.html">Ultrix</a>
     </ol>
-<font size="+1"><li><a name="build_win">Berkeley DB for Win32 platforms</a></font>
+<font size="+1"><li><a name="build_win">Building Berkeley DB for Win32 systems</a></font>
     <ol>
     <li><a href="ref/build_win/intro.html">Building for Win32</a>
+    <li><a href="ref/build_win/small.html">Building a small memory footprint library on Windows</a>
     <li><a href="ref/build_win/test.html">Running the test suite under Windows</a>
     <li><a href="ref/build_win/notes.html">Windows notes</a>
     <li><a href="ref/build_win/faq.html">Windows FAQ</a>
     </ol>
-<font size="+1"><li><a name="build_vxworks">Berkeley DB for VxWorks systems</a></font>
+<font size="+1"><li><a name="build_vxworks">Building Berkeley DB for VxWorks systems</a></font>
     <ol>
     <li><a href="ref/build_vxworks/intro.html">Building for VxWorks 5.4</a>
     <li><a href="ref/build_vxworks/introae.html">Building for VxWorks AE</a>
     <li><a href="ref/build_vxworks/notes.html">VxWorks notes</a>
     <li><a href="ref/build_vxworks/faq.html">VxWorks FAQ</a>
+    </ol>
+<font size="+1"><li><a name="xml_unix">Building Berkeley DB XML for UNIX/POSIX systems</a></font>
+    <ol>
+    <li><a href="ref/xml_unix/intro.html">Building Berkeley DB XML for UNIX</a>
+    <li><a href="ref/xml_unix/conf.html">Configuring Berkeley DB XML</a>
+    <li><a href="ref/xml_unix/flags.html">Changing compile or load options</a>
+    <li><a href="ref/xml_unix/install.html">Installing Berkeley DB XML</a>
+    <li><a href="ref/xml_unix/shlib.html">Dynamic shared libraries</a>
+    <li><a href="ref/xml_unix/test.html">Running the XML test suite under UNIX</a>
+    <li><a href="ref/xml_unix/notes.html">Using Berkeley DB XML on UNIX</a>
+    </ol>
+<font size="+1"><li><a name="xml_win">Building Berkeley DB XML for Win32 systems</a></font>
+    <ol>
+    <li><a href="ref/xml_win/intro.html">Building Berkeley DB XML for Win32</a>
+    <li><a href="ref/xml_win/test.html">Running the test suite under Windows</a>
+    <li><a href="ref/xml_win/notes.html">Using Berkeley DB XML on Win32</a>
     </ol>
 <font size="+1"><li><a name="upgrade">Upgrading Berkeley DB Applications</a></font>
     <ol>
@@ -351,6 +430,8 @@
 	    Upgrading Berkeley DB 3.3.X applications to Berkeley DB 4.0</a>
     <li><a href="ref/upgrade.4.1/toc.html">
 	    Upgrading Berkeley DB 4.0.X applications to Berkeley DB 4.1</a>
+    <li><a href="ref/upgrade.4.2/toc.html">
+	    Upgrading Berkeley DB 4.1.X applications to Berkeley DB 4.2</a>
     </ol>
 <font size="+1"><li><a name="test">Test Suite</a></font>
     <ol>

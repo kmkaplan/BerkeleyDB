@@ -1,0 +1,44 @@
+<!--$Id: notes.so,v 1.1 2002/11/06 22:38:27 bostic Exp $-->
+<!--Copyright 1997-2003 by Sleepycat Software, Inc.-->
+<!--All rights reserved.-->
+<!--See the file LICENSE for redistribution information.-->
+<html>
+<head>
+<title>Berkeley DB Reference Guide: Programmer Notes</title>
+<meta name="description" content="Berkeley DB: An embedded database programmatic toolkit.">
+<meta name="keywords" content="embedded,database,programmatic,toolkit,b+tree,btree,hash,hashing,transaction,transactions,locking,logging,access method,access methods,Java,C,C++">
+</head>
+<body bgcolor=white>
+<table width="100%"><tr valign=top>
+<td><h3><dl><dt>Berkeley DB Reference Guide:<dd>Berkeley DB XML</dl></h3></td>
+<td align=right><a href="../../ref/xml/query.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/arch/bigpic.html"><img src="../../images/next.gif" alt="Next"></a>
+</td></tr></table>
+<p>
+<h3 align=center>Programmer Notes</h3>
+<h3>Berkeley DB XML C++ API</h3>
+<p>The Berkeley DB XML API exposes seven main classes to the client application.
+They are: XmlContainer, XmlDocument, XmlResults, XmlQueryContext,
+XPathExpression, XmlException and XmlValue.  The API also exposes the
+Berkeley DB C++ API DbEnv and DbTxn classes, which are not discussed in this
+document; please refer to the Berkeley DB documentation for information on
+Berkeley DB classes.</p>
+<p>The Berkeley DB XML C++ API is encapsulated within the C++ namespace called
+DbXml. The namespace is provided to avoid naming collisions with
+application code, or other library interfaces.</p>
+<h3>Memory Management</h3>
+<p>The Berkeley DB XML API methods return reference-counted object handles that are
+automatically de-allocated by the system once the object handle goes
+out of scope.  The client application does not have to delete or free
+any object handles returned by the API.</p>
+<h3>Threading and Process Management</h3>
+<p>Berkeley DB XML is designed to be thread-safe, and to work with any threads
+package. The XmlContainer class is free threaded, meaning that multiple
+threads can share an XmlContainer object. All other Berkeley DB XML classes are
+not free threaded, they should only be used by a single thread.</p>
+<p>Berkeley DB XML executes within the process context of the client application,
+and multiple processes can share the same container.</p>
+<table width="100%"><tr><td><br></td><td align=right><a href="../../ref/xml/query.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/arch/bigpic.html"><img src="../../images/next.gif" alt="Next"></a>
+</td></tr></table>
+<p><font size=1><a href="../../sleepycat/legal.html">Copyright (c) 1996-2003</a> <a href="http://www.sleepycat.com">Sleepycat Software, Inc.</a> - All rights reserved.</font>
+</body>
+</html>
