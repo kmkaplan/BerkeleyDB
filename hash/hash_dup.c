@@ -42,7 +42,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)hash_dup.c	10.13 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)hash_dup.c	10.14 (Sleepycat) 5/7/98";
 #endif /* not lint */
 
 /*
@@ -61,7 +61,6 @@ static const char sccsid[] = "@(#)hash_dup.c	10.13 (Sleepycat) 4/26/98";
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
-#include <stdio.h>
 #include <string.h>
 #endif
 

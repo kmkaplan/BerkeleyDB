@@ -4,7 +4,7 @@
  * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)Db.java	10.4 (Sleepycat) 4/10/98
+ *	@(#)Db.java	10.5 (Sleepycat) 6/2/98
  */
 
 package com.sleepycat.db;
@@ -61,7 +61,6 @@ public class Db
     public static final int DB_INIT_MPOOL;       // Initialize mpool.
     public static final int DB_INIT_TXN;         // Initialize transactions.
     public static final int DB_MPOOL_PRIVATE;    // Mpool: private memory pool.
-    public static final int DB_MUTEXDEBUG;       // Do not get/set mutexes in regions.
     public static final int DB_RECOVER;          // Run normal recovery.
     public static final int DB_RECOVER_FATAL;    // Run catastrophic recovery.
     public static final int DB_TXN_NOSYNC;       // Do not sync log on commit.
@@ -272,7 +271,6 @@ public class Db
         DB_INIT_MPOOL = DbConstants.DB_INIT_MPOOL;
         DB_INIT_TXN = DbConstants.DB_INIT_TXN;
         DB_MPOOL_PRIVATE = DbConstants.DB_MPOOL_PRIVATE;
-        DB_MUTEXDEBUG = DbConstants.DB_MUTEXDEBUG;
         DB_RECOVER = DbConstants.DB_RECOVER;
         DB_RECOVER_FATAL = DbConstants.DB_RECOVER_FATAL;
         DB_TXN_NOSYNC = DbConstants.DB_TXN_NOSYNC;

@@ -7,7 +7,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)log.c	10.51 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)log.c	10.54 (Sleepycat) 5/31/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -16,6 +16,7 @@ static const char sccsid[] = "@(#)log.c	10.51 (Sleepycat) 4/26/98";
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #endif
 
 #include "db_int.h"
@@ -57,8 +58,8 @@ log_open(path, flags, mode, dbenv, lpp)
 		return (ENOMEM);
 
 	if (path != NULL && (dblp->dir = __db_strdup(path)) == NULL) {
-		FREE(dblp, sizeof(*dblp));
-		return (ENOMEM);
+		ret = ENOMEM;
+		goto err;
 	}
 
 	dblp->dbenv = dbenv;
@@ -80,14 +81,14 @@ log_open(path, flags, mode, dbenv, lpp)
 		dblp->reginfo.path = NULL;
 	else
 		if ((dblp->reginfo.path = __db_strdup(path)) == NULL)
-			goto err1;
+			goto err;
 	dblp->reginfo.file = DB_DEFAULT_LOG_FILE;
 	dblp->reginfo.mode = mode;
 	dblp->reginfo.size = DEF_LOG_SIZE;
 	dblp->reginfo.dbflags = flags;
 	dblp->reginfo.flags = REGION_SIZEDEF;
 	if ((ret = __db_rattach(&dblp->reginfo)) != 0)
-		goto err1;
+		goto err;
 
 	/*
 	 * The LOG structure is first in the region, the rest of the region
@@ -120,7 +121,7 @@ log_open(path, flags, mode, dbenv, lpp)
 		F_SET(dblp, DB_AM_THREAD);
 		if ((ret = __db_shalloc(dblp->addr,
 		    sizeof(db_mutex_t), MUTEX_ALIGNMENT, &dblp->mutexp)) != 0)
-			goto err2;
+			goto err;
 		(void)__db_mutex_init(dblp->mutexp, -1);
 	}
 
@@ -130,26 +131,26 @@ log_open(path, flags, mode, dbenv, lpp)
 	 */
 	if (F_ISSET(&dblp->reginfo, REGION_CREATED) &&
 	    (ret = __log_recover(dblp)) != 0)
-		goto err3;
+		goto err;
 
-	*lpp = dblp;
 	UNLOCK_LOGREGION(dblp);
-
+	*lpp = dblp;
 	return (0);
 
-err3:	if (LF_ISSET(DB_THREAD))
-		(void)__db_shalloc_free(dblp->addr, dblp->mutexp);
+err:	if (dblp->reginfo.addr != NULL) {
+		if (dblp->mutexp != NULL)
+			__db_shalloc_free(dblp->addr, dblp->mutexp);
 
-err2:	UNLOCK_LOGREGION(dblp);
+		UNLOCK_LOGREGION(dblp);
+		(void)__db_rdetach(&dblp->reginfo);
+		if (F_ISSET(&dblp->reginfo, REGION_CREATED))
+			(void)log_unlink(path, 1, dbenv);
+	}
 
-	(void)log_close(dblp);
-	if (F_ISSET(&dblp->reginfo, REGION_CREATED))
-		(void)log_unlink(path, 1, dbenv);
-
-err1:	if (dblp->dir != NULL)
-		FREES(dblp->dir);
 	if (dblp->reginfo.path != NULL)
 		FREES(dblp->reginfo.path);
+	if (dblp->dir != NULL)
+		FREES(dblp->dir);
 	FREE(dblp, sizeof(*dblp));
 	return (ret);
 }
@@ -489,6 +490,9 @@ log_stat(dblp, gspp, db_malloc)
 
 	(*gspp)->st_cur_file = lp->lsn.file;
 	(*gspp)->st_cur_offset = lp->lsn.offset;
+
+	(*gspp)->st_refcnt = lp->rlayout.refcnt;
+	(*gspp)->st_regsize = lp->rlayout.size;
 
 	UNLOCK_LOGREGION(dblp);
 

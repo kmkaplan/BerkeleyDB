@@ -8,14 +8,13 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)bt_cursor.c	10.50 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)bt_cursor.c	10.53 (Sleepycat) 5/25/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
 #include <errno.h>
-#include <stdio.h>
 #include <string.h>
 #endif
 
@@ -90,9 +89,9 @@ __bam_cursor(dbp, txn, dbcp)
 	 * All cursors are queued from the master DB structure.  Add the
 	 * cursor to that queue.
 	 */
-	DB_THREAD_LOCK(dbp);
+	CURSOR_SETUP(dbp);
 	TAILQ_INSERT_HEAD(&dbp->curs_queue, dbc, links);
-	DB_THREAD_UNLOCK(dbp);
+	CURSOR_TEARDOWN(dbp);
 
 	*dbcp = dbc;
 	return (0);
@@ -133,13 +132,6 @@ __bam_c_iclose(dbp, dbc)
 	CURSOR *cp;
 	int ret;
 
-	/*
-	 * All cursors are queued from the master DB structure.  For
-	 * now, discard the DB handle which triggered this call, and
-	 * replace it with the cursor's reference.
-	 */
-	dbp = dbc->dbp;
-
 	/* If a cursor key was deleted, perform the actual deletion.  */
 	cp = dbc->internal;
 	ret = F_ISSET(cp, C_DELETED) ? __bam_c_physdel(dbp, cp, NULL) : 0;
@@ -149,9 +141,9 @@ __bam_c_iclose(dbp, dbc)
 		(void)__BT_TLPUT(dbp, cp->lock);
 
 	/* Remove the cursor from the queue. */
-	DB_THREAD_LOCK(dbp);
+	CURSOR_SETUP(dbp);
 	TAILQ_REMOVE(&dbp->curs_queue, dbc, links);
-	DB_THREAD_UNLOCK(dbp);
+	CURSOR_TEARDOWN(dbp);
 
 	/* Discard the structures. */
 	FREE(dbc->internal, sizeof(CURSOR));
@@ -1166,7 +1158,7 @@ __bam_cprint(dbp)
 	CURSOR *cp;
 	DBC *dbc;
 
-	DB_THREAD_LOCK(dbp);
+	CURSOR_SETUP(dbp);
 	for (dbc = TAILQ_FIRST(&dbp->curs_queue);
 	    dbc != NULL; dbc = TAILQ_NEXT(dbc, links)) {
 		cp = (CURSOR *)dbc->internal;
@@ -1178,7 +1170,8 @@ __bam_cprint(dbp)
 			fprintf(stderr, "(deleted)");
 		fprintf(stderr, "\n");
 	}
-	DB_THREAD_UNLOCK(dbp);
+	CURSOR_TEARDOWN(dbp);
+
 	return (0);
 }
 #endif /* DEBUG */
@@ -1213,8 +1206,7 @@ __bam_ca_delete(dbp, pgno, indx, curs, key_delete)
 	 * locks on the same page, but, cursors within a thread must be single
 	 * threaded, so all we're locking here is the cursor linked list.
 	 */
-	DB_THREAD_LOCK(dbp);
-
+	CURSOR_SETUP(dbp);
 	for (count = 0, dbc = TAILQ_FIRST(&dbp->curs_queue);
 	    dbc != NULL; dbc = TAILQ_NEXT(dbc, links)) {
 		cp = (CURSOR *)dbc->internal;
@@ -1245,8 +1237,8 @@ __bam_ca_delete(dbp, pgno, indx, curs, key_delete)
 				F_SET(cp, C_DELETED);
 			}
 	}
+	CURSOR_TEARDOWN(dbp);
 
-	DB_THREAD_UNLOCK(dbp);
 	return (count);
 }
 
@@ -1273,7 +1265,7 @@ __bam_ca_di(dbp, pgno, indx, adjust)
 	/*
 	 * Adjust the cursors.  See the comment in __bam_ca_delete().
 	 */
-	DB_THREAD_LOCK(dbp);
+	CURSOR_SETUP(dbp);
 	for (dbc = TAILQ_FIRST(&dbp->curs_queue);
 	    dbc != NULL; dbc = TAILQ_NEXT(dbc, links)) {
 		cp = (CURSOR *)dbc->internal;
@@ -1282,7 +1274,7 @@ __bam_ca_di(dbp, pgno, indx, adjust)
 		if (cp->dpgno == pgno && cp->dindx >= indx)
 			cp->dindx += adjust;
 	}
-	DB_THREAD_UNLOCK(dbp);
+	CURSOR_TEARDOWN(dbp);
 }
 
 /*
@@ -1307,7 +1299,7 @@ __bam_ca_dup(dbp, fpgno, first, fi, tpgno, ti)
 	 * No need to test duplicates, this only gets called when moving
 	 * leaf page data items onto a duplicates page.
 	 */
-	DB_THREAD_LOCK(dbp);
+	CURSOR_SETUP(dbp);
 	for (dbc = TAILQ_FIRST(&dbp->curs_queue);
 	    dbc != NULL; dbc = TAILQ_NEXT(dbc, links)) {
 		cp = (CURSOR *)dbc->internal;
@@ -1323,7 +1315,7 @@ __bam_ca_dup(dbp, fpgno, first, fi, tpgno, ti)
 			cp->dindx = ti;
 		}
 	}
-	DB_THREAD_UNLOCK(dbp);
+	CURSOR_TEARDOWN(dbp);
 }
 
 /*
@@ -1350,14 +1342,14 @@ __bam_ca_move(dbp, fpgno, tpgno)
 	 * No need to test duplicates, this only gets called when copying
 	 * over the root page with a leaf or internal page.
 	 */
-	DB_THREAD_LOCK(dbp);
+	CURSOR_SETUP(dbp);
 	for (dbc = TAILQ_FIRST(&dbp->curs_queue);
 	    dbc != NULL; dbc = TAILQ_NEXT(dbc, links)) {
 		cp = (CURSOR *)dbc->internal;
 		if (cp->pgno == fpgno)
 			cp->pgno = tpgno;
 	}
-	DB_THREAD_UNLOCK(dbp);
+	CURSOR_TEARDOWN(dbp);
 }
 
 /*
@@ -1398,7 +1390,7 @@ __bam_ca_replace(dbp, pgno, indx, pass)
 	 * for the cursor as it may have been changed by other cursor update
 	 * routines as the item was deleted/inserted.
 	 */
-	DB_THREAD_LOCK(dbp);
+	CURSOR_SETUP(dbp);
 	switch (pass) {
 	case REPLACE_SETUP:			/* Setup. */
 		for (dbc = TAILQ_FIRST(&dbp->curs_queue);
@@ -1437,7 +1429,7 @@ __bam_ca_replace(dbp, pgno, indx, pass)
 		}
 		break;
 	}
-	DB_THREAD_UNLOCK(dbp);
+	CURSOR_TEARDOWN(dbp);
 }
 
 /*
@@ -1471,7 +1463,7 @@ __bam_ca_split(dbp, ppgno, lpgno, rpgno, split_indx, cleft)
 	 * the cursor is on the right page, it is decremented by the number of
 	 * records split to the left page.
 	 */
-	DB_THREAD_LOCK(dbp);
+	CURSOR_SETUP(dbp);
 	for (dbc = TAILQ_FIRST(&dbp->curs_queue);
 	    dbc != NULL; dbc = TAILQ_NEXT(dbc, links)) {
 		cp = (CURSOR *)dbc->internal;
@@ -1492,7 +1484,7 @@ __bam_ca_split(dbp, ppgno, lpgno, rpgno, split_indx, cleft)
 				cp->dindx -= split_indx;
 			}
 	}
-	DB_THREAD_UNLOCK(dbp);
+	CURSOR_TEARDOWN(dbp);
 }
 
 /*
@@ -1505,13 +1497,14 @@ __bam_c_physdel(dbp, cp, h)
 	CURSOR *cp;
 	PAGE *h;
 {
+	enum { DELETE_ITEM, DELETE_PAGE, NOTHING_FURTHER } cmd;
 	BOVERFLOW bo;
 	BTREE *t;
 	DBT dbt;
 	DB_LOCK lock;
 	db_indx_t indx;
 	db_pgno_t pgno, next_pgno, prev_pgno;
-	int delete_page, local_page, normal, ret;
+	int delete_page, local_page, ret;
 
 	t = dbp->internal;
 	delete_page = ret = 0;
@@ -1580,9 +1573,9 @@ __bam_c_physdel(dbp, cp, h)
 
 		if (NUM_ENT(h) == 1 &&
 		    prev_pgno == PGNO_INVALID && next_pgno == PGNO_INVALID)
-			normal = 1;
+			cmd = DELETE_PAGE;
 		else {
-			normal = 0;
+			cmd = DELETE_ITEM;
 
 			/* Delete the duplicate. */
 			if ((ret = __db_drem(dbp, &h, indx, __bam_free)) != 0)
@@ -1601,10 +1594,16 @@ __bam_c_physdel(dbp, cp, h)
 			 */
 			if ((h != NULL && pgno == h->pgno) ||
 			    prev_pgno != PGNO_INVALID)
-				goto done;
+				cmd = NOTHING_FURTHER;
 		}
 
-		/* Release any page we're holding and its lock. */
+		/*
+		 * Release any page we're holding and its lock.
+		 *
+		 * !!!
+		 * If there is no subsequent page in the duplicate chain, then
+		 * __db_drem will have put page "h" and set it to NULL.
+		*/
 		if (local_page) {
 			if (h != NULL)
 				(void)memp_fput(dbp->mpf, h, 0);
@@ -1612,7 +1611,10 @@ __bam_c_physdel(dbp, cp, h)
 			local_page = 0;
 		}
 
-		/* Acquire the parent page. */
+		if (cmd == NOTHING_FURTHER)
+			goto done;
+
+		/* Acquire the parent page and switch the index to its entry. */
 		if ((ret =
 		    __bam_lget(dbp, 0, cp->pgno, DB_LOCK_WRITE, &lock)) != 0)
 			goto err;
@@ -1621,10 +1623,9 @@ __bam_c_physdel(dbp, cp, h)
 			goto err;
 		}
 		local_page = 1;
-
-		/* Switch to the parent page's entry. */
 		indx = cp->indx;
-		if (normal)
+
+		if (cmd == DELETE_PAGE)
 			goto btd;
 
 		/*

@@ -617,6 +617,10 @@ DDEESSCCRRIIPPTTIIOONN
 
        The following DB_MPOOL_STAT fields will be filled in:
 
+       u_int32_t st_refcnt;
+            The number of references to the region.
+       u_int32_t st_regsize;
+            The size of the region.
        size_t st_cachesize;
             Cache size in bytes.
        u_int32_t st_cache_hit;
@@ -757,6 +761,7 @@ EERRRROORRSS
 
        In addition, the _m_e_m_p___f_o_p_e_n function may fail  and  return
        _e_r_r_n_o for the following conditions:
+
 
        [EINVAL]
             An invalid flag value or parameter was specified.

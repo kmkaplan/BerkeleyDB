@@ -7,30 +7,50 @@
 <HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
-       <B>db</B>_<B>load</B> [<B>-T</B>]
+       <B>db</B>_<B>load</B> [<B>-nT</B>] [<B>-c</B> <B>name=value</B>]
             [<B>-f</B> <B>file</B>] [<B>-h</B> <B>home</B>] [<B>-t</B> <B>btree</B> <B>|</B> <B>hash</B> <B>|</B> <B>recno</B>] db_file
 
 
 </PRE>
 <H2>DESCRIPTION</H2><PRE>
        The db_load utility reads  from  the  standard  input  and
-       loads  it into the database db_file.  The input to db_load
-       must be in the output format specified by the  db_dump  or
-       db_dump185    utilities    (see    <B><A HREF="db_dump.html">db_dump(1)</A></B>   for   more
-       information), or as specified for the <B>-T</B> option below.
+       loads  it into the database db_file.  The database db_file
+       is created if it does not already exist.
+
+       The  input  to  db_load  must  be  in  the  output  format
+       specified  by  the  db_dump  or  db_dump185 utilities (see
+       <B><A HREF="db_dump.html">db_dump(1)</A></B> for more information), or as specified for  the
+       <B>-T</B> option below.
 
        The options are as follows:
 
-       <B>-c</B>   Specify  configuration  options   for   the   DB_INFO
-            structure  provided to <B><A HREF="db_open.html">db_open(3)</A></B>, ignoring any value
-            they may have based on the input.   The  command-line
-            format  is  ``name=value''.   Supported  keywords are
+       <B>-c</B>   Specify   configuration   options   for  the  DB_INFO
+            structure provided to <B><A HREF="db_open.html">db_open(3)</A></B>, ignoring any  value
+            they  may  have based on the input.  The command-line
+            format is  ``name=value''.   Supported  keywords  are
             listed below.
 
-       <B>-f</B>   Read from the specified input file  instead  of  from
+       <B>-f</B>   Read  from  the  specified input file instead of from
             the standard input.
 
        <B>-h</B>   Specify a home directory for the database.
+
+            If  a  home  directory  is  specified,  the  database
+            environment   is   opened   using  the  DB_INIT_LOCK,
+            DB_INIT_LOG,    DB_INIT_MPOOL,    DB_INIT_TXN     and
+            DB_USE_ENVIRON  flags  to <B><A HREF="db_appinit.html">db_appinit(3)</A></B>.  (This means
+            that db_load can be used to load data into  databases
+            while  they  are  in use by other processes.)  If the
+            db_appinit call fails, or if  no  home  directory  is
+            specified,  the  database  is  still updated, but the
+            environment is ignored, e.g., no locking is done.
+
+       <B>-n</B>   Do not overwrite existing keys in the  database  when
+            loading  into  an  already  existing  database.  If a
+            key/data pair cannot be loaded into the database  for
+            this  reason,  a  warning message is displayed on the
+            standard error  output  and  the  key/data  pair  are
+            skipped.
 
        <B>-T</B>   The  <B>-T</B>  option  allows non-DB applications to easily
             load text files into databases.
@@ -75,18 +95,19 @@
             any  other  database  type or from any other database
             type.
 
-       The db_load utility exits 0 on success, and &gt;0 if an error
-       occurs.
+       The db_load utility exits 0 on success, 1 if one  or  more
+       key/data  pairs  were not loaded into the database because
+       the key already existed, and &gt;1 if an error occurs.
 
 
 </PRE>
 <H2>KEYWORDS</H2><PRE>
-       The  following  keywords are supported for the <B>-c</B> command-
-       line option.  See <B><A HREF="db_open.html">db_open(3)</A></B>  for  further  discussion  of
+       The following keywords are supported for the  <B>-c</B>  command-
+       line  option.   See  <B><A HREF="db_open.html">db_open(3)</A></B>  for further discussion of
        these keywords and what values should be specified.
 
-       The  parenthetical listing specifies how the value part of
-       the ``name=value'' pair is interpreted.  Items  listed  as
+       The parenthetical listing specifies how the value part  of
+       the  ``name=value''  pair is interpreted.  Items listed as
        (boolean) expect value to be ``1'' (set) or ``0'' (unset).
        Items listed as (number) convert value to a number.  Items
        listed as (string) use the characters of value directly.
@@ -95,11 +116,11 @@
             The minimum number of keys per page.
 
        db_lorder (number)
-            The  byte  order  for integers in the stored database
+            The byte order for integers in  the  stored  database
             metadata.
 
        db_pagesize (number)
-            The size of pages used for  nodes  in  the  tree,  in
+            The  size  of  pages  used  for nodes in the tree, in
             bytes.
 
        duplicates (boolean)
@@ -126,42 +147,42 @@
 
 </PRE>
 <H2>EXAMPLES</H2><PRE>
-       The db_load utility can be used to load  text  files  into
-       databases.   For  example, the following command loads the
-       standard UNIX /etc/passwd file into a database,  with  the
-       login  name  as the key item and the entire password entry
+       The  db_load  utility  can be used to load text files into
+       databases.  For example, the following command  loads  the
+       standard  UNIX  /etc/passwd file into a database, with the
+       login name as the key item and the entire  password  entry
        as the data item:
               awk -F: '{print $1; print $0}' &lt; /etc/passwd |
                   sed 's/\\/\\\\/g' | db_load -T -t hash passwd.db
 
-       Note that backslash characters naturally occurring in  the
-       text   are  escaped  to  avoid  interpretation  as  escape
+       Note  that backslash characters naturally occurring in the
+       text  are  escaped  to  avoid  interpretation  as   escape
        characters by db_load.
 
 
 </PRE>
 <H2>ENVIRONMENT VARIABLES</H2><PRE>
-       The following environment variables affect  the  execution
+       The  following  environment variables affect the execution
        of db_load:
 
        DB_HOME
             If the <B>-h</B> option is not specified and the environment
-            variable DB_HOME is set, it is used as  the  path  of
+            variable  DB_HOME  is  set, it is used as the path of
             the database home, as described in <B><A HREF="db_appinit.html">db_appinit(3)</A></B>.
 
 
 </PRE>
 <H2>SEE ALSO</H2><PRE>
-       The  DB  library  is  a family of groups of functions that
-       provides a modular programming interface  to  transactions
-       and  record-oriented  file  access.   The library includes
-       support for transactions, locking, logging and  file  page
-       caching,  as well as various indexed access methods.  Many
-       of the functional groups  (e.g.,  the  file  page  caching
-       functions)   are   useful  independent  of  the  other  DB
-       functions, although some functional groups are  explicitly
-       based  on  other functional groups (e.g., transactions and
-       logging).  For a general description of  the  DB  package,
+       The DB library is a family of  groups  of  functions  that
+       provides  a  modular programming interface to transactions
+       and record-oriented file  access.   The  library  includes
+       support  for  transactions, locking, logging and file page
+       caching, as well as various indexed access methods.   Many
+       of  the  functional  groups  (e.g.,  the file page caching
+       functions)  are  useful  independent  of  the   other   DB
+       functions,  although some functional groups are explicitly
+       based on other functional groups (e.g.,  transactions  and
+       logging).   For  a  general description of the DB package,
        see <B><A HREF="db_intro.html">db_intro(3)</A></B>.
 
        <B><A HREF="db_archive.html">db_archive(1)</A></B>, <B><A HREF="db_checkpoint.html">db_checkpoint(1)</A></B>, <B><A HREF="db_deadlock.html">db_deadlock(1)</A></B>, <B><A HREF="db_dump.html">db_dump(1)</A></B>,

@@ -47,14 +47,13 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)db_overflow.c	10.10 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)db_overflow.c	10.11 (Sleepycat) 5/7/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
 #include <errno.h>
-#include <stdio.h>
 #include <string.h>
 #endif
 

@@ -44,7 +44,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)bt_split.c	10.21 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)bt_split.c	10.23 (Sleepycat) 5/23/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -52,7 +52,6 @@ static const char sccsid[] = "@(#)bt_split.c	10.21 (Sleepycat) 4/26/98";
 
 #include <errno.h>
 #include <limits.h>
-#include <stdio.h>
 #include <string.h>
 #endif
 
@@ -167,8 +166,10 @@ __bam_root(dbp, cp)
 	t = dbp->internal;
 
 	/* Yeah, right. */
-	if (cp->page->level >= MAXBTREELEVEL)
-		return (ENOSPC);
+	if (cp->page->level >= MAXBTREELEVEL) {
+		ret = ENOSPC;
+		goto err;
+	}
 
 	/* Create new left and right pages for the split. */
 	lp = rp = NULL;
@@ -245,7 +246,7 @@ __bam_page(dbp, pp, cp)
 
 	/* Create new right page for the split. */
 	if ((ret = __bam_new(dbp, TYPE(cp->page), &rp)) != 0)
-		return (ret);
+		goto err;
 	P_INIT(rp, dbp->pgsize, rp->pgno,
 	    ISINTERNAL(cp->page) ? PGNO_INVALID : cp->page->pgno,
 	    ISINTERNAL(cp->page) ? PGNO_INVALID : cp->page->next_pgno,

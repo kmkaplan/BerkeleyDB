@@ -5,7 +5,7 @@
 .\" Copyright (c) 1996, 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)db_stat.so	8.12 (Sleepycat) 4/10/98
+.\"	@(#)db_stat.so	8.13 (Sleepycat) 5/10/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
@@ -859,18 +859,49 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH DB_STAT 1 "April 10, 1998"
+.TH DB_STAT 1 "May 10, 1998"
 .UC 7
 .SH NAME
 db_stat \- display DB statistics
 .SH SYNOPSIS
-\fBdb_stat\fP [\fB-lmt\fP] [\fB-d file\fP] [\fB-h home\fP]
+\fBdb_stat\fP [\fB-clmNt\fP]
+.ti +5
+[\fB-C Acfhlmo\fP] [\fB-d file\fP] [\fB-h home\fP] [\fB-M Ahlm\fP]
 .SH DESCRIPTION
 The
 .I db_stat
 utility displays statistics for DB environments.
 .PP
 The options are as follows:
+.TP 5
+.B \-C
+Display internal information about the lock region.
+(The output from this option is often both voluminous and meaningless,
+and is intended only for debugging.)
+.RS
+.TP 5
+.B \-A
+Display all information.
+.Nt
+.B \-c
+Display lock conflict matrix.
+.Nt
+.B \-f
+Display lock and object free lists.
+.Nt
+.B \-l
+Display lockers within hash chains.
+.Nt
+.B \-m
+Display region memory information.
+.Nt
+.B \-o
+Display objects within hash chains.
+.RE
+.TP 5
+.B \-c
+Display lock region statistics as described in
+.IR db_lock (3).
 .TP 5
 .B \-d
 Display database statistics for the specified database,
@@ -884,9 +915,33 @@ Specify a home directory for the database.
 Display log region statistics as described in
 .IR db_log (3).
 .TP 5
+.B \-M
+Display internal information about the shared memory buffer pool.
+(The output from this option is often both voluminous and meaningless,
+and is intended only for debugging.)
+.RS
+.TP 5
+.B \-A
+Display all information.
+.Nt
+.B \-h
+Display buffers within hash chains.
+.Nt
+.B \-l
+Display buffers within LRU chains.
+.Nt
+.B \-m
+Display region memory information.
+.RE
+.TP 5
 .B \-m
 Display shared memory buffer pool statistics as described in
 .IR db_mpool (3).
+.TP 5
+.B \-N
+Don't acquire locks while displaying the statistics.
+This option is intended only for debugging corrupt regions and should not
+be used under any other circumstances.
 .TP 5
 .B \-t
 Display transaction region statistics as described in
@@ -895,8 +950,8 @@ Display transaction region statistics as described in
 .Si db_stat
 .PP
 Values smaller than 10 million are generally displayed without
-any special notation, values larger than 10 million are normally
-displayed as ``<number>M''.
+any special notation.
+Values larger than 10 million are normally displayed as ``<number>M''.
 .PP
 .Ex db_stat
 .SH "ENVIRONMENT VARIABLES"

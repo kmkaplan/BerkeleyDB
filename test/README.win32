@@ -1,4 +1,4 @@
-# @(#)README.win32	8.3 (Sleepycat) 4/28/98
+# @(#)README.win32	8.4 (Sleepycat) 6/2/98
 
 These notes are for build/running/changing dbtest on Win32 platforms
 (only!).  At this point, I've only really tried Win/NT.  And because I
@@ -78,7 +78,7 @@ Places where the tests still fail:
 
    Maybe CR/NL issue?
 
-4) Recd005.1.d: 
+4) Recd005.1.d:
    About to run recovery ... Recovery error: db_recover: appinit failed: Permission denied.
 
 ================

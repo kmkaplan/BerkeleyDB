@@ -5,7 +5,7 @@
 .\" Copyright (c) 1996, 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)db_log.so	10.30 (Sleepycat) 5/3/98
+.\"	@(#)db_log.so	10.31 (Sleepycat) 5/10/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
@@ -859,7 +859,7 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH DB_LOG 3 "May 3, 1998"
+.TH DB_LOG 3 "May 10, 1998"
 .UC 7
 .SH NAME
 db_log \- log management functions
@@ -1336,6 +1336,12 @@ The magic number that identifies a file as a log file.
 .Nt
 u_int32_t st_version;
 The version of the log file type.
+.Nt
+u_int32_t st_refcnt;
+The number of references to the region.
+.Nt
+u_int32_t st_regsize;
+The size of the region.
 .Nt
 int st_mode;
 The mode of any created log files.

@@ -1,16 +1,16 @@
 %!PS-Adobe-3.0
-%%Creator: groff version 1.10
-%%CreationDate: Mon May  4 20:56:13 1998
+%%Creator: groff version 1.11
+%%CreationDate: Sun May 31 22:58:21 1998
 %%DocumentNeededResources: font Times-Bold
 %%+ font Times-Roman
 %%+ font Times-Italic
-%%DocumentSuppliedResources: procset grops 1.10 0
+%%DocumentSuppliedResources: procset grops 1.11 0
 %%Pages: 6
 %%PageOrder: Ascend
 %%Orientation: Portrait
 %%EndComments
 %%BeginProlog
-%%BeginResource: procset grops 1.10 0
+%%BeginResource: procset grops 1.11 0
 /setpacking where{
 pop
 currentpacking
@@ -527,85 +527,91 @@ E(The)133 168 Q F1(yield)2.5 E F0(function returns the v)2.5 E(alue of)
 225.6 Q(gument speci\214es the information being set by the ar)-.18 E
 (gument)-.18 E F1(value)2.5 E F0(.).18 E(The follo)108 242.4 Q(wing v)
 -.25 E(alues of)-.25 E F1(whic)2.5 E(h)-.15 E F0(are supported:)2.5 E
-(DB_REGION_ANON)108 259.2 Q(Setting)133 271.2 Q F1(value)3.498 E F0 .998
-(to a non-zero v)3.498 F .998(alue speci\214es that shared memory re)
--.25 F .998(gions are to be created in anon)-.15 F(y-)-.15 E 6.435
-(mous memory)133 283.2 R 8.935(,a)-.65 G 6.435(nd not back)-8.935 F
-6.435(ed by a re)-.1 F 6.434(gular \214le.)-.15 F(DB_REGION_N)11.434 E
-6.434(AME dif)-.35 F 6.434(fers from)-.25 F .043
-(DB_REGION_ANON in that the former will f)133 295.2 R .043
-(ail if the shared memory re)-.1 F .044(gions cannot be named, that)-.15
-F(is, if multiple processes cannot use them.)133 307.2 Q
-(See DB_FUNC_MAP for more information.)5 E(DB_REGION_INIT)108 324 Q
-1.809(In some applications, the e)133 336 R 1.809(xpense of page-f)-.15
-F 1.808(aulting the shared memory re)-.1 F 1.808(gions can af)-.15 F
-1.808(fect perfor)-.25 F(-)-.2 E 1.266(mance, e.g., when the page-f)133
-348 R 1.267
+(DB_MUTEXLOCKS)108 259.2 Q .68(Grant all requested mutual e)133 271.2 R
+.681(xclusion mute)-.15 F -.15(xe)-.15 G 3.181(sw).15 G .681
+(ithout testing for their a)-3.181 F -.25(va)-.2 G(ilability).25 E 5.681
+(.T)-.65 G .681(his \215ag should)-5.681 F(ne)133 283.2 Q -.15(ve)-.25 G
+2.5(rb).15 G 2.5(eu)-2.5 G(sed for an)-2.5 E 2.5(yo)-.15 G
+(ther purpose than deb)-2.5 E(ugging.)-.2 E(DB_REGION_ANON)108 300 Q
+(Setting)133 312 Q F1(value)3.499 E F0 .998(to a non-zero v)3.499 F .998
+(alue speci\214es that shared memory re)-.25 F .998
+(gions are to be created in anon)-.15 F(y-)-.15 E 6.434(mous memory)133
+324 R 8.934(,a)-.65 G 6.434(nd not back)-8.934 F 6.435(ed by a re)-.1 F
+6.435(gular \214le.)-.15 F(DB_REGION_N)11.435 E 6.435(AME dif)-.35 F
+6.435(fers from)-.25 F .044(DB_REGION_ANON in that the former will f)133
+336 R .043(ail if the shared memory re)-.1 F .043
+(gions cannot be named, that)-.15 F
+(is, if multiple processes cannot use them.)133 348 Q
+(See DB_FUNC_MAP for more information.)5 E(DB_REGION_INIT)108 364.8 Q
+1.808(In some applications, the e)133 376.8 R 1.808(xpense of page-f)
+-.15 F 1.809(aulting the shared memory re)-.1 F 1.809(gions can af)-.15
+F 1.809(fect perfor)-.25 F(-)-.2 E 1.267(mance, e.g., when the page-f)
+133 388.8 R 1.267
 (ault occurs while holding a lock, other lock requests can con)-.1 F
--2.2 -.2(vo y)-.4 H(and)3.967 E -.15(ove)133 360 S .972
+-2.2 -.2(vo y)-.4 H(and)3.966 E -.15(ove)133 400.8 S .972
 (rall throughput may decrease.).15 F(Setting)5.972 E F1(value)3.472 E F0
 .972(to a non-zero v)3.472 F .972
 (alue speci\214es that one byte be read)-.25 F
-(from each 4K page of the shared memory re)133 372 Q(gion when the re)
--.15 E(gion is initialized.)-.15 E(DB_REGION_N)108 388.8 Q(AME)-.35 E
-(Setting)133 400.8 Q F1(value)3.498 E F0 .998(to a non-zero v)3.498 F
+(from each 4K page of the shared memory re)133 412.8 Q(gion when the re)
+-.15 E(gion is initialized.)-.15 E(DB_REGION_N)108 429.6 Q(AME)-.35 E
+(Setting)133 441.6 Q F1(value)3.499 E F0 .998(to a non-zero v)3.499 F
 .998(alue speci\214es that shared memory re)-.25 F .998
-(gions are to be created in anon)-.15 F(y-)-.15 E 6.435(mous memory)133
-412.8 R 8.935(,a)-.65 G 6.435(nd not back)-8.935 F 6.435(ed by a re)-.1
-F 6.434(gular \214le.)-.15 F(DB_REGION_N)11.434 E 6.434(AME dif)-.35 F
-6.434(fers from)-.25 F .043(DB_REGION_ANON in that the former will f)133
-424.8 R .043(ail if the shared memory re)-.1 F .044
+(gions are to be created in anon)-.15 F(y-)-.15 E 6.434(mous memory)133
+453.6 R 8.934(,a)-.65 G 6.434(nd not back)-8.934 F 6.435(ed by a re)-.1
+F 6.435(gular \214le.)-.15 F(DB_REGION_N)11.435 E 6.435(AME dif)-.35 F
+6.435(fers from)-.25 F .044(DB_REGION_ANON in that the former will f)133
+465.6 R .043(ail if the shared memory re)-.1 F .043
 (gions cannot be named, that)-.15 F
-(is, if multiple processes cannot use them.)133 436.8 Q
-(See DB_FUNC_MAP for more information.)5 E(DB_TSL_SPINS)108 453.6 Q
-(Specify the number of times mute)133 465.6 Q -.15(xe)-.15 G 2.5(ss).15
-G(hould spin without blocking.)-2.5 E .386(This v)133 489.6 R .386
+(is, if multiple processes cannot use them.)133 477.6 Q
+(See DB_FUNC_MAP for more information.)5 E(DB_TSL_SPINS)108 494.4 Q
+(Specify the number of times mute)133 506.4 Q -.15(xe)-.15 G 2.5(ss).15
+G(hould spin without blocking.)-2.5 E .385(This v)133 530.4 R .385
 (alue def)-.25 F .385(aults to 1 on uniprocessor systems and to 50 times the number of processors on multi-)
--.1 F(processor systems.)133 501.6 Q(The)108 518.4 Q F1(db_value_set)2.5
+-.1 F(processor systems.)133 542.4 Q(The)108 559.2 Q F1(db_value_set)2.5
 E F0(function returns the v)2.5 E(alue of)-.25 E F1(errno)2.5 E F0(on f)
-2.5 E(ailure and 0 on success.)-.1 E/F3 9/Times-Bold@0 SF(ERR)72 535.2 Q
-(ORS)-.27 E F0(The)108 547.2 Q F1(db_jump_set)2.5 E F0(function may f)
-2.5 E(ail and return)-.1 E F1(errno)2.5 E F0(for the follo)2.5 E
-(wing conditions:)-.25 E([EINV)108 564 Q(AL])-1.35 E(An in)133 576 Q
+2.5 E(ailure and 0 on success.)-.1 E/F3 9/Times-Bold@0 SF(ERR)72 576 Q
+(ORS)-.27 E F0(The)108 588 Q F1(db_jump_set)2.5 E F0(function may f)2.5
+E(ail and return)-.1 E F1(errno)2.5 E F0(for the follo)2.5 E
+(wing conditions:)-.25 E([EINV)108 604.8 Q(AL])-1.35 E(An in)133 616.8 Q
 -.25(va)-.4 G(lid \215ag v).25 E(alue or parameter w)-.25 E
-(as speci\214ed.)-.1 E F3 -.09(BU)72 592.8 S(GS).09 E F0 .928
-(No type checking is done of the)108 604.8 R F1(func)3.428 E F0(ar)3.428
+(as speci\214ed.)-.1 E F3 -.09(BU)72 633.6 S(GS).09 E F0 .928
+(No type checking is done of the)108 645.6 R F1(func)3.428 E F0(ar)3.428
 E .928(gument, and specifying an in)-.18 F -.25(va)-.4 G .928
 (lid replacement routine will cause).25 F(unpredictable results.)108
-616.8 Q 1.38(Applications should be careful to replace related functions as a group and at the same time.)
-108 633.6 R(Replacing)6.38 E 3.413
-(DB_FUNC_MALLOC without replacing DB_FUNC_REALLOC is lik)108 645.6 R
-3.414(ely to result in unpredictable)-.1 F(results.)108 657.6 Q .815
-(On W)108 674.4 R(indo)-.4 E .814(ws/95, \214les that are opened by multiple processes do not share data correctly)
--.25 F 5.814(.T)-.65 G 3.314(ot)-6.614 G .814(ell Berk)-3.314 F(ele)-.1
-E(y)-.15 E(DB to use a named re)108 686.4 Q
-(gion of the paging \214le to share memory instead, use:)-.15 E(db_v)144
-703.2 Q(alue_set\(1, DB_REGION_N)-.25 E(AME\);)-.35 E -1.1(Yo)108 720 S
-3.47(ud)1.1 G 3.47(on)-3.47 G .971(ot need to do this if your application can guarantee that only one process will be accessing DB)
--3.47 F(March 22, 1998)274.2 768 Q(5)197.2 E EP
+657.6 Q 1.38(Applications should be careful to replace related functions as a group and at the same time.)
+108 674.4 R(Replacing)6.38 E 3.414
+(DB_FUNC_MALLOC without replacing DB_FUNC_REALLOC is lik)108 686.4 R
+3.413(ely to result in unpredictable)-.1 F(results.)108 698.4 Q .814
+(On W)108 715.2 R(indo)-.4 E .814(ws/95, \214les that are opened by multiple processes do not share data correctly)
+-.25 F 5.815(.T)-.65 G 3.315(ot)-6.615 G .815(ell Berk)-3.315 F(ele)-.1
+E(y)-.15 E(DB to use a named re)108 727.2 Q
+(gion of the paging \214le to share memory instead, use:)-.15 E
+(March 22, 1998)274.2 768 Q(5)197.2 E EP
 %%Page: 6 6
 %%BeginPageSetup
 BP
 %%EndPageSetup
-/F0 10/Times-Roman@0 SF 353.28(DB_JUMP\(3\) DB_JUMP\(3\))72 48 R
-(\214les.)108 84 Q .125(On W)108 100.8 R(indo)-.4 E(ws/NT)-.25 E 2.625
-(,s)-.74 G .124
+/F0 10/Times-Roman@0 SF 353.28(DB_JUMP\(3\) DB_JUMP\(3\))72 48 R(db_v)
+144 84 Q(alue_set\(1, DB_REGION_N)-.25 E(AME\);)-.35 E -1.1(Yo)108 100.8
+S 3.471(ud)1.1 G 3.471(on)-3.471 G .97(ot need to do this if your application can guarantee that only one process will be accessing DB)
+-3.471 F(\214les.)108 112.8 Q .124(On W)108 129.6 R(indo)-.4 E(ws/NT)
+-.25 E 2.624(,s)-.74 G .124
 (haring of data between processes through the paging \214le does not w)
--2.625 F .124(ork correctly)-.1 F 2.624(,s)-.65 G 2.624(oy)-2.624 G(ou)
--2.624 E(should not call)108 112.8 Q/F1 10/Times-Italic@0 SF
+-2.624 F .125(ork correctly)-.1 F 2.625(,s)-.65 G 2.625(oy)-2.625 G(ou)
+-2.625 E(should not call)108 141.6 Q/F1 10/Times-Italic@0 SF
 (db_value_set)2.5 E F0 5(.T).68 G(hat will allo)-5 E 2.5(wD)-.25 G 2.5
 (Bt)-2.5 G 2.5(ou)-2.5 G(se the \214le itself for sharing, which w)-2.5
-E(orks correctly)-.1 E(.)-.65 E/F2 9/Times-Bold@0 SF(SEE ALSO)72 129.6 Q
-F1(db_ar)108 141.6 Q -.15(ch)-.37 G(ive).15 E F0(\(1\),).18 E F1(db_c)
+E(orks correctly)-.1 E(.)-.65 E/F2 9/Times-Bold@0 SF(SEE ALSO)72 158.4 Q
+F1(db_ar)108 170.4 Q -.15(ch)-.37 G(ive).15 E F0(\(1\),).18 E F1(db_c)
 2.5 E(hec)-.15 E(kpoint)-.2 E F0(\(1\),).68 E F1(db_deadloc)2.5 E(k)-.2
 E F0(\(1\),).67 E F1(db_dump)2.5 E F0(\(1\),).19 E F1(db_load)2.5 E F0
 (\(1\),).77 E F1(db_r)2.5 E(eco)-.37 E(ver)-.1 E F0(\(1\),).73 E F1
-(db_stat)2.5 E F0(\(1\),).68 E F1(db_intr)108 153.6 Q(o)-.45 E F0
+(db_stat)2.5 E F0(\(1\),).68 E F1(db_intr)108 182.4 Q(o)-.45 E F0
 (\(3\),).18 E F1(db_appinit)2.5 E F0(\(3\),).68 E F1(db_cur)2.5 E(sor)
 -.1 E F0(\(3\),).73 E F1(db_dbm)2.5 E F0(\(3\),).32 E F1(db_internal)2.5
 E F0(\(3\),).51 E F1(db_loc)2.5 E(k)-.2 E F0(\(3\),).67 E F1(db_lo)2.5 E
 (g)-.1 E F0(\(3\),).22 E F1(db_mpool)2.5 E F0(\(3\),).51 E F1(db_open)
-108 165.6 Q F0(\(3\),).24 E F1(db_thr)2.5 E(ead)-.37 E F0(\(3\),).77 E
+108 194.4 Q F0(\(3\),).24 E F1(db_thr)2.5 E(ead)-.37 E F0(\(3\),).77 E
 F1(db_txn)2.5 E F0(\(3\)).24 E(March 22, 1998)274.2 768 Q(6)197.2 E EP
 %%Trailer
 end

@@ -36,7 +36,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	@(#)db_txn.so	10.33 (Sleepycat) 5/3/98
+.\"	@(#)db_txn.so	10.34 (Sleepycat) 5/10/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
@@ -890,7 +890,7 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH DB_TXN 3 "May 3, 1998"
+.TH DB_TXN 3 "May 10, 1998"
 .UC 7
 .SH NAME
 db_txn \- DB transaction management
@@ -1231,6 +1231,12 @@ The transaction region statistics are stored in a structure of type
 DB_TXN_STAT (typedef'd in <db.h>).
 The following DB_TXN_STAT fields will be filled in:
 .TP 5
+u_int32_t st_refcnt;
+The number of references to the region.
+.Nt
+u_int32_t st_regsize;
+The size of the region.
+.Nt
 DB_LSN st_last_ckp;
 The LSN of the last checkpoint.
 .Nt

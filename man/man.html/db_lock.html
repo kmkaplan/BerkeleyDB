@@ -444,6 +444,10 @@
             file.
        u_int32_t st_version;
             The version of the lock file type.
+       u_int32_t st_refcnt;
+            The number of references to the region.
+       u_int32_t st_regsize;
+            The size of the region.
        u_int32_t st_maxlocks;
             The maximum number of locks possible.
        u_int32_t st_nmodes;

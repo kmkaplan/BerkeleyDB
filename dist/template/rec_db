@@ -17,7 +17,7 @@
 /*
  * __db_addrem_recover --
  *	Recovery function for addrem.
- * 
+ *
  * PUBLIC: int __db_addrem_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -94,7 +94,7 @@ out:	if (argp != NULL)
 /*
  * __db_split_recover --
  *	Recovery function for split.
- * 
+ *
  * PUBLIC: int __db_split_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -171,7 +171,7 @@ out:	if (argp != NULL)
 /*
  * __db_big_recover --
  *	Recovery function for big.
- * 
+ *
  * PUBLIC: int __db_big_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -248,7 +248,7 @@ out:	if (argp != NULL)
 /*
  * __db_ovref_recover --
  *	Recovery function for ovref.
- * 
+ *
  * PUBLIC: int __db_ovref_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -325,7 +325,7 @@ out:	if (argp != NULL)
 /*
  * __db_relink_recover --
  *	Recovery function for relink.
- * 
+ *
  * PUBLIC: int __db_relink_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -402,7 +402,7 @@ out:	if (argp != NULL)
 /*
  * __db_addpage_recover --
  *	Recovery function for addpage.
- * 
+ *
  * PUBLIC: int __db_addpage_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -479,7 +479,7 @@ out:	if (argp != NULL)
 /*
  * __db_debug_recover --
  *	Recovery function for debug.
- * 
+ *
  * PUBLIC: int __db_debug_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -556,7 +556,7 @@ out:	if (argp != NULL)
 /*
  * __db_noop_recover --
  *	Recovery function for noop.
- * 
+ *
  * PUBLIC: int __db_noop_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */

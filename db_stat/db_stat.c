@@ -11,7 +11,7 @@
 static const char copyright[] =
 "@(#) Copyright (c) 1996, 1997, 1998\n\
 	Sleepycat Software Inc.  All rights reserved.\n";
-static const char sccsid[] = "@(#)db_stat.c	8.35 (Sleepycat) 4/10/98";
+static const char sccsid[] = "@(#)db_stat.c	8.38 (Sleepycat) 5/30/98";
 #endif
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -27,17 +27,24 @@ static const char sccsid[] = "@(#)db_stat.c	8.35 (Sleepycat) 4/10/98";
 #endif
 
 #include "db_int.h"
+#include "shqueue.h"
+#include "db_shash.h"
+#include "lock.h"
+#include "mp.h"
 #include "clib_ext.h"
 
 typedef enum { T_NOTSET, T_DB, T_LOCK, T_LOG, T_MPOOL, T_TXN } test_t;
 
+int	argcheck __P((char *, const char *));
 void	btree_stats __P((DB *));
 DB_ENV *db_init __P((char *, test_t));
 void	dl __P((const char *, u_long));
 void	hash_stats __P((DB *));
+int	lock_ok __P((char *));
 void	lock_stats __P((DB_ENV *));
 void	log_stats __P((DB_ENV *));
 int	main __P((int, char *[]));
+int	mpool_ok __P((char *));
 void	mpool_stats __P((DB_ENV *));
 void	onint __P((int));
 void	prflags __P((u_int32_t, const FN *));
@@ -46,6 +53,7 @@ void	txn_stats __P((DB_ENV *));
 void	usage __P((void));
 
 int	 interrupted;
+char	*internal;
 const char
 	*progname = "db_stat";				/* Program name. */
 
@@ -64,8 +72,13 @@ main(argc, argv)
 
 	ttype = T_NOTSET;
 	db = home = NULL;
-	while ((ch = getopt(argc, argv, "cd:h:lmt")) != EOF)
+	while ((ch = getopt(argc, argv, "C:cd:h:lM:mNt")) != EOF)
 		switch (ch) {
+		case 'C':
+			ttype = T_LOCK;
+			if (!argcheck(internal = optarg, "Acflmo"))
+				usage();
+			break;
 		case 'c':
 			ttype = T_LOCK;
 			break;
@@ -79,8 +92,16 @@ main(argc, argv)
 		case 'l':
 			ttype = T_LOG;
 			break;
+		case 'M':
+			ttype = T_MPOOL;
+			if (!argcheck(internal = optarg, "Ahlm"))
+				usage();
+			break;
 		case 'm':
 			ttype = T_MPOOL;
+			break;
+		case 'N':
+			(void)db_value_set(0, DB_MUTEXLOCKS);
 			break;
 		case 't':
 			ttype = T_TXN;
@@ -231,6 +252,7 @@ hash_stats(dbp)
 {
 	COMPQUIET(dbp, NULL);
 
+	printf("Hash statistics not currently available.\n");
 	return;
 }
 
@@ -244,11 +266,18 @@ lock_stats(dbenv)
 {
 	DB_LOCK_STAT *sp;
 
+	if (internal != NULL) {
+		__lock_dump_region(dbenv->lk_info, internal, stdout);
+		return;
+	}
+
 	if (lock_stat(dbenv->lk_info, &sp, NULL))
 		err(1, NULL);
 
 	printf("%#lx\tLock magic number.\n", (u_long)sp->st_magic);
 	printf("%lu\tLock version number.\n", (u_long)sp->st_version);
+	dl("Lock region reference count.\n", (u_long)sp->st_refcnt);
+	dl("Lock region size.\n", (u_long)sp->st_regsize);
 	dl("Maximum number of locks.\n", (u_long)sp->st_maxlocks);
 	dl("Number of lock modes.\n", (u_long)sp->st_nmodes);
 	dl("Number of lock objects.\n", (u_long)sp->st_numobjs);
@@ -278,6 +307,8 @@ log_stats(dbenv)
 
 	printf("%#lx\tLog magic number.\n", (u_long)sp->st_magic);
 	printf("%lu\tLog version number.\n", (u_long)sp->st_version);
+	dl("Log region reference count.\n", (u_long)sp->st_refcnt);
+	dl("Log region size.\n", (u_long)sp->st_regsize);
 	printf("%#o\tLog file mode.\n", sp->st_mode);
 	if (sp->st_lg_max % MEGABYTE == 0)
 		printf("%luMb\tLog file size.\n",
@@ -311,9 +342,16 @@ mpool_stats(dbenv)
 	DB_MPOOL_FSTAT **fsp;
 	DB_MPOOL_STAT *gsp;
 
+	if (internal != NULL) {
+		__memp_dump_region(dbenv->mp_info, internal, stdout);
+		return;
+	}
+
 	if (memp_stat(dbenv->mp_info, &gsp, &fsp, NULL))
 		err(1, NULL);
 
+	dl("Pool region reference count.\n", (u_long)gsp->st_refcnt);
+	dl("Pool region size.\n", (u_long)gsp->st_regsize);
 	dl("Cache size", (u_long)gsp->st_cachesize);
 	printf(" (%luK).\n", (u_long)gsp->st_cachesize / 1024);
 	dl("Requested pages found in the cache", (u_long)gsp->st_cache_hit);
@@ -384,47 +422,48 @@ void
 txn_stats(dbenv)
 	DB_ENV *dbenv;
 {
-	DB_TXN_STAT *tstat;
+	DB_TXN_STAT *sp;
 	u_int32_t i;
 	const char *p;
 
-	if (txn_stat(dbenv->tx_info, &tstat, NULL))
+	if (txn_stat(dbenv->tx_info, &sp, NULL))
 		err(1, NULL);
 
-	p = tstat->st_last_ckp.file == 0 ?
+	dl("Txn region reference count.\n", (u_long)sp->st_refcnt);
+	dl("Txn region size.\n", (u_long)sp->st_regsize);
+	p = sp->st_last_ckp.file == 0 ?
 	    "No checkpoint LSN." : "File/offset for last checkpoint LSN.";
-	printf("%lu/%lu\t%s\n", (u_long)tstat->st_last_ckp.file,
-	    (u_long)tstat->st_last_ckp.offset, p);
-	p = tstat->st_pending_ckp.file == 0 ?
+	printf("%lu/%lu\t%s\n",
+	    (u_long)sp->st_last_ckp.file, (u_long)sp->st_last_ckp.offset, p);
+	p = sp->st_pending_ckp.file == 0 ?
 	    "No pending checkpoint LSN." :
 	    "File/offset for last pending checkpoint LSN.";
 	printf("%lu/%lu\t%s\n",
-	    (u_long)tstat->st_pending_ckp.file,
-	    (u_long)tstat->st_pending_ckp.offset, p);
-	if (tstat->st_time_ckp == 0)
+	    (u_long)sp->st_pending_ckp.file,
+	    (u_long)sp->st_pending_ckp.offset, p);
+	if (sp->st_time_ckp == 0)
 		printf("0\tNo checkpoint timestamp.\n");
 	else
 		printf("%.24s\tCheckpoint timestamp.\n",
-		    ctime(&tstat->st_time_ckp));
+		    ctime(&sp->st_time_ckp));
 	printf("%lx\tLast transaction ID allocated.\n",
-	    (u_long)tstat->st_last_txnid);
-	dl("Maximum number of active transactions.\n",
-	    (u_long)tstat->st_maxtxns);
-	dl("Number of transactions begun.\n", (u_long)tstat->st_nbegins);
-	dl("Number of transactions aborted.\n", (u_long)tstat->st_naborts);
-	dl("Number of transactions committed.\n", (u_long)tstat->st_ncommits);
+	    (u_long)sp->st_last_txnid);
+	dl("Maximum number of active transactions.\n", (u_long)sp->st_maxtxns);
+	dl("Number of transactions begun.\n", (u_long)sp->st_nbegins);
+	dl("Number of transactions aborted.\n", (u_long)sp->st_naborts);
+	dl("Number of transactions committed.\n", (u_long)sp->st_ncommits);
 	dl("The number of region locks granted without waiting.\n",
-	    (u_long)tstat->st_region_nowait);
+	    (u_long)sp->st_region_nowait);
 	dl("The number of region locks granted after waiting.\n",
-	    (u_long)tstat->st_region_wait);
-	dl("Active transactions.\n", (u_long)tstat->st_nactive);
-	qsort(tstat->st_txnarray,
-	    tstat->st_nactive, sizeof(tstat->st_txnarray[0]), txn_compare);
-	for (i = 0; i < tstat->st_nactive; ++i)
+	    (u_long)sp->st_region_wait);
+	dl("Active transactions.\n", (u_long)sp->st_nactive);
+	qsort(sp->st_txnarray,
+	    sp->st_nactive, sizeof(sp->st_txnarray[0]), txn_compare);
+	for (i = 0; i < sp->st_nactive; ++i)
 		printf("\tid: %lx; initial LSN file/offest %lu/%lu\n",
-		    (u_long)tstat->st_txnarray[i].txnid,
-		    (u_long)tstat->st_txnarray[i].lsn.file,
-		    (u_long)tstat->st_txnarray[i].lsn.offset);
+		    (u_long)sp->st_txnarray[i].txnid,
+		    (u_long)sp->st_txnarray[i].lsn.file,
+		    (u_long)sp->st_txnarray[i].lsn.offset);
 }
 
 int
@@ -510,16 +549,16 @@ db_init(home, ttype)
 	switch (ttype) {
 	case T_DB:
 	case T_MPOOL:
-		flags |= DB_INIT_MPOOL;
+		LF_SET(DB_INIT_MPOOL);
 		break;
 	case T_LOCK:
-		flags |= DB_INIT_LOCK;
+		LF_SET(DB_INIT_LOCK);
 		break;
 	case T_LOG:
-		flags |= DB_INIT_LOG;
+		LF_SET(DB_INIT_LOG);
 		break;
 	case T_TXN:
-		flags |= DB_INIT_TXN;
+		LF_SET(DB_INIT_TXN);
 		break;
 	case T_NOTSET:
 		abort();
@@ -539,7 +578,7 @@ db_init(home, ttype)
 
 	/* Turn off the DB_INIT_MPOOL flag if it's a database. */
 	if (ttype == T_DB)
-		flags &= ~DB_INIT_MPOOL;
+		LF_CLR(DB_INIT_MPOOL);
 
 	/* Set the error output options -- this time we want a message. */
 	memset(dbenv, 0, sizeof(*dbenv));
@@ -551,6 +590,21 @@ db_init(home, ttype)
 		err(1, "db_appinit");
 
 	return (dbenv);
+}
+
+/*
+ * argcheck --
+ *	Return if argument flags are okay.
+ */
+int
+argcheck(arg, ok_args)
+	char *arg;
+	const char *ok_args;
+{
+	for (; *arg != '\0'; ++arg)
+		if (strchr(ok_args, *arg) == NULL)
+			return (0);
+	return (1);
 }
 
 /*
@@ -569,6 +623,7 @@ onint(signo)
 void
 usage()
 {
-	fprintf(stderr, "usage: db_stat [-mlt] [-d file] [-h home]\n");
+	fprintf(stderr,
+    "usage: db_stat [-clmNt] [-C Acflmo] [-d file] [-h home] [-M Ahlm]\n");
 	exit (1);
 }

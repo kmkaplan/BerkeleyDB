@@ -1,4 +1,4 @@
-# @(#)README	10.14 (Sleepycat) 4/22/98
+# @(#)README	10.15 (Sleepycat) 6/2/98
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 DB Test Suite
@@ -73,11 +73,11 @@ mongoose:build.unix {1} gdb dbtest
 (gdb) break __db_loadme
 Breakpoint 1 at 0xe3f7: file ../dist/../db/db_pr.c, line 43.
 (gdb) run
-Starting program: /usr/src/db/build.unix/dbtest 
+Starting program: /usr/src/db/build.unix/dbtest
 % debug 10
 10
 % r btree
-run_method: btree 1 19 
+run_method: btree 1 19
 09:29:32 (00:00:00)
 Test001: DB_BTREE 10000 equal key/data pairs
      1:	Test001.a: put/get loop
@@ -86,7 +86,7 @@ Breakpoint 1, __db_loadme () at ../dist/../db/db_pr.c:43
 43		getpid();
 (gdb) n
 44	}
-(gdb) n 
+(gdb) n
 debug_check () at ../dist/../test/utils.c:1254
 1254	}
 (gdb) n
@@ -102,7 +102,7 @@ __bt_put (dbp=0xea080, txn=0x0, key=0xefbfc2bc, data=0xefbfc2d4, flags=0)
     at ../dist/../btree/bt_put.c:91
 #1  0x7691 in db_put_cmd (interp=0x54000, argc=6, argv=0xefbfc408, dbp=0xea080)
     at ../dist/../test/utils.c:859
-#2  0x68b2 in dbwidget_cmd (cd_dbp=0xea080, interp=0x54000, argc=6, 
+#2  0x68b2 in dbwidget_cmd (cd_dbp=0xea080, interp=0x54000, argc=6,
     argv=0xefbfc408) at ../dist/../test/utils.c:517
 #3  0x3a690 in Tcl_Eval ()
 (gdb) quit
@@ -229,7 +229,7 @@ test024:	Test Btree/Recno get by record number tests.
 
 test025:	Test DB_APPEND for recno.
 
-test026:	Small keys/medium data w/duplicates HASH, BTREE 
+test026:	Small keys/medium data w/duplicates HASH, BTREE
 		Put/get per key.
 		Loop through keys -- delete each key
 			Tests that we are deleting dups correctly
@@ -307,7 +307,7 @@ Deadlock detector tests
 
 dead001		Use two different configurations to test deadlock detection
 		among a variable number of processes.  One configuration has
-		the processes deadlocked in a ring.  The other has the 
+		the processes deadlocked in a ring.  The other has the
 		processes all deadlocked on a single resource.
 
 dead002		Same test as above, but use "detect on every collision" instead

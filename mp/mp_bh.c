@@ -7,7 +7,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)mp_bh.c	10.36 (Sleepycat) 5/4/98";
+static const char sccsid[] = "@(#)mp_bh.c	10.38 (Sleepycat) 5/20/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -15,6 +15,7 @@ static const char sccsid[] = "@(#)mp_bh.c	10.36 (Sleepycat) 5/4/98";
 
 #include <errno.h>
 #include <string.h>
+#include <unistd.h>
 #endif
 
 #include "db_int.h"
@@ -58,8 +59,10 @@ __memp_bhwrite(dbmp, mfp, bhp, restartp, wrotep)
 	    dbmfp != NULL; dbmfp = TAILQ_NEXT(dbmfp, q))
 		if (dbmfp->mfp == mfp) {
 			if (F_ISSET(dbmfp, MP_READONLY) &&
-			    __memp_upgrade(dbmp, dbmfp, mfp))
+			    __memp_upgrade(dbmp, dbmfp, mfp)) {
+				UNLOCKHANDLE(dbmp, dbmp->mutexp);
 				return (0);
+			}
 			break;
 		}
 	UNLOCKHANDLE(dbmp, dbmp->mutexp);

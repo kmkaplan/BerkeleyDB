@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)db_appinit.c	10.49 (Sleepycat) 5/4/98";
+static const char sccsid[] = "@(#)db_appinit.c	10.52 (Sleepycat) 6/2/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -73,6 +73,8 @@ db_appinit(db_home, db_config, dbenv, flags)
 	/* Validate arguments. */
 	if (dbenv == NULL)
 		return (EINVAL);
+
+
 #ifdef HAVE_SPINLOCKS
 #define	OKFLAGS								\
    (DB_CREATE | DB_NOMMAP | DB_THREAD | DB_INIT_LOCK | DB_INIT_LOG |	\
@@ -87,8 +89,9 @@ db_appinit(db_home, db_config, dbenv, flags)
 	if ((ret = __db_fchk(dbenv, "db_appinit", flags, OKFLAGS)) != 0)
 		return (ret);
 
-	if (LF_ISSET(DB_RECOVER | DB_RECOVER_FATAL) && !LF_ISSET(DB_CREATE))
-		return (__db_ferr(dbenv, "db_appinit", 1));
+	/* Transactions imply logging. */
+	if (LF_ISSET(DB_INIT_TXN))
+		LF_SET(DB_INIT_LOG);
 
 	/* Convert the db_appinit(3) flags. */
 	if (LF_ISSET(DB_THREAD))
@@ -143,28 +146,26 @@ db_appinit(db_home, db_config, dbenv, flags)
 	F_SET(dbenv, DB_ENV_APPINIT);
 
 	/*
-	 * If we are doing recovery, remove all the regions.
+	 * If we are doing recovery, remove all the old shared memory
+	 * regions.
 	 */
 	if (LF_ISSET(DB_RECOVER | DB_RECOVER_FATAL)) {
-		/* Remove all the old shared memory regions.  */
-		if ((ret = log_unlink(NULL, 1 /* force */, dbenv)) != 0)
+		if ((ret = log_unlink(NULL, 1, dbenv)) != 0)
 			goto err;
-		if ((ret = memp_unlink(NULL, 1 /* force */, dbenv)) != 0)
+		if ((ret = memp_unlink(NULL, 1, dbenv)) != 0)
 			goto err;
-		if ((ret = lock_unlink(NULL, 1 /* force */, dbenv)) != 0)
+		if ((ret = lock_unlink(NULL, 1, dbenv)) != 0)
 			goto err;
-		if ((ret = txn_unlink(NULL, 1 /* force */, dbenv)) != 0)
+		if ((ret = txn_unlink(NULL, 1, dbenv)) != 0)
 			goto err;
 	}
 
-	/* Transactions imply logging. */
-	if (LF_ISSET(DB_INIT_TXN))
-		LF_SET(DB_INIT_LOG);
-
-	/* Default permissions are read-write owner and group. */
+	/*
+	 * Create the new shared regions.
+	 *
+	 * Default permissions are read-write for both owner and group.
+	 */
 	mode = __db_omode("rwrw--");
-
-	/* Initialize the subsystems. */
 	if (LF_ISSET(DB_INIT_LOCK) && (ret = lock_open(NULL,
 	    LF_ISSET(DB_CREATE | DB_THREAD),
 	    mode, dbenv, &dbenv->lk_info)) != 0)
@@ -182,7 +183,11 @@ db_appinit(db_home, db_config, dbenv, flags)
 	    mode, dbenv, &dbenv->tx_info)) != 0)
 		goto err;
 
-	/* Initialize recovery. */
+	/*
+	 * If the application is running with transactions, initialize the
+	 * function tables.  Once that's done, do recovery for any previous
+	 * run.
+	 */
 	if (LF_ISSET(DB_INIT_TXN)) {
 		if ((ret = __bam_init_recover(dbenv)) != 0)
 			goto err;
@@ -194,12 +199,12 @@ db_appinit(db_home, db_config, dbenv, flags)
 			goto err;
 		if ((ret = __txn_init_recover(dbenv)) != 0)
 			goto err;
-	}
 
-	/* Run recovery if necessary. */
-	if (LF_ISSET(DB_RECOVER | DB_RECOVER_FATAL) && (ret =
-	    __db_apprec(dbenv, LF_ISSET(DB_RECOVER | DB_RECOVER_FATAL))) != 0)
-		goto err;
+		if (LF_ISSET(DB_RECOVER | DB_RECOVER_FATAL) &&
+		    (ret = __db_apprec(dbenv,
+		    LF_ISSET(DB_RECOVER | DB_RECOVER_FATAL))) != 0)
+			goto err;
+	}
 
 	return (ret);
 

@@ -11,7 +11,7 @@
 static const char copyright[] =
 "@(#) Copyright (c) 1996, 1997, 1998\n\
 	Sleepycat Software Inc.  All rights reserved.\n";
-static const char sccsid[] = "@(#)db185.c	8.16 (Sleepycat) 4/10/98";
+static const char sccsid[] = "@(#)db185.c	8.17 (Sleepycat) 5/7/98";
 #endif
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -20,7 +20,6 @@ static const char sccsid[] = "@(#)db185.c	8.16 (Sleepycat) 4/10/98";
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #endif

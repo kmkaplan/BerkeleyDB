@@ -47,20 +47,19 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)hash.c	10.42 (Sleepycat) 5/3/98";
+static const char sccsid[] = "@(#)hash.c	10.45 (Sleepycat) 5/11/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #endif
 
-#include "shqueue.h"
 #include "db_int.h"
+#include "shqueue.h"
 #include "db_page.h"
 #include "db_am.h"
 #include "db_ext.h"
@@ -912,7 +911,7 @@ __ham_c_put(cursor, key, data, flags)
 
 	DEBUG_LWRITE(cursor->dbp, cursor->txn, "ham_c_put",
 	    flags == DB_KEYFIRST || flags == DB_KEYLAST ? key : NULL,
-	    NULL, flags);
+	    data, flags);
 	ldbp = cursor->dbp;
 	if (F_ISSET(cursor->dbp, DB_AM_THREAD) &&
 	    (ret = __db_gethandle(cursor->dbp, __ham_hdup, &ldbp)) != 0)

@@ -43,7 +43,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)btree.h	10.20 (Sleepycat) 4/26/98
+ *	@(#)btree.h	10.21 (Sleepycat) 5/23/98
  */
 
 /* Forward structure declarations. */
@@ -147,6 +147,21 @@ struct __epg {
 	db_indx_t indx;			/* The index on the page. */
 	DB_LOCK	  lock;			/* The page's lock. */
 };
+
+/*
+ * All cursors are queued from the master DB structure.  Convert the user's
+ * DB reference to the master DB reference.  We lock the master DB mutex
+ * so that we can walk the cursor queue.  There's no race in accessing the
+ * cursors, because if we're modifying a page, we have a write lock on it,
+ * and therefore no other thread than the current one can have a cursor that
+ * references the page.
+ */
+#define	CURSOR_SETUP(dbp) {						\
+	(dbp) = (dbp)->master;						\
+	DB_THREAD_LOCK(dbp);						\
+}
+#define	CURSOR_TEARDOWN(dbp)						\
+	DB_THREAD_UNLOCK(dbp);
 
 /*
  * Btree cursor.

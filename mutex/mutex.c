@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)mutex.c	10.42 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)mutex.c	10.48 (Sleepycat) 5/23/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -16,7 +16,6 @@ static const char sccsid[] = "@(#)mutex.c	10.42 (Sleepycat) 4/26/98";
 
 #include <errno.h>
 #include <fcntl.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -168,45 +167,41 @@ __db_mutex_lock(mp, fd)
 	int fd;
 {
 	u_long usecs;
-
 #ifdef HAVE_SPINLOCKS
 	int nspins;
+#else
+	struct flock k_lock;
+	pid_t mypid;
+	int locked;
+#endif
 
+	if (!DB_GLOBAL(db_mutexlocks))
+		return (0);
+
+#ifdef HAVE_SPINLOCKS
 	COMPQUIET(fd, 0);
 
 	for (usecs = MS(10);;) {
-		/* Try and acquire the resource lock. */
-		if (TSL_SET(&mp->tsl_resource)) {
+		/* Try and acquire the uncontested resource lock for N spins. */
+		for (nspins = mp->spins; nspins > 0; --nspins)
+			if (TSL_SET(&mp->tsl_resource)) {
 #ifdef DIAGNOSTIC
-			if (mp->holder != 0) {
-				(void)fprintf(stderr,
+				if (mp->pid != 0) {
+					(void)fprintf(stderr,
 		    "MUTEX ERROR: __db_mutex_lock: lock currently locked\n");
-				abort();
-			}
-			mp->holder = getpid();
-#else
-			mp->holder = 1;
+					abort();
+				}
+				mp->pid = getpid();
 #endif
-			if (usecs == MS(10))
-				++mp->mutex_set_nowait;
-			return (0);
-		}
-
-		++mp->mutex_set_wait;
-
-		/*
-		 * Spin...
-		 *
-		 * Test-and-sets are expensive as the bus has to lock and CPUs
-		 * synchronize.  Spin using a load instruction, and retry the
-		 * real lock only when we're pretty sure we'll get it.
-		 */
-		for (nspins = mp->spins;
-		    nspins > 0 && mp->holder != 0; --nspins)
-			;
+				if (usecs == MS(10))
+					++mp->mutex_set_nowait;
+				else
+					++mp->mutex_set_wait;
+				return (0);
+			}
 
 		/* Yield the processor; wait 10ms initially, up to 1 second. */
-		if (nspins == 0 && (__db_yield == NULL || __db_yield() != 0)) {
+		if (__db_yield == NULL || __db_yield() != 0) {
 			(void)__db_sleep(0, usecs);
 			if ((usecs <<= 1) > SECOND)
 				usecs = SECOND;
@@ -215,9 +210,6 @@ __db_mutex_lock(mp, fd)
 	/* NOTREACHED */
 
 #else /* !HAVE_SPINLOCKS */
-	struct flock k_lock;
-	pid_t mypid;
-	int locked;
 
 	/* Initialize the lock. */
 	k_lock.l_whence = SEEK_SET;
@@ -229,7 +221,7 @@ __db_mutex_lock(mp, fd)
 		 * Wait for the lock to become available; wait 10ms initially,
 		 * up to 1 second.
 		 */
-		for (usecs = MS(10); mp->holder != 0;)
+		for (usecs = MS(10); mp->pid != 0;)
 			if (__db_yield == NULL || __db_yield() != 0) {
 				(void)__db_sleep(0, usecs);
 				if ((usecs <<= 1) > SECOND)
@@ -242,9 +234,9 @@ __db_mutex_lock(mp, fd)
 			return (errno);
 
 		/* If the resource tsl is still available, it's ours. */
-		if (mp->holder == 0) {
+		if (mp->pid == 0) {
 			locked = 1;
-			mp->holder = mypid;
+			mp->pid = mypid;
 		}
 
 		/* Release the kernel lock. */
@@ -279,32 +271,33 @@ __db_mutex_unlock(mp, fd)
 	db_mutex_t *mp;
 	int fd;
 {
+	if (!DB_GLOBAL(db_mutexlocks))
+		return (0);
+
 #ifdef DIAGNOSTIC
-	if (mp->holder == 0) {
+	if (mp->pid == 0) {
 		(void)fprintf(stderr,
 	    "MUTEX ERROR: __db_mutex_unlock: lock already unlocked\n");
 		abort();
 	}
 #endif
-	/*
-	 * Reset the holder field.
-	 *
-	 * If we don't have spinlocks, this releases the resource tsl.  We
-	 * don't have to acquire real locks in that case, because processes
-	 * trying to acquire the lock are checking for a holder value of 0,
-	 * not a specific value -- we don't care if they read in the middle
-	 * of the instruction.
-	 *
-	 * If we have spinlocks, we're just resetting the in-use value.
-	 */
-	mp->holder = 0;
 
 #ifdef HAVE_SPINLOCKS
 	COMPQUIET(fd, 0);
 
-	/* Release the resource tsl. */
-	TSL_UNSET(&mp->tsl_resource);
+#ifdef DIAGNOSTIC
+	mp->pid = 0;
 #endif
 
+	/* Release the resource tsl. */
+	TSL_UNSET(&mp->tsl_resource);
+#else
+	/*
+	 * Release the resource tsl.  We don't have to acquire any locks
+	 * because processes trying to acquire the lock are checking for
+	 * a pid of 0, not a specific value.
+	 */
+	mp->pid = 0;
+#endif
 	return (0);
 }

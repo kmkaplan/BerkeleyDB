@@ -8,14 +8,13 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)db_salloc.c	10.11 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)db_salloc.c	10.13 (Sleepycat) 5/10/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
 #include <errno.h>
-#include <stdio.h>
 #include <string.h>
 #endif
 
@@ -276,21 +275,23 @@ __db_shsizeof(ptr)
 	return (elp->len);
 }
 
-#ifdef DEBUG
 /*
  * __db_shalloc_dump --
  *
- * PUBLIC: void __db_shalloc_dump __P((FILE *, void *));
+ * PUBLIC: void __db_shalloc_dump __P((void *, FILE *));
  */
 void
-__db_shalloc_dump(fp, addr)
-	FILE *fp;
+__db_shalloc_dump(addr, fp)
 	void *addr;
+	FILE *fp;
 {
 	struct __data *elp;
 
+	/* Make it easy to call from the debugger. */
 	if (fp == NULL)
 		fp = stderr;
+
+	fprintf(fp, "%s\nMemory free list\n", DB_LINE);
 
 	for (elp = SH_LIST_FIRST((struct __head *)addr, __data);
 	    elp != NULL;
@@ -298,4 +299,3 @@ __db_shalloc_dump(fp, addr)
 		fprintf(fp, "%#lx: %lu\t", (u_long)elp, (u_long)elp->len);
 	fprintf(fp, "\n");
 }
-#endif

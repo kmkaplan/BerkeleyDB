@@ -7,7 +7,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)log_get.c	10.31 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)log_get.c	10.32 (Sleepycat) 5/6/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -15,6 +15,7 @@ static const char sccsid[] = "@(#)log_get.c	10.31 (Sleepycat) 4/26/98";
 
 #include <errno.h>
 #include <string.h>
+#include <unistd.h>
 #endif
 
 #include "db_int.h"

@@ -4,13 +4,28 @@ NNAAMMEE
        db_stat - display DB statistics
 
 SSYYNNOOPPSSIISS
-       ddbb__ssttaatt [--llmmtt] [--dd ffiillee] [--hh hhoommee]
+       ddbb__ssttaatt [--ccllmmNNtt]
+            [--CC AAccffhhllmmoo] [--dd ffiillee] [--hh hhoommee] [--MM AAhhllmm]
 
 DDEESSCCRRIIPPTTIIOONN
        The  _d_b___s_t_a_t  utility  displays statistics for DB environ-
        ments.
 
        The options are as follows:
+
+       --CC   Display internal information about the  lock  region.
+            (The output from this option is often both voluminous
+            and meaningless, and is intended only for debugging.)
+
+            --AA   Display all information.
+            --cc   Display lock conflict matrix.
+            --ff   Display lock and object free lists.
+            --ll   Display lockers within hash chains.
+            --mm   Display region memory information.
+            --oo   Display objects within hash chains.
+
+       --cc   Display   lock  region  statistics  as  described  in
+            _d_b___l_o_c_k(3).
 
        --dd   Display  database  statistics   for   the   specified
             database, as described in _d_b___o_p_e_n(3).
@@ -20,8 +35,23 @@ DDEESSCCRRIIPPTTIIOONN
        --ll   Display   log   region  statistics  as  described  in
             _d_b___l_o_g(3).
 
+       --MM   Display internal information about the shared  memory
+            buffer  pool.   (The output from this option is often
+            both voluminous and meaningless, and is intended only
+            for debugging.)
+
+            --AA   Display all information.
+            --hh   Display buffers within hash chains.
+            --ll   Display buffers within LRU chains.
+            --mm   Display region memory information.
+
        --mm   Display  shared  memory  buffer  pool  statistics  as
             described in _d_b___m_p_o_o_l(3).
+
+       --NN   Don't acquire locks while displaying the  statistics.
+            This  option  is  intended only for debugging corrupt
+            regions and should not be used under any  other  cir-
+            cumstances.
 
        --tt   Display transaction region statistics as described in
             _d_b___t_x_n(3).
@@ -33,7 +63,7 @@ DDEESSCCRRIIPPTTIIOONN
        interrupt signal (SIGINT).
 
        Values smaller than 10  million  are  generally  displayed
-       without  any  special notation, values larger than 10 mil-
+       without  any special notation.  Values larger than 10 mil-
        lion are normally displayed as ``<number>M''.
 
        The _d_b___s_t_a_t utility exits 0 on success, and >0 if an error

@@ -5,7 +5,7 @@
  * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)db_int.h.src	10.58 (Sleepycat) 5/3/98
+ *	@(#)db_int.h.src	10.62 (Sleepycat) 5/23/98
  */
 
 #ifndef _DB_INTERNAL_H_
@@ -116,6 +116,17 @@ typedef struct __fn {
 #undef	DB_LINE
 #define	DB_LINE "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 
+/* Global variables. */
+typedef struct __db_globals {
+	int db_mutexlocks;		/* DB_MUTEXLOCKS */
+	int db_region_anon;		/* DB_REGION_ANON, DB_REGION_NAME */
+	int db_region_init;		/* DB_REGION_INIT */
+	int db_tsl_spins;		/* DB_TSL_SPINS */
+	int db_pageyield;		/* DB_PAGEYIELD */
+} DB_GLOBALS;
+extern	DB_GLOBALS	__db_global_values;
+#define	DB_GLOBAL(v)	__db_global_values.v
+
 /* Unused, or not-used-yet variable.  "Shut that bloody compiler up!" */
 #define	COMPQUIET(n, v)	(n) = (v)
 
@@ -167,10 +178,13 @@ typedef unsigned int tsl_t;
 typedef struct _db_mutex_t {
 #ifdef HAVE_SPINLOCKS
 	tsl_t	  tsl_resource;		/* Resource test and set. */
+#ifdef DIAGNOSTIC
+	u_int32_t pid;			/* Lock holder: 0 or process pid. */
+#endif
 #else
 	u_int32_t off;			/* Backing file offset. */
+	u_int32_t pid;			/* Lock holder: 0 or process pid. */
 #endif
-	u_int32_t holder;		/* Lock holder: 0, 1 or process pid. */
 	u_int32_t spins;		/* Spins before block. */
 	u_int32_t mutex_set_wait;	/* Granted after wait. */
 	u_int32_t mutex_set_nowait;	/* Granted without waiting. */
@@ -212,7 +226,7 @@ typedef enum {
 	DB_APP_NONE=0,			/* No type (region). */
 	DB_APP_DATA,			/* Data file. */
 	DB_APP_LOG,			/* Log file. */
-	DB_APP_TMP			/* Temp file. */
+	DB_APP_TMP			/* Temporary file. */
 } APPNAME;
 
 /*******************************************************

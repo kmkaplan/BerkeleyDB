@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)mpool.tcl	10.13 (Sleepycat) 5/4/98
+#	@(#)mpool.tcl	10.15 (Sleepycat) 6/1/98
 #
 # Options are:
 # -cachesize <bytes>
@@ -198,6 +198,10 @@ proc memp002 { dir procs psizes iterations npages seeds dostat envopts } {
 		exec $RM -rf $dir/file$i
 	}
 	set lp [lock_open "" $DB_CREATE 0644 $envopts]
+	if { [string compare $lp NULL] == 0 && [string length $envopts] != 0 } {
+		puts "Unable to initialize regions with $envopts"
+		return
+	}
 	error_check_good lock_open [is_valid_widget $lp lockmgr] TRUE
 	$lp close
 

@@ -358,6 +358,11 @@
 
        The following values of which are supported:
 
+       DB_MUTEXLOCKS
+            Grant all requested mutual exclusion mutexes  without
+            testing  for  their  availability.   This flag should
+            never be used for any other purpose than debugging.
+
        DB_REGION_ANON
             Setting value to  a  non-zero  value  specifies  that
             shared  memory regions are to be created in anonymous

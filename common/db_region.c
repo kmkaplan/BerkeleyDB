@@ -8,21 +8,19 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)db_region.c	10.42 (Sleepycat) 5/3/98";
+static const char sccsid[] = "@(#)db_region.c	10.46 (Sleepycat) 5/26/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
 #include <errno.h>
-#include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #endif
 
 #include "db_int.h"
 #include "common_ext.h"
-
-extern int __db_region_anon, __db_region_init;
 
 static int __db_growregion __P((REGINFO *, size_t));
 
@@ -71,24 +69,21 @@ loop:	infop->addr = NULL;
 #ifndef HAVE_SPINLOCKS
 	/*
 	 * XXX
-	 * Previous versions of this code have turned off the REGION_PRIVATE
-	 * flag if spinlocks aren't available, since lacking spinlocks, we
-	 * must have a file descriptor for fcntl(2) locking, which implies
-	 * using mmap(2) to map in a regular file.  (Theoretically, we could
-	 * probably find ways to get a file descriptor to lock other types of
-	 * shared regions, but I don't see any reason to bother.)  However,
-	 * if we don't have spinlocks, the application can't have specified
-	 * DB_THREAD, which is the only reason that we would need locking in
-	 * a private region.
+	 * Lacking spinlocks, we must have a file descriptor for fcntl(2)
+	 * locking, which implies using mmap(2) to map in a regular file.
+	 * (Theoretically, we could probably get a file descriptor to lock
+	 * other types of shared regions, but I don't see any reason to
+	 * bother.)
 	 */
+	malloc_possible = 0;
 #endif
 
+#ifdef __hppa
 	/*
 	 * XXX
 	 * HP-UX won't permit mutexes to live in anything but shared memory.
 	 * Instantiate a shared region file on that architecture, regardless.
 	 */
-#ifdef __hppa
 	malloc_possible = 0;
 #endif
 	/*
@@ -106,7 +101,7 @@ loop:	infop->addr = NULL;
 		 * while holding various locks, i.e., the lock takes a long
 		 * time, and other threads convoy behind the lock holder.
 		 */
-		if (__db_region_init)
+		if (DB_GLOBAL(db_region_init))
 			for (p = infop->addr;
 			    p < (u_int8_t *)infop->addr + infop->size;
 			    p += DB_VMPAGESIZE)
@@ -182,14 +177,14 @@ loop:	infop->addr = NULL;
 		 * If we're using anonymous memory to back this region, set
 		 * the flag.
 		 */
-		if (__db_region_anon)
+		if (DB_GLOBAL(db_region_anon))
 			F_SET(infop, REGION_ANONYMOUS);
 
 		/*
 		 * If we're using a regular file to back a region we created,
 		 * grow it to the specified size.
 		 */
-		if (!__db_region_anon &&
+		if (!DB_GLOBAL(db_region_anon) &&
 		    (ret = __db_growregion(infop, infop->size)) != 0)
 			goto err;
 	} else {
@@ -369,8 +364,7 @@ region_init:
 			goto retry;
 
 		/* Get the region lock. */
-		if (!(infop->dbflags & DB_MUTEXDEBUG))
-			(void)__db_mutex_lock(&rlp->lock, infop->fd);
+		(void)__db_mutex_lock(&rlp->lock, infop->fd);
 
 		/*
 		 * We now own the region.  There are a couple of things that
@@ -381,8 +375,7 @@ region_init:
 		 * it's cleared by the delete region routines.
 		 */
 		if (rlp->valid != DB_REGIONMAGIC) {
-			if (!(infop->dbflags & DB_MUTEXDEBUG))
-				(void)__db_mutex_unlock(&rlp->lock, infop->fd);
+			(void)__db_mutex_unlock(&rlp->lock, infop->fd);
 			goto retry;
 		}
 
@@ -394,8 +387,7 @@ region_init:
 		 */
 		if (grow_region != 0 &&
 		    (ret = __db_rgrow(infop, grow_region)) != 0) {
-			if (!(infop->dbflags & DB_MUTEXDEBUG))
-				(void)__db_mutex_unlock(&rlp->lock, infop->fd);
+			(void)__db_mutex_unlock(&rlp->lock, infop->fd);
 			goto err;
 		}
 
@@ -405,8 +397,7 @@ region_init:
 		 * that infop->size isn't the same size as the region.
 		 */
 		if (infop->size != rlp->size) {
-			if (!(infop->dbflags & DB_MUTEXDEBUG))
-				(void)__db_mutex_unlock(&rlp->lock, infop->fd);
+			(void)__db_mutex_unlock(&rlp->lock, infop->fd);
 			goto retry;
 		}
 
@@ -490,6 +481,7 @@ retry:		/* Discard the region. */
 			F_SET(infop, REGION_REMOVED);
 			F_CLR(infop, REGION_CANGROW);
 
+			(void)__db_close(infop->fd);
 			(void)__db_unlink(infop->name);
 		}
 
@@ -798,7 +790,7 @@ __db_growregion(infop, increment)
 		 * while holding various locks, i.e., the lock takes a long
 		 * time, and other threads convoy behind the lock holder.
 		 */
-		if (__db_region_init) {
+		if (DB_GLOBAL(db_region_init)) {
 			pages = increment / MEGABYTE;
 			relative = increment % MEGABYTE;
 			if ((ret = __db_seek(infop->fd,

@@ -5,7 +5,7 @@
 .\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)DbLog.sox	10.14 (Sleepycat) 5/4/98
+.\"	@(#)DbLog.sox	10.15 (Sleepycat) 5/10/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
@@ -866,7 +866,7 @@ u_int32_t \\$1;\}
 .el\{\
 int get_\\$1();\}
 ..
-.TH DbLog 3 "May 4, 1998"
+.TH DbLog 3 "May 10, 1998"
 .UC 7
 .SH NAME
 DbLog \- log management class
@@ -1439,6 +1439,12 @@ The magic number that identifies a file as a log file.
 .Nt
 .Sf st_version
 The version of the log file type.
+.Nt
+.Sf st_refcnt
+The number of references to the region.
+.Nt
+.Sf st_regsize
+The size of the region.
 .Nt
 .Sf st_mode
 The mode of any created log files.

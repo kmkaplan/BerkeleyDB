@@ -8,14 +8,13 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)db_dup.c	10.16 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)db_dup.c	10.18 (Sleepycat) 5/31/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
 #include <errno.h>
-#include <stdio.h>
 #include <string.h>
 #endif
 
@@ -231,6 +230,7 @@ __db_dsplit(dbp, hp, indxp, size, newfunc)
 	for (sum = 0, lastsum = 0, i = 0; i < NUM_ENT(h); i++) {
 		if (i == indx) {
 			sum += size;
+			did_indx = 1;
 			if (lastsum < halfbytes && sum >= halfbytes) {
 				/* We've crossed the halfway point. */
 				if ((db_indx_t)(halfbytes - lastsum) <
@@ -244,7 +244,6 @@ __db_dsplit(dbp, hp, indxp, size, newfunc)
 			}
 			*indxp = i;
 			lastsum = sum;
-			did_indx = 1;
 		}
 		if (B_TYPE(GET_BKEYDATA(h, i)->type) == B_KEYDATA)
 			sum += BKEYDATA_SIZE(GET_BKEYDATA(h, i)->len);

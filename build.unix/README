@@ -1,4 +1,4 @@
-# @(#)README	8.23 (Sleepycat) 4/9/98
+# @(#)README	8.24 (Sleepycat) 6/2/98
 
 This is a directory for building UNIX versions of DB.
 
@@ -211,7 +211,7 @@ following default values:
 Variables:		Default value:
 prefix			/usr/local
 exec_prefix		$(prefix)
-includedir		$(prefix)/include 
+includedir		$(prefix)/include
 bindir			$(prefix)/bin
 libdir			$(prefix)/lib
 mandir			$(prefix)/man

@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)tcl_txn.c	10.14 (Sleepycat) 4/27/98";
+static const char sccsid[] = "@(#)tcl_txn.c	10.15 (Sleepycat) 5/31/98";
 #endif /* not lint */
 
 /*
@@ -70,6 +70,11 @@ txnmgr_cmd(notused, interp, argc, argv)
 	if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK)
 		return (TCL_ERROR);
 	flags = (u_int32_t)tclint;
+
+	/* Don't specify DB_THREAD if the architecture can't do spinlocks. */
+#ifndef HAVE_SPINLOCKS
+	LF_CLR(DB_THREAD);
+#endif
 	if (Tcl_GetInt(interp, argv[3], &mode) != TCL_OK)
 		return (TCL_ERROR);
 

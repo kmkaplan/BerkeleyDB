@@ -513,6 +513,10 @@
             file.
        u_int32_t st_version;
             The version of the log file type.
+       u_int32_t st_refcnt;
+            The number of references to the region.
+       u_int32_t st_regsize;
+            The size of the region.
        int st_mode;
             The mode of any created log files.
        u_int32_t st_lg_max;
@@ -708,7 +712,6 @@
 
        In addition, the log_unlink function may fail  and  return
        errno for the following conditions:
-
        [EBUSY]
             The  shared  memory  region  was in use and the force
             flag was not set.

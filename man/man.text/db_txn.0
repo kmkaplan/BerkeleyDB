@@ -408,6 +408,10 @@ DDEESSCCRRIIPPTTIIOONN
        ture of type DB_TXN_STAT (typedef'd in <db.h>).  The  fol-
        lowing DB_TXN_STAT fields will be filled in:
 
+       u_int32_t st_refcnt;
+            The number of references to the region.
+       u_int32_t st_regsize;
+            The size of the region.
        DB_LSN st_last_ckp;
             The LSN of the last checkpoint.
        DB_LSN st_pending_ckp;
@@ -433,6 +437,7 @@ DDEESSCCRRIIPPTTIIOONN
        u_int32_t st_region_wait;
             The number of times that  a  thread  of  control  was
             forced to wait before obtaining the region lock.
+
        u_int32_t st_region_nowait;
             The number of times that a thread of control was able
             to obtain the region lock without waiting.
@@ -546,7 +551,6 @@ TTRRAANNSSAACCTTIIOONNSS
        _p_a_r_e  call requires that the transaction log be flushed to
        disk.
 
-
 TTRRAANNSSAACCTTIIOONN IIDD LLIIMMIITTSS
        The transaction ID space in Berkeley DB is 2^31, or 2 bil-
        lion  entries.   It is possible that some environments may
@@ -600,7 +604,6 @@ EERRRROORRSS
 
        [EINVAL]
             An invalid flag value or parameter was specified.
-
 
             The DB_THREAD flag was specified  and  spinlocks  are
             not implemented for this architecture.

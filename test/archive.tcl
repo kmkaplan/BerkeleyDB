@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)archive.tcl	10.7 (Sleepycat) 4/30/98
+#	@(#)archive.tcl	10.8 (Sleepycat) 6/2/98
 #
 # Options are:
 # -checkrec <checkpoint frequency"
@@ -77,7 +77,7 @@ global alphabet
 	puts "Archive.a: Writing log records; checkpoint every $checkrec records"
 	set nrecs $maxfile
 	set rec 0:$baserec
-	# Begin transaction and write a log record 
+	# Begin transaction and write a log record
 	set t1 [$txn begin]
 	set l1 [lindex [$lp put $rec 0] 1]
 	set lsnlist [list $l1]

@@ -8,14 +8,14 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)lock_region.c	10.10 (Sleepycat) 4/26/98";
+static const char sccsid[] = "@(#)lock_region.c	10.15 (Sleepycat) 6/2/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
+#include <ctype.h>
 #include <errno.h>
-#include <stdio.h>
 #include <string.h>
 #endif
 
@@ -27,12 +27,11 @@ static const char sccsid[] = "@(#)lock_region.c	10.10 (Sleepycat) 4/26/98";
 
 static u_int32_t __lock_count_locks __P((DB_LOCKREGION *));
 static u_int32_t __lock_count_objs __P((DB_LOCKREGION *));
+static void	 __lock_dump_locker __P((DB_LOCKTAB *, DB_LOCKOBJ *, FILE *));
+static void	 __lock_dump_object __P((DB_LOCKTAB *, DB_LOCKOBJ *, FILE *));
+static char	*__lock_dump_status __P((db_status_t));
 static void	 __lock_reset_region __P((DB_LOCKTAB *));
 static int	 __lock_tabinit __P((DB_ENV *, DB_LOCKREGION *));
-#ifdef DEBUG
-static void	 __lock_dump_locker __P((DB_LOCKTAB *, DB_LOCKOBJ *));
-static void	 __lock_dump_object __P((DB_LOCKTAB *, DB_LOCKOBJ *));
-#endif
 
 int
 lock_open(path, flags, mode, dbenv, ltp)
@@ -117,7 +116,7 @@ lock_open(path, flags, mode, dbenv, ltp)
 	}
 
 	/* Check for automatic deadlock detection. */
-	if (dbenv->lk_detect != DB_LOCK_NORUN) {
+	if (dbenv != NULL && dbenv->lk_detect != DB_LOCK_NORUN) {
 		if (lt->region->detect != DB_LOCK_NORUN &&
 		    dbenv->lk_detect != DB_LOCK_DEFAULT &&
 		    lt->region->detect != dbenv->lk_detect) {
@@ -136,20 +135,20 @@ lock_open(path, flags, mode, dbenv, ltp)
 	    (DB_HASHTAB *)((u_int8_t *)lt->region + lt->region->hash_off);
 	lt->mem = (void *)((u_int8_t *)lt->region + lt->region->mem_off);
 
-	*ltp = lt;
 	UNLOCK_LOCKREGION(lt);
-
+	*ltp = lt;
 	return (0);
 
 err:	if (lt->reginfo.addr != NULL) {
 		UNLOCK_LOCKREGION(lt);
+		(void)__db_rdetach(&lt->reginfo);
 		if (F_ISSET(&lt->reginfo, REGION_CREATED))
-			(void)__db_runlink(&lt->reginfo, 1);
+			(void)lock_unlink(path, 1, dbenv);
 	}
+
 	if (lt->reginfo.path != NULL)
 		FREES(lt->reginfo.path);
 	FREE(lt, sizeof(*lt));
-
 	return (ret);
 }
 
@@ -488,159 +487,13 @@ lock_stat(lt, gspp, db_malloc)
 	(*gspp)->st_ndeadlocks = rp->ndeadlocks;
 	(*gspp)->st_region_nowait = rp->hdr.lock.mutex_set_nowait;
 	(*gspp)->st_region_wait = rp->hdr.lock.mutex_set_wait;
+	(*gspp)->st_refcnt = rp->hdr.refcnt;
+	(*gspp)->st_regsize = rp->hdr.size;
 
 	UNLOCK_LOCKREGION(lt);
 
 	return (0);
 }
-
-#ifdef DEBUG
-/*
- * __lock_dump_region --
- *
- * PUBLIC: void __lock_dump_region __P((DB_LOCKTAB *, u_int32_t));
- */
-void
-__lock_dump_region(lt, flags)
-	DB_LOCKTAB *lt;
-	u_int32_t flags;
-{
-	struct __db_lock *lp;
-	DB_LOCKOBJ *op;
-	DB_LOCKREGION *lrp;
-	u_int32_t i, j;
-
-	lrp = lt->region;
-
-	printf("Lock region parameters\n");
-	printf("%s:0x%x\t%s:%lu\t%s:%lu\t%s:%lu\n%s:%lu\t%s:%lu\t%s:%lu\t\n",
-	    "magic      ", lrp->magic,
-	    "version    ", (u_long)lrp->version,
-	    "processes  ", (u_long)lrp->hdr.refcnt,
-	    "maxlocks   ", (u_long)lrp->maxlocks,
-	    "table size ", (u_long)lrp->table_size,
-	    "nmodes     ", (u_long)lrp->nmodes,
-	    "numobjs    ", (u_long)lrp->numobjs);
-	printf("%s:%lu\t%s:%lu\t%s:%lu\n%s:%lu\t%s:%lu\t%s:%lu\n",
-	    "size       ", (u_long)lrp->hdr.size,
-	    "nlockers   ", (u_long)lrp->nlockers,
-	    "hash_off   ", (u_long)lrp->hash_off,
-	    "increment  ", (u_long)lrp->increment,
-	    "mem_off    ", (u_long)lrp->mem_off,
-	    "mem_bytes  ", (u_long)lrp->mem_bytes);
-#ifndef HAVE_SPINLOCKS
-	printf("Mutex: off %lu", (u_long)lrp->hdr.lock.off);
-#endif
-	printf(" waits %lu nowaits %lu",
-	    (u_long)lrp->hdr.lock.mutex_set_wait,
-	    (u_long)lrp->hdr.lock.mutex_set_nowait);
-	printf("\n%s:%lu\t%s:%lu\t%s:%lu\t%s:%lu\n",
-	    "nconflicts ", (u_long)lrp->nconflicts,
-	    "nrequests  ", (u_long)lrp->nrequests,
-	    "nreleases  ", (u_long)lrp->nreleases,
-	    "ndeadlocks ", (u_long)lrp->ndeadlocks);
-	printf("need_dd    %lu\n", (u_long)lrp->need_dd);
-	if (LF_ISSET(LOCK_DEBUG_CONF)) {
-		printf("\nConflict matrix\n");
-
-		for (i = 0; i < lrp->nmodes; i++) {
-			for (j = 0; j < lrp->nmodes; j++)
-				printf("%lu\t",
-				    (u_long)lt->conflicts[i * lrp->nmodes + j]);
-			printf("\n");
-		}
-	}
-
-	for (i = 0; i < lrp->table_size; i++) {
-		op = SH_TAILQ_FIRST(&lt->hashtab[i], __db_lockobj);
-		if (op != NULL && LF_ISSET(LOCK_DEBUG_BUCKET))
-			printf("Bucket %lu:\n", (unsigned long)i);
-		while (op != NULL) {
-			if (op->type == DB_LOCK_LOCKER &&
-			    LF_ISSET(LOCK_DEBUG_LOCKERS))
-				__lock_dump_locker(lt, op);
-			else if (LF_ISSET(LOCK_DEBUG_OBJECTS) &&
-			    op->type == DB_LOCK_OBJTYPE)
-				__lock_dump_object(lt, op);
-			op = SH_TAILQ_NEXT(op, links, __db_lockobj);
-		}
-	}
-
-	if (LF_ISSET(LOCK_DEBUG_LOCK)) {
-		printf("\nLock Free List\n");
-		for (lp = SH_TAILQ_FIRST(&lrp->free_locks, __db_lock);
-		    lp != NULL;
-		    lp = SH_TAILQ_NEXT(lp, links, __db_lock)) {
-			printf("0x%x: %lu\t%lu\t%lu\t0x%x\n", (u_int)lp,
-			    (u_long)lp->holder, (u_long)lp->mode,
-			    (u_long)lp->status, (u_int)lp->obj);
-		}
-	}
-
-	if (LF_ISSET(LOCK_DEBUG_LOCK)) {
-		printf("\nObject Free List\n");
-		for (op = SH_TAILQ_FIRST(&lrp->free_objs, __db_lockobj);
-		    op != NULL;
-		    op = SH_TAILQ_NEXT(op, links, __db_lockobj))
-			printf("0x%x\n", (u_int)op);
-	}
-
-	if (LF_ISSET(LOCK_DEBUG_MEM)) {
-		printf("\nMemory Free List\n");
-		__db_shalloc_dump(stdout, lt->mem);
-	}
-}
-
-static void
-__lock_dump_locker(lt, op)
-	DB_LOCKTAB *lt;
-	DB_LOCKOBJ *op;
-{
-	struct __db_lock *lp;
-	u_int32_t locker;
-	void *ptr;
-
-	ptr = SH_DBT_PTR(&op->lockobj);
-	memcpy(&locker, ptr, sizeof(u_int32_t));
-	printf("L %lx", (u_long)locker);
-
-	lp = SH_LIST_FIRST(&op->heldby, __db_lock);
-	if (lp == NULL) {
-		printf("\n");
-		return;
-	}
-	for (; lp != NULL; lp = SH_LIST_NEXT(lp, locker_links, __db_lock))
-		__lock_printlock(lt, lp, 0);
-}
-
-static void
-__lock_dump_object(lt, op)
-	DB_LOCKTAB *lt;
-	DB_LOCKOBJ *op;
-{
-	struct __db_lock *lp;
-	u_int32_t j;
-	u_char *ptr;
-
-	ptr = SH_DBT_PTR(&op->lockobj);
-	for (j = 0; j < op->lockobj.size; ptr++, j++)
-		printf("%c", (u_int)*ptr);
-	printf("\n");
-
-	printf("H:");
-	for (lp =
-	    SH_TAILQ_FIRST(&op->holders, __db_lock);
-	    lp != NULL;
-	    lp = SH_TAILQ_NEXT(lp, links, __db_lock))
-		__lock_printlock(lt, lp, 0);
-	lp = SH_TAILQ_FIRST(&op->waiters, __db_lock);
-	if (lp != NULL) {
-		printf("\nW:");
-		for (; lp != NULL; lp = SH_TAILQ_NEXT(lp, links, __db_lock))
-			__lock_printlock(lt, lp, 0);
-	}
-}
-#endif
 
 static u_int32_t
 __lock_count_locks(lrp)
@@ -672,4 +525,202 @@ __lock_count_objs(lrp)
 		count++;
 
 	return (count);
+}
+
+#define	LOCK_DUMP_CONF		0x001		/* Conflict matrix. */
+#define	LOCK_DUMP_FREE		0x002		/* Display lock free list. */
+#define	LOCK_DUMP_LOCKERS	0x004		/* Display lockers. */
+#define	LOCK_DUMP_MEM		0x008		/* Display region memory. */
+#define	LOCK_DUMP_OBJECTS	0x010		/* Display objects. */
+#define	LOCK_DUMP_ALL		0x01f		/* Display all. */
+
+/*
+ * __lock_dump_region --
+ *
+ * PUBLIC: void __lock_dump_region __P((DB_LOCKTAB *, char *, FILE *));
+ */
+void
+__lock_dump_region(lt, area, fp)
+	DB_LOCKTAB *lt;
+	char *area;
+	FILE *fp;
+{
+	struct __db_lock *lp;
+	DB_LOCKOBJ *op;
+	DB_LOCKREGION *lrp;
+	u_int32_t flags, i, j;
+	int label;
+
+	/* Make it easy to call from the debugger. */
+	if (fp == NULL)
+		fp = stderr;
+
+	for (flags = 0; *area != '\0'; ++area)
+		switch (*area) {
+		case 'A':
+			LF_SET(LOCK_DUMP_ALL);
+			break;
+		case 'c':
+			LF_SET(LOCK_DUMP_CONF);
+			break;
+		case 'f':
+			LF_SET(LOCK_DUMP_FREE);
+			break;
+		case 'l':
+			LF_SET(LOCK_DUMP_LOCKERS);
+			break;
+		case 'm':
+			LF_SET(LOCK_DUMP_MEM);
+			break;
+		case 'o':
+			LF_SET(LOCK_DUMP_OBJECTS);
+			break;
+		}
+
+	lrp = lt->region;
+
+	fprintf(fp, "%s\nLock region parameters\n", DB_LINE);
+	fprintf(fp, "%s: %lu, %s: %lu, %s: %lu, %s: %lu\n%s: %lu, %s: %lu\n",
+	    "table size", (u_long)lrp->table_size,
+	    "hash_off", (u_long)lrp->hash_off,
+	    "increment", (u_long)lrp->increment,
+	    "mem_off", (u_long)lrp->mem_off,
+	    "mem_bytes", (u_long)lrp->mem_bytes,
+	    "need_dd", (u_long)lrp->need_dd);
+
+	if (LF_ISSET(LOCK_DUMP_CONF)) {
+		fprintf(fp, "\n%s\nConflict matrix\n", DB_LINE);
+		for (i = 0; i < lrp->nmodes; i++) {
+			for (j = 0; j < lrp->nmodes; j++)
+				fprintf(fp, "%lu\t",
+				    (u_long)lt->conflicts[i * lrp->nmodes + j]);
+			fprintf(fp, "\n");
+		}
+	}
+
+	if (LF_ISSET(LOCK_DUMP_LOCKERS | LOCK_DUMP_OBJECTS)) {
+		fprintf(fp, "%s\nLock hash buckets\n", DB_LINE);
+		for (i = 0; i < lrp->table_size; i++) {
+			label = 1;
+			for (op = SH_TAILQ_FIRST(&lt->hashtab[i], __db_lockobj);
+			    op != NULL;
+			    op = SH_TAILQ_NEXT(op, links, __db_lockobj)) {
+				if (LF_ISSET(LOCK_DUMP_LOCKERS) &&
+				    op->type == DB_LOCK_LOCKER) {
+					if (label) {
+						fprintf(fp,
+						    "Bucket %lu:\n", (u_long)i);
+						label = 0;
+					}
+					__lock_dump_locker(lt, op, fp);
+				}
+				if (LF_ISSET(LOCK_DUMP_OBJECTS) &&
+				    op->type == DB_LOCK_OBJTYPE) {
+					if (label) {
+						fprintf(fp,
+						    "Bucket %lu:\n", (u_long)i);
+						label = 0;
+					}
+					__lock_dump_object(lt, op, fp);
+				}
+			}
+		}
+	}
+
+	if (LF_ISSET(LOCK_DUMP_FREE)) {
+		fprintf(fp, "%s\nLock free list\n", DB_LINE);
+		for (lp = SH_TAILQ_FIRST(&lrp->free_locks, __db_lock);
+		    lp != NULL;
+		    lp = SH_TAILQ_NEXT(lp, links, __db_lock))
+			fprintf(fp, "0x%x: %lu\t%lu\t%s\t0x%x\n", (u_int)lp,
+			    (u_long)lp->holder, (u_long)lp->mode,
+			    __lock_dump_status(lp->status), (u_int)lp->obj);
+
+		fprintf(fp, "%s\nObject free list\n", DB_LINE);
+		for (op = SH_TAILQ_FIRST(&lrp->free_objs, __db_lockobj);
+		    op != NULL;
+		    op = SH_TAILQ_NEXT(op, links, __db_lockobj))
+			fprintf(fp, "0x%x\n", (u_int)op);
+	}
+
+	if (LF_ISSET(LOCK_DUMP_MEM))
+		__db_shalloc_dump(lt->mem, fp);
+}
+
+static void
+__lock_dump_locker(lt, op, fp)
+	DB_LOCKTAB *lt;
+	DB_LOCKOBJ *op;
+	FILE *fp;
+{
+	struct __db_lock *lp;
+	u_int32_t locker;
+	void *ptr;
+
+	ptr = SH_DBT_PTR(&op->lockobj);
+	memcpy(&locker, ptr, sizeof(u_int32_t));
+	fprintf(fp, "L %lx", (u_long)locker);
+
+	lp = SH_LIST_FIRST(&op->heldby, __db_lock);
+	if (lp == NULL) {
+		fprintf(fp, "\n");
+		return;
+	}
+	for (; lp != NULL; lp = SH_LIST_NEXT(lp, locker_links, __db_lock))
+		__lock_printlock(lt, lp, 0);
+}
+
+static void
+__lock_dump_object(lt, op, fp)
+	DB_LOCKTAB *lt;
+	DB_LOCKOBJ *op;
+	FILE *fp;
+{
+	struct __db_lock *lp;
+	u_int32_t j;
+	u_int8_t *ptr;
+	u_int ch;
+
+	ptr = SH_DBT_PTR(&op->lockobj);
+	for (j = 0; j < op->lockobj.size; ptr++, j++) {
+		ch = *ptr;
+		fprintf(fp, isprint(ch) ? "%c" : "\\%o", ch);
+	}
+	fprintf(fp, "\n");
+
+	fprintf(fp, "H:");
+	for (lp =
+	    SH_TAILQ_FIRST(&op->holders, __db_lock);
+	    lp != NULL;
+	    lp = SH_TAILQ_NEXT(lp, links, __db_lock))
+		__lock_printlock(lt, lp, 0);
+	lp = SH_TAILQ_FIRST(&op->waiters, __db_lock);
+	if (lp != NULL) {
+		fprintf(fp, "\nW:");
+		for (; lp != NULL; lp = SH_TAILQ_NEXT(lp, links, __db_lock))
+			__lock_printlock(lt, lp, 0);
+	}
+}
+
+static char *
+__lock_dump_status(status)
+	db_status_t status;
+{
+	switch (status) {
+	case DB_LSTAT_ABORTED:
+		return ("aborted");
+	case DB_LSTAT_ERR:
+		return ("err");
+	case DB_LSTAT_FREE:
+		return ("free");
+	case DB_LSTAT_HELD:
+		return ("held");
+	case DB_LSTAT_NOGRANT:
+		return ("nogrant");
+	case DB_LSTAT_PENDING:
+		return ("pending");
+	case DB_LSTAT_WAITING:
+		return ("waiting");
+	}
+	return ("unknown status");
 }

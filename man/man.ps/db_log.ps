@@ -1,16 +1,16 @@
 %!PS-Adobe-3.0
-%%Creator: groff version 1.10
-%%CreationDate: Mon May  4 20:56:18 1998
+%%Creator: groff version 1.11
+%%CreationDate: Sun May 31 22:58:22 1998
 %%DocumentNeededResources: font Times-Bold
 %%+ font Times-Roman
 %%+ font Times-Italic
-%%DocumentSuppliedResources: procset grops 1.10 0
+%%DocumentSuppliedResources: procset grops 1.11 0
 %%Pages: 9
 %%PageOrder: Ascend
 %%Orientation: Portrait
 %%EndComments
 %%BeginProlog
-%%BeginResource: procset grops 1.10 0
+%%BeginResource: procset grops 1.11 0
 /setpacking where{
 pop
 currentpacking
@@ -351,7 +351,7 @@ F1(bzer)2.5 E(o)-.45 E F0(\(3\) or).18 E F1(memset)2.5 E F0(\(3\).).68 E
 -.25 E F1(lo)2.5 E(g_open)-.1 E F0(:).24 E -.2(vo)108 679.2 S
 (id *\(*db_errcall\)\(char *db_errpfx, char *b).2 E(uf)-.2 E(fer\);)-.25
 E(FILE *db_err\214le;)108 691.2 Q(const char *db_errpfx;)108 703.2 Q
-(May 3, 1998)280.585 768 Q(2)203.585 E EP
+(May 10, 1998)278.085 768 Q(2)201.085 E EP
 %%Page: 3 3
 %%BeginPageSetup
 BP
@@ -430,8 +430,8 @@ E F0(ar)2.867 E 2.867(gument. The)-.18 F F1(lsn)2.866 E F0(ar)2.866 E
 .366(gument is o)-.18 F -.15(ve)-.15 G .366(rwritten with the).15 F
 (DB_LSN of the record returned.)133 676.8 Q(If the log is empty)133
 693.6 Q 2.5(,t)-.65 G(he)-2.5 E F1(lo)2.5 E(g_g)-.1 E(et)-.1 E F0
-(function will return DB_NO)2.5 E(TFOUND.)-.4 E(May 3, 1998)280.585 768
-Q(3)203.585 E EP
+(function will return DB_NO)2.5 E(TFOUND.)-.4 E(May 10, 1998)278.085 768
+Q(3)201.085 E EP
 %%Page: 4 4
 %%BeginPageSetup
 BP
@@ -531,7 +531,7 @@ F0(parameter)108 619.2 Q 5(.T)-.55 G(he)-5 E F1<8d61>2.5 E(gs)-.1 E F0
 133 688.8 Q(xt record to be put is returned in the)-.15 E F1(lsn)2.5 E
 F0(parameter)2.5 E(.)-.55 E(DB_FLUSH)108 705.6 Q .186(The log is forced to disk after this record is written, guaranteeing that all records with DB_LSNs less)
 133 717.6 R .268(than or equal to the one being put are on disk before this function returns \(this function is most often)
-133 729.6 R(May 3, 1998)280.585 768 Q(4)203.585 E EP
+133 729.6 R(May 10, 1998)278.085 768 Q(4)201.085 E EP
 %%Page: 5 5
 %%BeginPageSetup
 BP
@@ -656,7 +656,7 @@ F1(db_malloc)2.567 E F0 .067(must match the)2.567 F .876(calling con)108
 (rdless of whether or not the).05 E 2.5(ya)-.15 G(re in use.)-2.5 E
 (The DB_ARCH_D)108 727.2 Q -1.21 -1.11(AT A)-.4 H
 (and DB_ARCH_LOG \215ags are mutually e)3.61 E(xclusi)-.15 E -.15(ve)
--.25 G(.).15 E(May 3, 1998)280.585 768 Q(5)203.585 E EP
+-.25 G(.).15 E(May 10, 1998)278.085 768 Q(5)201.085 E EP
 %%Page: 6 6
 %%BeginPageSetup
 BP
@@ -726,259 +726,258 @@ E(ailure and 0 on success.)-.1 E F1(lo)92 338.4 Q(g_stat)-.1 E F0(The)
 (elds will be \214lled in:)1.11 E(u_int32_t st_magic;)108 472.8 Q
 (The magic number that identi\214es a \214le as a log \214le.)133 484.8
 Q(u_int32_t st_v)108 496.8 Q(ersion;)-.15 E(The v)133 508.8 Q
-(ersion of the log \214le type.)-.15 E(int st_mode;)108 520.8 Q
-(The mode of an)133 532.8 Q 2.5(yc)-.15 G(reated log \214les.)-2.5 E
-(u_int32_t st_lg_max;)108 544.8 Q(The maximum size of an)133 556.8 Q 2.5
-(yi)-.15 G(ndi)-2.5 E(vidual \214le comprising the log.)-.25 E
-(u_int32_t st_w_mbytes;)108 568.8 Q(The number of me)133 580.8 Q -.05
-(ga)-.15 G(bytes written to this log.).05 E(u_int32_t st_w_bytes;)108
-592.8 Q(The number of bytes o)133 604.8 Q -.15(ve)-.15 G 2.5(ra).15 G
-(nd abo)-2.5 E -.15(ve)-.15 G F1(st_w_mbytes)2.65 E F0
-(written to this log.)2.5 E(u_int32_t st_wc_mbytes;)108 616.8 Q
-(The number of me)133 628.8 Q -.05(ga)-.15 G
-(bytes written to this log since the last checkpoint.).05 E
-(u_int32_t st_wc_bytes;)108 640.8 Q(The number of bytes o)133 652.8 Q
+(ersion of the log \214le type.)-.15 E(u_int32_t st_refcnt;)108 520.8 Q
+(The number of references to the re)133 532.8 Q(gion.)-.15 E
+(u_int32_t st_re)108 544.8 Q(gsize;)-.15 E(The size of the re)133 556.8
+Q(gion.)-.15 E(int st_mode;)108 568.8 Q(The mode of an)133 580.8 Q 2.5
+(yc)-.15 G(reated log \214les.)-2.5 E(u_int32_t st_lg_max;)108 592.8 Q
+(The maximum size of an)133 604.8 Q 2.5(yi)-.15 G(ndi)-2.5 E
+(vidual \214le comprising the log.)-.25 E(u_int32_t st_w_mbytes;)108
+616.8 Q(The number of me)133 628.8 Q -.05(ga)-.15 G
+(bytes written to this log.).05 E(u_int32_t st_w_bytes;)108 640.8 Q
+(The number of bytes o)133 652.8 Q -.15(ve)-.15 G 2.5(ra).15 G(nd abo)
+-2.5 E -.15(ve)-.15 G F1(st_w_mbytes)2.65 E F0(written to this log.)2.5
+E(u_int32_t st_wc_mbytes;)108 664.8 Q(The number of me)133 676.8 Q -.05
+(ga)-.15 G(bytes written to this log since the last checkpoint.).05 E
+(u_int32_t st_wc_bytes;)108 688.8 Q(The number of bytes o)133 700.8 Q
 -.15(ve)-.15 G 2.5(ra).15 G(nd abo)-2.5 E -.15(ve)-.15 G F1
 (st_wc_mbytes)2.65 E F0(written to this log since the last checkpoint.)
-2.5 E(u_int32_t st_cur_\214le;)108 664.8 Q
-(The current log \214le number)133 676.8 Q(.)-.55 E(u_int32_t st_cur_of)
-108 688.8 Q(fset;)-.25 E(The byte of)133 700.8 Q
-(fset in the current log \214le.)-.25 E(May 3, 1998)280.585 768 Q(6)
-203.585 E EP
+2.5 E(May 10, 1998)278.085 768 Q(6)201.085 E EP
 %%Page: 7 7
 %%BeginPageSetup
 BP
 %%EndPageSetup
 /F0 10/Times-Roman@0 SF 363.3(DB_LOG\(3\) DB_LOG\(3\))72 48 R
-(u_int32_t st_re)108 84 Q(gion_w)-.15 E(ait;)-.1 E
-(The number of times that a thread of control w)133 96 Q(as forced to w)
--.1 E(ait before obtaining the re)-.1 E(gion lock.)-.15 E
-(u_int32_t st_re)108 108 Q(gion_no)-.15 E -.1(wa)-.25 G(it;).1 E
-(The number of times that a thread of control w)133 120 Q
+(u_int32_t st_cur_\214le;)108 84 Q(The current log \214le number)133 96
+Q(.)-.55 E(u_int32_t st_cur_of)108 108 Q(fset;)-.25 E(The byte of)133
+120 Q(fset in the current log \214le.)-.25 E(u_int32_t st_re)108 132 Q
+(gion_w)-.15 E(ait;)-.1 E
+(The number of times that a thread of control w)133 144 Q
+(as forced to w)-.1 E(ait before obtaining the re)-.1 E(gion lock.)-.15
+E(u_int32_t st_re)108 156 Q(gion_no)-.15 E -.1(wa)-.25 G(it;).1 E
+(The number of times that a thread of control w)133 168 Q
 (as able to obtain the re)-.1 E(gion lock without w)-.15 E(aiting.)-.1 E
-/F1 9/Times-Bold@0 SF(LOG FILE LIMITS)72 136.8 Q F0 .474(Log \214le sizes impose a time limit on the length of time a database may be accessed under transaction pro-)
-108 148.8 R .91
-(tection, before it needs to be dumped and reloaded \(see)108 160.8 R/F2
+/F1 9/Times-Bold@0 SF(LOG FILE LIMITS)72 184.8 Q F0 .474(Log \214le sizes impose a time limit on the length of time a database may be accessed under transaction pro-)
+108 196.8 R .91
+(tection, before it needs to be dumped and reloaded \(see)108 208.8 R/F2
 10/Times-Italic@0 SF(db_dump\(3\))3.41 E F0(and)3.41 E F2
 (db_load\(3\)\).)3.41 E F0(Unfortunately)5.91 E 3.41(,t)-.65 G(he)-3.41
-E(limits are potentially dif)108 172.8 Q(\214cult to calculate.)-.25 E
-.273(The log \214le name consists of "log." follo)108 189.6 R .274
+E(limits are potentially dif)108 220.8 Q(\214cult to calculate.)-.25 E
+.273(The log \214le name consists of "log." follo)108 237.6 R .274
 (wed by 5 digits, resulting in a maximum of 99,999 log \214les.)-.25 F
 (Con-)5.274 E .127(sider an application performing 600 transactions per second, for 15 hours a day)
-108 201.6 R 2.626(,l)-.65 G .126(ogged into 10Mb log \214les,)-2.626 F
+108 249.6 R 2.626(,l)-.65 G .126(ogged into 10Mb log \214les,)-2.626 F
 (where each transaction is logging approximately 100 bytes of data.)108
-213.6 Q(The calculation:)5 E(\(10 * 2^20 * 99999\) /)144 230.4 Q
-(\(600 * 60 * 60 * 15 * 100\) = 323.63)194 242.4 Q .795(indicates that the system will run out of log \214le space in roughly 324 days.)
-108 259.2 R .795(If we increase the maximum)5.795 F .136(size of the \214les from 10Mb to 100Mb, the same calculation indicates that the application will run out of log)
-108 271.2 R(\214le space in roughly 9 years.)108 283.2 Q .314
-(There is no w)108 300 R .314
+261.6 Q(The calculation:)5 E(\(10 * 2^20 * 99999\) /)144 278.4 Q
+(\(600 * 60 * 60 * 15 * 100\) = 323.63)194 290.4 Q .795(indicates that the system will run out of log \214le space in roughly 324 days.)
+108 307.2 R .795(If we increase the maximum)5.795 F .136(size of the \214les from 10Mb to 100Mb, the same calculation indicates that the application will run out of log)
+108 319.2 R(\214le space in roughly 9 years.)108 331.2 Q .314
+(There is no w)108 348 R .314
 (ay to reset the log \214le name space in Berk)-.1 F(ele)-.1 E 2.814(yD)
 -.15 G 2.814(B. If)-2.814 F .315
 (your application is reaching the end of)2.814 F
-(its log \214le name space, you should:)108 312 Q 15(1. Archi)108 328.8
+(its log \214le name space, you should:)108 360 Q 15(1. Archi)108 376.8
 R .711 -.15(ve y)-.25 H .411
 (our databases as if to prepare for catastrophic f).15 F .411
 (ailure \(see)-.1 F F2(db_ar)2.91 E -.15(ch)-.37 G(ive).15 E F0 .41
-(\(1\) for more informa-).18 F(tion\).)133 340.8 Q 15(2. Dump)108 357.6
+(\(1\) for more informa-).18 F(tion\).)133 388.8 Q 15(2. Dump)108 405.6
 R(and re-load)2.5 E/F3 10/Times-Bold@0 SF(all)2.5 E F0
 (your databases \(see)2.5 E F2(db_dump)2.5 E F0(\(1\) and).19 E F2
 (db_load)2.5 E F0(\(1\) for more information\).).77 E 15(3. Remo)108
-374.4 R .3 -.15(ve a)-.15 H(ll of the log \214les from the database en)
+422.4 R .3 -.15(ve a)-.15 H(ll of the log \214les from the database en)
 .15 E(vironment \(see)-.4 E F2(db_ar)2.5 E -.15(ch)-.37 G(ive).15 E F0
-(\(1\) for more information\).).18 E 15(4. Restart)108 391.2 R
-(your applications.)2.5 E F1(ENVIR)72 408 Q(ONMENT V)-.27 E(ARIABLES)
--1.215 E F0(The follo)108 420 Q(wing en)-.25 E(vironment v)-.4 E
+(\(1\) for more information\).).18 E 15(4. Restart)108 439.2 R
+(your applications.)2.5 E F1(ENVIR)72 456 Q(ONMENT V)-.27 E(ARIABLES)
+-1.215 E F0(The follo)108 468 Q(wing en)-.25 E(vironment v)-.4 E
 (ariables af)-.25 E(fect the e)-.25 E -.15(xe)-.15 G(cution of).15 E F2
-(db_lo)2.5 E(g)-.1 E F0(:).22 E(DB_HOME)108 436.8 Q 2.848(If the)133
-448.8 R F2(dben)5.348 E(v)-.4 E F0(ar)5.348 E 2.848(gument to)-.18 F F2
+(db_lo)2.5 E(g)-.1 E F0(:).22 E(DB_HOME)108 484.8 Q 2.848(If the)133
+496.8 R F2(dben)5.348 E(v)-.4 E F0(ar)5.348 E 2.848(gument to)-.18 F F2
 (lo)5.348 E(g_open)-.1 E F0 -.1(wa)5.348 G 5.348(si).1 G 2.848
 (nitialized using)-5.348 F F2(db_appinit)5.349 E F0 5.349(,t).68 G 2.849
 (he en)-5.349 F 2.849(vironment v)-.4 F(ariable)-.25 E .508(DB_HOME may be used as the path of the database home for the interpretation of the)
-133 460.8 R F2(dir)3.008 E F0(ar)3.008 E(gument)-.18 E(to)133 472.8 Q F2
+133 508.8 R F2(dir)3.008 E F0(ar)3.008 E(gument)-.18 E(to)133 520.8 Q F2
 (lo)3.657 E(g_open)-.1 E F0 3.657(,a).24 G 3.657(sd)-3.657 G 1.157
 (escribed in)-3.657 F F2(db_appinit)3.657 E F0 3.657
 (\(3\). Speci\214cally).68 F(,)-.65 E F2(lo)3.658 E(g_open)-.1 E F0
 1.158(is af)3.658 F 1.158(fected by the con\214guration)-.25 F(string v)
-133 484.8 Q(alue of DB_LOG_DIR.)-.25 E(TMPDIR)108 501.6 Q .955(If the)
-133 513.6 R F2(dben)3.455 E(v)-.4 E F0(ar)3.455 E .955(gument to)-.18 F
+133 532.8 Q(alue of DB_LOG_DIR.)-.25 E(TMPDIR)108 549.6 Q .955(If the)
+133 561.6 R F2(dben)3.455 E(v)-.4 E F0(ar)3.455 E .955(gument to)-.18 F
 F2(lo)3.455 E(g_open)-.1 E F0 -.1(wa)3.455 G 3.455(sN).1 G .955
 (ULL or not initialized using)-3.455 F F2(db_appinit)3.455 E F0 3.455
-(,t).68 G .955(he en)-3.455 F(vironment)-.4 E -.25(va)133 525.6 S 2.065
+(,t).68 G .955(he en)-3.455 F(vironment)-.4 E -.25(va)133 573.6 S 2.065
 (riable TMPDIR may be used as the directory in which to create the log, as described in the)
-.25 F F2(lo)133 537.6 Q(g_open)-.1 E F0(section abo)2.5 E -.15(ve)-.15 G
-(.).15 E F1(ERR)72 554.4 Q(ORS)-.27 E F0(The)108 566.4 Q F2(lo)3.267 E
+.25 F F2(lo)133 585.6 Q(g_open)-.1 E F0(section abo)2.5 E -.15(ve)-.15 G
+(.).15 E F1(ERR)72 602.4 Q(ORS)-.27 E F0(The)108 614.4 Q F2(lo)3.267 E
 (g_open)-.1 E F0 .766(function may f)3.267 F .766(ail and return)-.1 F
 F2(errno)3.266 E F0 .766(for an)3.266 F 3.266(yo)-.15 G 3.266(ft)-3.266
 G .766(he errors speci\214ed for the follo)-3.266 F .766(wing DB and)
--.25 F(library functions: atoi\(3\), close\(2\), db_v)108 578.4 Q
+-.25 F(library functions: atoi\(3\), close\(2\), db_v)108 626.4 Q
 (ersion\(3\), fcntl\(2\), f)-.15 E
 (\215ush\(3\), log_close\(3\), log_unlink\(3\), lseek\(2\),)-.25 E
-(malloc\(3\), memcp)108 590.4 Q(y\(3\), memset\(3\), mmap\(2\), munmap\(2\), open\(2\), opendir\(3\), read\(2\), readdir\(3\), real-)
+(malloc\(3\), memcp)108 638.4 Q(y\(3\), memset\(3\), mmap\(2\), munmap\(2\), open\(2\), opendir\(3\), read\(2\), readdir\(3\), real-)
 -.1 E(loc\(3\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strchr\(3\), strcp)
-108 602.4 Q
+108 650.4 Q
 (y\(3\), strdup\(3\), strerror\(3\), strlen\(3\), strncmp\(3\),)-.1 E
-(unlink\(2\), and write\(2\).)108 614.4 Q(In addition, the)108 631.2 Q
+(unlink\(2\), and write\(2\).)108 662.4 Q(In addition, the)108 679.2 Q
 F2(lo)2.5 E(g_open)-.1 E F0(function may f)2.5 E(ail and return)-.1 E F2
-(errno)2.5 E F0(for the follo)2.5 E(wing conditions:)-.25 E([EA)108 648
-Q(GAIN])-.4 E(The shared memory re)133 660 Q(gion w)-.15 E(as lock)-.1 E
-(ed and \(repeatedly\) una)-.1 E -.25(va)-.2 G(ilable.).25 E([EINV)108
-676.8 Q(AL])-1.35 E(An in)133 688.8 Q -.25(va)-.4 G(lid \215ag v).25 E
-(alue or parameter w)-.25 E(as speci\214ed.)-.1 E
-(The DB_THREAD \215ag w)133 712.8 Q(as speci\214ed and spinlocks are not implemented for this architecture.)
--.1 E(May 3, 1998)280.585 768 Q(7)203.585 E EP
+(errno)2.5 E F0(for the follo)2.5 E(wing conditions:)-.25 E([EA)108 696
+Q(GAIN])-.4 E(The shared memory re)133 708 Q(gion w)-.15 E(as lock)-.1 E
+(ed and \(repeatedly\) una)-.1 E -.25(va)-.2 G(ilable.).25 E
+(May 10, 1998)278.085 768 Q(7)201.085 E EP
 %%Page: 8 8
-%%BeginPageSetup
-BP
-%%EndPageSetup
-/F0 10/Times-Roman@0 SF 363.3(DB_LOG\(3\) DB_LOG\(3\))72 48 R
-(The speci\214ed \214le size w)133 84 Q(as too lar)-.1 E(ge.)-.18 E(The)
-108 100.8 Q/F1 10/Times-Italic@0 SF(lo)3.205 E(g_close)-.1 E F0 .705
-(function may f)3.205 F .705(ail and return)-.1 F F1(errno)3.205 E F0
-.704(for an)3.205 F 3.204(yo)-.15 G 3.204(ft)-3.204 G .704
-(he errors speci\214ed for the follo)-3.204 F .704(wing DB and)-.25 F
-(library functions: close\(2\), fcntl\(2\), f)108 112.8 Q
-(\215ush\(3\), munmap\(2\), and strerror\(3\).)-.25 E(The)108 129.6 Q F1
-(lo)3.296 E(g_\215ush)-.1 E F0 .796(function may f)3.296 F .796
-(ail and return)-.1 F F1(errno)3.297 E F0 .797(for an)3.297 F 3.297(yo)
--.15 G 3.297(ft)-3.297 G .797(he errors speci\214ed for the follo)-3.297
-F .797(wing DB and)-.25 F(library functions: close\(2\), fcntl\(2\), f)
-108 141.6 Q(\215ush\(3\), fsync\(2\), lseek\(2\), malloc\(3\), memcp)
--.25 E(y\(3\), memset\(3\),)-.1 E
-(open\(2\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strcp)108
-153.6 Q
-(y\(3\), strdup\(3\), strerror\(3\), strlen\(3\), unlink\(2\), and)-.1 E
-(write\(2\).)108 165.6 Q(In addition, the)108 182.4 Q F1(lo)2.5 E
-(g_\215ush)-.1 E F0(function may f)2.5 E(ail and return)-.1 E F1(errno)
-2.5 E F0(for the follo)2.5 E(wing conditions:)-.25 E([EINV)108 199.2 Q
-(AL])-1.35 E(An in)133 211.2 Q -.25(va)-.4 G(lid \215ag v).25 E
-(alue or parameter w)-.25 E(as speci\214ed.)-.1 E(The)108 228 Q F1(lo)
-3.673 E(g_g)-.1 E(et)-.1 E F0 1.173(function may f)3.673 F 1.173
-(ail and return)-.1 F F1(errno)3.673 E F0 1.173(for an)3.673 F 3.673(yo)
--.15 G 3.673(ft)-3.673 G 1.173(he errors speci\214ed for the follo)
--3.673 F 1.172(wing DB and)-.25 F
-(library functions: atoi\(3\), close\(2\), fcntl\(2\), f)108 240 Q
-(\215ush\(3\), lseek\(2\), malloc\(3\), memcp)-.25 E
-(y\(3\), memset\(3\), open\(2\),)-.1 E(opendir\(3\), read\(2\), readdir\(3\), realloc\(3\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strchr\(3\), strcp)
-108 252 Q(y\(3\),)-.1 E(strdup\(3\), strerror\(3\), strlen\(3\), strncmp\(3\), and unlink\(2\).)
-108 264 Q(In addition, the)108 280.8 Q F1(lo)2.5 E(g_g)-.1 E(et)-.1 E F0
-(function may f)2.5 E(ail and return)-.1 E F1(errno)2.5 E F0
-(for the follo)2.5 E(wing conditions:)-.25 E([EINV)108 297.6 Q(AL])-1.35
-E(An in)133 309.6 Q -.25(va)-.4 G(lid \215ag v).25 E
-(alue or parameter w)-.25 E(as speci\214ed.)-.1 E(The DB_FIRST \215ag w)
-133 333.6 Q(as speci\214ed and no log \214les were found.)-.1 E(The)108
-350.4 Q F1(lo)3.667 E(g_\214le)-.1 E F0 1.167(function may f)3.667 F
-1.167(ail and return)-.1 F F1(errno)3.667 E F0 1.167(for an)3.667 F
-3.667(yo)-.15 G 3.667(ft)-3.667 G 1.167
-(he errors speci\214ed for the follo)-3.667 F 1.168(wing DB and)-.25 F
-(library functions: close\(2\), fcntl\(2\), f)108 362.4 Q
-(\215ush\(3\), malloc\(3\), memcp)-.25 E
-(y\(3\), memset\(3\), open\(2\), sig\214llset\(3\), sig-)-.1 E
-(procmask\(2\), stat\(2\), strcp)108 374.4 Q
-(y\(3\), strdup\(3\), strerror\(3\), strlen\(3\), and unlink\(2\).)-.1 E
-(In addition, the)108 391.2 Q F1(lo)2.5 E(g_\214le)-.1 E F0
-(function may f)2.5 E(ail and return)-.1 E F1(errno)2.5 E F0
-(for the follo)2.5 E(wing conditions:)-.25 E([ENOMEM])108 408 Q
-(The supplied b)133 420 Q(uf)-.2 E(fer w)-.25 E
-(as too small to hold the log \214le name.)-.1 E(The)108 436.8 Q F1(lo)
-3.636 E(g_put)-.1 E F0 1.136(function may f)3.636 F 1.136
-(ail and return)-.1 F F1(errno)3.636 E F0 1.136(for an)3.636 F 3.636(yo)
--.15 G 3.636(ft)-3.636 G 1.136(he errors speci\214ed for the follo)
--3.636 F 1.137(wing DB and)-.25 F
-(library functions: close\(2\), fcntl\(2\), f)108 448.8 Q
-(\215ush\(3\), fsync\(2\), lseek\(2\), malloc\(3\), memcp)-.25 E
-(y\(3\), memset\(3\),)-.1 E
-(open\(2\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strcp)108
-460.8 Q(y\(3\), strdup\(3\), strerror\(3\), strlen\(3\), time\(3\), unlink\(2\),)
--.1 E(and write\(2\).)108 472.8 Q(In addition, the)108 489.6 Q F1(lo)2.5
-E(g_put)-.1 E F0(function may f)2.5 E(ail and return)-.1 E F1(errno)2.5
-E F0(for the follo)2.5 E(wing conditions:)-.25 E([EINV)108 506.4 Q(AL])
--1.35 E(An in)133 518.4 Q -.25(va)-.4 G(lid \215ag v).25 E
-(alue or parameter w)-.25 E(as speci\214ed.)-.1 E
-(The record to be logged is lar)133 542.4 Q
-(ger than the maximum log record.)-.18 E(The)108 559.2 Q F1(lo)2.958 E
-(g_unlink)-.1 E F0 .458(function may f)2.958 F .457(ail and return)-.1 F
-F1(errno)2.957 E F0 .457(for an)2.957 F 2.957(yo)-.15 G 2.957(ft)-2.957
-G .457(he errors speci\214ed for the follo)-2.957 F .457(wing DB and)
--.25 F(library functions: close\(2\), fcntl\(2\), f)108 571.2 Q
-(\215ush\(3\), malloc\(3\), memcp)-.25 E
-(y\(3\), memset\(3\), mmap\(2\), munmap\(2\),)-.1 E
-(open\(2\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strcp)108
-583.2 Q
-(y\(3\), strdup\(3\), strerror\(3\), strlen\(3\), and unlink\(2\).)-.1 E
-(In addition, the)108 600 Q F1(lo)2.5 E(g_unlink)-.1 E F0
-(function may f)2.5 E(ail and return)-.1 E F1(errno)2.5 E F0
-(for the follo)2.5 E(wing conditions:)-.25 E([EB)108 616.8 Q(USY])-.1 E
-(The shared memory re)133 628.8 Q(gion w)-.15 E
-(as in use and the force \215ag w)-.1 E(as not set.)-.1 E(The)108 645.6
-Q F1(lo)2.709 E(g_ar)-.1 E -.15(ch)-.37 G(ive).15 E F0 .209
-(function may f)2.709 F .209(ail and return)-.1 F F1(errno)2.709 E F0
-.209(for an)2.709 F 2.709(yo)-.15 G 2.709(ft)-2.709 G .209
-(he errors speci\214ed for the follo)-2.709 F .208(wing DB and)-.25 F
-(library functions: close\(2\), fcntl\(2\), f)108 657.6 Q(\215ush\(3\), getcwd\(3\), log_compare\(3\), log_get\(3\), malloc\(3\), mem-)
--.25 E(cp)108 669.6 Q(y\(3\), memset\(3\), open\(2\), qsort\(3\), realloc\(3\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strchr\(3\), strcmp\(3\),)
--.1 E(strcp)108 681.6 Q
-(y\(3\), strdup\(3\), strerror\(3\), strlen\(3\), and unlink\(2\).)-.1 E
-(In addition, the)108 698.4 Q F1(lo)2.5 E(g_ar)-.1 E -.15(ch)-.37 G(ive)
-.15 E F0(function may f)2.5 E(ail and return)-.1 E F1(errno)2.5 E F0
-(for the follo)2.5 E(wing conditions:)-.25 E(May 3, 1998)280.585 768 Q
-(8)203.585 E EP
-%%Page: 9 9
 %%BeginPageSetup
 BP
 %%EndPageSetup
 /F0 10/Times-Roman@0 SF 363.3(DB_LOG\(3\) DB_LOG\(3\))72 48 R([EINV)108
 84 Q(AL])-1.35 E(An in)133 96 Q -.25(va)-.4 G(lid \215ag v).25 E
-(alue or parameter w)-.25 E(as speci\214ed.)-.1 E(The log w)133 120 Q
-(as corrupted.)-.1 E(The)108 136.8 Q/F1 10/Times-Italic@0 SF(lo)2.66 E
-(g_r)-.1 E -.4(eg)-.37 G(ister).4 E F0 .16(function may f)2.66 F .16
-(ail and return)-.1 F F1(errno)2.66 E F0 .161(for an)2.66 F 2.661(yo)
--.15 G 2.661(ft)-2.661 G .161(he errors speci\214ed for the follo)-2.661
-F .161(wing DB and)-.25 F(library functions: close\(2\), fcntl\(2\), f)
-108 148.8 Q
-(\215ush\(3\), fsync\(2\), lseek\(2\), malloc\(3\), memcmp\(3\), memcp)
--.25 E(y\(3\), mem-)-.1 E(set\(3\), open\(2\), realloc\(3\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strcp)
-108 160.8 Q(y\(3\), strdup\(3\), strerror\(3\), strlen\(3\),)-.1 E
-(time\(3\), unlink\(2\), and write\(2\).)108 172.8 Q(In addition, the)
-108 189.6 Q F1(lo)2.5 E(g_r)-.1 E -.4(eg)-.37 G(ister).4 E F0
+(alue or parameter w)-.25 E(as speci\214ed.)-.1 E
+(The DB_THREAD \215ag w)133 120 Q(as speci\214ed and spinlocks are not implemented for this architecture.)
+-.1 E(The speci\214ed \214le size w)133 144 Q(as too lar)-.1 E(ge.)-.18
+E(The)108 160.8 Q/F1 10/Times-Italic@0 SF(lo)3.205 E(g_close)-.1 E F0
+.705(function may f)3.205 F .705(ail and return)-.1 F F1(errno)3.205 E
+F0 .704(for an)3.205 F 3.204(yo)-.15 G 3.204(ft)-3.204 G .704
+(he errors speci\214ed for the follo)-3.204 F .704(wing DB and)-.25 F
+(library functions: close\(2\), fcntl\(2\), f)108 172.8 Q
+(\215ush\(3\), munmap\(2\), and strerror\(3\).)-.25 E(The)108 189.6 Q F1
+(lo)3.296 E(g_\215ush)-.1 E F0 .796(function may f)3.296 F .796
+(ail and return)-.1 F F1(errno)3.297 E F0 .797(for an)3.297 F 3.297(yo)
+-.15 G 3.297(ft)-3.297 G .797(he errors speci\214ed for the follo)-3.297
+F .797(wing DB and)-.25 F(library functions: close\(2\), fcntl\(2\), f)
+108 201.6 Q(\215ush\(3\), fsync\(2\), lseek\(2\), malloc\(3\), memcp)
+-.25 E(y\(3\), memset\(3\),)-.1 E
+(open\(2\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strcp)108
+213.6 Q
+(y\(3\), strdup\(3\), strerror\(3\), strlen\(3\), unlink\(2\), and)-.1 E
+(write\(2\).)108 225.6 Q(In addition, the)108 242.4 Q F1(lo)2.5 E
+(g_\215ush)-.1 E F0(function may f)2.5 E(ail and return)-.1 E F1(errno)
+2.5 E F0(for the follo)2.5 E(wing conditions:)-.25 E([EINV)108 259.2 Q
+(AL])-1.35 E(An in)133 271.2 Q -.25(va)-.4 G(lid \215ag v).25 E
+(alue or parameter w)-.25 E(as speci\214ed.)-.1 E(The)108 288 Q F1(lo)
+3.673 E(g_g)-.1 E(et)-.1 E F0 1.173(function may f)3.673 F 1.173
+(ail and return)-.1 F F1(errno)3.673 E F0 1.173(for an)3.673 F 3.673(yo)
+-.15 G 3.673(ft)-3.673 G 1.173(he errors speci\214ed for the follo)
+-3.673 F 1.172(wing DB and)-.25 F
+(library functions: atoi\(3\), close\(2\), fcntl\(2\), f)108 300 Q
+(\215ush\(3\), lseek\(2\), malloc\(3\), memcp)-.25 E
+(y\(3\), memset\(3\), open\(2\),)-.1 E(opendir\(3\), read\(2\), readdir\(3\), realloc\(3\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strchr\(3\), strcp)
+108 312 Q(y\(3\),)-.1 E(strdup\(3\), strerror\(3\), strlen\(3\), strncmp\(3\), and unlink\(2\).)
+108 324 Q(In addition, the)108 340.8 Q F1(lo)2.5 E(g_g)-.1 E(et)-.1 E F0
 (function may f)2.5 E(ail and return)-.1 E F1(errno)2.5 E F0
-(for the follo)2.5 E(wing conditions:)-.25 E([EINV)108 206.4 Q(AL])-1.35
-E(An in)133 218.4 Q -.25(va)-.4 G(lid \215ag v).25 E
-(alue or parameter w)-.25 E(as speci\214ed.)-.1 E(The)108 235.2 Q F1(lo)
-3.079 E(g_unr)-.1 E -.4(eg)-.37 G(ister).4 E F0 .579(function may f)
-3.079 F .578(ail and return)-.1 F F1(errno)3.078 E F0 .578(for an)3.078
-F 3.078(yo)-.15 G 3.078(ft)-3.078 G .578
-(he errors speci\214ed for the follo)-3.078 F .578(wing DB)-.25 F
-(and library functions: close\(2\), fcntl\(2\), f)108 247.2 Q
+(for the follo)2.5 E(wing conditions:)-.25 E([EINV)108 357.6 Q(AL])-1.35
+E(An in)133 369.6 Q -.25(va)-.4 G(lid \215ag v).25 E
+(alue or parameter w)-.25 E(as speci\214ed.)-.1 E(The DB_FIRST \215ag w)
+133 393.6 Q(as speci\214ed and no log \214les were found.)-.1 E(The)108
+410.4 Q F1(lo)3.667 E(g_\214le)-.1 E F0 1.167(function may f)3.667 F
+1.167(ail and return)-.1 F F1(errno)3.667 E F0 1.167(for an)3.667 F
+3.667(yo)-.15 G 3.667(ft)-3.667 G 1.167
+(he errors speci\214ed for the follo)-3.667 F 1.168(wing DB and)-.25 F
+(library functions: close\(2\), fcntl\(2\), f)108 422.4 Q
+(\215ush\(3\), malloc\(3\), memcp)-.25 E
+(y\(3\), memset\(3\), open\(2\), sig\214llset\(3\), sig-)-.1 E
+(procmask\(2\), stat\(2\), strcp)108 434.4 Q
+(y\(3\), strdup\(3\), strerror\(3\), strlen\(3\), and unlink\(2\).)-.1 E
+(In addition, the)108 451.2 Q F1(lo)2.5 E(g_\214le)-.1 E F0
+(function may f)2.5 E(ail and return)-.1 E F1(errno)2.5 E F0
+(for the follo)2.5 E(wing conditions:)-.25 E([ENOMEM])108 468 Q
+(The supplied b)133 480 Q(uf)-.2 E(fer w)-.25 E
+(as too small to hold the log \214le name.)-.1 E(The)108 496.8 Q F1(lo)
+3.636 E(g_put)-.1 E F0 1.136(function may f)3.636 F 1.136
+(ail and return)-.1 F F1(errno)3.636 E F0 1.136(for an)3.636 F 3.636(yo)
+-.15 G 3.636(ft)-3.636 G 1.136(he errors speci\214ed for the follo)
+-3.636 F 1.137(wing DB and)-.25 F
+(library functions: close\(2\), fcntl\(2\), f)108 508.8 Q
 (\215ush\(3\), fsync\(2\), lseek\(2\), malloc\(3\), memcp)-.25 E
 (y\(3\), memset\(3\),)-.1 E
 (open\(2\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strcp)108
-259.2 Q(y\(3\), strdup\(3\), strerror\(3\), strlen\(3\), time\(3\), unlink\(2\),)
--.1 E(and write\(2\).)108 271.2 Q(In addition, the)108 288 Q F1(lo)2.5 E
-(g_unr)-.1 E -.4(eg)-.37 G(ister).4 E F0(function may f)2.5 E
+520.8 Q(y\(3\), strdup\(3\), strerror\(3\), strlen\(3\), time\(3\), unlink\(2\),)
+-.1 E(and write\(2\).)108 532.8 Q(In addition, the)108 549.6 Q F1(lo)2.5
+E(g_put)-.1 E F0(function may f)2.5 E(ail and return)-.1 E F1(errno)2.5
+E F0(for the follo)2.5 E(wing conditions:)-.25 E([EINV)108 566.4 Q(AL])
+-1.35 E(An in)133 578.4 Q -.25(va)-.4 G(lid \215ag v).25 E
+(alue or parameter w)-.25 E(as speci\214ed.)-.1 E
+(The record to be logged is lar)133 602.4 Q
+(ger than the maximum log record.)-.18 E(The)108 619.2 Q F1(lo)2.958 E
+(g_unlink)-.1 E F0 .458(function may f)2.958 F .457(ail and return)-.1 F
+F1(errno)2.957 E F0 .457(for an)2.957 F 2.957(yo)-.15 G 2.957(ft)-2.957
+G .457(he errors speci\214ed for the follo)-2.957 F .457(wing DB and)
+-.25 F(library functions: close\(2\), fcntl\(2\), f)108 631.2 Q
+(\215ush\(3\), malloc\(3\), memcp)-.25 E
+(y\(3\), memset\(3\), mmap\(2\), munmap\(2\),)-.1 E
+(open\(2\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strcp)108
+643.2 Q
+(y\(3\), strdup\(3\), strerror\(3\), strlen\(3\), and unlink\(2\).)-.1 E
+(In addition, the)108 660 Q F1(lo)2.5 E(g_unlink)-.1 E F0
+(function may f)2.5 E(ail and return)-.1 E F1(errno)2.5 E F0
+(for the follo)2.5 E(wing conditions:)-.25 E([EB)108 676.8 Q(USY])-.1 E
+(The shared memory re)133 688.8 Q(gion w)-.15 E
+(as in use and the force \215ag w)-.1 E(as not set.)-.1 E(The)108 705.6
+Q F1(lo)2.709 E(g_ar)-.1 E -.15(ch)-.37 G(ive).15 E F0 .209
+(function may f)2.709 F .209(ail and return)-.1 F F1(errno)2.709 E F0
+.209(for an)2.709 F 2.709(yo)-.15 G 2.709(ft)-2.709 G .209
+(he errors speci\214ed for the follo)-2.709 F .208(wing DB and)-.25 F
+(library functions: close\(2\), fcntl\(2\), f)108 717.6 Q(\215ush\(3\), getcwd\(3\), log_compare\(3\), log_get\(3\), malloc\(3\), mem-)
+-.25 E(cp)108 729.6 Q(y\(3\), memset\(3\), open\(2\), qsort\(3\), realloc\(3\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strchr\(3\), strcmp\(3\),)
+-.1 E(May 10, 1998)278.085 768 Q(8)201.085 E EP
+%%Page: 9 9
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10/Times-Roman@0 SF 363.3(DB_LOG\(3\) DB_LOG\(3\))72 48 R(strcp)108
+84 Q(y\(3\), strdup\(3\), strerror\(3\), strlen\(3\), and unlink\(2\).)
+-.1 E(In addition, the)108 100.8 Q/F1 10/Times-Italic@0 SF(lo)2.5 E
+(g_ar)-.1 E -.15(ch)-.37 G(ive).15 E F0(function may f)2.5 E
 (ail and return)-.1 E F1(errno)2.5 E F0(for the follo)2.5 E
-(wing conditions:)-.25 E([EINV)108 304.8 Q(AL])-1.35 E(An in)133 316.8 Q
+(wing conditions:)-.25 E([EINV)108 117.6 Q(AL])-1.35 E(An in)133 129.6 Q
 -.25(va)-.4 G(lid \215ag v).25 E(alue or parameter w)-.25 E
-(as speci\214ed.)-.1 E(The)108 333.6 Q F1(lo)3.543 E(g_stat)-.1 E F0
+(as speci\214ed.)-.1 E(The log w)133 153.6 Q(as corrupted.)-.1 E(The)108
+170.4 Q F1(lo)2.66 E(g_r)-.1 E -.4(eg)-.37 G(ister).4 E F0 .16
+(function may f)2.66 F .16(ail and return)-.1 F F1(errno)2.66 E F0 .161
+(for an)2.66 F 2.661(yo)-.15 G 2.661(ft)-2.661 G .161
+(he errors speci\214ed for the follo)-2.661 F .161(wing DB and)-.25 F
+(library functions: close\(2\), fcntl\(2\), f)108 182.4 Q
+(\215ush\(3\), fsync\(2\), lseek\(2\), malloc\(3\), memcmp\(3\), memcp)
+-.25 E(y\(3\), mem-)-.1 E(set\(3\), open\(2\), realloc\(3\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strcp)
+108 194.4 Q(y\(3\), strdup\(3\), strerror\(3\), strlen\(3\),)-.1 E
+(time\(3\), unlink\(2\), and write\(2\).)108 206.4 Q(In addition, the)
+108 223.2 Q F1(lo)2.5 E(g_r)-.1 E -.4(eg)-.37 G(ister).4 E F0
+(function may f)2.5 E(ail and return)-.1 E F1(errno)2.5 E F0
+(for the follo)2.5 E(wing conditions:)-.25 E([EINV)108 240 Q(AL])-1.35 E
+(An in)133 252 Q -.25(va)-.4 G(lid \215ag v).25 E(alue or parameter w)
+-.25 E(as speci\214ed.)-.1 E(The)108 268.8 Q F1(lo)3.079 E(g_unr)-.1 E
+-.4(eg)-.37 G(ister).4 E F0 .579(function may f)3.079 F .578
+(ail and return)-.1 F F1(errno)3.078 E F0 .578(for an)3.078 F 3.078(yo)
+-.15 G 3.078(ft)-3.078 G .578(he errors speci\214ed for the follo)-3.078
+F .578(wing DB)-.25 F(and library functions: close\(2\), fcntl\(2\), f)
+108 280.8 Q(\215ush\(3\), fsync\(2\), lseek\(2\), malloc\(3\), memcp)
+-.25 E(y\(3\), memset\(3\),)-.1 E
+(open\(2\), sig\214llset\(3\), sigprocmask\(2\), stat\(2\), strcp)108
+292.8 Q(y\(3\), strdup\(3\), strerror\(3\), strlen\(3\), time\(3\), unlink\(2\),)
+-.1 E(and write\(2\).)108 304.8 Q(In addition, the)108 321.6 Q F1(lo)2.5
+E(g_unr)-.1 E -.4(eg)-.37 G(ister).4 E F0(function may f)2.5 E
+(ail and return)-.1 E F1(errno)2.5 E F0(for the follo)2.5 E
+(wing conditions:)-.25 E([EINV)108 338.4 Q(AL])-1.35 E(An in)133 350.4 Q
+-.25(va)-.4 G(lid \215ag v).25 E(alue or parameter w)-.25 E
+(as speci\214ed.)-.1 E(The)108 367.2 Q F1(lo)3.543 E(g_stat)-.1 E F0
 1.043(function may f)3.543 F 1.043(ail and return)-.1 F F1(errno)3.543 E
 F0 1.043(for an)3.543 F 3.543(yo)-.15 G 3.543(ft)-3.543 G 1.044
 (he errors speci\214ed for the follo)-3.543 F 1.044(wing DB and)-.25 F
-(library functions: fcntl\(2\), and malloc\(3\).)108 345.6 Q/F2 9
-/Times-Bold@0 SF -.09(BU)72 362.4 S(GS).09 E F0 1.263
-(The log \214les are not machine architecture independent.)108 374.4 R
+(library functions: fcntl\(2\), and malloc\(3\).)108 379.2 Q/F2 9
+/Times-Bold@0 SF -.09(BU)72 396 S(GS).09 E F0 1.263
+(The log \214les are not machine architecture independent.)108 408 R
 (Speci\214cally)6.263 E 3.763(,l)-.65 G 1.263
-(og \214le metadata is not stored in a)-3.763 F<8c78>108 386.4 Q
-(ed byte order)-.15 E(.)-.55 E F2(SEE ALSO)72 403.2 Q F1(db_ar)108 415.2
+(og \214le metadata is not stored in a)-3.763 F<8c78>108 420 Q
+(ed byte order)-.15 E(.)-.55 E F2(SEE ALSO)72 436.8 Q F1(db_ar)108 448.8
 Q -.15(ch)-.37 G(ive).15 E F0(\(1\),).18 E F1(db_c)2.5 E(hec)-.15 E
 (kpoint)-.2 E F0(\(1\),).68 E F1(db_deadloc)2.5 E(k)-.2 E F0(\(1\),).67
 E F1(db_dump)2.5 E F0(\(1\),).19 E F1(db_load)2.5 E F0(\(1\),).77 E F1
 (db_r)2.5 E(eco)-.37 E(ver)-.1 E F0(\(1\),).73 E F1(db_stat)2.5 E F0
-(\(1\),).68 E F1(db_intr)108 427.2 Q(o)-.45 E F0(\(3\),).18 E F1
+(\(1\),).68 E F1(db_intr)108 460.8 Q(o)-.45 E F0(\(3\),).18 E F1
 (db_appinit)2.5 E F0(\(3\),).68 E F1(db_cur)2.5 E(sor)-.1 E F0(\(3\),)
 .73 E F1(db_dbm)2.5 E F0(\(3\),).32 E F1(db_internal)2.5 E F0(\(3\),).51
 E F1(db_loc)2.5 E(k)-.2 E F0(\(3\),).67 E F1(db_lo)2.5 E(g)-.1 E F0
-(\(3\),).22 E F1(db_mpool)2.5 E F0(\(3\),).51 E F1(db_open)108 439.2 Q
+(\(3\),).22 E F1(db_mpool)2.5 E F0(\(3\),).51 E F1(db_open)108 472.8 Q
 F0(\(3\),).24 E F1(db_thr)2.5 E(ead)-.37 E F0(\(3\),).77 E F1(db_txn)2.5
-E F0(\(3\)).24 E(May 3, 1998)280.585 768 Q(9)203.585 E EP
+E F0(\(3\)).24 E(May 10, 1998)278.085 768 Q(9)201.085 E EP
 %%Trailer
 end
 %%EOF

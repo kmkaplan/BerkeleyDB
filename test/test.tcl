@@ -3,9 +3,19 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test.tcl	10.26 (Sleepycat) 4/25/98
+#	@(#)test.tcl	10.28 (Sleepycat) 5/31/98
 
-# Load everything that we need
+source ./include.tcl
+source ../test/testutils.tcl
+source ../test/byteorder.tcl
+
+set testdir ./TESTDIR
+if { [file exists $testdir] != 1 } {
+	exec $MKDIR $testdir
+}
+
+set is_windows_test 0
+
 set parms(test001) 10000
 set parms(test002) 10000
 set parms(test003) ""
@@ -36,15 +46,7 @@ set parms(test027) {100}
 set parms(test028) ""
 set parms(test029) 10000
 
-source ./include.tcl
-source ../test/testutils.tcl
-source ../test/byteorder.tcl
-
 set dict ../test/wordlist
-set testdir ./TESTDIR
-if { [file exists $testdir] != 1 } {
-	exec $MKDIR $testdir
-}
 set alphabet "abcdefghijklmnopqrstuvwxyz"
 set recd_debug 0
 

@@ -17,7 +17,7 @@
 /*
  * __txn_regop_recover --
  *	Recovery function for regop.
- * 
+ *
  * PUBLIC: int __txn_regop_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */
@@ -94,7 +94,7 @@ out:	if (argp != NULL)
 /*
  * __txn_ckp_recover --
  *	Recovery function for ckp.
- * 
+ *
  * PUBLIC: int __txn_ckp_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */

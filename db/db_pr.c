@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)db_pr.c	10.26 (Sleepycat) 4/28/98";
+static const char sccsid[] = "@(#)db_pr.c	10.29 (Sleepycat) 5/23/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -16,7 +16,6 @@ static const char sccsid[] = "@(#)db_pr.c	10.26 (Sleepycat) 4/28/98";
 
 #include <ctype.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -160,7 +159,7 @@ __db_prdb(dbp)
 	}
 
 	fprintf(fp, "%s ", t);
-	__db_prflags(dbp->flags, fn);
+	__db_prflags(dbp->flags, fn, fp);
 	fprintf(fp, "\n");
 
 	return (0);
@@ -219,7 +218,7 @@ __db_prbtree(dbp)
 	(void)fprintf(fp, "\n");
 
 	(void)fprintf(fp, "flags %#lx", (u_long)mp->flags);
-	__db_prflags(mp->flags, mfn);
+	__db_prflags(mp->flags, mfn, fp);
 	(void)fprintf(fp, "\n");
 	(void)memp_fput(dbp->mpf, mp, 0);
 
@@ -708,6 +707,50 @@ __db_pr(p, len)
 }
 
 /*
+ * __db_prdbt --
+ *	Print out a DBT data element.
+ *
+ * PUBLIC: int __db_prdbt __P((DBT *, int, FILE *));
+ */
+int
+__db_prdbt(dbtp, checkprint, fp)
+	DBT *dbtp;
+	int checkprint;
+	FILE *fp;
+{
+	static const char hex[] = "0123456789abcdef";
+	u_int8_t *p;
+	u_int32_t len;
+
+	/*
+	 * !!!
+	 * This routine is the routine that dumps out items in the format
+	 * used by db_dump(1) and db_load(1).  This means that the format
+	 * cannot change.
+	 */
+	if (checkprint) {
+		for (len = dbtp->size, p = dbtp->data; len--; ++p)
+			if (isprint(*p)) {
+				if (*p == '\\' && fprintf(fp, "\\") != 1)
+					return (EIO);
+				if (fprintf(fp, "%c", *p) != 1)
+					return (EIO);
+			} else
+				if (fprintf(fp, "\\%c%c",
+				    hex[(u_int8_t)(*p & 0xf0) >> 4],
+				    hex[*p & 0x0f]) != 3)
+					return (EIO);
+	} else
+		for (len = dbtp->size, p = dbtp->data; len--; ++p)
+			if (fprintf(fp, "%c%c",
+			    hex[(u_int8_t)(*p & 0xf0) >> 4],
+			    hex[*p & 0x0f]) != 2)
+				return (EIO);
+
+	return (fprintf(fp, "\n") == 1 ? 0 : EIO);
+}
+
+/*
  * __db_proff --
  *	Print out an off-page element.
  */
@@ -736,23 +779,21 @@ __db_proff(vp)
  * __db_prflags --
  *	Print out flags values.
  *
- * PUBLIC: void __db_prflags __P((u_int32_t, const FN *));
+ * PUBLIC: void __db_prflags __P((u_int32_t, const FN *, FILE *));
  */
 void
-__db_prflags(flags, fn)
+__db_prflags(flags, fn, fp)
 	u_int32_t flags;
 	FN const *fn;
-{
 	FILE *fp;
+{
 	const FN *fnp;
 	int found;
 	const char *sep;
 
-	fp = __db_prinit(NULL);
-
 	sep = " (";
 	for (found = 0, fnp = fn; fnp->mask != 0; ++fnp)
-		if (fnp->mask & flags) {
+		if (LF_ISSET(fnp->mask)) {
 			fprintf(fp, "%s%s", sep, fnp->name);
 			sep = ", ";
 			found = 1;

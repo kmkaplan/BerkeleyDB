@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)os_config.c	10.22 (Sleepycat) 5/4/98";
+static const char sccsid[] = "@(#)os_config.c	10.26 (Sleepycat) 5/23/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -43,15 +43,6 @@ imported extern int	 close __P((int));
 imported extern void	 free __P((void *));
 imported extern int	 fsync __P((int));
 imported extern void    *malloc __P((size_t));
-/*
- * XXX
- * Including sys/types.h is sufficient to get us a prototype for mmap
- * on HP/UX.
- */
-#ifndef __hppa
-imported extern void	*mmap __P((char *, size_t, int, int, int, off_t));
-imported extern int	 munmap __P((void *, size_t));
-#endif
 imported extern int	 open __P((const char *, int, ...));
 imported extern ssize_t	 read __P((int, void *, size_t));
 imported extern void    *realloc __P((void *, size_t));
@@ -87,9 +78,13 @@ struct __db_jumptab __db_jump = {
 	NULL				/* DB_FUNC_YIELD */
 };
 
-int __db_region_anon;			/* DB_REGION_ANON, DB_REGION_NAME */
-int __db_region_init;			/* DB_REGION_INIT */
-int __db_tsl_spins;			/* DB_TSL_SPINS */
+DB_GLOBALS __db_global_values = {
+	1,				/* DB_MUTEXLOCKS */
+	0,				/* DB_REGION_ANON, DB_REGION_NAME */
+	0,				/* DB_REGION_INIT */
+	0,				/* DB_TSL_SPINS */
+	0				/* DB_PAGEYIELD */
+};
 
 /*
  * db_jump_set --
@@ -181,23 +176,29 @@ db_value_set(value, which)
 	int ret;
 
 	switch (which) {
+	case DB_MUTEXLOCKS:
+		DB_GLOBAL(db_mutexlocks) = value;
+		break;
+	case DB_PAGEYIELD:
+		DB_GLOBAL(db_pageyield) = value;
+		break;
 	case DB_REGION_ANON:
 		if (value != 0 && (ret = __db_mapanon_ok(0)) != 0)
 			return (ret);
-		__db_region_anon = value;
+		DB_GLOBAL(db_region_anon) = value;
 		break;
 	case DB_REGION_INIT:
-		__db_region_init = value;
+		DB_GLOBAL(db_region_init) = value;
 		break;
 	case DB_REGION_NAME:
 		if (value != 0 && (ret = __db_mapanon_ok(1)) != 0)
 			return (ret);
-		__db_region_anon = value;
+		DB_GLOBAL(db_region_anon) = value;
 		break;
 	case DB_TSL_SPINS:
 		if (value <= 0)
 			return (EINVAL);
-		__db_tsl_spins = value;
+		DB_GLOBAL(db_tsl_spins) = value;
 		break;
 	default:
 		return (EINVAL);

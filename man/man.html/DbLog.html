@@ -502,6 +502,10 @@
             file.
        u_int32_t st_version;
             The version of the log file type.
+       u_int32_t st_refcnt;
+            The number of references to the region.
+       u_int32_t st_regsize;
+            The size of the region.
        u_int32_t st_mode;
             The mode of any created log files.
        u_int32_t st_lg_max;
@@ -590,7 +594,6 @@
        default error behavior can be changed, see <B><A HREF="DbException.html">DbException(3)</A></B>.
 
        The DbLog::open method may fail and throw a <B><A HREF="DbException.html">DbException(3)</A></B>
-
        or return errno for any of the errors  specified  for  the
        following DB and library functions: <B><A HREF="DbLog.html">DbLog::close(3)</A></B>,
        <B><A HREF="DbLog.html">DbLog::unlink(3)</A></B>, <B>atoi(3)</B>, <B>close(2)</B>, <B><A HREF="db_appinit.html">db_version(3)</A></B>,
@@ -753,7 +756,6 @@
 
        The  DbLog::db_unregister  method  may  fail  and  throw a
        <B><A HREF="DbException.html">DbException(3)</A></B>
-
        or return errno for any of the errors  specified  for  the
        following DB and library functions: <B>close(2)</B>, <B>fcntl(2)</B>,
        <B>fflush(3)</B>, <B>fsync(2)</B>, <B>lseek(2)</B>, <B>malloc(3)</B>, <B>memcpy(3)</B>,
