@@ -1,11 +1,17 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996-2001
+# Copyright (c) 1996-2002
 #	Sleepycat Software.  All rights reserved.
 #
-# $Id: test045.tcl,v 11.20 2001/05/17 20:37:08 bostic Exp $
+# $Id: test045.tcl,v 11.24 2002/02/07 17:50:10 sue Exp $
 #
-# DB Test 45 Run the random db tester on the specified access method.
+# TEST	test045
+# TEST	Small random tester
+# TEST		Runs a number of random add/delete/retrieve operations.
+# TEST		Tests both successful conditions and error conditions.
+# TEST
+# TEST	Run the random db tester on the specified access method.
+#
 # Options are:
 #	-adds <maximum number of keys before you disable adds>
 #	-cursors <number of cursors>
@@ -17,6 +23,7 @@
 #	-keyavg <average key size>
 proc test045 { method {nops 10000} args } {
 	source ./include.tcl
+	global encrypt
 
 	#
 	# If we are using an env, then skip this test.  It needs its own.
@@ -28,6 +35,10 @@ proc test045 { method {nops 10000} args } {
 		return
 	}
 	set args [convert_args $method $args]
+	if { $encrypt != 0 } {
+		puts "Test045 skipping for security"
+		return
+	}
 	set omethod [convert_method $method]
 
 	puts "Test045: Random tester on $method for $nops operations"
@@ -72,7 +83,7 @@ proc test045 { method {nops 10000} args } {
 	# Run the script with 3 times the number of initial elements to
 	# set it up.
 	set db [eval {berkdb_open \
-	     -create -truncate -mode 0644 $omethod} $oargs {$f}]
+	     -create -mode 0644 $omethod} $oargs {$f}]
 	error_check_good dbopen:$f [is_valid_db $db] TRUE
 
 	set r [$db close]

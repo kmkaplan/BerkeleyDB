@@ -1,13 +1,13 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996-2001
+# Copyright (c) 1996-2002
 #	Sleepycat Software.  All rights reserved.
 #
-# $Id: rsrc003.tcl,v 11.3 2001/05/17 20:37:06 bostic Exp $
+# $Id: rsrc003.tcl,v 11.5 2002/01/11 15:53:33 bostic Exp $
 #
-# Recno backing file test.
-# Try different patterns of adding records and making sure that the
-# corresponding file matches
+# TEST	rsrc003
+# TEST	Recno backing file test.  Try different patterns of adding
+# TEST	records and making sure that the corresponding file matches.
 proc rsrc003 { } {
 	source ./include.tcl
 	global fixed_len
@@ -171,4 +171,3 @@ proc rsrc003 { } {
 	set fixed_len $orig_fixed_len
 	return
 }
-

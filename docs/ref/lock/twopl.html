@@ -1,6 +1,7 @@
 <!--$Id: twopl.so,v 10.11 2001/05/22 19:39:32 bostic Exp $-->
-<!--Copyright 1997-2001 by Sleepycat Software, Inc.-->
+<!--Copyright 1997-2002 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
+<!--See the file LICENSE for redistribution information.-->
 <html>
 <head>
 <title>Berkeley DB Reference Guide: Locking with transactions: two-phase locking</title>
@@ -25,8 +26,8 @@ More formally, once a transaction releases a lock, it may not acquire
 any additional locks.  Practically, this translates into a system in
 which locks are acquired as they are needed throughout a transaction
 and retained until the transaction ends, either by committing or
-aborting.  In Berkeley DB, locks are released during <a href="../../api_c/txn_abort.html">txn_abort</a> or
-<a href="../../api_c/txn_commit.html">txn_commit</a>.  The only exception to this protocol occurs when we
+aborting.  In Berkeley DB, locks are released during <a href="../../api_c/txn_abort.html">DB_TXN-&gt;abort</a> or
+<a href="../../api_c/txn_commit.html">DB_TXN-&gt;commit</a>.  The only exception to this protocol occurs when we
 use lock-coupling to traverse a data structure.  If the locks are held
 only for traversal purposes, it is safe to release locks before
 transactions commit or abort.

@@ -1,6 +1,7 @@
-<!--$Id: memp_fput.so,v 10.20 2001/05/05 01:49:16 bostic Exp $-->
-<!--Copyright 1997-2001 by Sleepycat Software, Inc.-->
+<!--$Id: memp_fput.so,v 10.25 2002/08/24 18:23:30 bostic Exp $-->
+<!--Copyright 1997-2002 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
+<!--See the file LICENSE for redistribution information.-->
 <html>
 <head>
 <title>Berkeley DB: DbMpoolFile::put</title>
@@ -14,7 +15,7 @@
 <h1>DbMpoolFile::put</h1>
 </td>
 <td align=right>
-<a href="../api_cxx/cxx_index.html"><img src="../images/api.gif" alt="API"></a><a href="../reftoc.html"><img src="../images/ref.gif" alt="Ref"></a>
+<a href="../api_cxx/c_index.html"><img src="../images/api.gif" alt="API"></a><a href="../reftoc.html"><img src="../images/ref.gif" alt="Ref"></a>
 </td></tr></table>
 <hr size=1 noshade>
 <tt>
@@ -56,29 +57,17 @@ opened for writing.
 flags was set.
 </dl>
 <p>The DbMpoolFile::put method may fail and throw an exception or return a non-zero error for errors specified for other Berkeley DB and C library or system methods.
-If a catastrophic error has occurred, the DbMpoolFile::put method may fail and either
-return <a href="../ref/program/errorret.html#DB_RUNRECOVERY">DB_RUNRECOVERY</a> or throw an exception encapsulating
-<a href="../ref/program/errorret.html#DB_RUNRECOVERY">DB_RUNRECOVERY</a>, in which case all subsequent Berkeley DB calls will fail
-in the same way.
+If a catastrophic error has occurred, the DbMpoolFile::put method may fail and
+either return <a href="../ref/program/errorret.html#DB_RUNRECOVERY">DB_RUNRECOVERY</a> or throw a
+<a href="../api_cxx/runrec_class.html">DbRunRecoveryException</a>,
+in which case all subsequent Berkeley DB calls will fail in the same way.
 <h1>Class</h1>
-<a href="../api_cxx/dbenv_class.html">DbEnv</a>, <a href="../api_cxx/mempfile_class.html">DbMpoolFile</a>
+<a href="../api_cxx/env_class.html">DbEnv</a>, <a href="../api_cxx/mempfile_class.html">DbMpoolFile</a>
 <h1>See Also</h1>
-<a href="../api_cxx/env_set_cachesize.html">DbEnv::set_cachesize</a>,
-<a href="../api_cxx/env_set_mp_mmapsize.html">DbEnv::set_mp_mmapsize</a>,
-<a href="../api_cxx/memp_fclose.html">DbMpoolFile::close</a>,
-<a href="../api_cxx/memp_fget.html">DbMpoolFile::get</a>,
-<a href="../api_cxx/memp_fopen.html">DbMpoolFile::open</a>,
-<a href="../api_cxx/memp_fput.html">DbMpoolFile::put</a>,
-<a href="../api_cxx/memp_fset.html">DbMpoolFile::set</a>,
-<a href="../api_cxx/memp_fsync.html">DbMpoolFile::sync</a>,
-<a href="../api_cxx/memp_register.html">DbEnv::memp_register</a>,
-<a href="../api_cxx/memp_stat.html">DbEnv::memp_stat</a>,
-<a href="../api_cxx/memp_sync.html">DbEnv::memp_sync</a>,
-and
-<a href="../api_cxx/memp_trickle.html">DbEnv::memp_trickle</a>.
+<a href="../api_cxx/memp_list.html">Memory Pools and Related Methods</a>
 </tt>
 <table width="100%"><tr><td><br></td><td align=right>
-<a href="../api_cxx/cxx_index.html"><img src="../images/api.gif" alt="API"></a><a href="../reftoc.html"><img src="../images/ref.gif" alt="Ref"></a>
+<a href="../api_cxx/c_index.html"><img src="../images/api.gif" alt="API"></a><a href="../reftoc.html"><img src="../images/ref.gif" alt="Ref"></a>
 </td></tr></table>
 <p><font size=1><a href="http://www.sleepycat.com">Copyright Sleepycat Software</a></font>
 </body>

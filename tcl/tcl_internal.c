@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: tcl_internal.c,v 11.36 2001/07/06 20:31:52 bostic Exp $";
+static const char revid[] = "$Id: tcl_internal.c,v 11.54 2002/08/15 02:47:46 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -20,10 +20,10 @@ static const char revid[] = "$Id: tcl_internal.c,v 11.36 2001/07/06 20:31:52 bos
 #endif
 
 #include "db_int.h"
-#include "tcl_db.h"
-#include "db_page.h"
-#include "db_am.h"
-#include "db_ext.h"
+#include "dbinc/tcl_db.h"
+#include "dbinc/db_page.h"
+#include "dbinc/db_am.h"
+#include "dbinc_auto/db_ext.h"
 
 /*
  *
@@ -46,6 +46,16 @@ static const char revid[] = "$Id: tcl_internal.c,v 11.36 2001/07/06 20:31:52 bos
 /*
  * Prototypes for procedures defined later in this file:
  */
+static void tcl_flag_callback __P((u_int32_t, const FN *, void *));
+
+/*
+ * Private structure type used to pass both an interp and an object into
+ * a callback's single void *.
+ */
+struct __tcl_callback_bundle {
+	Tcl_Interp *interp;
+	Tcl_Obj *obj;
+};
 
 #define	GLOB_CHAR(c)	((c) == '*' || (c) == '?')
 
@@ -75,7 +85,7 @@ _NewInfo(interp, anyp, name, type)
 
 	if ((ret = __os_strdup(NULL, name, &p->i_name)) != 0) {
 		Tcl_SetResult(interp, db_strerror(ret), TCL_STATIC);
-		__os_free(NULL, p, sizeof(DBTCL_INFO));
+		__os_free(NULL, p);
 		return (NULL);
 	}
 	p->i_interp = interp;
@@ -91,6 +101,8 @@ _NewInfo(interp, anyp, name, type)
 	p->i_dupcompare = NULL;
 	p->i_hashproc = NULL;
 	p->i_second_call = NULL;
+	p->i_rep_eid = NULL;
+	p->i_rep_send = NULL;
 	for (i = 0; i < MAX_ID; i++)
 		p->i_otherid[i] = 0;
 
@@ -171,13 +183,13 @@ _DeleteInfo(p)
 		return;
 	LIST_REMOVE(p, entries);
 	if (p->i_lockobj.data != NULL)
-		__os_free(NULL, p->i_lockobj.data, p->i_lockobj.size);
+		__os_free(NULL, p->i_lockobj.data);
 	if (p->i_err != NULL) {
 		fclose(p->i_err);
 		p->i_err = NULL;
 	}
 	if (p->i_errpfx != NULL)
-		__os_freestr(NULL, p->i_errpfx);
+		__os_free(NULL, p->i_errpfx);
 	if (p->i_btcompare != NULL)
 		Tcl_DecrRefCount(p->i_btcompare);
 	if (p->i_dupcompare != NULL)
@@ -186,8 +198,12 @@ _DeleteInfo(p)
 		Tcl_DecrRefCount(p->i_hashproc);
 	if (p->i_second_call != NULL)
 		Tcl_DecrRefCount(p->i_second_call);
-	__os_freestr(NULL, p->i_name);
-	__os_free(NULL, p, sizeof(DBTCL_INFO));
+	if (p->i_rep_eid != NULL)
+		Tcl_DecrRefCount(p->i_rep_eid);
+	if (p->i_rep_send != NULL)
+		Tcl_DecrRefCount(p->i_rep_send);
+	__os_free(NULL, p->i_name);
+	__os_free(NULL, p);
 
 	return;
 }
@@ -254,7 +270,7 @@ _SetListRecnoElem(interp, list, elem1, elem2, e2size)
 	int myobjc;
 
 	myobjc = 2;
-	myobjv[0] = Tcl_NewIntObj(elem1);
+	myobjv[0] = Tcl_NewLongObj((long)elem1);
 	myobjv[1] = Tcl_NewByteArrayObj(elem2, e2size);
 	thislist = Tcl_NewListObj(myobjc, myobjv);
 	if (thislist == NULL)
@@ -290,13 +306,13 @@ _Set3DBTList(interp, list, elem1, is1recno, elem2, is2recno, elem3)
 	Tcl_Obj *myobjv[3], *thislist;
 
 	if (is1recno)
-		myobjv[0] = Tcl_NewIntObj(*(db_recno_t *)elem1->data);
+		myobjv[0] = Tcl_NewLongObj((long)*(db_recno_t *)elem1->data);
 	else
 		myobjv[0] =
 		    Tcl_NewByteArrayObj((u_char *)elem1->data, elem1->size);
 
 	if (is2recno)
-		myobjv[1] = Tcl_NewIntObj(*(db_recno_t *)elem2->data);
+		myobjv[1] = Tcl_NewLongObj((long)*(db_recno_t *)elem2->data);
 	else
 		myobjv[1] =
 		    Tcl_NewByteArrayObj((u_char *)elem2->data, elem2->size);
@@ -347,7 +363,7 @@ _SetMultiList(interp, list, key, data, type, flag)
 				    data, recno, dp, dlen);
 			else
 				DB_MULTIPLE_KEY_NEXT(pointer,
-				     data, kp, klen, dp, dlen);
+				    data, kp, klen, dp, dlen);
 		} else
 			DB_MULTIPLE_NEXT(pointer, data, dp, dlen);
 
@@ -355,7 +371,8 @@ _SetMultiList(interp, list, key, data, type, flag)
 			break;
 
 		if (type == DB_RECNO || type == DB_QUEUE) {
-			result = _SetListRecnoElem(interp, list, recno, dp, dlen);
+			result =
+			    _SetListRecnoElem(interp, list, recno, dp, dlen);
 			recno++;
 		} else
 			result = _SetListElem(interp, list, kp, klen, dp, dlen);
@@ -395,12 +412,12 @@ _GetGlobPrefix(pattern, prefix)
 }
 
 /*
- * PUBLIC: int _ReturnSetup __P((Tcl_Interp *, int, char *));
+ * PUBLIC: int _ReturnSetup __P((Tcl_Interp *, int, int, char *));
  */
 int
-_ReturnSetup(interp, ret, errmsg)
+_ReturnSetup(interp, ret, ok, errmsg)
 	Tcl_Interp *interp;
-	int ret;
+	int ret, ok;
 	char *errmsg;
 {
 	char *msg;
@@ -423,12 +440,9 @@ _ReturnSetup(interp, ret, errmsg)
 	msg = db_strerror(ret);
 	Tcl_AppendResult(interp, msg, NULL);
 
-	switch (ret) {
-	case DB_NOTFOUND:
-	case DB_KEYEXIST:
-	case DB_KEYEMPTY:
+	if (ok)
 		return (TCL_OK);
-	default:
+	else {
 		Tcl_SetErrorCode(interp, "BerkeleyDB", msg, NULL);
 		return (TCL_ERROR);
 	}
@@ -479,7 +493,7 @@ _ErrorFunc(pfx, msg)
 	snprintf(err, size, "%s: %s", pfx, msg);
 	Tcl_AddErrorInfo(interp, err);
 	Tcl_AppendResult(interp, err, "\n", NULL);
-	__os_free(NULL, err, size);
+	__os_free(NULL, err);
 	return;
 }
 
@@ -558,6 +572,75 @@ _GetUInt32(interp, obj, resp)
 	return (TCL_OK);
 }
 
+/*
+ * tcl_flag_callback --
+ *	Callback for db_pr.c functions that contain the FN struct mapping
+ * flag values to meaningful strings.  This function appends a Tcl_Obj
+ * containing each pertinent flag string to the specified Tcl list.
+ */
+static void
+tcl_flag_callback(flags, fn, vtcbp)
+	u_int32_t flags;
+	const FN *fn;
+	void *vtcbp;
+{
+	const FN *fnp;
+	Tcl_Interp *interp;
+	Tcl_Obj *newobj, *listobj;
+	int result;
+	struct __tcl_callback_bundle *tcbp;
+
+	tcbp = (struct __tcl_callback_bundle *)vtcbp;
+	interp = tcbp->interp;
+	listobj = tcbp->obj;
+
+	for (fnp = fn; fnp->mask != 0; ++fnp)
+		if (LF_ISSET(fnp->mask)) {
+			newobj = Tcl_NewStringObj(fnp->name, strlen(fnp->name));
+			result =
+			    Tcl_ListObjAppendElement(interp, listobj, newobj);
+
+			/*
+			 * Tcl_ListObjAppendElement is defined to return TCL_OK
+			 * unless listobj isn't actually a list (or convertible
+			 * into one).  If this is the case, we screwed up badly
+			 * somehow.
+			 */
+			DB_ASSERT(result == TCL_OK);
+		}
+}
+
+/*
+ * _GetFlagsList --
+ *	Get a new Tcl object, containing a list of the string values
+ * associated with a particular set of flag values, given a function
+ * that can extract the right names for the right flags.
+ *
+ * PUBLIC: Tcl_Obj *_GetFlagsList __P((Tcl_Interp *, u_int32_t,
+ * PUBLIC:     void (*)(u_int32_t, void *,
+ * PUBLIC:     void (*)(u_int32_t, const FN *, void *))));
+ */
+Tcl_Obj *
+_GetFlagsList(interp, flags, func)
+	Tcl_Interp *interp;
+	u_int32_t flags;
+	void (*func)
+	    __P((u_int32_t, void *, void (*)(u_int32_t, const FN *, void *)));
+{
+	Tcl_Obj *newlist;
+	struct __tcl_callback_bundle tcb;
+
+	newlist = Tcl_NewObj();
+
+	memset(&tcb, 0, sizeof(tcb));
+	tcb.interp = interp;
+	tcb.obj = newlist;
+
+	func(flags, &tcb, tcl_flag_callback);
+
+	return (newlist);
+}
+
 int __debug_stop, __debug_on, __debug_print, __debug_test;
 
 /*
@@ -570,9 +653,65 @@ _debug_check()
 		return;
 
 	if (__debug_print != 0) {
-		printf("\r%6d:", __debug_on);
+		printf("\r%7d:", __debug_on);
 		fflush(stdout);
 	}
 	if (__debug_on++ == __debug_test || __debug_stop)
 		__db_loadme();
+}
+
+/*
+ * XXX
+ * Tcl 8.1+ Tcl_GetByteArrayFromObj/Tcl_GetIntFromObj bug.
+ *
+ * There is a bug in Tcl 8.1+ and byte arrays in that if it happens
+ * to use an object as both a byte array and something else like
+ * an int, and you've done a Tcl_GetByteArrayFromObj, then you
+ * do a Tcl_GetIntFromObj, your memory is deleted.
+ *
+ * Workaround is for all byte arrays we want to use, if it can be
+ * represented as an integer, we copy it so that we don't lose the
+ * memory.
+ */
+/*
+ * PUBLIC: int _CopyObjBytes  __P((Tcl_Interp *, Tcl_Obj *obj, void **,
+ * PUBLIC:     u_int32_t *, int *));
+ */
+int
+_CopyObjBytes(interp, obj, newp, sizep, freep)
+	Tcl_Interp *interp;
+	Tcl_Obj *obj;
+	void **newp;
+	u_int32_t *sizep;
+	int *freep;
+{
+	void *tmp, *new;
+	int i, len, ret;
+
+	/*
+	 * If the object is not an int, then just return the byte
+	 * array because it won't be transformed out from under us.
+	 * If it is a number, we need to copy it.
+	 */
+	*freep = 0;
+	ret = Tcl_GetIntFromObj(interp, obj, &i);
+	tmp = Tcl_GetByteArrayFromObj(obj, &len);
+	*sizep = len;
+	if (ret == TCL_ERROR) {
+		Tcl_ResetResult(interp);
+		*newp = tmp;
+		return (0);
+	}
+
+	/*
+	 * If we get here, we have an integer that might be reused
+	 * at some other point so we cannot count on GetByteArray
+	 * keeping our pointer valid.
+	 */
+	if ((ret = __os_malloc(NULL, len, &new)) != 0)
+		return (ret);
+	memcpy(new, tmp, len);
+	*newp = new;
+	*freep = 1;
+	return (0);
 }

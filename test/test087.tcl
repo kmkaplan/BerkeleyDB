@@ -1,33 +1,38 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1999-2001
+# Copyright (c) 1999-2002
 #	Sleepycat Software.  All rights reserved.
 #
-# $Id: test087.tcl,v 11.9 2001/07/02 01:08:46 bostic Exp $
+# $Id: test087.tcl,v 11.14 2002/07/08 20:16:31 sue Exp $
 #
-# DB Test 87: Test of cursor stability on duplicate pages w/aborts.
-# Does the following:
-#    a. Initialize things by DB->putting ndups dups and
-#       setting a reference cursor to point to each.  Do each put twice,
-#	first aborting, then committing, so we're sure to abort the move
-#	to off-page dups at some point.
-#    b. c_put ndups dups (and correspondingly expanding
-#       the set of reference cursors) after the last one, making sure
-#       after each step that all the reference cursors still point to
-#       the right item.
-#    c. Ditto, but before the first one.
-#    d. Ditto, but after each one in sequence first to last.
-#    e. Ditto, but after each one in sequence from last to first.
-#       occur relative to the new datum)
-#    f. Ditto for the two sequence tests, only doing a
-#       DBC->c_put(DB_CURRENT) of a larger datum instead of adding a
-#       new one.
+# TEST	test087
+# TEST	Test of cursor stability when converting to and modifying
+# TEST	off-page duplicate pages with subtransaction aborts. [#2373]
+# TEST
+# TEST	Does the following:
+# TEST	a. Initialize things by DB->putting ndups dups and
+# TEST	   setting a reference cursor to point to each.  Do each put twice,
+# TEST	   first aborting, then committing, so we're sure to abort the move
+# TEST	   to off-page dups at some point.
+# TEST	b. c_put ndups dups (and correspondingly expanding
+# TEST	   the set of reference cursors) after the last one, making sure
+# TEST	   after each step that all the reference cursors still point to
+# TEST	   the right item.
+# TEST	c. Ditto, but before the first one.
+# TEST	d. Ditto, but after each one in sequence first to last.
+# TEST	e. Ditto, but after each one in sequence from last to first.
+# TEST	   occur relative to the new datum)
+# TEST	f. Ditto for the two sequence tests, only doing a
+# TEST	   DBC->c_put(DB_CURRENT) of a larger datum instead of adding a
+# TEST	   new one.
 proc test087 { method {pagesize 512} {ndups 50} {tnum 87} args } {
 	source ./include.tcl
 	global alphabet
 
-	set omethod [convert_method $method]
 	set args [convert_args $method $args]
+	set encargs ""
+	set args [split_encargs $args encargs]
+	set omethod [convert_method $method]
 
 	puts "Test0$tnum $omethod ($args): "
 	set eindex [lsearch -exact $args "-env"]
@@ -54,11 +59,11 @@ proc test087 { method {pagesize 512} {ndups 50} {tnum 87} args } {
 		puts "Cursor stability on dup. pages w/ aborts."
 	}
 
-	set env [berkdb env -create -home $testdir -txn]
+	set env [eval {berkdb_env -create -home $testdir -txn} $encargs]
 	error_check_good env_create [is_valid_env $env] TRUE
 
-	set db [eval {berkdb_open -env $env \
-	     -create -mode 0644} $omethod $args $testfile]
+	set db [eval {berkdb_open -auto_commit \
+	     -create -env $env -mode 0644} $omethod $args $testfile]
 	error_check_good "db open" [is_valid_db $db] TRUE
 
 	# Number of outstanding keys.

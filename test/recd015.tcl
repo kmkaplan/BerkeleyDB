@@ -1,14 +1,14 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1999-2001
+# Copyright (c) 1999-2002
 #	Sleepycat Software.  All rights reserved.
 #
-# $Id: recd015.tcl,v 1.8 2001/05/17 20:37:06 bostic Exp $
+# $Id: recd015.tcl,v 1.13 2002/09/05 17:23:06 sandstro Exp $
 #
-# Recovery Test 15.
-# This is a recovery test for testing lots of prepared txns.
-# This test is to force the use of txn_recover to call with the
-# DB_FIRST flag and then DB_NEXT.
+# TEST	recd015
+# TEST	This is a recovery test for testing lots of prepared txns.
+# TEST	This test is to force the use of txn_recover to call with the
+# TEST	DB_FIRST flag and then DB_NEXT.
 proc recd015 { method args } {
 	source ./include.tcl
 
@@ -22,7 +22,7 @@ proc recd015 { method args } {
 	set numtxns 1
 	set testfile NULL
 
-	set env_cmd "berkdb env -create -txn -home $testdir"
+	set env_cmd "berkdb_env -create -txn -home $testdir"
 	set msg "\tRecd015.a"
 	puts "$msg Simple test to prepare $numtxns txn "
 	foreach op { abort commit discard } {
@@ -42,7 +42,7 @@ proc recd015 { method args } {
 	# don't need to send methods and args to the script.
 	#
 	env_cleanup $testdir
-	set env_cmd "berkdb env -create -txn_max $txnmax -txn -home $testdir"
+	set env_cmd "berkdb_env -create -txn_max $txnmax -txn -home $testdir"
 	set env [eval $env_cmd]
 	error_check_good dbenv [is_valid_env $env] TRUE
 	set db [eval {berkdb_open -create} $omethod -env $env $args $testfile]
@@ -68,14 +68,14 @@ proc recd015_body { env_cmd testfile numtxns msg op } {
 	sentinel_init
 	set gidf $testdir/gidfile
 	fileremove -f $gidf
-	set proclist {}
+	set pidlist {}
 	puts "$msg.0: Executing child script to prepare txns"
 	berkdb debug_check
-	set p [exec $tclsh_path $test_path/wrap.tcl recd15script.tcl \
+	set p [exec $tclsh_path $test_path/wrap.tcl recd15scr.tcl \
 	    $testdir/recdout $env_cmd $testfile $gidf $numtxns &]
 
-	lappend proclist $p
-	watch_procs 5
+	lappend pidlist $p
+	watch_procs $pidlist 5
 	set f1 [open $testdir/recdout r]
 	set r [read $f1]
 	puts $r

@@ -1,13 +1,14 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 2001
+# Copyright (c) 2001-2002
 #	Sleepycat Software.  All rights reserved.
 #
-# $Id: si004.tcl,v 1.2 2001/05/17 20:37:07 bostic Exp $
+# $Id: si004.tcl,v 1.6 2002/04/29 17:12:03 sandstro Exp $
 #
-# Sindex004: Basic cursor-based secondary index put/delete test, with
-#	secondaries created mid-test.
-
+# TEST	sindex004
+# TEST	sindex002 with secondaries created and closed mid-test
+# TEST	Basic cursor-based secondary index put/delete test, with
+# TEST	secondaries created mid-test.
 proc sindex004 { methods {nentries 200} {tnum 4} args } {
 	source ./include.tcl
 	global dict nsecondaries
@@ -38,7 +39,7 @@ proc sindex004 { methods {nentries 200} {tnum 4} args } {
 
 	# Open an environment
 	# XXX if one is not supplied!
-	set env [berkdb env -create -home $testdir]
+	set env [berkdb_env -create -home $testdir]
 	error_check_good env_open [is_valid_env $env] TRUE
 
 	# Open the primary.
@@ -143,7 +144,7 @@ proc sindex004 { methods {nentries 200} {tnum 4} args } {
 	}
 
 	# Delete the second half of the entries through the primary.
-	# We do the second half so we can just pass keys(0..n/2)
+	# We do the second half so we can just pass keys(0 ... n/2)
 	# to check_secondaries.
 	set half [expr $nentries / 2]
 	puts -nonewline "\tSindex00$tnum.d:\

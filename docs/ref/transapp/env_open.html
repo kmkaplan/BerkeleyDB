@@ -1,6 +1,7 @@
-<!--$Id: env_open.so,v 1.3 2001/05/08 15:03:08 bostic Exp $-->
-<!--Copyright 1997-2001 by Sleepycat Software, Inc.-->
+<!--$Id: env_open.so,v 1.4 2002/06/24 14:51:07 bostic Exp $-->
+<!--Copyright 1997-2002 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
+<!--See the file LICENSE for redistribution information.-->
 <html>
 <head>
 <title>Berkeley DB Reference Guide: Opening the environment</title>
@@ -24,7 +25,7 @@ should be specified.
 databases within the environment.  Once the databases are opened, the
 application makes changes to the databases inside of transactions.  Each
 set of changes that entails a unit of work should be surrounded by the
-appropriate <a href="../../api_c/txn_begin.html">txn_begin</a>, <a href="../../api_c/txn_commit.html">txn_commit</a>, and <a href="../../api_c/txn_abort.html">txn_abort</a>
+appropriate <a href="../../api_c/txn_begin.html">DB_ENV-&gt;txn_begin</a>, <a href="../../api_c/txn_commit.html">DB_TXN-&gt;commit</a>, and <a href="../../api_c/txn_abort.html">DB_TXN-&gt;abort</a>
 calls.  The Berkeley DB access methods will make the appropriate calls into
 the Lock, Log and Memory Pool subsystems in order to guarantee
 transaction semantics.  When the application is ready to exit, all
@@ -35,7 +36,7 @@ Berkeley DB files should be closed.  When the Berkeley DB database files have be
 closed, the environment should be closed by calling
 <a href="../../api_c/env_close.html">DB_ENV-&gt;close</a>.
 <p>The following code fragment creates the database environment directory
-then opens the environment, running recovery.  Our DB_ENV
+then opens the environment, running recovery.  Our <a href="../../api_c/env_class.html">DB_ENV</a>
 database environment handle is declared to be free-threaded using the
 <a href="../../api_c/env_open.html#DB_THREAD">DB_THREAD</a> flag, and so may be used by any number of threads that
 we may subsequently create.
@@ -43,7 +44,6 @@ we may subsequently create.
 #include &lt;sys/stat.h&gt;
 <p>
 #include &lt;errno.h&gt;
-#include &lt;pthread.h&gt;
 #include &lt;stdarg.h&gt;
 #include &lt;stdlib.h&gt;
 #include &lt;string.h&gt;
@@ -63,7 +63,6 @@ main(int argc, char *argv)
 	extern int optind;
 	DB *db_cats, *db_color, *db_fruit;
 	DB_ENV *dbenv;
-	pthread_t ptid;
 	int ch;
 <p>
 	while ((ch = getopt(argc, argv, "")) != EOF)
@@ -129,6 +128,7 @@ env_open(DB_ENV **dbenvp)
 	    DB_CREATE | DB_INIT_LOCK | DB_INIT_LOG |
 	    DB_INIT_MPOOL | DB_INIT_TXN | DB_RECOVER | DB_THREAD,
 	    S_IRUSR | S_IWUSR)) != 0) {
+		(void)dbenv-&gt;close(dbenv, 0);
 		dbenv-&gt;err(dbenv, ret, "dbenv-&gt;open: %s", ENV_DIRECTORY);
 		exit (1);
 	}

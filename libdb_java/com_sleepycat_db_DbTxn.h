@@ -3,7 +3,7 @@
 /* Header for class com_sleepycat_db_DbTxn */
 
 #ifndef _Included_com_sleepycat_db_DbTxn
-#define	_Included_com_sleepycat_db_DbTxn
+#define _Included_com_sleepycat_db_DbTxn
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -25,6 +25,14 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbTxn_commit
 
 /*
  * Class:     com_sleepycat_db_DbTxn
+ * Method:    discard
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbTxn_discard
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     com_sleepycat_db_DbTxn
  * Method:    id
  * Signature: ()I
  */
@@ -41,11 +49,11 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbTxn_prepare
 
 /*
  * Class:     com_sleepycat_db_DbTxn
- * Method:    finalize
- * Signature: ()V
+ * Method:    set_timeout
+ * Signature: (JI)V
  */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbTxn_finalize
-  (JNIEnv *, jobject);
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbTxn_set_1timeout
+  (JNIEnv *, jobject, jlong, jint);
 
 #ifdef __cplusplus
 }

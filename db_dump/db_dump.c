@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996-2001
+ * Copyright (c) 1996-2002
  *	Sleepycat Software.  All rights reserved.
  */
 
@@ -9,9 +9,9 @@
 
 #ifndef lint
 static const char copyright[] =
-    "Copyright (c) 1996-2001\nSleepycat Software Inc.  All rights reserved.\n";
+    "Copyright (c) 1996-2002\nSleepycat Software Inc.  All rights reserved.\n";
 static const char revid[] =
-    "$Id: db_dump.c,v 11.55 2001/07/06 20:30:20 bostic Exp $";
+    "$Id: db_dump.c,v 11.80 2002/08/08 03:50:34 bostic Exp $";
 #endif
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -24,26 +24,17 @@ static const char revid[] =
 #endif
 
 #include "db_int.h"
-#include "db_page.h"
-#include "db_shash.h"
-#include "btree.h"
-#include "hash.h"
-#include "lock.h"
-#include "clib_ext.h"
+#include "dbinc/db_page.h"
+#include "dbinc/db_am.h"
 
-void	 configure __P((char *));
-int	 db_init __P((char *));
+int	 db_init __P((DB_ENV *, char *, int, u_int32_t, int *));
 int	 dump __P((DB *, int, int));
-int	 dump_sub __P((DB *, char *, int, int));
+int	 dump_sub __P((DB_ENV *, DB *, char *, int, int));
 int	 is_sub __P((DB *, int *));
 int	 main __P((int, char *[]));
 int	 show_subs __P((DB *));
-void	 usage __P((void));
-void	 version_check __P((void));
-
-DB_ENV	*dbenv;
-const char
-	*progname = "db_dump";				/* Program name. */
+int	 usage __P((void));
+int	 version_check __P((const char *));
 
 int
 main(argc, argv)
@@ -52,19 +43,25 @@ main(argc, argv)
 {
 	extern char *optarg;
 	extern int optind;
+	const char *progname = "db_dump";
+	DB_ENV	*dbenv;
 	DB *dbp;
+	u_int32_t cache;
 	int ch, d_close;
-	int e_close, exitval;
-	int lflag, nflag, pflag, ret, rflag, Rflag, subs, keyflag;
-	char *dopt, *home, *subname;
+	int e_close, exitval, keyflag, lflag, nflag, pflag, private;
+	int ret, Rflag, rflag, resize, subs;
+	char *dopt, *home, *passwd, *subname;
 
-	version_check();
+	if ((ret = version_check(progname)) != 0)
+		return (ret);
 
 	dbp = NULL;
 	d_close = e_close = exitval = lflag = nflag = pflag = rflag = Rflag = 0;
 	keyflag = 0;
-	dopt = home = subname = NULL;
-	while ((ch = getopt(argc, argv, "d:f:h:klNprRs:V")) != EOF)
+	cache = MEGABYTE;
+	private = 0;
+	dopt = home = passwd = subname = NULL;
+	while ((ch = getopt(argc, argv, "d:f:h:klNpP:rRs:V")) != EOF)
 		switch (ch) {
 		case 'd':
 			dopt = optarg;
@@ -87,10 +84,13 @@ main(argc, argv)
 			break;
 		case 'N':
 			nflag = 1;
-			if ((ret = db_env_set_panicstate(0)) != 0) {
-				fprintf(stderr,
-				    "%s: db_env_set_panicstate: %s\n",
-				    progname, db_strerror(ret));
+			break;
+		case 'P':
+			passwd = strdup(optarg);
+			memset(optarg, 0, strlen(optarg));
+			if (passwd == NULL) {
+				fprintf(stderr, "%s: strdup: %s\n",
+				    progname, strerror(errno));
 				return (EXIT_FAILURE);
 			}
 			break;
@@ -112,13 +112,13 @@ main(argc, argv)
 			return (EXIT_SUCCESS);
 		case '?':
 		default:
-			usage();
+			return (usage());
 		}
 	argc -= optind;
 	argv += optind;
 
 	if (argc != 1)
-		usage();
+		return (usage());
 
 	if (dopt != NULL && pflag) {
 		fprintf(stderr,
@@ -154,7 +154,7 @@ main(argc, argv)
 	 * Create an environment object and initialize it for error
 	 * reporting.
 	 */
-	if ((ret = db_env_create(&dbenv, 0)) != 0) {
+retry:	if ((ret = db_env_create(&dbenv, 0)) != 0) {
 		fprintf(stderr,
 		    "%s: db_env_create: %s\n", progname, db_strerror(ret));
 		goto err;
@@ -163,14 +163,24 @@ main(argc, argv)
 
 	dbenv->set_errfile(dbenv, stderr);
 	dbenv->set_errpfx(dbenv, progname);
-
-	if (nflag && (ret = dbenv->set_mutexlocks(dbenv, 0)) != 0) {
-		dbenv->err(dbenv, ret, "set_mutexlocks");
+	if (nflag) {
+		if ((ret = dbenv->set_flags(dbenv, DB_NOLOCKING, 1)) != 0) {
+			dbenv->err(dbenv, ret, "set_flags: DB_NOLOCKING");
+			goto err;
+		}
+		if ((ret = dbenv->set_flags(dbenv, DB_NOPANIC, 1)) != 0) {
+			dbenv->err(dbenv, ret, "set_flags: DB_NOPANIC");
+			goto err;
+		}
+	}
+	if (passwd != NULL && (ret = dbenv->set_encrypt(dbenv,
+	    passwd, DB_ENCRYPT_AES)) != 0) {
+		dbenv->err(dbenv, ret, "set_passwd");
 		goto err;
 	}
 
 	/* Initialize the environment. */
-	if (db_init(home) != 0)
+	if (db_init(dbenv, home, rflag, cache, &private) != 0)
 		goto err;
 
 	/* Create the DB object and open the file. */
@@ -186,16 +196,30 @@ main(argc, argv)
 	 */
 	if (rflag) {
 		if ((ret = dbp->verify(dbp, argv[0], NULL, stdout,
-		    DB_SALVAGE | (Rflag ? DB_AGGRESSIVE : 0))) != 0)
+		    DB_SALVAGE |
+		    (Rflag ? DB_AGGRESSIVE : 0) |
+		    (pflag ? DB_PRINTABLE : 0))) != 0)
 			goto err;
 		exitval = 0;
 		goto done;
 	}
 
-	if ((ret = dbp->open(dbp,
+	if ((ret = dbp->open(dbp, NULL,
 	    argv[0], subname, DB_UNKNOWN, DB_RDONLY, 0)) != 0) {
 		dbp->err(dbp, ret, "open: %s", argv[0]);
 		goto err;
+	}
+	if (private != 0) {
+		if ((ret = __db_util_cache(dbenv, dbp, &cache, &resize)) != 0)
+			goto err;
+		if (resize) {
+			(void)dbp->close(dbp, 0);
+			d_close = 0;
+
+			(void)dbenv->close(dbenv, 0);
+			e_close = 0;
+			goto retry;
+		}
 	}
 
 	if (dopt != NULL) {
@@ -218,7 +242,7 @@ main(argc, argv)
 		if (subname == NULL && is_sub(dbp, &subs))
 			goto err;
 		if (subs) {
-			if (dump_sub(dbp, argv[0], pflag, keyflag))
+			if (dump_sub(dbenv, dbp, argv[0], pflag, keyflag))
 				goto err;
 		} else
 			if (__db_prheader(dbp, NULL, pflag, keyflag, stdout,
@@ -251,24 +275,36 @@ done:	if (d_close && (ret = dbp->close(dbp, 0)) != 0) {
  *	Initialize the environment.
  */
 int
-db_init(home)
+db_init(dbenv, home, is_salvage, cache, is_privatep)
+	DB_ENV *dbenv;
 	char *home;
+	int is_salvage;
+	u_int32_t cache;
+	int *is_privatep;
 {
 	int ret;
 
 	/*
-	 * Try and use the underlying environment when opening a database.  We
-	 * wish to use the buffer pool so our information is as up-to-date as
-	 * possible, even if the mpool cache hasn't been flushed;  we wish to
-	 * use the locking system, if present, so that we are safe to use with
-	 * transactions.  (We don't need to use transactions explicitly, as
-	 * we're read-only.)
+	 * Try and use the underlying environment when opening a database.
+	 * We wish to use the buffer pool so our information is as up-to-date
+	 * as possible, even if the mpool cache hasn't been flushed.
 	 *
-	 * Note that in CDB, too, this will configure our environment
+	 * If we are not doing a salvage, we wish to use the DB_JOINENV flag;
+	 * if a locking system is present, this will let us use it and be
+	 * safe to run concurrently with other threads of control.  (We never
+	 * need to use transactions explicitly, as we're read-only.)  Note
+	 * that in CDB, too, this will configure our environment
 	 * appropriately, and our cursors will (correctly) do locking as CDB
 	 * read cursors.
+	 *
+	 * If we are doing a salvage, the verification code will protest
+	 * if we initialize transactions, logging, or locking;  do an
+	 * explicit DB_INIT_MPOOL to try to join any existing environment
+	 * before we create our own.
 	 */
-	if (dbenv->open(dbenv, home, DB_JOINENV | DB_USE_ENVIRON, 0) == 0)
+	*is_privatep = 0;
+	if (dbenv->open(dbenv, home,
+	    DB_USE_ENVIRON | (is_salvage ? DB_INIT_MPOOL : DB_JOINENV), 0) == 0)
 		return (0);
 
 	/*
@@ -280,15 +316,9 @@ db_init(home)
 	 * No environment exists (or, at least no environment that includes
 	 * an mpool region exists).  Create one, but make it private so that
 	 * no files are actually created.
-	 *
-	 * Note that for many databases with a large page size, the default
-	 * cache size is too small--at 64K, we can fit only four pages into
-	 * the default of 256K.  Because this is a utility, it's probably
-	 * reasonable to grab more--real restrictive environments aren't
-	 * going to run db_dump from a shell.  Since we malloc a megabyte for
-	 * the bulk get buffer, be conservative and use a megabyte here too.
 	 */
-	if ((ret = dbenv->set_cachesize(dbenv, 0, MEGABYTE, 1)) == 0 &&
+	*is_privatep = 1;
+	if ((ret = dbenv->set_cachesize(dbenv, 0, cache, 1)) == 0 &&
 	    (ret = dbenv->open(dbenv, home,
 	    DB_CREATE | DB_INIT_MPOOL | DB_PRIVATE | DB_USE_ENVIRON, 0)) == 0)
 		return (0);
@@ -319,6 +349,7 @@ is_sub(dbp, yesno)
 			return (ret);
 		}
 		*yesno = btsp->bt_metaflags & BTM_SUBDB ? 1 : 0;
+		free(btsp);
 		break;
 	case DB_HASH:
 		if ((ret = dbp->stat(dbp, &hsp, DB_FAST_STAT)) != 0) {
@@ -326,6 +357,7 @@ is_sub(dbp, yesno)
 			return (ret);
 		}
 		*yesno = hsp->hash_metaflags & DB_HASH_SUBDB ? 1 : 0;
+		free(hsp);
 		break;
 	case DB_QUEUE:
 		break;
@@ -341,7 +373,8 @@ is_sub(dbp, yesno)
  *	Dump out the records for a DB containing subdatabases.
  */
 int
-dump_sub(parent_dbp, parent_name, pflag, keyflag)
+dump_sub(dbenv, parent_dbp, parent_name, pflag, keyflag)
+	DB_ENV *dbenv;
 	DB *parent_dbp;
 	char *parent_name;
 	int pflag, keyflag;
@@ -378,7 +411,7 @@ dump_sub(parent_dbp, parent_name, pflag, keyflag)
 			free(subdb);
 			return (1);
 		}
-		if ((ret = dbp->open(dbp,
+		if ((ret = dbp->open(dbp, NULL,
 		    parent_name, subdb, DB_UNKNOWN, DB_RDONLY, 0)) != 0)
 			dbp->err(dbp, ret,
 			    "DB->open: %s:%s", parent_name, subdb);
@@ -460,7 +493,7 @@ dump(dbp, pflag, keyflag)
 	DBT key, data;
 	DBT keyret, dataret;
 	db_recno_t recno;
-	int ret, is_recno;
+	int is_recno, failed, ret;
 	void *pointer;
 
 	/*
@@ -472,9 +505,15 @@ dump(dbp, pflag, keyflag)
 		return (1);
 	}
 
+	failed = 0;
 	memset(&key, 0, sizeof(key));
 	memset(&data, 0, sizeof(data));
 	data.data = malloc(1024 * 1024);
+	if (data.data == NULL) {
+		dbp->err(dbp, ENOMEM, "bulk get buffer");
+		failed = 1;
+		goto err;
+	}
 	data.ulen = 1024 * 1024;
 	data.flags = DB_DBT_USERMEM;
 	is_recno = (dbp->type == DB_RECNO || dbp->type == DB_QUEUE);
@@ -491,11 +530,11 @@ retry:
 		for (;;) {
 			if (is_recno)
 				DB_MULTIPLE_RECNO_NEXT(pointer, &data,
-				     recno, dataret.data, dataret.size);
+				    recno, dataret.data, dataret.size);
 			else
 				DB_MULTIPLE_KEY_NEXT(pointer,
-				     &data, keyret.data,
-				     keyret.size, dataret.data, dataret.size);
+				    &data, keyret.data,
+				    keyret.size, dataret.data, dataret.size);
 
 			if (dataret.data == NULL)
 				break;
@@ -506,44 +545,55 @@ retry:
 			    __db_prdbt(&dataret, pflag, " ", stdout,
 				__db_verify_callback, 0, NULL)) != 0) {
 				dbp->errx(dbp, NULL);
-				return (1);
+				failed = 1;
+				goto err;
 			}
 		}
 	}
 	if (ret == ENOMEM) {
 		data.data = realloc(data.data, data.size);
+		if (data.data == NULL) {
+			dbp->err(dbp, ENOMEM, "bulk get buffer");
+			failed = 1;
+			goto err;
+		}
 		data.ulen = data.size;
 		goto retry;
 	}
 
 	if (ret != DB_NOTFOUND) {
 		dbp->err(dbp, ret, "DBcursor->get");
-		return (1);
+		failed = 1;
 	}
+
+err:	if (data.data != NULL)
+		free(data.data);
 
 	if ((ret = dbcp->c_close(dbcp)) != 0) {
 		dbp->err(dbp, ret, "DBcursor->close");
-		return (1);
+		failed = 1;
 	}
 
 	(void)__db_prfooter(stdout, __db_verify_callback);
-	return (0);
+	return (failed);
 }
 
 /*
  * usage --
  *	Display the usage message.
  */
-void
+int
 usage()
 {
-	(void)fprintf(stderr, "usage: %s\n",
-"db_dump [-klNprRV] [-d ahr] [-f output] [-h home] [-s database] db_file");
-	exit(EXIT_FAILURE);
+	(void)fprintf(stderr, "%s\n\t%s\n",
+	    "usage: db_dump [-klNprRV]",
+    "[-d ahr] [-f output] [-h home] [-P password] [-s database] db_file");
+	return (EXIT_FAILURE);
 }
 
-void
-version_check()
+int
+version_check(progname)
+	const char *progname;
 {
 	int v_major, v_minor, v_patch;
 
@@ -555,6 +605,7 @@ version_check()
 	"%s: version %d.%d.%d doesn't match library version %d.%d.%d\n",
 		    progname, DB_VERSION_MAJOR, DB_VERSION_MINOR,
 		    DB_VERSION_PATCH, v_major, v_minor, v_patch);
-		exit(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 	}
+	return (0);
 }

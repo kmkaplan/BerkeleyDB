@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 2000-2001
- *      Sleepycat Software.  All rights reserved.
+ * Copyright (c) 2000-2002
+ *	Sleepycat Software.  All rights reserved.
  */
 
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: gen_client_ret.c,v 1.45 2001/06/19 17:34:17 sue Exp $";
+static const char revid[] = "$Id: gen_client_ret.c,v 1.57 2002/08/06 06:18:37 bostic Exp $";
 #endif /* not lint */
 
 #ifdef HAVE_RPC
@@ -19,13 +19,14 @@ static const char revid[] = "$Id: gen_client_ret.c,v 1.45 2001/06/19 17:34:17 su
 
 #include <string.h>
 #endif
-#include "db_server.h"
 
 #include "db_int.h"
-#include "db_page.h"
-#include "txn.h"
-#include "db_am.h"
-#include "rpc_client_ext.h"
+#include "dbinc/db_page.h"
+#include "dbinc/db_am.h"
+#include "dbinc/txn.h"
+
+#include "dbinc_auto/db_server.h"
+#include "dbinc_auto/rpc_client_ext.h"
 
 /*
  * PUBLIC: int __dbcl_env_close_ret
@@ -42,7 +43,7 @@ __dbcl_env_close_ret(dbenv, flags, replyp)
 	COMPQUIET(flags, 0);
 
 	ret = __dbcl_refresh(dbenv);
-	__os_free(NULL, dbenv, sizeof(*dbenv));
+	__os_free(NULL, dbenv);
 	if (replyp->status == 0 && ret != 0)
 		return (ret);
 	else
@@ -92,6 +93,7 @@ __dbcl_env_open_ret(dbenv, home, flags, mode, replyp)
 	if (replyp->status != 0)
 		return (replyp->status);
 
+	dbenv->cl_id = replyp->envcl_id;
 	/*
 	 * If the user requested transactions, then we have some
 	 * local client-side setup to do also.
@@ -125,7 +127,7 @@ __dbcl_env_remove_ret(dbenv, home, flags, replyp)
 	COMPQUIET(flags, 0);
 
 	ret = __dbcl_refresh(dbenv);
-	__os_free(NULL, dbenv, sizeof(*dbenv));
+	__os_free(NULL, dbenv);
 	if (replyp->status == 0 && ret != 0)
 		return (ret);
 	else
@@ -328,17 +330,19 @@ __dbcl_db_get_ret(dbp, txnp, key, data, flags, replyp)
 
 	oldkey = key->data;
 	ret = __dbcl_retcopy(dbenv, key, replyp->keydata.keydata_val,
-	    replyp->keydata.keydata_len);
+	    replyp->keydata.keydata_len, &dbp->my_rkey.data,
+	    &dbp->my_rkey.ulen);
 	if (ret)
 		return (ret);
 	ret = __dbcl_retcopy(dbenv, data, replyp->datadata.datadata_val,
-	    replyp->datadata.datadata_len);
+	    replyp->datadata.datadata_len, &dbp->my_rdata.data,
+	    &dbp->my_rdata.ulen);
 	/*
 	 * If an error on copying 'data' and we allocated for 'key'
 	 * free it before returning the error.
 	 */
 	if (ret && oldkey != NULL)
-		__os_free(dbenv, key->data, key->size);
+		__os_free(dbenv, key->data);
 	return (ret);
 }
 
@@ -369,18 +373,20 @@ __dbcl_db_key_range_ret(dbp, txnp, key, range, flags, replyp)
 }
 
 /*
- * PUBLIC: int __dbcl_db_open_ret __P((DB *, const char *,
+ * PUBLIC: int __dbcl_db_open_ret __P((DB *, DB_TXN *, const char *,
  * PUBLIC:     const char *, DBTYPE, u_int32_t, int, __db_open_reply *));
  */
 int
-__dbcl_db_open_ret(dbp, name, subdb, type, flags, mode, replyp)
+__dbcl_db_open_ret(dbp, txn, name, subdb, type, flags, mode, replyp)
 	DB *dbp;
+	DB_TXN *txn;
 	const char *name, *subdb;
 	DBTYPE type;
 	u_int32_t flags;
 	int mode;
 	__db_open_reply *replyp;
 {
+	COMPQUIET(txn, NULL);
 	COMPQUIET(name, NULL);
 	COMPQUIET(subdb, NULL);
 	COMPQUIET(type, 0);
@@ -388,6 +394,7 @@ __dbcl_db_open_ret(dbp, name, subdb, type, flags, mode, replyp)
 	COMPQUIET(mode, 0);
 
 	if (replyp->status == 0) {
+		dbp->cl_id = replyp->dbcl_id;
 		dbp->type = replyp->type;
 		/*
 		 * We get back the database's byteorder on the server.
@@ -440,28 +447,31 @@ __dbcl_db_pget_ret(dbp, txnp, skey, pkey, data, flags, replyp)
 
 	oldskey = skey->data;
 	ret = __dbcl_retcopy(dbenv, skey, replyp->skeydata.skeydata_val,
-	    replyp->skeydata.skeydata_len);
+	    replyp->skeydata.skeydata_len, &dbp->my_rskey.data,
+	    &dbp->my_rskey.ulen);
 	if (ret)
 		return (ret);
 
 	oldpkey = pkey->data;
 	ret = __dbcl_retcopy(dbenv, pkey, replyp->pkeydata.pkeydata_val,
-	    replyp->pkeydata.pkeydata_len);
+	    replyp->pkeydata.pkeydata_len, &dbp->my_rkey.data,
+	    &dbp->my_rkey.ulen);
 	if (ret && oldskey != NULL) {
-		__os_free(dbenv, skey->data, skey->size);
+		__os_free(dbenv, skey->data);
 		return (ret);
 	}
 	ret = __dbcl_retcopy(dbenv, data, replyp->datadata.datadata_val,
-	    replyp->datadata.datadata_len);
+	    replyp->datadata.datadata_len, &dbp->my_rdata.data,
+	    &dbp->my_rdata.ulen);
 	/*
 	 * If an error on copying 'data' and we allocated for '*key'
 	 * free it before returning the error.
 	 */
 	if (ret) {
 		if (oldskey != NULL)
-			__os_free(dbenv, skey->data, skey->size);
+			__os_free(dbenv, skey->data);
 		if (oldpkey != NULL)
-			__os_free(dbenv, pkey->data, pkey->size);
+			__os_free(dbenv, pkey->data);
 	}
 	return (ret);
 }
@@ -562,7 +572,7 @@ __dbcl_db_stat_ret(dbp, sp, flags, replyp)
 		return (replyp->status);
 
 	len = replyp->stats.stats_len * sizeof(u_int32_t);
-	if ((ret = __os_malloc(dbp->dbenv, len, &retsp)) != 0)
+	if ((ret = __os_umalloc(dbp->dbenv, len, &retsp)) != 0)
 		return (ret);
 	for (i = 0, q = retsp, p = (u_int32_t *)replyp->stats.stats_val;
 	    i < replyp->stats.stats_len; i++, q++, p++)
@@ -598,10 +608,10 @@ __dbcl_db_truncate_ret(dbp, txnp, countp, flags, replyp)
  * PUBLIC:     __P((DB *, DB_TXN *, DBC **, u_int32_t, __db_cursor_reply *));
  */
 int
-__dbcl_db_cursor_ret(dbp, txnp, dbcpp, flags, replyp)
+__dbcl_db_cursor_ret(dbp, txnp, dbcp, flags, replyp)
 	DB *dbp;
 	DB_TXN *txnp;
-	DBC **dbcpp;
+	DBC **dbcp;
 	u_int32_t flags;
 	__db_cursor_reply *replyp;
 {
@@ -611,7 +621,7 @@ __dbcl_db_cursor_ret(dbp, txnp, dbcpp, flags, replyp)
 	if (replyp->status != 0)
 		return (replyp->status);
 
-	return (__dbcl_c_setup(replyp->dbcidcl_id, dbp, dbcpp));
+	return (__dbcl_c_setup(replyp->dbcidcl_id, dbp, dbcp));
 }
 
 /*
@@ -619,9 +629,9 @@ __dbcl_db_cursor_ret(dbp, txnp, dbcpp, flags, replyp)
  * PUBLIC:     __P((DB *, DBC **, DBC **, u_int32_t, __db_join_reply *));
  */
 int
-__dbcl_db_join_ret(dbp, curs, dbcpp, flags, replyp)
+__dbcl_db_join_ret(dbp, curs, dbcp, flags, replyp)
 	DB *dbp;
-	DBC **curs, **dbcpp;
+	DBC **curs, **dbcp;
 	u_int32_t flags;
 	__db_join_reply *replyp;
 {
@@ -638,21 +648,18 @@ __dbcl_db_join_ret(dbp, curs, dbcpp, flags, replyp)
 	 * client-side cursor/db relationship to know what cursors
 	 * are open in the db, and to store their ID.  Nothing else.
 	 */
-	return (__dbcl_c_setup(replyp->dbcidcl_id, dbp, dbcpp));
+	return (__dbcl_c_setup(replyp->dbcidcl_id, dbp, dbcp));
 }
 
 /*
  * PUBLIC: int __dbcl_dbc_close_ret __P((DBC *, __dbc_close_reply *));
  */
 int
-__dbcl_dbc_close_ret(dbcp, replyp)
-	DBC *dbcp;
+__dbcl_dbc_close_ret(dbc, replyp)
+	DBC *dbc;
 	__dbc_close_reply *replyp;
 {
-	DB *dbp;
-
-	dbp = dbcp->dbp;
-	__dbcl_c_refresh(dbcp);
+	__dbcl_c_refresh(dbc);
 	return (replyp->status);
 }
 
@@ -682,8 +689,8 @@ __dbcl_dbc_count_ret(dbc, countp, flags, replyp)
  * PUBLIC:     __P((DBC *, DBC **, u_int32_t, __dbc_dup_reply *));
  */
 int
-__dbcl_dbc_dup_ret(dbcp, dbcpp, flags, replyp)
-	DBC *dbcp, **dbcpp;
+__dbcl_dbc_dup_ret(dbc, dbcp, flags, replyp)
+	DBC *dbc, **dbcp;
 	u_int32_t flags;
 	__dbc_dup_reply *replyp;
 {
@@ -692,7 +699,7 @@ __dbcl_dbc_dup_ret(dbcp, dbcpp, flags, replyp)
 	if (replyp->status != 0)
 		return (replyp->status);
 
-	return (__dbcl_c_setup(replyp->dbcidcl_id, dbcp->dbp, dbcpp));
+	return (__dbcl_c_setup(replyp->dbcidcl_id, dbc->dbp, dbcp));
 }
 
 /*
@@ -700,8 +707,8 @@ __dbcl_dbc_dup_ret(dbcp, dbcpp, flags, replyp)
  * PUBLIC:     __P((DBC *, DBT *, DBT *, u_int32_t, __dbc_get_reply *));
  */
 int
-__dbcl_dbc_get_ret(dbcp, key, data, flags, replyp)
-	DBC *dbcp;
+__dbcl_dbc_get_ret(dbc, key, data, flags, replyp)
+	DBC *dbc;
 	DBT *key, *data;
 	u_int32_t flags;
 	__dbc_get_reply *replyp;
@@ -716,21 +723,23 @@ __dbcl_dbc_get_ret(dbcp, key, data, flags, replyp)
 	if (replyp->status != 0)
 		return (replyp->status);
 
-	dbenv = dbcp->dbp->dbenv;
+	dbenv = dbc->dbp->dbenv;
 	oldkey = key->data;
 	ret = __dbcl_retcopy(dbenv, key, replyp->keydata.keydata_val,
-	    replyp->keydata.keydata_len);
+	    replyp->keydata.keydata_len, &dbc->my_rkey.data,
+	    &dbc->my_rkey.ulen);
 	if (ret)
 		return (ret);
 	ret = __dbcl_retcopy(dbenv, data, replyp->datadata.datadata_val,
-	    replyp->datadata.datadata_len);
+	    replyp->datadata.datadata_len, &dbc->my_rdata.data,
+	    &dbc->my_rdata.ulen);
 
 	/*
 	 * If an error on copying 'data' and we allocated for 'key'
 	 * free it before returning the error.
 	 */
 	if (ret && oldkey != NULL)
-		__os_free(dbenv, key->data, key->size);
+		__os_free(dbenv, key->data);
 	return (ret);
 }
 
@@ -761,28 +770,31 @@ __dbcl_dbc_pget_ret(dbc, skey, pkey, data, flags, replyp)
 
 	oldskey = skey->data;
 	ret = __dbcl_retcopy(dbenv, skey, replyp->skeydata.skeydata_val,
-	    replyp->skeydata.skeydata_len);
+	    replyp->skeydata.skeydata_len, &dbc->my_rskey.data,
+	    &dbc->my_rskey.ulen);
 	if (ret)
 		return (ret);
 
 	oldpkey = pkey->data;
 	ret = __dbcl_retcopy(dbenv, pkey, replyp->pkeydata.pkeydata_val,
-	    replyp->pkeydata.pkeydata_len);
+	    replyp->pkeydata.pkeydata_len, &dbc->my_rkey.data,
+	    &dbc->my_rkey.ulen);
 	if (ret && oldskey != NULL) {
-		__os_free(dbenv, skey->data, skey->size);
+		__os_free(dbenv, skey->data);
 		return (ret);
 	}
 	ret = __dbcl_retcopy(dbenv, data, replyp->datadata.datadata_val,
-	    replyp->datadata.datadata_len);
+	    replyp->datadata.datadata_len, &dbc->my_rdata.data,
+	    &dbc->my_rdata.ulen);
 	/*
 	 * If an error on copying 'data' and we allocated for '*key'
 	 * free it before returning the error.
 	 */
 	if (ret) {
 		if (oldskey != NULL)
-			__os_free(dbenv, skey->data, skey->size);
+			__os_free(dbenv, skey->data);
 		if (oldpkey != NULL)
-			__os_free(dbenv, pkey->data, pkey->size);
+			__os_free(dbenv, pkey->data);
 	}
 	return (ret);
 }
@@ -792,8 +804,8 @@ __dbcl_dbc_pget_ret(dbc, skey, pkey, data, flags, replyp)
  * PUBLIC:     __P((DBC *, DBT *, DBT *, u_int32_t, __dbc_put_reply *));
  */
 int
-__dbcl_dbc_put_ret(dbcp, key, data, flags, replyp)
-	DBC *dbcp;
+__dbcl_dbc_put_ret(dbc, key, data, flags, replyp)
+	DBC *dbc;
 	DBT *key, *data;
 	u_int32_t flags;
 	__dbc_put_reply *replyp;
@@ -803,7 +815,7 @@ __dbcl_dbc_put_ret(dbcp, key, data, flags, replyp)
 	if (replyp->status != 0)
 		return (replyp->status);
 
-	if (replyp->status == 0 && dbcp->dbp->type == DB_RECNO &&
+	if (replyp->status == 0 && dbc->dbp->type == DB_RECNO &&
 	    (flags == DB_AFTER || flags == DB_BEFORE))
 		*(db_recno_t *)key->data =
 		    *(db_recno_t *)replyp->keydata.keydata_val;
