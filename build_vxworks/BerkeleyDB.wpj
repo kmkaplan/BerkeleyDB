@@ -67,10 +67,6 @@ cc386 -E -P -xc
 ld386
 <END>
 
-<BEGIN> BUILD_PENTIUM_RPCdebug_MACRO_LDDEPS
-
-<END>
-
 <BEGIN> BUILD_PENTIUM_RPCdebug_MACRO_LDFLAGS
 -X -N
 <END>
@@ -541,7 +537,7 @@ sizesimso
 <END>
 
 <BEGIN> BUILD__CURRENT
-PENTIUM_debug
+PENTIUM_RPCdebug
 <END>
 
 <BEGIN> BUILD__LIST
@@ -4208,34 +4204,6 @@ mutex.o
 C/C++ compiler
 <END>
 
-<BEGIN> FILE_/export/home/db/os/os_abs.c_dependDone
-TRUE
-<END>
-
-<BEGIN> FILE_/export/home/db/os/os_abs.c_dependencies
-$(PRJ_DIR)/db_config.h \
-	$(PRJ_DIR)/db_int.h \
-	$(PRJ_DIR)/db.h \
-	/export/home/db/include/queue.h \
-	/export/home/db/include/shqueue.h \
-	/export/home/db/include/debug.h \
-	/export/home/db/include/mutex.h \
-	/export/home/db/include/mutex_ext.h \
-	/export/home/db/include/region.h \
-	/export/home/db/include/env_ext.h \
-	/export/home/db/include/os.h \
-	/export/home/db/include/os_ext.h \
-	/export/home/db/include/common_ext.h
-<END>
-
-<BEGIN> FILE_/export/home/db/os/os_abs.c_objects
-os_abs.o
-<END>
-
-<BEGIN> FILE_/export/home/db/os/os_abs.c_tool
-C/C++ compiler
-<END>
-
 <BEGIN> FILE_/export/home/db/os/os_alloc.c_dependDone
 TRUE
 <END>
@@ -4347,34 +4315,6 @@ os_fid.o
 <END>
 
 <BEGIN> FILE_/export/home/db/os/os_fid.c_tool
-C/C++ compiler
-<END>
-
-<BEGIN> FILE_/export/home/db/os/os_finit.c_dependDone
-TRUE
-<END>
-
-<BEGIN> FILE_/export/home/db/os/os_finit.c_dependencies
-$(PRJ_DIR)/db_config.h \
-	$(PRJ_DIR)/db_int.h \
-	$(PRJ_DIR)/db.h \
-	/export/home/db/include/queue.h \
-	/export/home/db/include/shqueue.h \
-	/export/home/db/include/debug.h \
-	/export/home/db/include/mutex.h \
-	/export/home/db/include/mutex_ext.h \
-	/export/home/db/include/region.h \
-	/export/home/db/include/env_ext.h \
-	/export/home/db/include/os.h \
-	/export/home/db/include/os_ext.h \
-	/export/home/db/include/common_ext.h
-<END>
-
-<BEGIN> FILE_/export/home/db/os/os_finit.c_objects
-os_finit.o
-<END>
-
-<BEGIN> FILE_/export/home/db/os/os_finit.c_tool
 C/C++ compiler
 <END>
 
@@ -4834,6 +4774,62 @@ os_unlink.o
 <END>
 
 <BEGIN> FILE_/export/home/db/os/os_unlink.c_tool
+C/C++ compiler
+<END>
+
+<BEGIN> FILE_/export/home/db/os_vxworks/os_abs.c_dependDone
+TRUE
+<END>
+
+<BEGIN> FILE_/export/home/db/os_vxworks/os_abs.c_dependencies
+$(PRJ_DIR)/db_config.h \
+	$(PRJ_DIR)/db_int.h \
+	$(PRJ_DIR)/db.h \
+	/export/home/db/include/queue.h \
+	/export/home/db/include/shqueue.h \
+	/export/home/db/include/debug.h \
+	/export/home/db/include/mutex.h \
+	/export/home/db/include/mutex_ext.h \
+	/export/home/db/include/region.h \
+	/export/home/db/include/env_ext.h \
+	/export/home/db/include/os.h \
+	/export/home/db/include/os_ext.h \
+	/export/home/db/include/common_ext.h
+<END>
+
+<BEGIN> FILE_/export/home/db/os_vxworks/os_abs.c_objects
+os_abs.o
+<END>
+
+<BEGIN> FILE_/export/home/db/os_vxworks/os_abs.c_tool
+C/C++ compiler
+<END>
+
+<BEGIN> FILE_/export/home/db/os_vxworks/os_finit.c_dependDone
+TRUE
+<END>
+
+<BEGIN> FILE_/export/home/db/os_vxworks/os_finit.c_dependencies
+$(PRJ_DIR)/db_config.h \
+	$(PRJ_DIR)/db_int.h \
+	$(PRJ_DIR)/db.h \
+	/export/home/db/include/queue.h \
+	/export/home/db/include/shqueue.h \
+	/export/home/db/include/debug.h \
+	/export/home/db/include/mutex.h \
+	/export/home/db/include/mutex_ext.h \
+	/export/home/db/include/region.h \
+	/export/home/db/include/env_ext.h \
+	/export/home/db/include/os.h \
+	/export/home/db/include/os_ext.h \
+	/export/home/db/include/common_ext.h
+<END>
+
+<BEGIN> FILE_/export/home/db/os_vxworks/os_finit.c_objects
+os_finit.o
+<END>
+
+<BEGIN> FILE_/export/home/db/os_vxworks/os_finit.c_tool
 C/C++ compiler
 <END>
 
@@ -5591,7 +5587,6 @@ C/C++ compiler
 	/export/home/db/os/os_dir.c \
 	/export/home/db/os/os_errno.c \
 	/export/home/db/os/os_fid.c \
-	/export/home/db/os/os_finit.c \
 	/export/home/db/os/os_fsync.c \
 	/export/home/db/os/os_handle.c \
 	/export/home/db/os/os_method.c \
@@ -5606,7 +5601,6 @@ C/C++ compiler
 	/export/home/db/os/os_spin.c \
 	/export/home/db/os/os_stat.c \
 	/export/home/db/os/os_tmpdir.c \
-	/export/home/db/os/os_abs.c \
 	/export/home/db/qam/qam_upgrade.c \
 	/export/home/db/qam/qam_auto.c \
 	/export/home/db/qam/qam_conv.c \
@@ -5695,7 +5689,9 @@ C/C++ compiler
 	/export/home/db/os_vxworks/os_map.c \
 	/export/home/db/db/db_vrfy.c \
 	/export/home/db/db/db_upg.c \
-	/export/home/db/db/db_vrfyutil.c
+	/export/home/db/db/db_vrfyutil.c \
+	/export/home/db/os_vxworks/os_finit.c \
+	/export/home/db/os_vxworks/os_abs.c
 <END>
 
 <BEGIN> userComments

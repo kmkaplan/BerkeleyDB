@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: bt_recno.c,v 11.45 2000/05/23 18:04:09 krinsky Exp $";
+static const char revid[] = "$Id: bt_recno.c,v 11.45.2.2 2000/07/24 20:04:48 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -366,7 +366,7 @@ __ram_c_del(dbc)
 			goto err;
 	}
 
-	F_SET(t, RECNO_MODIFIED);
+	t->re_modified = 1;
 
 err:	if (stack)
 		__bam_stkrel(dbc, STK_CLRDBC);
@@ -715,7 +715,7 @@ __ram_ca(dbc_arg, recno, op)
 		case CA_DELETE:
 			if (recno < cp->recno)
 				--cp->recno;
-			if (recno == cp->recno) {
+			else if (recno == cp->recno) {
 				/*
 				 * If we're in an off-page duplicate Recno tree,
 				 * we are using mutable records, but we don't
@@ -800,7 +800,7 @@ __ram_update(dbc, recno, can_create)
 	 * If we can't create records and we've read the entire backing input
 	 * file, we're done.
 	 */
-	if (!can_create && !F_ISSET(t, RECNO_READFILE))
+	if (!can_create && t->re_eof)
 		return (0);
 
 	/*
@@ -809,7 +809,7 @@ __ram_update(dbc, recno, can_create)
 	 */
 	if ((ret = __bam_nrecs(dbc, &nrecs)) != 0)
 		return (ret);
-	if (F_ISSET(t, RECNO_READFILE) && recno > nrecs) {
+	if (!t->re_eof && recno > nrecs) {
 		if ((ret = t->re_irec(dbc, recno)) != 0)
 			return (ret);
 		if ((ret = __bam_nrecs(dbc, &nrecs)) != 0)
@@ -914,10 +914,10 @@ __ram_source(dbp)
 	if ((ret = __os_mapfile(dbp->dbenv, t->re_source,
 	    &t->re_fh, (size_t)size, 1, &t->re_smap)) != 0)
 		return (ret);
+	t->re_eof = 0;
 	t->re_cmap = t->re_smap;
 	t->re_emap = (u_int8_t *)t->re_smap + (t->re_msize = size);
 	t->re_irec = F_ISSET(dbp, DB_RE_FIXEDLEN) ?  __ram_fmap : __ram_vmap;
-	F_SET(t, RECNO_READFILE);
 	return (0);
 }
 
@@ -945,12 +945,12 @@ __ram_writeback(dbp)
 	dbenv = dbp->dbenv;
 
 	/* If the file wasn't modified, we're done. */
-	if (!F_ISSET(t, RECNO_MODIFIED))
+	if (!t->re_modified)
 		return (0);
 
 	/* If there's no backing source file, we're done. */
 	if (t->re_source == NULL) {
-		F_CLR(t, RECNO_MODIFIED);
+		t->re_modified = 0;
 		return (0);
 	}
 
@@ -1071,7 +1071,7 @@ done:	/* Close the file descriptor. */
 		ret = t_ret;
 
 	if (ret == 0)
-		F_CLR(t, RECNO_MODIFIED);
+		t->re_modified = 0;
 
 	return (ret);
 }
@@ -1092,7 +1092,7 @@ __ram_fmap(dbc, top)
 	db_recno_t recno;
 	u_int32_t len;
 	u_int8_t *sp, *ep, *p;
-	int is_modified, ret;
+	int ret, was_modified;
 
 	dbp = dbc->dbp;
 	cp = (BTREE_CURSOR *)dbc->internal;
@@ -1111,7 +1111,7 @@ __ram_fmap(dbc, top)
 		dbc->rdata.ulen = t->re_len;
 	}
 
-	is_modified = F_ISSET(t, RECNO_MODIFIED);
+	was_modified = t->re_modified;
 
 	memset(&data, 0, sizeof(data));
 	data.data = dbc->rdata.data;
@@ -1121,7 +1121,7 @@ __ram_fmap(dbc, top)
 	ep = (u_int8_t *)t->re_emap;
 	while (recno < top) {
 		if (sp >= ep) {
-			F_CLR(t, RECNO_READFILE);
+			t->re_eof = 1;
 			ret = DB_NOTFOUND;
 			goto err;
 		}
@@ -1152,8 +1152,8 @@ __ram_fmap(dbc, top)
 	}
 	t->re_cmap = sp;
 
-err:	if (!is_modified)
-		F_CLR(t, RECNO_MODIFIED);
+err:	if (!was_modified)
+		t->re_modified = 0;
 
 	return (0);
 }
@@ -1171,7 +1171,7 @@ __ram_vmap(dbc, top)
 	DBT data;
 	db_recno_t recno;
 	u_int8_t *sp, *ep;
-	int delim, is_modified, ret;
+	int delim, ret, was_modified;
 
 	t = dbc->dbp->bt_internal;
 
@@ -1179,7 +1179,7 @@ __ram_vmap(dbc, top)
 		return (ret);
 
 	delim = t->re_delim;
-	is_modified = F_ISSET(t, RECNO_MODIFIED);
+	was_modified = t->re_modified;
 
 	memset(&data, 0, sizeof(data));
 
@@ -1187,7 +1187,7 @@ __ram_vmap(dbc, top)
 	ep = (u_int8_t *)t->re_emap;
 	while (recno < top) {
 		if (sp >= ep) {
-			F_CLR(t, RECNO_READFILE);
+			t->re_eof = 1;
 			ret = DB_NOTFOUND;
 			goto err;
 		}
@@ -1212,8 +1212,8 @@ __ram_vmap(dbc, top)
 	}
 	t->re_cmap = sp;
 
-err:	if (!is_modified)
-		F_CLR(t, RECNO_MODIFIED);
+err:	if (!was_modified)
+		t->re_modified = 0;
 
 	return (ret);
 }

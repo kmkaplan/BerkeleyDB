@@ -43,7 +43,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: hash.c,v 11.77 2000/05/31 13:32:08 margo Exp $";
+static const char revid[] = "$Id: hash.c,v 11.77.2.1 2000/07/26 21:20:03 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -566,15 +566,6 @@ __ham_c_close(dbc, root_pgno, rmroot)
 		dp = (HKEYDATA *)H_PAIRDATA(hcp->page, hcp->indx);
 		DB_ASSERT(HPAGE_PTYPE(dp) == H_OFFDUP);
 		memcpy(&root_pgno, HOFFPAGE_PGNO(dp), sizeof(db_pgno_t));
-
-		/*
-		 * If we're doing CDB locking, it's possible that in order to
-		 * close, the off-page btree cursor will need to upgrade a
-		 * write lock;  it may be pointing to a deleted item it needs
-		 * to get rid of.  If so, it needs our locker information.
-		 */
-		if (CDB_LOCKING(dbc->dbp->dbenv))
-			__db_cdb_cdup(dbc, hcp->opd);
 
 		if ((ret =
 		    hcp->opd->c_am_close(hcp->opd, root_pgno, &doroot)) != 0)

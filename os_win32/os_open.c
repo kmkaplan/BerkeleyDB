@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: os_open.c,v 11.6 2000/03/30 01:46:42 ubell Exp $";
+static const char revid[] = "$Id: os_open.c,v 11.6.2.1 2000/06/29 16:43:53 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -42,7 +42,7 @@ __os_open(dbenv, name, flags, mode, fhp)
 	HANDLE wh;
 	u_int32_t log_size;
 	int access, attr, oflags, share, createflag;
-	int ret, try;
+	int ret, nrepeat;
 
 	/*
 	 * The "public" interface to the __os_open routine passes around POSIX
@@ -134,7 +134,7 @@ __os_open(dbenv, name, flags, mode, fhp)
 	if (LF_ISSET(DB_OSO_TEMP))
 		attr |= FILE_FLAG_DELETE_ON_CLOSE;
 
-	for (try = 1; try < 4; ++try) {
+	for (nrepeat = 1; nrepeat < 4; ++nrepeat) {
 		ret = 0;
 		__os_set_errno(0);
 		wh = CreateFile(name, access, share, NULL, createflag, attr, 0);
@@ -147,7 +147,7 @@ __os_open(dbenv, name, flags, mode, fhp)
 			 */
 			ret = __os_win32_errno();
 			if (ret == ENFILE || ret == EMFILE || ret == ENOSPC) {
-				(void)__os_sleep(dbenv, try * 2, 0);
+				(void)__os_sleep(dbenv, nrepeat * 2, 0);
 				continue;
 			}
 			goto err;

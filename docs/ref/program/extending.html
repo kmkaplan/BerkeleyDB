@@ -1,5 +1,5 @@
  
-<!--$Id: extending.so,v 10.30 2000/03/18 21:43:16 bostic Exp $-->
+<!--$Id: extending.so,v 10.30.2.1 2000/07/19 18:16:40 bostic Exp $-->
 <!--Copyright 1997, 1998, 1999, 2000 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <html>
@@ -203,8 +203,9 @@ LSN is greater than the passed LSN and the operation is redo, no further
 action is necessary.  If the action is a redo and the LSN on the page is
 less than the previous LSN in the log record this is an error, since this
 could only happen if some previous log record was not processed.
-<p>Please refer to the functions in hash/hash_recover.c for an example of
-how recovery functions work.
+<p>Please refer to the internal recovery functions in the Berkeley DB library
+(found in files named XXX_rec.c) for examples of how recovery functions
+should work.
 <h3>Non-conformant Logging</h3>
 <p>If your application cannot conform to the default logging and recovery
 structure, then you will have to create your own logging and recovery
@@ -226,8 +227,8 @@ dispatch function.  It will continue looping, calling the dispatch
 function on the record whose LSN appears in the lsn parameter of the
 dispatch call (until a NULL LSN is placed in that field).  The dispatch
 function will be called with the op set to DB_TXN_ABORT.
-<p>Your dispatch function can do any processing necessary.  See the code in
-common/db_dispatch.c for an example dispatch function (that is based on
+<p>Your dispatch function can do any processing necessary.  See the code
+in db/db_dispatch.c for an example dispatch function (that is based on
 the assumption that the transaction ID, previous LSN, and record type
 appear in every log record written).
 <p>If you do not use the default recovery system, you will need to construct

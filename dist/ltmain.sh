@@ -1795,6 +1795,14 @@ compiler."
 	*-*-cygwin* | *-*-mingw* | *-*-os2* | *-*-beos*)
 	  # these systems don't actually have a c library (as such)!
 	  ;;
+
+        #### local change for Sleepycat DB: [#2380]
+        # The following case is added, since the linker's -pthread
+        # option implicitly controls use of -lc or -lc_r.
+	*freebsd*)
+	  # defer to whether the user wants -lc, or -lc_r
+	  ;;
+
 	*)
 	  # Add libc to deplibs on all other systems.
 	  deplibs="$deplibs -lc"

@@ -138,6 +138,9 @@ __APIREL__/api_java/env_set_pageyield.html#2 @DbEnv.set_pageyield
 __APIREL__/api_java/env_set_panicstate.html#2 @DbEnv.set_panicstate
 __APIREL__/api_java/env_set_rec_init.html#2 @DbEnv.set_recovery_init
 __APIREL__/api_java/env_set_region_init.html#2 @DbEnv.set_region_init
+__APIREL__/api_java/env_set_server.html#2 @DbEnv.set_server
+__APIREL__/api_java/env_set_server.html#DB_NOSERVER DbEnv.set_server@DB_NOSERVER
+__APIREL__/api_java/env_set_server.html#DB_NOSERVER_ID DbEnv.set_server@DB_NOSERVER_ID
 __APIREL__/api_java/env_set_shm_key.html#2 @DbEnv.set_shm_key
 __APIREL__/api_java/env_set_tas_spins.html#2 @DbEnv.set_tas_spins
 __APIREL__/api_java/env_set_tmp_dir.html#2 @DbEnv.set_tmp_dir
@@ -148,6 +151,8 @@ __APIREL__/api_java/env_set_verbose.html#Db.DB_VERB_CHKPOINT DbEnv.set_verbose@D
 __APIREL__/api_java/env_set_verbose.html#Db.DB_VERB_DEADLOCK DbEnv.set_verbose@Db.DB_VERB_DEADLOCK
 __APIREL__/api_java/env_set_verbose.html#Db.DB_VERB_RECOVERY DbEnv.set_verbose@Db.DB_VERB_RECOVERY
 __APIREL__/api_java/env_set_verbose.html#Db.DB_VERB_WAITSFOR DbEnv.set_verbose@Db.DB_VERB_WAITSFOR
+__APIREL__/api_java/env_strerror.html#2 @DbEnv.strerror
+__APIREL__/api_java/env_version.html#2 @DbEnv.get_version_major
 __APIREL__/api_java/lock_detect.html#2 @DbEnv.lock_detect
 __APIREL__/api_java/lock_detect.html#Db.DB_LOCK_CONFLICT DbEnv.lock_detect@Db.DB_LOCK_CONFLICT
 __APIREL__/api_java/lock_get.html#2 @DbEnv.lock_get
@@ -206,6 +211,7 @@ __APIREL__/api_java/db_class.html#2 @Db
 __APIREL__/api_java/db_class.html#Db.DB_XA_CREATE Db@Db.DB_XA_CREATE
 __APIREL__/api_java/dbc_class.html#2 @Dbc
 __APIREL__/api_java/dbenv_class.html#2 @DbEnv
+__APIREL__/api_java/dbenv_class.html#Db.DB_CLIENT DbEnv@Db.DB_CLIENT
 __APIREL__/api_java/dbt_class.html#2 @Dbt
 __APIREL__/api_java/dbt_class.html#data Dbt@data
 __APIREL__/api_java/dbt_class.html#Db.DB_DBT_MALLOC Dbt@Db.DB_DBT_MALLOC

@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: db_pr.c,v 11.29 2000/06/05 17:09:09 krinsky Exp $";
+static const char revid[] = "$Id: db_pr.c,v 11.29.2.1 2000/07/07 16:13:19 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -146,11 +146,6 @@ __db_prdb(dbp, fp, flags)
 		{ DB_RE_SNAPSHOT,	"recno:snapshot" },
 		{ 0,			NULL }
 	};
-	static const FN bfn[] = {
-		{ RECNO_MODIFIED,	"recno:modified" },
-		{ RECNO_READFILE,	"recno:readfile" },
-		{ 0,			NULL }
-	};
 	BTREE *bt;
 	HASH *h;
 	QUEUE *q;
@@ -167,29 +162,27 @@ __db_prdb(dbp, fp, flags)
 	case DB_BTREE:
 	case DB_RECNO:
 		bt = dbp->bt_internal;
-		fprintf(fp, "bt_lpgno: %lu\n", (u_long)bt->bt_lpgno);
-		fprintf(fp, "bt_meta: %lu: bt_root: %lu\n",
+		fprintf(fp, "bt_meta: %lu bt_root: %lu\n",
 		    (u_long)bt->bt_meta, (u_long)bt->bt_root);
 		fprintf(fp, "bt_maxkey: %lu bt_minkey: %lu\n",
 		    (u_long)bt->bt_maxkey, (u_long)bt->bt_minkey);
 		fprintf(fp, "bt_compare: %#lx bt_prefix: %#lx\n",
 		    (u_long)bt->bt_compare, (u_long)bt->bt_prefix);
+		fprintf(fp, "bt_lpgno: %lu\n", (u_long)bt->bt_lpgno);
 		if (dbp->type == DB_RECNO) {
 			fprintf(fp,
 		    "re_pad: %#lx re_delim: %#lx re_len: %lu re_source: %s\n",
 			    (u_long)bt->re_pad, (u_long)bt->re_delim,
 			    (u_long)bt->re_len,
 			    bt->re_source == NULL ? "" : bt->re_source);
-			fprintf(fp, "re_last: %lu\n", (u_long)bt->re_last);
+			fprintf(fp, "re_modified: %d re_eof: %d re_last: %lu\n",
+			    bt->re_modified, bt->re_eof, (u_long)bt->re_last);
 			fprintf(fp,
 			    "cmap: %#lx smap: %#lx emap: %#lx msize: %lu\n",
 			    (u_long)bt->re_cmap, (u_long)bt->re_smap,
 			    (u_long)bt->re_emap, (u_long)bt->re_msize);
 			fprintf(fp, "re_irec: %#lx\n", (u_long)bt->re_irec);
 		}
-		fprintf(fp, "flags: %#lx", (u_long)bt->flags);
-		__db_prflags(bt->flags, bfn, fp);
-		fprintf(fp, "\n");
 		break;
 	case DB_HASH:
 		h = dbp->h_internal;

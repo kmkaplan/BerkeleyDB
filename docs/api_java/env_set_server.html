@@ -1,10 +1,10 @@
  
-<!--$Id: dbenv_class.so,v 10.19.2.1 2000/07/27 13:16:20 bostic Exp $-->
+<!--"@(#)env_set_server.so	10.13 (Sleepycat) 8/25/99"-->
 <!--Copyright 1997, 1998, 1999, 2000 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <html>
 <head>
-<title>Berkeley DB: DbEnv</title>
+<title>Berkeley DB: DbEnv.set_server</title>
 <meta name="description" content="Berkeley DB: An embedded database programmatic toolkit.">
 <meta name="keywords" content="embedded,database,programmatic,toolkit,b+tree,btree,hash,hashing,transaction,transactions,locking,logging,access method,access methods,java,C,C++">
 </head>
@@ -12,7 +12,7 @@
 <a name="2"><!--meow--></a>
 <table><tr valign=top>
 <td>
-<h1>DbEnv</h1>
+<h1>DbEnv.set_server</h1>
 </td>
 <td width="1%">
 <a href="../api_java/java_index.html"><img src="../images/api.gif" alt="API"></a><a href="../ref/toc.html"><img src="../images/ref.gif" alt="Ref"></a>
@@ -22,24 +22,36 @@
 <h3><pre>
 import com.sleepycat.db.*;
 <p>
-public class DbEnv extends Object
-{
-	public DbEnv(int flags);
-	...
-}
+public void set_server(String host,
+    long cl_timeout, long sv_timeout, int flags)
+	throws DbException;
 </pre></h3>
 <h1>Description</h1>
-<p>This manual page describes the specific details of the DbEnv
-class, which is the center of the Berkeley DB environment.
-<p>The following <b>flags</b> value may be specified:
+<p>Connects to the DB server on the indicated hostname and sets up a channel
+for communication.
+<p>The <b>cl_timeout</b> argument specifies the number of seconds the client
+should wait for results to come back from the server.  Once the timeout
+has expired on any communication with the server, Db.DB_NOSERVER will
+be returned.  If this value is zero, a default timeout is used.
+<p>The <b>sv_timeout</b> argument specifies the number of seconds the server
+should allow a client connection to remain idle before assuming that
+client is gone.  Once that timeout has been reached, the server releases
+all resources associated with that client connection.  Subsequent attempts
+by that client to communicate with the server result in
+Db.DB_NOSERVER_ID indicating that an invalid identifier has been
+given to the server.  This value can be considered a hint to the server.
+The server may alter this value based on its own policies or allowed
+values.  If this value is zero, a default timeout is used.
+<p>The <b>flags</b> parameter is currently unused, and must be set to 0.
+<p>When the DbEnv.set_server method has been called, any subsequent calls
+to Berkeley DB library interfaces may return either <a name="DB_NOSERVER">DB_NOSERVER</a> or
+<a name="DB_NOSERVER_ID">DB_NOSERVER_ID</a>.
+<p>The DbEnv.set_server method throws an exception that encapsulates a non-zero error value on
+failure.
+<h3>Errors</h3>
 <p><dl compact>
-<p><dt><a name="Db.DB_CLIENT">Db.DB_CLIENT</a><dd>Create a client environment to connect to a server.
-<p>The Db.DB_CLIENT flag indicates to the system that this environment
-is remote on a server.  The use of this flag causes the environment
-methods to use functions that call a server instead of local functions.
-Prior to making any environment or database method calls, the
-application must call the <a href="../api_java/env_set_server.html">DbEnv.set_server</a> function to establish
-the connection to the server.
+<p><dt>EINVAL<dd>An invalid flag value or parameter was specified.
+<p>dbenv_set_server
 </dl>
 <h3>Class</h3>
 <a href="../api_java/dbenv_class.html">DbEnv</a>

@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: os_stat.c,v 11.6 2000/05/10 20:48:51 krinsky Exp $";
+static const char revid[] = "$Id: os_stat.c,v 11.6.2.1 2000/06/27 17:52:57 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -36,7 +36,11 @@ __os_exists(path, isdirp)
 	if (__db_jump.j_exists != NULL)
 		return (__db_jump.j_exists(path, isdirp));
 
+#ifdef HAVE_VXWORKS
+	if (stat((char *)path, &sb) != 0)
+#else
 	if (stat(path, &sb) != 0)
+#endif
 		return (__os_get_errno());
 
 #if !defined(S_ISDIR) || defined(STAT_MACROS_BROKEN)

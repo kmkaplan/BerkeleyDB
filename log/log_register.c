@@ -7,7 +7,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: log_register.c,v 11.30 2000/06/06 14:53:36 ubell Exp $";
+static const char revid[] = "$Id: log_register.c,v 11.30.2.2 2000/06/12 16:26:16 krinsky Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -42,7 +42,7 @@ log_register(dbenv, dbp, name)
 	DBT fid_dbt, r_name;
 	DB_LOG *dblp;
 	DB_LSN r_unused;
-	FNAME *found, *fnp, *recover_fnp, *reuse_fnp;
+	FNAME *found_fnp, *fnp, *recover_fnp, *reuse_fnp;
 	LOG *lp;
 	size_t len;
 	int32_t maxid;
@@ -79,8 +79,7 @@ log_register(dbenv, dbp, name)
 	 * one after the maximum that we found).
 	 */
 	ok = 0;
-	found = NULL;
-	recover_fnp = NULL;
+	found_fnp = recover_fnp = NULL;
 	for (maxid = 0, fnp = SH_TAILQ_FIRST(&lp->fq, __fname);
 	    fnp != NULL; fnp = SH_TAILQ_NEXT(fnp, q, __fname)) {
 		if (F_ISSET(dblp, DBLOG_RECOVER) && fnp->id == dbp->log_fileid)
@@ -96,8 +95,10 @@ log_register(dbenv, dbp, name)
 					__db_err(dbenv, "File is locked");
 					return (EINVAL);
 				}
-				if (found != NULL)
-					goto found;
+				if (found_fnp != NULL) {
+					fnp = found_fnp;
+					goto found;    
+				}
 				ok = 1;
 			}
 			if (dbp->meta_pgno == fnp->meta_pgno) {
@@ -125,13 +126,13 @@ log_register(dbenv, dbp, name)
 				++fnp->ref;
 				if (ok)
 					goto found;
-				found = fnp;
+				found_fnp = fnp;
 			}
 		}
 		if (maxid <= fnp->id)
 			maxid = fnp->id + 1;
 	}
-	if ((fnp = found) != NULL)
+	if ((fnp = found_fnp) != NULL)
 		goto found;
 
 	/* Fill in fnp structure. */
@@ -399,7 +400,7 @@ __log_file_lock(dbp)
 {
 	DB_ENV *dbenv;
 	DB_LOG *dblp;
-	FNAME *found, *fnp;
+	FNAME *fnp;
 	LOG *lp;
 	int ret;
 
@@ -407,7 +408,6 @@ __log_file_lock(dbp)
 	dblp = dbenv->lg_handle;
 	lp = dblp->reginfo.primary;
 
-	found = NULL;
 	ret = 0;
 	R_LOCK(dbenv, &dblp->reginfo);
 
@@ -422,7 +422,6 @@ __log_file_lock(dbp)
 					goto err;
 
 				fnp->locked = 1;
-				found = fnp;
 			} else {
 err:				__db_err(dbp->dbenv, "File is open");
 				ret = EINVAL;

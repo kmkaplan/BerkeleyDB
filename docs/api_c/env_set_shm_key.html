@@ -1,5 +1,5 @@
  
-<!--$Id: env_set_shm_key.so,v 10.3 2000/05/20 16:29:12 bostic Exp $-->
+<!--$Id: env_set_shm_key.so,v 10.3.2.1 2000/07/05 13:57:56 bostic Exp $-->
 <!--Copyright 1997, 1998, 1999, 2000 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <html>
@@ -31,15 +31,17 @@ created in system memory on systems supporting X/Open-style shared memory
 interfaces, e.g., UNIX systems supporting <b>shmget</b>(2) and related
 System V IPC interfaces.
 <p>This base segment ID will be used when Berkeley DB shared memory regions are
-first created.  It will be incremented by 1 each time a new shared memory
-region is created, that is, if the base ID is 35, the first shared memory
-region created will have a segment ID of 35 and the next one a segment ID
-of 36.  A Berkeley DB environment always creates a master shared memory region,
-plus an additional shared memory region for each of the subsystems
-supported by the environment (locking, logging, memory pool and
-transaction), plus an additional shared memory region for each additional
-memory pool cache that is supported.  Already existing regions with the
-same segment IDs will be removed.  See <a href="../ref/env/region.html">Shared Memory Regions</a> for more information.
+first created.  It will be incremented a small integer value each time
+a new shared memory region is created, that is, if the base ID is 35,
+the first shared memory region created will have a segment ID of 35 and
+the next one a segment ID between 36 and 40 or so.  A Berkeley DB environment
+always creates a master shared memory region, plus an additional shared
+memory region for each of the subsystems supported by the environment
+(locking, logging, memory pool and transaction), plus an additional
+shared memory region for each additional memory pool cache that is
+supported.  Already existing regions with the same segment IDs will be
+removed.  See <a href="../ref/env/region.html">Shared Memory Regions</a>
+for more information.
 <p>The intent behind this interface is two-fold: without it, applications
 have no way to ensure that two Berkeley DB applications don't attempt to use
 the same segment IDs when creating different Berkeley DB environments.  In

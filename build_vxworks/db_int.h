@@ -157,7 +157,7 @@ typedef struct __fn {
 #define	MAXPATHLEN	1024
 
 #define	PATH_DOT	"."	/* Current working directory. */
-#define	PATH_SEPARATOR	"/"	/* Path separator character. */
+#define	PATH_SEPARATOR	"/\\"	/* Path separator character. */
 
 /*
  * Flags understood by __os_open.

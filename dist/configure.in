@@ -1,4 +1,4 @@
-dnl $Id: configure.in,v 11.64 2000/05/17 13:25:12 bostic Exp $
+dnl $Id: configure.in,v 11.64.2.1 2000/07/27 13:54:09 krinsky Exp $
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(../db/db.c)
@@ -92,7 +92,8 @@ bsdi3*)	   CC=${CC-"shlicc2"}
 	   LIBS="-lipc $LIBS";;
 bsdi*)	   optimize_def="-O2";;
 freebsd*)  optimize_def="-O2"
-	   CPPFLAGS="-D_THREAD_SAFE -pthread $CPPFLAGS";;
+	   CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
+           LIBS="-pthread";;
 hpux*)	   CPPFLAGS="-D_REENTRANT $CPPFLAGS";;
 irix*)	   optimize_def="-O2"
 	   CPPFLAGS="-D_SGI_MP_SOURCE $CPPFLAGS";;

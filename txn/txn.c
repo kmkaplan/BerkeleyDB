@@ -39,7 +39,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: txn.c,v 11.35 2000/05/30 15:43:23 ubell Exp $";
+static const char revid[] = "$Id: txn.c,v 11.35.2.1 2000/07/05 18:58:57 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -626,9 +626,12 @@ __txn_undo(txnp)
 			    "txn_abort: Log undo failed for LSN: %lu %lu: %s",
 			    (u_long)key_lsnp->file, (u_long)key_lsnp->offset,
 			    db_strerror(ret));
-			return (ret);
+			goto out;
 		}
 	}
+
+out:	if (lsn_array != NULL)
+		(void)__os_free(lsn_array, ntxns * sizeof(DB_LSN));
 
 	return (ret);
 }

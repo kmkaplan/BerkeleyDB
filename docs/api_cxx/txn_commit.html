@@ -1,5 +1,5 @@
  
-<!--$Id: txn_commit.so,v 10.20 2000/03/17 01:54:00 bostic Exp $-->
+<!--$Id: txn_commit.so,v 10.20.2.1 2000/07/12 13:14:50 bostic Exp $-->
 <!--Copyright 1997, 1998, 1999, 2000 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <html>
@@ -29,8 +29,8 @@ DbTxn::commit(u_int32_t flags);
 <p>The DbTxn::commit method ends the transaction.
 <p>In the case of nested transactions, if the transaction is a parent
 transaction with unresolved (neither committed or aborted) child
-transactions, the child transactions are aborted and the commit of the
-parent will succeed.
+transactions, the child transactions are committed and the commit of
+the parent will succeed.
 <p>In the case of nested transactions, if the transaction is a child
 transaction, its locks are not released, but are acquired by its parent.
 While the commit of the child transaction will succeed, the actual

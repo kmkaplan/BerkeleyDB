@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 11.52 2000/05/02 13:48:11 dda Exp $
+# $Id: Makefile.in,v 11.52.2.1 2000/07/18 15:37:57 bostic Exp $
 
 srcdir=	@srcdir@/..
 builddir=.
@@ -75,6 +75,7 @@ libjso=		$(libjso_base)-$(SOVERSION).@SOSUFFIX@
 libjso_target=	$(libjso_base)-$(SOVERSION).la
 libjso_default=	$(libjso_base).@SOSUFFIX@
 libjso_major=	$(libjso_base)-$(SOMAJOR).@SOSUFFIX@
+libjso_g=	$(libjso_base)-$(SOVERSION)_g.@SOSUFFIX@
 
 ##################################################
 # TCL
@@ -456,6 +457,7 @@ install_java: install_setup
 	@$(INSTALLER) $(libjso_target) $(libdir)
 	@cd $(libdir) && $(ln) -s $(libjso) $(libjso_default)
 	@cd $(libdir) && $(ln) -s $(libjso) $(libjso_major)
+	@cd $(libdir) && $(ln) -s $(libjso) $(libjso_g)
 
 install_docs: install_setup
 	@echo "Installing documentation: $(docdir) ..."

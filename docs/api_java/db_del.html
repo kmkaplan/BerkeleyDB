@@ -1,5 +1,5 @@
  
-<!--$Id: db_del.so,v 10.21 2000/03/01 21:41:28 bostic Exp $-->
+<!--$Id: db_del.so,v 10.21.2.1 2000/07/17 13:34:58 bostic Exp $-->
 <!--Copyright 1997, 1998, 1999, 2000 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <html>
@@ -22,7 +22,7 @@
 <h3><pre>
 import com.sleepycat.db.*;
 <p>
-public void del(DbTxn txnid, Dbt key, int flags)
+public int del(DbTxn txnid, Dbt key, int flags)
 	throws DbException;
 </pre></h3>
 <h1>Description</h1>

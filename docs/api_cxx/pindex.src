@@ -138,6 +138,9 @@ __APIREL__/api_cxx/env_set_pageyield.html#2 @DbEnv::set_pageyield
 __APIREL__/api_cxx/env_set_panicstate.html#2 @DbEnv::set_panicstate
 __APIREL__/api_cxx/env_set_rec_init.html#2 @DbEnv::set_recovery_init
 __APIREL__/api_cxx/env_set_region_init.html#2 @DbEnv::set_region_init
+__APIREL__/api_cxx/env_set_server.html#2 @DbEnv::set_server
+__APIREL__/api_cxx/env_set_server.html#DB_NOSERVER DbEnv::set_server@DB_NOSERVER
+__APIREL__/api_cxx/env_set_server.html#DB_NOSERVER_ID DbEnv::set_server@DB_NOSERVER_ID
 __APIREL__/api_cxx/env_set_shm_key.html#2 @DbEnv::set_shm_key
 __APIREL__/api_cxx/env_set_tas_spins.html#2 @DbEnv::set_tas_spins
 __APIREL__/api_cxx/env_set_tmp_dir.html#2 @DbEnv::set_tmp_dir
@@ -148,6 +151,8 @@ __APIREL__/api_cxx/env_set_verbose.html#DB_VERB_CHKPOINT DbEnv::set_verbose@DB_V
 __APIREL__/api_cxx/env_set_verbose.html#DB_VERB_DEADLOCK DbEnv::set_verbose@DB_VERB_DEADLOCK
 __APIREL__/api_cxx/env_set_verbose.html#DB_VERB_RECOVERY DbEnv::set_verbose@DB_VERB_RECOVERY
 __APIREL__/api_cxx/env_set_verbose.html#DB_VERB_WAITSFOR DbEnv::set_verbose@DB_VERB_WAITSFOR
+__APIREL__/api_cxx/env_strerror.html#2 @DbEnv::strerror
+__APIREL__/api_cxx/env_version.html#2 @DbEnv::version
 __APIREL__/api_cxx/lock_detect.html#2 @DbEnv::lock_detect
 __APIREL__/api_cxx/lock_detect.html#DB_LOCK_CONFLICT DbEnv::lock_detect@DB_LOCK_CONFLICT
 __APIREL__/api_cxx/lock_get.html#2 @DbEnv::lock_get
@@ -243,6 +248,7 @@ __APIREL__/api_cxx/db_set_paniccall.html#2 @Db::set_paniccall
 __APIREL__/api_cxx/db_set_realloc.html#2 @Db::set_realloc
 __APIREL__/api_cxx/dbc_class.html#2 @Dbc
 __APIREL__/api_cxx/dbenv_class.html#2 @DbEnv
+__APIREL__/api_cxx/dbenv_class.html#DB_CLIENT DbEnv@DB_CLIENT
 __APIREL__/api_cxx/dbenv_class.html#DB_CXX_NO_EXCEPTIONS DbEnv@DB_CXX_NO_EXCEPTIONS
 __APIREL__/api_cxx/dbt_class.html#2 @Dbt
 __APIREL__/api_cxx/dbt_class.html#data Dbt@data
@@ -258,8 +264,6 @@ __APIREL__/api_cxx/env_set_tx_recover.html#DB_TXN_BACKWARD_ROLL DbEnv::set_tx_re
 __APIREL__/api_cxx/env_set_tx_recover.html#DB_TXN_FORWARD_ROLL DbEnv::set_tx_recover@DB_TXN_FORWARD_ROLL
 __APIREL__/api_cxx/env_set_tx_recover.html#DB_TXN_OPENFILES DbEnv::set_tx_recover@DB_TXN_OPENFILES
 __APIREL__/api_cxx/env_set_tx_recover.html#DB_TXN_ABORT DbEnv::set_tx_recover@DB_TXN_ABORT
-__APIREL__/api_cxx/env_strerror.html#2 @DbEnv::strerror
-__APIREL__/api_cxx/env_version.html#2 @DbEnv::version
 __APIREL__/api_cxx/except_class.html#2 @DbException
 __APIREL__/api_cxx/get_errno.html#2 @DbException::get_errno
 __APIREL__/api_cxx/lock_class.html#2 @DbLock

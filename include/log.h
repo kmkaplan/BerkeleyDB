@@ -4,7 +4,7 @@
  * Copyright (c) 1996, 1997, 1998, 1999, 2000
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: log.h,v 11.13 2000/05/07 14:00:34 bostic Exp $
+ * $Id: log.h,v 11.13.2.2 2000/07/08 17:36:36 bostic Exp $
  */
 
 #ifndef _LOG_H_
@@ -191,12 +191,13 @@ struct __fname {
 #define	LOG_CLOSE	2		/* File close. */
 #define	LOG_OPEN	3		/* File open. */
 
-#define	CHECK_LSN(redo, cmp, lsn, prev)				\
-	DB_ASSERT(!DB_REDO(redo) || cmp >=0);				\
-	if (DB_REDO(redo) && cmp < 0) {					\
-		__db_err(dbenv, "Log sequence error: page LSN %lu %lu"	\
-		     "previous LSN %lu %lu", lsn.file, lsn.offset,	\
-		     prev.file, prev.offset);				\
+#define	CHECK_LSN(redo, cmp, lsn, prev)					\
+	DB_ASSERT(!DB_REDO(redo) || (cmp) >= 0);			\
+	if (DB_REDO(redo) && (cmp) < 0) {				\
+		__db_err(dbenv,						\
+	"Log sequence error: page LSN %lu:%lu; previous LSN %lu %lu",	\
+		    (u_long)(lsn)->file, (u_long)(lsn)->offset,		\
+		    (u_long)(prev)->file, (u_long)(prev)->offset);	\
 		goto out;						\
 	}
 

@@ -1,5 +1,5 @@
  
-<!--$Id: routine.so,v 1.3 2000/03/18 21:43:18 bostic Exp $-->
+<!--$Id: routine.so,v 1.3.2.1 2000/07/16 18:54:48 bostic Exp $-->
 <!--Copyright 1997, 1998, 1999, 2000 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <html>
@@ -71,7 +71,7 @@ retry:		if ((ret = txn_abort(tid)) != 0)
 	}
 <p>
 	/* Begin the transaction. */
-	if ((ret = txn_begin(dbenv, NULL, &tid)) != 0)
+	if ((ret = txn_begin(dbenv, NULL, &tid, 0)) != 0)
 		dbenv-&gt;err(dbenv, ret, "txn_begin");
 <p>
 	/* Get the key. */
@@ -81,7 +81,7 @@ retry:		if ((ret = txn_abort(tid)) != 0)
 	case 0:
 		break;
 	case DB_NOTFOUND:
-		if (txn_commit(tid))
+		if (txn_commit(tid, 0))
 			dbenv-&gt;err(dbenv, ret, "txn_commit");
 		return (0);
 	}
@@ -103,7 +103,7 @@ retry:		if ((ret = txn_abort(tid)) != 0)
 	}
 <p>
 	/* The transaction finished, commit it. */
-	if ((ret = txn_commit(tid)) != 0)
+	if ((ret = txn_commit(tid, 0)) != 0)
 		dbenv-&gt;err(dbenv, ret, "txn_commit");
 <p>
 	return (0);

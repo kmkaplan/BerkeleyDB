@@ -4,7 +4,7 @@
  * Copyright (c) 1997, 1998, 1999, 2000
  *	Sleepycat Software.  All rights reserved.
  *
- *	$Id: Db.java,v 11.23 2000/05/25 04:18:13 dda Exp $
+ *	$Id: Db.java,v 11.23.2.1 2000/07/18 15:27:44 bostic Exp $
  */
 
 package com.sleepycat.db;
@@ -301,7 +301,7 @@ public class Db
     public native Dbc cursor(DbTxn txnid, int flags)
          throws DbException;
 
-    public native void del(DbTxn txnid, Dbt key, int flags)
+    public native int del(DbTxn txnid, Dbt key, int flags)
          throws DbException;
 
     public native void err(int errcode, String message);

@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: tcl_db_pkg.c,v 11.64 2000/05/31 15:10:06 bostic Exp $";
+static const char revid[] = "$Id: tcl_db_pkg.c,v 11.64.2.1 2000/06/30 02:52:24 krinsky Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -573,7 +573,7 @@ bdb_EnvOpen(interp, objc, objv, ip, env)
 			open_flags |= DB_USE_ENVIRON_ROOT;
 			break;
 		case ENV_USE_ENVIRON:
-			open_flags |= DB_USE_ENVIRON_ROOT;
+			open_flags |= DB_USE_ENVIRON;
 			break;
 		case ENV_VERBOSE:
 			result = Tcl_ListObjGetElements(interp, objv[i],

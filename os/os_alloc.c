@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: os_alloc.c,v 11.15 2000/05/25 01:20:27 bostic Exp $";
+static const char revid[] = "$Id: os_alloc.c,v 11.15.2.1 2000/06/09 14:11:33 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -339,5 +339,5 @@ __ua_memcpy(dst, src, len)
 	const void *src;
 	size_t len;
 {
-	return (memcpy(dst, src, len));
+	return ((void *)memcpy(dst, src, len));
 }

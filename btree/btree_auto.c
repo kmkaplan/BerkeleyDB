@@ -1875,6 +1875,163 @@ __bam_root_read(dbenv, recbuf, argpp)
 	return (0);
 }
 
+int __bam_curadj_log(dbenv, txnid, ret_lsnp, flags,
+	fileid, mode, from_pgno, to_pgno, left_pgno, first_indx,
+	from_indx, to_indx)
+	DB_ENV *dbenv;
+	DB_TXN *txnid;
+	DB_LSN *ret_lsnp;
+	u_int32_t flags;
+	int32_t fileid;
+	db_ca_mode mode;
+	db_pgno_t from_pgno;
+	db_pgno_t to_pgno;
+	db_pgno_t left_pgno;
+	u_int32_t first_indx;
+	u_int32_t from_indx;
+	u_int32_t to_indx;
+{
+	DBT logrec;
+	DB_LSN *lsnp, null_lsn;
+	u_int32_t rectype, txn_num;
+	int ret;
+	u_int8_t *bp;
+
+	if (txnid != NULL &&
+	    TAILQ_FIRST(&txnid->kids) != NULL && __txn_activekids(txnid) != 0)
+		return (__db_child_active_err(dbenv));
+	rectype = DB_bam_curadj;
+	txn_num = txnid == NULL ? 0 : txnid->txnid;
+	if (txnid == NULL) {
+		ZERO_LSN(null_lsn);
+		lsnp = &null_lsn;
+	} else
+		lsnp = &txnid->last_lsn;
+	logrec.size = sizeof(rectype) + sizeof(txn_num) + sizeof(DB_LSN)
+	    + sizeof(fileid)
+	    + sizeof(mode)
+	    + sizeof(from_pgno)
+	    + sizeof(to_pgno)
+	    + sizeof(left_pgno)
+	    + sizeof(first_indx)
+	    + sizeof(from_indx)
+	    + sizeof(to_indx);
+	if ((ret = __os_malloc(dbenv, logrec.size, NULL, &logrec.data)) != 0)
+		return (ret);
+
+	bp = logrec.data;
+	memcpy(bp, &rectype, sizeof(rectype));
+	bp += sizeof(rectype);
+	memcpy(bp, &txn_num, sizeof(txn_num));
+	bp += sizeof(txn_num);
+	memcpy(bp, lsnp, sizeof(DB_LSN));
+	bp += sizeof(DB_LSN);
+	memcpy(bp, &fileid, sizeof(fileid));
+	bp += sizeof(fileid);
+	memcpy(bp, &mode, sizeof(mode));
+	bp += sizeof(mode);
+	memcpy(bp, &from_pgno, sizeof(from_pgno));
+	bp += sizeof(from_pgno);
+	memcpy(bp, &to_pgno, sizeof(to_pgno));
+	bp += sizeof(to_pgno);
+	memcpy(bp, &left_pgno, sizeof(left_pgno));
+	bp += sizeof(left_pgno);
+	memcpy(bp, &first_indx, sizeof(first_indx));
+	bp += sizeof(first_indx);
+	memcpy(bp, &from_indx, sizeof(from_indx));
+	bp += sizeof(from_indx);
+	memcpy(bp, &to_indx, sizeof(to_indx));
+	bp += sizeof(to_indx);
+	DB_ASSERT((u_int32_t)(bp - (u_int8_t *)logrec.data) == logrec.size);
+	ret = log_put(dbenv, ret_lsnp, (DBT *)&logrec, flags);
+	if (txnid != NULL)
+		txnid->last_lsn = *ret_lsnp;
+	__os_free(logrec.data, logrec.size);
+	return (ret);
+}
+
+int
+__bam_curadj_print(dbenv, dbtp, lsnp, notused2, notused3)
+	DB_ENV *dbenv;
+	DBT *dbtp;
+	DB_LSN *lsnp;
+	db_recops notused2;
+	void *notused3;
+{
+	__bam_curadj_args *argp;
+	u_int32_t i;
+	u_int ch;
+	int ret;
+
+	i = 0;
+	ch = 0;
+	notused2 = 0;
+	notused3 = NULL;
+
+	if ((ret = __bam_curadj_read(dbenv, dbtp->data, &argp)) != 0)
+		return (ret);
+	printf("[%lu][%lu]bam_curadj: rec: %lu txnid %lx prevlsn [%lu][%lu]\n",
+	    (u_long)lsnp->file,
+	    (u_long)lsnp->offset,
+	    (u_long)argp->type,
+	    (u_long)argp->txnid->txnid,
+	    (u_long)argp->prev_lsn.file,
+	    (u_long)argp->prev_lsn.offset);
+	printf("\tfileid: %ld\n", (long)argp->fileid);
+	printf("\tmode: %ld\n", (long)argp->mode);
+	printf("\tfrom_pgno: %lu\n", (u_long)argp->from_pgno);
+	printf("\tto_pgno: %lu\n", (u_long)argp->to_pgno);
+	printf("\tleft_pgno: %lu\n", (u_long)argp->left_pgno);
+	printf("\tfirst_indx: %lu\n", (u_long)argp->first_indx);
+	printf("\tfrom_indx: %lu\n", (u_long)argp->from_indx);
+	printf("\tto_indx: %lu\n", (u_long)argp->to_indx);
+	printf("\n");
+	__os_free(argp, 0);
+	return (0);
+}
+
+int
+__bam_curadj_read(dbenv, recbuf, argpp)
+	DB_ENV *dbenv;
+	void *recbuf;
+	__bam_curadj_args **argpp;
+{
+	__bam_curadj_args *argp;
+	u_int8_t *bp;
+	int ret;
+
+	ret = __os_malloc(dbenv, sizeof(__bam_curadj_args) +
+	    sizeof(DB_TXN), NULL, &argp);
+	if (ret != 0)
+		return (ret);
+	argp->txnid = (DB_TXN *)&argp[1];
+	bp = recbuf;
+	memcpy(&argp->type, bp, sizeof(argp->type));
+	bp += sizeof(argp->type);
+	memcpy(&argp->txnid->txnid,  bp, sizeof(argp->txnid->txnid));
+	bp += sizeof(argp->txnid->txnid);
+	memcpy(&argp->prev_lsn, bp, sizeof(DB_LSN));
+	bp += sizeof(DB_LSN);
+	memcpy(&argp->fileid, bp, sizeof(argp->fileid));
+	bp += sizeof(argp->fileid);
+	memcpy(&argp->mode, bp, sizeof(argp->mode));
+	bp += sizeof(argp->mode);
+	memcpy(&argp->from_pgno, bp, sizeof(argp->from_pgno));
+	bp += sizeof(argp->from_pgno);
+	memcpy(&argp->to_pgno, bp, sizeof(argp->to_pgno));
+	bp += sizeof(argp->to_pgno);
+	memcpy(&argp->left_pgno, bp, sizeof(argp->left_pgno));
+	bp += sizeof(argp->left_pgno);
+	memcpy(&argp->first_indx, bp, sizeof(argp->first_indx));
+	bp += sizeof(argp->first_indx);
+	memcpy(&argp->from_indx, bp, sizeof(argp->from_indx));
+	bp += sizeof(argp->from_indx);
+	memcpy(&argp->to_indx, bp, sizeof(argp->to_indx));
+	bp += sizeof(argp->to_indx);
+	*argpp = argp;
+	return (0);
+}
+
 int
 __bam_init_print(dbenv)
 	DB_ENV *dbenv;
@@ -1919,6 +2076,9 @@ __bam_init_print(dbenv)
 		return (ret);
 	if ((ret = __db_add_recovery(dbenv,
 	    __bam_root_print, DB_bam_root)) != 0)
+		return (ret);
+	if ((ret = __db_add_recovery(dbenv,
+	    __bam_curadj_print, DB_bam_curadj)) != 0)
 		return (ret);
 	return (0);
 }
@@ -1967,6 +2127,9 @@ __bam_init_recover(dbenv)
 		return (ret);
 	if ((ret = __db_add_recovery(dbenv,
 	    __bam_root_recover, DB_bam_root)) != 0)
+		return (ret);
+	if ((ret = __db_add_recovery(dbenv,
+	    __bam_curadj_recover, DB_bam_curadj)) != 0)
 		return (ret);
 	return (0);
 }

@@ -40,7 +40,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: bt_split.c,v 11.26 2000/04/12 19:36:29 ubell Exp $";
+static const char revid[] = "$Id: bt_split.c,v 11.26.2.1 2000/07/13 18:56:34 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -232,8 +232,10 @@ __bam_root(dbc, cp)
 	    __bam_broot(dbc, cp->page, lp, rp))) != 0)
 		goto err;
 
-	/* Adjust any cursors.  Do it last so we don't have to undo it. */
-	__bam_ca_split(dbp, cp->page->pgno, lp->pgno, rp->pgno, split, 1);
+	/* Adjust any cursors. */
+	if ((ret = __bam_ca_split(dbc,
+	    cp->page->pgno, lp->pgno, rp->pgno, split, 1)) != 0)
+		goto err;
 
 	/* Success -- write the real pages back to the store. */
 	(void)memp_fput(dbp->mpf, cp->page, DB_MPOOL_DIRTY);
@@ -422,8 +424,10 @@ __bam_page(dbc, pp, cp)
 	if (tp != NULL)
 		PREV_PGNO(tp) = PGNO(rp);
 
-	/* Adjust any cursors.  Do it last so we don't have to undo it. */
-	__bam_ca_split(dbp, PGNO(cp->page), PGNO(cp->page), PGNO(rp), split, 0);
+	/* Adjust any cursors. */
+	if ((ret = __bam_ca_split(dbc,
+	    PGNO(cp->page), PGNO(cp->page), PGNO(rp), split, 0)) != 0)
+		goto err;
 
 	__os_free(lp, dbp->pgsize);
 	__os_free(rp, dbp->pgsize);

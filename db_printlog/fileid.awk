@@ -1,4 +1,4 @@
-# $Id: fileid.awk,v 10.2 1999/11/21 18:01:42 bostic Exp $
+# $Id: fileid.awk,v 10.2.2.1 2000/07/11 14:17:29 bostic Exp $
 #
 # Take a comma-separated list of file numbers and spit out all the
 # log records that affect those file numbers.
@@ -11,7 +11,7 @@
 			FILEID = substr(FILEID, ndx + 1, length(FILEID) - ndx);
 			nfiles++
 		}
-		pgno[nfiles] = FILEID;
+		files[nfiles] = FILEID;
 	}
 }
 /^\[/{

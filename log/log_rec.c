@@ -36,7 +36,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: log_rec.c,v 11.36 2000/05/26 22:09:47 ubell Exp $";
+static const char revid[] = "$Id: log_rec.c,v 11.36.2.1 2000/06/10 14:34:11 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -479,6 +479,10 @@ err:	MUTEX_THREAD_UNLOCK(logp->mutexp);
 
 /*
  * Close files that were opened by the recovery daemon.
+ *   We sync the file, unless its mpf pointer has been
+ *   NULLed by a db_remove or db_rename.  We may not
+ *   have flushed the log_register record that closes
+ *   the file.
  *
  * PUBLIC: void __log_close_files __P((DB_ENV *));
  */
@@ -498,7 +502,7 @@ __log_close_files(dbenv)
 		while ((dbp = TAILQ_FIRST(&dbe->dblist)) != NULL) {
 			(void)log_unregister(dbenv, dbp);
 			TAILQ_REMOVE(&dbe->dblist, dbp, links);
-			(void)dbp->close(dbp, 0);
+			(void)dbp->close(dbp, dbp->mpf == NULL ? DB_NOSYNC : 0);
 		}
 		dbe->deleted = 0;
 		dbe->refcount = 0;

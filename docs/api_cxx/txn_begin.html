@@ -1,5 +1,5 @@
  
-<!--$Id: txn_begin.so,v 10.30 2000/03/17 01:53:59 bostic Exp $-->
+<!--$Id: txn_begin.so,v 10.30.2.1 2000/07/12 13:14:50 bostic Exp $-->
 <!--Copyright 1997, 1998, 1999, 2000 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <html>
@@ -58,9 +58,9 @@ single thread.</b>
 <p><b>Note: cursors may not span transactions, i.e., each cursor must be opened
 and closed within a single transaction.</b>
 <p><b>Note: a parent transaction may not issue any Berkeley DB operations, except for
-DbEnv::txn_begin and <a href="../api_cxx/txn_abort.html">DbTxn::abort</a>, while it has active child
-transactions (transactions that have not yet been committed or
-aborted).</b>
+DbEnv::txn_begin, <a href="../api_cxx/txn_abort.html">DbTxn::abort</a> and <a href="../api_cxx/txn_commit.html">DbTxn::commit</a>, while it has
+active child transactions (child transactions that have not yet been
+committed or aborted).</b>
 <p>The DbEnv::txn_begin method either returns a non-zero error value or throws an exception that
 encapsulates a non-zero error value on failure, and returns 0 on success.
 <h1>Errors</h1>

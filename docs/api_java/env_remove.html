@@ -1,5 +1,5 @@
  
-<!--$Id: env_remove.so,v 10.19 2000/05/01 21:57:43 bostic Exp $-->
+<!--$Id: env_remove.so,v 10.19.2.1 2000/07/24 19:18:36 bostic Exp $-->
 <!--Copyright 1997, 1998, 1999, 2000 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <html>
@@ -22,7 +22,7 @@
 <h3><pre>
 import com.sleepycat.db.*;
 <p>
-public void remove(String db_home, String[] db_config, int flags)
+public void remove(String db_home, int flags)
 	throws DbException;
 </pre></h3>
 <h1>Description</h1>
@@ -30,8 +30,8 @@ public void remove(String db_home, String[] db_config, int flags)
 currently in use.  The environment regions, including any backing files,
 are removed.  Any log or database files and the environment directory are
 not removed.
-<p>The <b>db_home</b> and <b>db_config</b> arguments to DbEnv.remove
-are described in <a href="../ref/env/naming.html">Berkeley DB File Naming</a>.
+<p>The <b>db_home</b> argument to DbEnv.remove is described in
+<a href="../ref/env/naming.html">Berkeley DB File Naming</a>.
 <p>If there are processes that have called <a href="../api_java/env_open.html">DbEnv.open</a> without calling
 <a href="../api_java/env_close.html">DbEnv.close</a> (i.e., there are processes currently using the
 environment), DbEnv.remove will fail without further action,
@@ -105,6 +105,8 @@ will fail in the same way.
 <a href="../api_java/env_close.html">DbEnv.close</a>,
 <a href="../api_java/env_open.html">DbEnv.open</a>,
 <a href="../api_java/env_remove.html">DbEnv.remove</a>,
+<a href="../api_java/env_strerror.html">DbEnv.strerror</a>,
+<a href="../api_java/env_version.html">DbEnv.get_version_string</a>
 <a href="../api_java/env_set_cachesize.html">DbEnv.set_cachesize</a>,
 <a href="../api_java/env_set_errcall.html">DbEnv.set_errcall</a>,
 <a href="../api_java/env_set_error_stream.html">DbEnv.set_error_stream</a>,

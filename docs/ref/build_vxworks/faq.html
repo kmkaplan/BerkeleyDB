@@ -1,5 +1,5 @@
  
-<!--$Id: faq.so,v 1.5 2000/05/02 19:27:48 bostic Exp $-->
+<!--$Id: faq.so,v 1.5.2.1 2000/06/29 16:25:28 bostic Exp $-->
 <!--Copyright 1997, 1998, 1999, 2000 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <html>
@@ -24,6 +24,17 @@ need to port Tcl 8.1 or greater to VxWorks.  The Tcl shell included in
 <i>windsh</i> is not adequate for two reasons.  First, it is based on
 Tcl 8.0.  Second, it does not include the necessary Tcl components for
 adding a Tcl extension.
+<p><li><b>Are there any constraints using particular file system drivers?</b>
+<p>There are constraints using the dosFs file systems with DB.
+Namely, you must configure your dosFs file system to support
+long file names if you are using DB logging in your application.
+The VxWorks' dosFs 1.0 file system, by default,
+uses the old MS-DOS 8.3 file naming constraints,
+restricting to 8 character file names with a 3 character
+extension.
+If you have configured with VxWorks' dosFs 2.0 you should be
+compatible with Windows FAT32 filesystems which supports
+long filenames.
 <p><li><b>Are there any dependencies on particular file system drivers?</b>
 <p>There is one dependency on specifics of file system drivers in the port
 of Berkeley DB to VxWorks.  Berkeley DB synchronizes data using the FIOSYNC function

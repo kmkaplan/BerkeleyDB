@@ -4,13 +4,13 @@
  * Copyright (c) 1999, 2000
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: bt_verify.c,v 1.24 2000/05/17 19:15:17 bostic Exp $
+ * $Id: bt_verify.c,v 1.24.2.4 2000/07/27 15:39:34 krinsky Exp $
  */
 
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: bt_verify.c,v 1.24 2000/05/17 19:15:17 bostic Exp $";
+static const char revid[] = "$Id: bt_verify.c,v 1.24.2.4 2000/07/27 15:39:34 krinsky Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -52,6 +52,7 @@ __bam_vrfy_meta(dbp, vdp, meta, pgno, flags)
 {
 	VRFY_PAGEINFO *pip;
 	int isbad, t_ret, ret;
+	db_indx_t ovflsize;
 
 	if ((ret = __db_vrfy_getpageinfo(vdp, pgno, &pip)) != 0)
 		return (ret);
@@ -75,9 +76,11 @@ __bam_vrfy_meta(dbp, vdp, meta, pgno, flags)
 			goto err;
 	}
 
-	/* bt_minkey:  must be >= 2, < (pagesize / BKEYDATA_PSIZE(0) */
-	if (meta->minkey < 2 ||
-	    meta->minkey > (dbp->pgsize / BKEYDATA_PSIZE(0))) {
+	/* bt_minkey:  must be >= 2, must produce sensible ovflsize */
+	ovflsize = meta->minkey > 0 ? B_MINKEY_TO_OVFLSIZE(meta->minkey,
+	    dbp->pgsize) : 0;    /* avoid division by zero */
+	if (meta->minkey < 2 || 
+	    ovflsize > B_MINKEY_TO_OVFLSIZE(DEFMINKEYPAGE, dbp->pgsize)) {
 		pip->bt_minkey = 0;
 		isbad = 1;
 		EPRINT((dbp->dbenv,
@@ -394,12 +397,14 @@ __ram_vrfy_inp(dbp, vdp, h, pgno, nentriesp, flags)
 	VRFY_CHILDINFO child;
 	VRFY_PAGEINFO *pip;
 	int ret, t_ret, isbad;
-	db_indx_t himark, i, offset, nentries;
+	u_int32_t himark, i, offset, nentries;
 	u_int8_t *pagelayout, *p;
 
 	isbad = 0;
 	memset(&child, 0, sizeof(VRFY_CHILDINFO));
 	nentries = 0;
+	pagelayout = NULL;	
+
 	if ((ret = __db_vrfy_getpageinfo(vdp, pgno, &pip)) != 0)
 		return (ret);
 
@@ -429,8 +434,9 @@ __ram_vrfy_inp(dbp, vdp, h, pgno, nentriesp, flags)
 		 * somewhere after the inp array and before the end of the
 		 * page.
 		 */
-		if (offset <= ((u_int8_t *)h->inp + i - (u_int8_t *)h) ||
-		    offset > dbp->pgsize - RINTERNAL_SIZE) {
+		if (offset <= (u_int32_t)((u_int8_t *)h->inp + i - 
+		    (u_int8_t *)h) ||
+		    offset > (u_int32_t)(dbp->pgsize - RINTERNAL_SIZE)) {
 			isbad = 1;
 			EPRINT((dbp->dbenv,
 			    "Bad offset %lu at page %lu index %lu",
@@ -471,7 +477,7 @@ __ram_vrfy_inp(dbp, vdp, h, pgno, nentriesp, flags)
 			isbad = 1;
 		}
 
-	if (himark != HOFFSET(h)) {
+	if ((db_indx_t)himark != HOFFSET(h)) { 
 		EPRINT((dbp->dbenv, "Bad HOFFSET %lu, appears to be %lu",
 		    HOFFSET(h), himark));
 		isbad = 1;
@@ -481,6 +487,8 @@ __ram_vrfy_inp(dbp, vdp, h, pgno, nentriesp, flags)
 
 err:	if ((t_ret = __db_vrfy_putpageinfo(vdp, pip)) != 0 && ret == 0)
 		ret = t_ret;
+	if (pagelayout != NULL)
+		__os_free(pagelayout, dbp->pgsize);
 	return ((ret == 0 && isbad == 1) ? DB_VERIFY_BAD : ret);
 }
 
@@ -504,7 +512,7 @@ __bam_vrfy_inp(dbp, vdp, h, pgno, nentriesp, flags)
 	VRFY_PAGEINFO *pip;
 	int isbad, initem, isdupitem, ret, t_ret;
 	u_int32_t himark, offset; /* These would be db_indx_ts but for algnmt.*/
-	db_indx_t i, endoff, nentries;
+	u_int32_t i, endoff, nentries;
 	u_int8_t *pagelayout;
 
 	isbad = isdupitem = 0;
@@ -807,7 +815,7 @@ __bam_vrfy_inp(dbp, vdp, h, pgno, nentriesp, flags)
 	(void)__os_free(pagelayout, dbp->pgsize);
 
 	/* Verify HOFFSET. */
-	if (himark != HOFFSET(h)) {
+	if ((db_indx_t)himark != HOFFSET(h)) {
 		EPRINT((dbp->dbenv, "Bad HOFFSET %lu, appears to be %lu",
 		    HOFFSET(h), himark));
 		isbad = 1;
@@ -1426,11 +1434,17 @@ __bam_vrfy_subtree(dbp,
 		/* We handle these below. */
 		break;
 	default:
-		/* This should never get called if there's any doubt. */
-		TYPE_ERR_PRINT(dbp->dbenv, "__bam_vrfy_subtree", pgno, pip->type);
-		DB_ASSERT(0);
-		ret = EINVAL;
-		goto done;
+		/* 
+		 * If a P_IBTREE or P_IRECNO contains a reference to an
+		 * invalid page, we'll wind up here;  handle it gracefully.
+		 * Note that the code at the "done" label assumes that the
+		 * current page is a btree/recno one of some sort;  this
+		 * is not the case here, so we goto err.
+		 */
+		EPRINT((dbp->dbenv,
+		    "Page %lu is of inappropriate type %lu", pgno, pip->type));
+		ret = DB_VERIFY_BAD;
+		goto err; 
 		/* NOTREACHED */
 	}
 

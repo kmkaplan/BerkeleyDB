@@ -1,5 +1,5 @@
  
-<!--$Id: db_verify.so,v 10.2 2000/04/03 20:10:39 bostic Exp $-->
+<!--$Id: db_verify.so,v 10.2.2.1 2000/07/13 16:43:05 bostic Exp $-->
 <!--Copyright 1997, 1998, 1999, 2000 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <html>
@@ -36,10 +36,11 @@ other circumstances.
 failure.
 <p><dt><b>-V</b><dd>Write the version number to the standard output and exit.
 </dl>
-<p>If the file being verified contains multiple databases using differing
-sorting or hashing functions, the db_verify utility may not be be
-used for verification, as it will always return failure.  Such files must
-be verified explicitly, using the <a href="../api_c/db_verify.html">DB-&gt;verify</a> function.
+<p>If the file being verified contains databases using non-default
+comparison or hashing functions, the db_verify utility may
+not be used for verification, as it will likely always return failure.
+Such files must be verified explicitly, using the <a href="../api_c/db_verify.html">DB-&gt;verify</a> function,
+after setting the correct comparison or hashing functions.
 <p>The db_verify utility may be used with a Berkeley DB environment (as described for the
 <b>-h</b> option, the environment variable <b>DB_HOME</b>, or,
 because the utility was run in a directory containing a Berkeley DB

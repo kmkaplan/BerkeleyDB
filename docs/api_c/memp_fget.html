@@ -1,5 +1,5 @@
  
-<!--$Id: memp_fget.so,v 10.20 2000/03/17 01:53:59 bostic Exp $-->
+<!--$Id: memp_fget.so,v 10.20.2.2 2000/07/01 15:25:51 bostic Exp $-->
 <!--Copyright 1997, 1998, 1999, 2000 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <html>
@@ -53,7 +53,8 @@ DB_MPOOL_NEW flags are mutually exclusive.
 <p>Created pages have all their bytes set to 0, unless otherwise specified
 when the file was opened.
 <p>All pages returned by memp_fget will be retained (i.e.
-<i>pinned</i> in the pool until a subsequent call to <a href="../api_c/memp_fput.html">memp_fput</a>.
+<i>pinned</i>), in the pool until a subsequent call to
+<a href="../api_c/memp_fput.html">memp_fput</a>.
 <p>The memp_fget function returns a non-zero error value on failure and 0 on success.
 <h1>Errors</h1>
 <p>The memp_fget function may fail and return a non-zero error for the following conditions:
@@ -64,8 +65,10 @@ there's a bug in the application.)
 <p><dl compact>
 <p><dt>EINVAL<dd>An invalid flag value or parameter was specified.
 <p>The DB_MPOOL_NEW flag was set and the source file was not opened for writing.
-<p>The requested page does not exist and DB_MPOOL_CREATE was not set.
 <p>More than one of DB_MPOOL_CREATE, DB_MPOOL_LAST and DB_MPOOL_NEW was set.
+</dl>
+<p><dl compact>
+<p><dt>EIO<dd>The requested page does not exist and DB_MPOOL_CREATE was not set.
 </dl>
 <p><dl compact>
 <p><dt>ENOMEM<dd>The cache is full and no more pages will fit in the pool.

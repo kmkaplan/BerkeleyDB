@@ -4,13 +4,13 @@
  * Copyright (c) 1999, 2000
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: hash_verify.c,v 1.20 2000/05/29 21:34:38 ubell Exp $
+ * $Id: hash_verify.c,v 1.20.2.1 2000/06/30 14:02:11 krinsky Exp $
  */
 
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: hash_verify.c,v 1.20 2000/05/29 21:34:38 ubell Exp $";
+static const char revid[] = "$Id: hash_verify.c,v 1.20.2.1 2000/06/30 14:02:11 krinsky Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -193,7 +193,7 @@ __ham_vrfy(dbp, vdp, h, pgno, flags)
 	u_int32_t flags;
 {
 	VRFY_PAGEINFO *pip;
-	db_indx_t ent, himark, inpend;
+	u_int32_t ent, himark, inpend;
 	int isbad, ret, t_ret;
 
 	isbad = 0;
@@ -766,7 +766,7 @@ __ham_salvage(dbp, vdp, pgno, h, handle, callback, flags)
 	u_int32_t himark, tlen;
 	u_int8_t *hk;
 	void *buf;
-	db_indx_t dlen, len, i;
+	u_int32_t dlen, len, i;
 
 	memset(&dbt, 0, sizeof(DBT));
 	dbt.flags = DB_DBT_REALLOC;

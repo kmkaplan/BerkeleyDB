@@ -71,8 +71,8 @@ typedef unsigned int u_int32_t;
 
 #define	DB_VERSION_MAJOR	3
 #define	DB_VERSION_MINOR	1
-#define	DB_VERSION_PATCH	14
-#define	DB_VERSION_STRING	"Sleepycat Software: Berkeley DB 3.1.14: (June  7, 2000)"
+#define	DB_VERSION_PATCH	17
+#define	DB_VERSION_STRING	"Sleepycat Software: Berkeley DB 3.1.17: (July 31, 2000)"
 
 typedef	u_int32_t	db_pgno_t;	/* Page number type. */
 typedef	u_int16_t	db_indx_t;	/* Page offset type. */

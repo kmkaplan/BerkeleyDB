@@ -1,5 +1,5 @@
  
-<!--$Id: env_remove.so,v 10.19 2000/05/01 21:57:43 bostic Exp $-->
+<!--$Id: env_remove.so,v 10.19.2.1 2000/07/24 19:18:36 bostic Exp $-->
 <!--Copyright 1997, 1998, 1999, 2000 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <html>
@@ -23,16 +23,15 @@
 #include &lt;db_cxx.h&gt;
 <p>
 int
-DbEnv::remove(const char *db_home,
-    char *const *db_config, u_int32_t flags);
+DbEnv::remove(const char *db_home, u_int32_t flags);
 </pre></h3>
 <h1>Description</h1>
 <p>The DbEnv::remove method destroys a Berkeley DB environment, if it is not
 currently in use.  The environment regions, including any backing files,
 are removed.  Any log or database files and the environment directory are
 not removed.
-<p>The <b>db_home</b> and <b>db_config</b> arguments to DbEnv::remove
-are described in <a href="../ref/env/naming.html">Berkeley DB File Naming</a>.
+<p>The <b>db_home</b> argument to DbEnv::remove is described in
+<a href="../ref/env/naming.html">Berkeley DB File Naming</a>.
 <p>If there are processes that have called <a href="../api_cxx/env_open.html">DbEnv::open</a> without calling
 <a href="../api_cxx/env_close.html">DbEnv::close</a> (i.e., there are processes currently using the
 environment), DbEnv::remove will fail without further action,

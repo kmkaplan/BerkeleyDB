@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: bt_rec.c,v 11.19 2000/05/17 19:15:17 bostic Exp $";
+static const char revid[] = "$Id: bt_rec.c,v 11.19.2.6 2000/07/17 02:20:54 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -49,7 +49,7 @@ __bam_pg_alloc_recover(dbenv, dbtp, lsnp, op, info)
 	DB_MPOOLFILE *mpf;
 	PAGE *pagep;
 	db_pgno_t pgno;
-	int cmp_n, cmp_p, modified, ret;
+	int cmp_n, cmp_p, level, modified, ret;
 
 	COMPQUIET(info, NULL);
 	REC_PRINT(__bam_pg_alloc_print);
@@ -94,13 +94,28 @@ __bam_pg_alloc_recover(dbenv, dbtp, lsnp, op, info)
 	CHECK_LSN(op, cmp_p, &LSN(pagep), &argp->page_lsn);
 	if (cmp_p == 0 && DB_REDO(op)) {
 		/* Need to redo update described. */
+		switch (argp->ptype) {
+		case P_LBTREE:
+		case P_LRECNO:
+		case P_LDUP:
+			level = LEAFLEVEL;
+			break;
+		default:
+			level = 0;
+			break;
+		}
 		P_INIT(pagep, file_dbp->pgsize,
-		    argp->pgno, PGNO_INVALID, PGNO_INVALID, 0, argp->ptype);
+		    argp->pgno, PGNO_INVALID, PGNO_INVALID, level, argp->ptype);
 
 		pagep->lsn = *lsnp;
 		modified = 1;
-	} else if (cmp_n == 0 && DB_UNDO(op)) {
-		/* Need to undo update described. */
+	} else if ((cmp_n == 0 && DB_UNDO(op)) || PGNO(pagep) == PGNO_INVALID) {
+		/*
+		 * Undo the allocation.
+		 * If the lsn is zero we created the page and
+		 * must reinit it here because it will be on the
+		 * free list.
+		 */
 		P_INIT(pagep, file_dbp->pgsize,
 		    argp->pgno, PGNO_INVALID, meta->free, 0, P_INVALID);
 
@@ -175,7 +190,7 @@ __bam_pg_free_recover(dbenv, dbtp, lsnp, op, info)
 	DB_LSN copy_lsn;
 	DB_MPOOLFILE *mpf;
 	PAGE *pagep;
-	db_pgno_t pgno;
+	db_pgno_t nextpgno, pgno;
 	int cmp_n, cmp_p, modified, ret;
 
 	COMPQUIET(info, NULL);
@@ -201,6 +216,7 @@ __bam_pg_free_recover(dbenv, dbtp, lsnp, op, info)
 		goto out;
 	}
 	modified = 0;
+	nextpgno = argp->next;
 	__ua_memcpy(&copy_lsn, &LSN(argp->header.data), sizeof(DB_LSN));
 	cmp_n = log_compare(lsnp, &LSN(pagep));
 	cmp_p = log_compare(&LSN(pagep), &copy_lsn);
@@ -214,12 +230,35 @@ __bam_pg_free_recover(dbenv, dbtp, lsnp, op, info)
 		modified = 1;
 	} else if (cmp_n == 0 && DB_UNDO(op)) {
 		/* Need to undo update described. */
+		nextpgno = NEXT_PGNO(pagep);
 		memcpy(pagep, argp->header.data, argp->header.size);
 
 		modified = 1;
 	}
 	if ((ret = memp_fput(mpf, pagep, modified ? DB_MPOOL_DIRTY : 0)) != 0)
 		goto out;
+
+	if (nextpgno != PGNO_INVALID) {
+		if ((ret = memp_fget(mpf,
+		    &nextpgno, DB_MPOOL_CREATE, &pagep)) != 0) {
+			/*
+			 * Try to create the next page in the free list.
+			 * It may have been the result of an aborted pg_alloc.
+			 */
+			(void)__db_pgerr(file_dbp, nextpgno);
+			goto out;
+		}
+
+		modified = 0;
+		if (PGNO(pagep) == PGNO_INVALID) {
+			P_INIT(pagep, file_dbp->pgsize,
+			    nextpgno, PGNO_INVALID, PGNO_INVALID, 0, P_INVALID);
+			modified = 1;
+		}
+		if ((ret = memp_fput(mpf,
+		    pagep, modified ? DB_MPOOL_DIRTY : 0)) != 0)
+			goto out;
+	}
 
 	/*
 	 * Fix up the metadata page.  If we're redoing or undoing the operation
@@ -237,7 +276,7 @@ __bam_pg_free_recover(dbenv, dbtp, lsnp, op, info)
 	cmp_p = log_compare(&meta->alloc_lsn, &argp->alloc_lsn);
 	CHECK_LSN(op, cmp_p, &meta->alloc_lsn, &argp->alloc_lsn);
 	if (cmp_p == 0 && DB_REDO(op)) {
-		/* Need to redo update described. */
+		/* Need to redo the deallocation. */
 		meta->free = argp->pgno;
 
 		meta->alloc_lsn = *lsnp;
@@ -245,8 +284,8 @@ __bam_pg_free_recover(dbenv, dbtp, lsnp, op, info)
 			LSN(meta) = *lsnp;
 		modified = 1;
 	} else if (cmp_n == 0 && DB_UNDO(op)) {
-		/* Need to undo update described. */
-		meta->free = argp->next;
+		/* Need to undo the deallocation. */
+		meta->free = nextpgno;
 
 		meta->alloc_lsn = argp->alloc_lsn;
 		if (log_compare(lsnp, &LSN(meta)) == 0)
@@ -861,6 +900,8 @@ __bam_cdel_recover(dbenv, dbtp, lsnp, op, info)
 		indx = argp->indx + (TYPE(pagep) == P_LBTREE ? O_INDX : 0);
 		B_DCLR(GET_BKEYDATA(pagep, indx)->type);
 
+		(void)__bam_ca_delete(file_dbp, argp->pgno, argp->indx, 0);
+
 		LSN(pagep) = argp->lsn;
 		modified = 1;
 	}
@@ -1036,5 +1077,64 @@ __bam_root_recover(dbenv, dbtp, lsnp, op, info)
 done:	*lsnp = argp->prev_lsn;
 	ret = 0;
 
+out:	REC_CLOSE;
+}
+
+/*
+ * __bam_curadj_recover --
+ *	Transaction abort function to undo cursor adjustments.
+ *	This should only be triggered by subtransaction aborts.
+ *
+ * PUBLIC: int __bam_curadj_recover
+ * PUBLIC:   __P((DB_ENV *, DBT *, DB_LSN *, db_recops, void *));
+ */
+int
+__bam_curadj_recover(dbenv, dbtp, lsnp, op, info)
+	DB_ENV *dbenv;
+	DBT *dbtp;
+	DB_LSN *lsnp;
+	db_recops op;
+	void *info;
+{
+	__bam_curadj_args *argp;
+	DB *file_dbp;
+	DBC *dbc;
+	DB_MPOOLFILE *mpf;
+	int ret;
+
+	COMPQUIET(info, NULL);
+
+	REC_PRINT(__bam_curadj_print);
+	REC_INTRO(__bam_curadj_read, 0);
+
+	ret = 0;
+	if (op != DB_TXN_ABORT)
+		goto done;
+
+	switch(argp->mode) {
+	case DB_CA_DI:
+		if ((ret = __bam_ca_di(dbc, argp->from_pgno,
+		    argp->from_indx, -(int)argp->first_indx)) != 0)
+			goto out;
+		break;
+	case DB_CA_DUP:
+		if ((ret = __bam_ca_undodup(file_dbp, argp->first_indx,
+		     argp->from_pgno, argp->from_indx, argp->to_indx)) != 0)
+			goto out;
+		break;
+
+	case DB_CA_RSPLIT:
+		if ((ret =
+		    __bam_ca_rsplit(dbc, argp->to_pgno, argp->from_pgno)) != 0)
+			goto out;
+		break;
+
+	case DB_CA_SPLIT:
+		__bam_ca_undosplit(file_dbp, argp->from_pgno,
+		    argp->to_pgno, argp->left_pgno, argp->from_indx);
+		break;
+	}
+
+done:	*lsnp = argp->prev_lsn;
 out:	REC_CLOSE;
 }

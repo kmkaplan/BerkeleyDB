@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: bt_method.c,v 11.13 2000/03/28 21:50:02 ubell Exp $";
+static const char revid[] = "$Id: bt_method.c,v 11.13.2.2 2000/07/07 16:13:16 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -58,8 +58,9 @@ __bam_db_create(dbp)
 	dbp->set_bt_minkey = __bam_set_bt_minkey;
 	dbp->set_bt_prefix = __bam_set_bt_prefix;
 
-	t->re_delim = '\n';			/* Recno */
-	t->re_pad = ' ';
+	t->re_pad = ' ';			/* Recno */
+	t->re_delim = '\n';
+	t->re_eof = 1;
 
 	dbp->set_re_delim = __ram_set_re_delim;
 	dbp->set_re_len = __ram_set_re_len;
@@ -227,6 +228,8 @@ __bam_set_bt_minkey(dbp, bt_minkey)
 	u_int32_t bt_minkey;
 {
 	BTREE *t;
+	int defsz;
+	u_int32_t pgsize;
 
 	DB_ILLEGAL_AFTER_OPEN(dbp, "set_bt_minkey");
 	DB_ILLEGAL_METHOD(dbp, DB_OK_BTREE);
@@ -235,6 +238,23 @@ __bam_set_bt_minkey(dbp, bt_minkey)
 
 	if (bt_minkey < 2) {
 		__db_err(dbp->dbenv, "minimum bt_minkey value is 2");
+		return (EINVAL);
+	}
+	
+	/* 
+	 * Verify that the bt_minkey value specified won't cause the
+	 * calculation of ovflsize to underflow [#2406].  If pagesize
+	 * has not yet been set, perform the calculation on the minimum page
+	 * size for safety's sake.
+	 */
+	defsz = (dbp->pgsize == 0);
+	pgsize = defsz ? DB_MIN_PGSIZE : dbp->pgsize;
+	if (B_MINKEY_TO_OVFLSIZE(bt_minkey, pgsize) >
+	    B_MINKEY_TO_OVFLSIZE(DEFMINKEYPAGE, pgsize)) {
+		__db_err(dbp->dbenv, 
+		    "%sbt_minkey value too high for %s page size",
+		    defsz ? "page size still unset;  " : "",
+		    defsz ? "minimum" : "specified");
 		return (EINVAL);
 	}
 

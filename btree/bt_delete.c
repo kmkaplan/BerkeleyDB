@@ -43,7 +43,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: bt_delete.c,v 11.21 2000/03/22 04:21:00 ubell Exp $";
+static const char revid[] = "$Id: bt_delete.c,v 11.21.2.3 2000/07/13 19:15:08 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -356,7 +356,8 @@ __bam_dpages(dbc, stack_epg)
 	 */
 	if ((ret = __bam_ditem(dbc, epg->page, epg->indx)) != 0)
 		goto err;
-	__bam_ca_di(dbp, PGNO(epg->page), epg->indx, -1);
+	if ((ret = __bam_ca_di(dbc, PGNO(epg->page), epg->indx, -1)) != 0)
+		goto err;
 
 	pgno = PGNO(epg->page);
 	nitems = NUM_ENT(epg->page);
@@ -400,8 +401,7 @@ err:		for (; epg <= cp->csp; ++epg) {
 	 * If we just deleted the next-to-last item from the root page, the
 	 * tree can collapse one or more levels.  While there remains only a
 	 * single item on the root page, write lock the last page referenced
-	 * by the root page and copy it over the root page.  If we can't get a
-	 * write lock, that's okay, the tree just stays deeper than we'd like.
+	 * by the root page and copy it over the root page.
 	 */
 	root_pgno = cp->root;
 	if (pgno != root_pgno || nitems != 1)
@@ -448,10 +448,13 @@ err:		for (; epg <= cp->csp; ++epg) {
 			a.size = dbp->pgsize;
 			memset(&b, 0, sizeof(b));
 			b.data = P_ENTRY(parent, 0);
-			b.size = BINTERNAL_SIZE(((BINTERNAL *)b.data)->len);
-			__bam_rsplit_log(dbp->dbenv, dbc->txn,
-			   &child->lsn, 0, dbp->log_fileid, PGNO(child), &a,
-			   PGNO(parent), RE_NREC(parent), &b, &parent->lsn);
+			b.size = TYPE(parent) == P_IRECNO ? RINTERNAL_SIZE :
+			    BINTERNAL_SIZE(((BINTERNAL *)b.data)->len);
+			if ((ret =
+			   __bam_rsplit_log(dbp->dbenv, dbc->txn, &child->lsn,
+			   0, dbp->log_fileid, PGNO(child), &a, PGNO(parent),
+			   RE_NREC(parent), &b, &parent->lsn)) != 0)
+				goto stop;
 		}
 
 		/*
@@ -474,18 +477,22 @@ err:		for (; epg <= cp->csp; ++epg) {
 			RE_NREC_SET(parent, rcnt);
 
 		/* Mark the pages dirty. */
-		memp_fset(dbp->mpf, parent, DB_MPOOL_DIRTY);
-		memp_fset(dbp->mpf, child, DB_MPOOL_DIRTY);
+		if ((ret = memp_fset(dbp->mpf, parent, DB_MPOOL_DIRTY)) != 0)
+			goto stop;
+		if ((ret = memp_fset(dbp->mpf, child, DB_MPOOL_DIRTY)) != 0)
+			goto stop;
 
 		/* Adjust the cursors. */
-		__bam_ca_rsplit(dbp, PGNO(child), root_pgno);
+		if ((ret = __bam_ca_rsplit(dbc, PGNO(child), root_pgno)) != 0)
+			goto stop;
 
 		/*
 		 * Free the page copied onto the root page and discard its
 		 * lock.  (The call to __db_free() discards our reference
 		 * to the page.)
 		 */
-		(void)__db_free(dbc, child);
+		if ((ret = __db_free(dbc, child)) != 0)
+			goto stop;
 		child = NULL;
 
 		if (0) {
@@ -493,13 +500,15 @@ stop:			done = 1;
 		}
 		if (p_lock.off != LOCK_INVALID)
 			(void)__TLPUT(dbc, p_lock);
-		if (parent != NULL)
-			memp_fput(dbp->mpf, parent, 0);
+		if (parent != NULL &&
+		    (t_ret = memp_fput(dbp->mpf, parent, 0)) != 0 && ret == 0)
+			ret = t_ret;
 		if (c_lock.off != LOCK_INVALID)
 			(void)__TLPUT(dbc, c_lock);
-		if (child != NULL)
-			memp_fput(dbp->mpf, child, 0);
+		if (child != NULL &&
+		    (t_ret = memp_fput(dbp->mpf, child, 0)) != 0 && ret == 0)
+			ret = t_ret;
 	}
 
-	return (0);
+	return (ret);
 }

@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: env_open.c,v 11.20 2000/05/31 15:10:04 bostic Exp $";
+static const char revid[] = "$Id: env_open.c,v 11.20.2.1 2000/06/30 02:52:24 krinsky Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -699,7 +699,7 @@ __db_home(dbenv, db_home, flags)
 	 */
 	if ((p = db_home) == NULL &&
 	    (LF_ISSET(DB_USE_ENVIRON) ||
-	    (LF_ISSET(DB_USE_ENVIRON_ROOT) && __os_isroot() == 0)) &&
+	    (LF_ISSET(DB_USE_ENVIRON_ROOT) && __os_isroot())) &&
 	    (p = getenv("DB_HOME")) != NULL && p[0] == '\0') {
 		__db_err(dbenv, "illegal DB_HOME environment variable");
 		return (EINVAL);

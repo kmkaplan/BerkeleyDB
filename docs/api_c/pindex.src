@@ -138,6 +138,9 @@ __APIREL__/api_c/env_set_pageyield.html#2 @db_env_set_pageyield
 __APIREL__/api_c/env_set_panicstate.html#2 @db_env_set_panicstate
 __APIREL__/api_c/env_set_rec_init.html#2 @DBENV-__GT__set_recovery_init
 __APIREL__/api_c/env_set_region_init.html#2 @db_env_set_region_init
+__APIREL__/api_c/env_set_server.html#2 @DBENV-__GT__set_server
+__APIREL__/api_c/env_set_server.html#DB_NOSERVER DBENV-__GT__set_server@DB_NOSERVER
+__APIREL__/api_c/env_set_server.html#DB_NOSERVER_ID DBENV-__GT__set_server@DB_NOSERVER_ID
 __APIREL__/api_c/env_set_shm_key.html#2 @DBENV-__GT__set_shm_key
 __APIREL__/api_c/env_set_tas_spins.html#2 @db_env_set_tas_spins
 __APIREL__/api_c/env_set_tmp_dir.html#2 @DBENV-__GT__set_tmp_dir
@@ -148,6 +151,8 @@ __APIREL__/api_c/env_set_verbose.html#DB_VERB_CHKPOINT DBENV-__GT__set_verbose@D
 __APIREL__/api_c/env_set_verbose.html#DB_VERB_DEADLOCK DBENV-__GT__set_verbose@DB_VERB_DEADLOCK
 __APIREL__/api_c/env_set_verbose.html#DB_VERB_RECOVERY DBENV-__GT__set_verbose@DB_VERB_RECOVERY
 __APIREL__/api_c/env_set_verbose.html#DB_VERB_WAITSFOR DBENV-__GT__set_verbose@DB_VERB_WAITSFOR
+__APIREL__/api_c/env_strerror.html#2 @db_strerror
+__APIREL__/api_c/env_version.html#2 @db_version
 __APIREL__/api_c/lock_detect.html#2 @lock_detect
 __APIREL__/api_c/lock_detect.html#DB_LOCK_CONFLICT lock_detect@DB_LOCK_CONFLICT
 __APIREL__/api_c/lock_get.html#2 @lock_get
@@ -256,16 +261,11 @@ __APIREL__/api_c/env_create.html#2 @db_env_create
 __APIREL__/api_c/env_create.html#DB_CLIENT db_env_create@DB_CLIENT
 __APIREL__/api_c/env_set_errfile.html#2 @DBENV-__GT__set_errfile
 __APIREL__/api_c/env_set_paniccall.html#2 @DBENV-__GT__set_paniccall
-__APIREL__/api_c/env_set_server.html#2 @DBENV-__GT__set_server
-__APIREL__/api_c/env_set_server.html#DB_NOSERVER DBENV-__GT__set_server@DB_NOSERVER
-__APIREL__/api_c/env_set_server.html#DB_NOSERVER_ID DBENV-__GT__set_server@DB_NOSERVER_ID
 __APIREL__/api_c/env_set_tx_recover.html#2 @DBENV-__GT__set_tx_recover
 __APIREL__/api_c/env_set_tx_recover.html#DB_TXN_BACKWARD_ROLL DBENV-__GT__set_tx_recover@DB_TXN_BACKWARD_ROLL
 __APIREL__/api_c/env_set_tx_recover.html#DB_TXN_FORWARD_ROLL DBENV-__GT__set_tx_recover@DB_TXN_FORWARD_ROLL
 __APIREL__/api_c/env_set_tx_recover.html#DB_TXN_OPENFILES DBENV-__GT__set_tx_recover@DB_TXN_OPENFILES
 __APIREL__/api_c/env_set_tx_recover.html#DB_TXN_ABORT DBENV-__GT__set_tx_recover@DB_TXN_ABORT
-__APIREL__/api_c/env_strerror.html#2 @db_strerror
-__APIREL__/api_c/env_version.html#2 @db_version
 __APIREL__/api_c/hsearch.html#2 @hsearch
 __APIREL__/api_c/set_func_close.html#2 @db_env_set_func_close
 __APIREL__/api_c/set_func_dirfree.html#2 @db_env_set_func_dirfree

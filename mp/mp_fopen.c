@@ -7,7 +7,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: mp_fopen.c,v 11.30 2000/05/17 19:29:21 bostic Exp $";
+static const char revid[] = "$Id: mp_fopen.c,v 11.30.2.1 2000/07/03 19:41:24 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -251,8 +251,13 @@ __memp_fopen(dbmp, mfp, path, flags, mode, pagesize, needlock, finfop, retp)
 	 */
 	if (needlock)
 		R_LOCK(dbenv, dbmp->reginfo);
-	ret = mfp == NULL ? __memp_mf_open(
-	    dbmp, path, pagesize, last_pgno, finfop, flags, &mfp) : 0;
+	if (mfp == NULL)
+		ret = __memp_mf_open(
+		    dbmp, path, pagesize, last_pgno, finfop, flags, &mfp);
+	else {
+		++mfp->ref_cnt;
+		ret = 0;
+	}
 	if (needlock)
 		R_UNLOCK(dbenv, dbmp->reginfo);
 	if (ret != 0)

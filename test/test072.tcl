@@ -3,7 +3,7 @@
 # Copyright (c) 1999, 2000
 #	Sleepycat Software.  All rights reserved.
 #
-#	$Id: test072.tcl,v 11.6 2000/05/22 12:51:40 bostic Exp $
+#	$Id: test072.tcl,v 11.6.2.1 2000/07/13 01:44:53 krinsky Exp $
 #
 # DB Test 72: Test that of cursor stability when duplicates are moved off-page.
 proc test072 { method {pagesize 512} {ndups 20} {tnum 72} args } {
@@ -24,7 +24,15 @@ proc test072 { method {pagesize 512} {ndups 20} {tnum 72} args } {
 		set testfile test0$tnum.db
 	}
 
+	# Keys must sort $prekey < $key < $postkey.
+	set prekey "a key"
 	set key "the key"
+	set postkey "z key"
+
+	# Make these distinguishable from each other and from the
+	# alphabets used for the $key's data.
+	set predatum "1234567890"
+	set postdatum "0987654321"
 
 	append args " -pagesize $pagesize -dup"
 
@@ -41,11 +49,28 @@ proc test072 { method {pagesize 512} {ndups 20} {tnum 72} args } {
 	     -create -truncate -mode 0644} $omethod $args $testfile]
 	error_check_good "db open" [is_valid_db $db] TRUE
 
-	puts "\tTest0$tnum.a: Put/create cursor/verify all cursor loop."
+	puts "\tTest0$tnum.a: Set up surrounding keys and cursors."
+	error_check_good pre_put [$db put $prekey $predatum] 0
+	error_check_good post_put [$db put $postkey $postdatum] 0
+	set precursor [$db cursor]
+	error_check_good precursor [is_valid_cursor $precursor $db] TRUE
+	set postcursor [$db cursor]
+	error_check_good postcursor [is_valid_cursor $postcursor $db] TRUE
+	error_check_good preset [$precursor get -set $prekey] \
+		[list [list $prekey $predatum]]
+	error_check_good postset [$postcursor get -set $postkey] \
+		[list [list $postkey $postdatum]]
+
+	puts "\tTest0$tnum.b: Put/create cursor/verify all cursor loop."
 
 	for { set i 0 } { $i < $ndups } { incr i } {
 		set datum [format "%4d$alphabet" [expr $i + 1000]]
 		set data($i) $datum
+
+		# Uncomment these lines to see intermediate steps.
+		# error_check_good db_sync($i) [$db sync] 0
+		# error_check_good db_dump($i) \
+		#    [catch {exec ./db_dump -da $testfile > TESTDIR/out.$i}] 0
 
 		error_check_good "db put ($i)" [$db put $key $datum] 0
 
@@ -71,10 +96,35 @@ proc test072 { method {pagesize 512} {ndups 20} {tnum 72} args } {
 		    error_check_good\
 			"cursor $j data correctness after $i puts" $d $data($j)
 		}
+
+		# Check correctness of pre- and post- cursors.  Do an 
+		# error_check_good on the lengths first so that we don't
+		# spew garbage as the "got" field and screw up our
+		# terminal.  (It's happened here.)
+		set pre_dbt [$precursor get -current]
+		set post_dbt [$postcursor get -current]
+		error_check_good "earlier cursor correctness after $i puts" \
+		    "key len [string length [lindex [lindex $pre_dbt 0] 0]]" \
+		    "key len [string length $prekey]" 
+		error_check_good "earlier cursor correctness after $i puts" \
+		    "data len [string length [lindex [lindex $pre_dbt 0] 1]]" \
+		    "data len [string length $predatum]" 
+		error_check_good "later cursor correctness after $i puts" \
+		    "key len [string length [lindex [lindex $post_dbt 0] 0]]" \
+		    "key len [string length $postkey]" 
+		error_check_good "later cursor correctness after $i puts" \
+		    "data len [string length [lindex [lindex $post_dbt 0] 1]]"\
+		    "data len [string length $postdatum]" 
+
+
+		error_check_good "earlier cursor correctness after $i puts" \
+		    $pre_dbt [list [list $prekey $predatum]]
+		error_check_good "later cursor correctness after $i puts" \
+		    $post_dbt [list [list $postkey $postdatum]]
 	}
 
 	# Close cursors.
-	puts "\tTest0$tnum.b: Closing cursors."
+	puts "\tTest0$tnum.c: Closing cursors."
 	for { set i 0 } { $i < $ndups } { incr i } {
 		error_check_good "dbc close ($i)" [$dbc($i) close] 0
 	}

@@ -14,12 +14,16 @@ int __bam_mswap __P((PAGE *));
 void __bam_cprint __P((DBC *));
 int __bam_ca_delete __P((DB *, db_pgno_t, u_int32_t, int));
 int __ram_ca_delete __P((DB *, db_pgno_t));
-void __bam_ca_di __P((DB *, db_pgno_t, u_int32_t, int));
-int __bam_ca_dup __P((DB *,
-   db_pgno_t, u_int32_t, u_int32_t, db_pgno_t, u_int32_t));
-void __bam_ca_rsplit __P((DB *, db_pgno_t, db_pgno_t));
-void __bam_ca_split __P((DB *,
+int __bam_ca_di __P((DBC *, db_pgno_t, u_int32_t, int));
+int __bam_ca_dup __P((DBC *,
+   u_int32_t, db_pgno_t, u_int32_t, db_pgno_t, u_int32_t));
+int __bam_ca_undodup __P((DB *,
+   u_int32_t, db_pgno_t, u_int32_t, u_int32_t));
+int __bam_ca_rsplit __P((DBC *, db_pgno_t, db_pgno_t));
+int __bam_ca_split __P((DBC *,
    db_pgno_t, db_pgno_t, db_pgno_t, u_int32_t, int));
+void __bam_ca_undosplit __P((DB *,
+   db_pgno_t, db_pgno_t, db_pgno_t, u_int32_t));
 int __bam_c_init __P((DBC *, DBTYPE));
 int __bam_c_refresh __P((DBC *));
 int __bam_c_count __P((DBC *, db_recno_t *));
@@ -58,6 +62,8 @@ int __bam_cdel_recover
 int __bam_repl_recover
   __P((DB_ENV *, DBT *, DB_LSN *, db_recops, void *));
 int __bam_root_recover
+  __P((DB_ENV *, DBT *, DB_LSN *, db_recops, void *));
+int __bam_curadj_recover
   __P((DB_ENV *, DBT *, DB_LSN *, db_recops, void *));
 int __bam_reclaim __P((DB *, DB_TXN *));
 int __ram_open __P((DB *, const char *, db_pgno_t, u_int32_t));

@@ -7,7 +7,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: log.c,v 11.26 2000/04/28 14:37:49 bostic Exp $";
+static const char revid[] = "$Id: log.c,v 11.26.2.1 2000/07/03 17:02:59 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -113,7 +113,7 @@ detach:		(void)__db_r_detach(dbenv, &dblp->reginfo, 0);
 	}
 
 	if (readbufp != NULL)
-		__os_free(readbufp, sizeof(dbenv->lg_bsize));
+		__os_free(readbufp, dbenv->lg_bsize);
 	__os_free(dblp, sizeof(*dblp));
 	return (ret);
 }

@@ -49,6 +49,7 @@ B_DISSET	../include/db_page.h	/^#define	B_DISSET(t)	((t) & B_DELETE)$/
 B_DSET	../include/db_page.h	/^#define	B_DSET(t)	(t) |= B_DELETE$/
 B_DUPLICATE	../include/db_page.h	/^#define	B_DUPLICATE	2	\/* Duplicate key\/data item/
 B_KEYDATA	../include/db_page.h	/^#define	B_KEYDATA	1	\/* Key\/data item. *\/$/
+B_MINKEY_TO_OVFLSIZE	../include/db_page.h	/^#define	B_MINKEY_TO_OVFLSIZE(minkey, pgsize)				\\/
 B_OVERFLOW	../include/db_page.h	/^#define	B_OVERFLOW	3	\/* Overflow key\/data item. /
 B_TSET	../include/db_page.h	/^#define	B_TSET(t, type, deleted) {					\\$/
 B_TYPE	../include/db_page.h	/^#define	B_TYPE(t)	((t) & ~B_DELETE)$/
@@ -61,7 +62,7 @@ CD_CLR	../btree/bt_recno.c	/^#define	CD_CLR(dbp, cp) {						\\$/
 CD_ISSET	../btree/bt_recno.c	/^#define	CD_ISSET(dbp, cp)						\\$/
 CD_SET	../btree/bt_recno.c	/^#define	CD_SET(dbp, cp) {						\\$/
 CHARKEY	../include/hash.h	/^#define	CHARKEY			"%$sniglet^&"$/
-CHECK_LSN	../include/log.h	/^#define	CHECK_LSN(redo, cmp, lsn, prev)				\\$/
+CHECK_LSN	../include/log.h	/^#define	CHECK_LSN(redo, cmp, lsn, prev)					\\$/
 CIRCLEQ_END	../include/queue.h	/^#define	CIRCLEQ_END(head)		((void *)(head))$/
 CIRCLEQ_ENTRY	../include/queue.h	/^#define	CIRCLEQ_ENTRY(type)						\\$/
 CIRCLEQ_FIRST	../include/queue.h	/^#define	CIRCLEQ_FIRST(head)		((head)->cqh_first)$/
@@ -389,6 +390,7 @@ DB_XA_CREATE	../include/db.src	/^#define	DB_XA_CREATE	      0x000002	\/* Open in
 DB_bam_adj	../include/btree_auto.h	/^#define	DB_bam_adj	55$/
 DB_bam_cadjust	../include/btree_auto.h	/^#define	DB_bam_cadjust	56$/
 DB_bam_cdel	../include/btree_auto.h	/^#define	DB_bam_cdel	57$/
+DB_bam_curadj	../include/btree_auto.h	/^#define	DB_bam_curadj	64$/
 DB_bam_pg_alloc	../include/btree_auto.h	/^#define	DB_bam_pg_alloc	60$/
 DB_bam_pg_alloc1	../include/btree_auto.h	/^#define	DB_bam_pg_alloc1	51$/
 DB_bam_pg_free	../include/btree_auto.h	/^#define	DB_bam_pg_free	61$/
@@ -535,6 +537,7 @@ IS_HELP	../include/tcl_db.h	/^#define	IS_HELP(s)						\\$/
 IS_INITIALIZED	../db/db_cam.c	/^#define	IS_INITIALIZED(dbc)	((dbc)->internal->pgno/
 IS_RECOVERING	../include/db_int.src	/^#define	IS_RECOVERING(dbenv)						\\$/
 IS_SUBDB_SETUP	../db/db.c	/^#define	IS_SUBDB_SETUP	(meta_pgno != PGNO_BASE_MD)/
+IS_SUBTRANSACTION	../btree/bt_curadj.c	/^#define IS_SUBTRANSACTION(txn) \\$/
 IS_VALID	../include/hash.h	/^#define	IS_VALID(C) ((C)->bucket != BUCKET_INVALID/
 IS_VALID_PAGESIZE	../include/db_verify.h	/^#define	IS_VALID_PAGESIZE(x)						\\$/
 IS_VALID_PGNO	../include/db_verify.h	/^#define	IS_VALID_PGNO(x)	((x) <= vdp->last_pgno)$/
@@ -722,9 +725,7 @@ QAM_SETCUR	../include/qam.h	/^#define	QAM_SETCUR		0x02$/
 QAM_SETFIRST	../include/qam.h	/^#define	QAM_SETFIRST		0x01$/
 QAM_VALID	../include/qam.h	/^#define	QAM_VALID	0x01$/
 RAND_MAX	../tcl/tcl_compat.c	/^#define	RAND_MAX	0x7fffffff$/
-RECNO_MODIFIED	../include/btree.h	/^#define	RECNO_MODIFIED	0x01		\/* Tree was modified/
 RECNO_OOB	../include/db_int.src	/^#define	RECNO_OOB	0		\/* Illegal record number. */
-RECNO_READFILE	../include/btree.h	/^#define	RECNO_READFILE	0x02		\/* Backing source fi/
 REC_CLOSE	../include/db_am.h	/^#define	REC_CLOSE							\\$/
 REC_INTRO	../include/db_am.h	/^#define	REC_INTRO(func, inc_count) {					\\$/
 REC_NOOP_CLOSE	../include/db_am.h	/^#define	REC_NOOP_CLOSE							\\$/
@@ -1113,10 +1114,12 @@ __bam_c_rget	../btree/bt_cursor.c	/^__bam_c_rget(dbc, data, flags)$/
 __bam_c_search	../btree/bt_cursor.c	/^__bam_c_search(dbc, key, flags, exactp)$/
 __bam_c_writelock	../btree/bt_cursor.c	/^__bam_c_writelock(dbc)$/
 __bam_ca_delete	../btree/bt_curadj.c	/^__bam_ca_delete(dbp, pgno, indx, delete)$/
-__bam_ca_di	../btree/bt_curadj.c	/^__bam_ca_di(dbp, pgno, indx, adjust)$/
-__bam_ca_dup	../btree/bt_curadj.c	/^__bam_ca_dup(dbp, first, fpgno, fi, tpgno, ti)$/
-__bam_ca_rsplit	../btree/bt_curadj.c	/^__bam_ca_rsplit(dbp, fpgno, tpgno)$/
-__bam_ca_split	../btree/bt_curadj.c	/^__bam_ca_split(dbp, ppgno, lpgno, rpgno, split_ind/
+__bam_ca_di	../btree/bt_curadj.c	/^__bam_ca_di(my_dbc, pgno, indx, adjust)$/
+__bam_ca_dup	../btree/bt_curadj.c	/^__bam_ca_dup(my_dbc, first, fpgno, fi, tpgno, ti)$/
+__bam_ca_rsplit	../btree/bt_curadj.c	/^__bam_ca_rsplit(my_dbc, fpgno, tpgno)$/
+__bam_ca_split	../btree/bt_curadj.c	/^__bam_ca_split(my_dbc, ppgno, lpgno, rpgno, split_/
+__bam_ca_undodup	../btree/bt_curadj.c	/^__bam_ca_undodup(dbp, first, fpgno, fi, ti)$/
+__bam_ca_undosplit	../btree/bt_curadj.c	/^__bam_ca_undosplit(dbp, frompgno, topgno, lpgno, s/
 __bam_cadjust_log	../btree/btree_auto.c	/^int __bam_cadjust_log(dbenv, txnid, ret_lsnp, flag/
 __bam_cadjust_print	../btree/btree_auto.c	/^__bam_cadjust_print(dbenv, dbtp, lsnp, notused2, n/
 __bam_cadjust_read	../btree/btree_auto.c	/^__bam_cadjust_read(dbenv, recbuf, argpp)$/
@@ -1128,6 +1131,10 @@ __bam_cdel_recover	../btree/bt_rec.c	/^__bam_cdel_recover(dbenv, dbtp, lsnp, op,
 __bam_cmp	../btree/bt_compare.c	/^__bam_cmp(dbp, dbt, h, indx, func, cmpp)$/
 __bam_copy	../btree/bt_split.c	/^__bam_copy(dbp, pp, cp, nxt, stop)$/
 __bam_cprint	../btree/bt_curadj.c	/^__bam_cprint(dbc)$/
+__bam_curadj_log	../btree/btree_auto.c	/^int __bam_curadj_log(dbenv, txnid, ret_lsnp, flags/
+__bam_curadj_print	../btree/btree_auto.c	/^__bam_curadj_print(dbenv, dbtp, lsnp, notused2, no/
+__bam_curadj_read	../btree/btree_auto.c	/^__bam_curadj_read(dbenv, recbuf, argpp)$/
+__bam_curadj_recover	../btree/bt_rec.c	/^__bam_curadj_recover(dbenv, dbtp, lsnp, op, info)$/
 __bam_db_close	../btree/bt_method.c	/^__bam_db_close(dbp)$/
 __bam_db_create	../btree/bt_method.c	/^__bam_db_create(dbp)$/
 __bam_defcmp	../btree/bt_compare.c	/^__bam_defcmp(a, b)$/
@@ -1278,7 +1285,6 @@ __db_c_get	../db/db_cam.c	/^__db_c_get(dbc_arg, key, data, flags)$/
 __db_c_idup	../db/db_cam.c	/^__db_c_idup(dbc_orig, dbcp, flags)$/
 __db_c_put	../db/db_cam.c	/^__db_c_put(dbc_arg, key, data, flags)$/
 __db_ccountchk	../db/db_iface.c	/^__db_ccountchk(dbp, flags, isvalid)$/
-__db_cdb_cdup	../db/db_cam.c	/^__db_cdb_cdup(dbc_orig, dbc_n)$/
 __db_cdelchk	../db/db_iface.c	/^__db_cdelchk(dbp, flags, isrdonly, isvalid)$/
 __db_cgetchk	../db/db_iface.c	/^__db_cgetchk(dbp, key, data, flags, isvalid)$/
 __db_child_active_err	../common/db_err.c	/^__db_child_active_err(dbenv)$/

@@ -4,7 +4,7 @@
  * Copyright (c) 1996, 1997, 1998, 1999, 2000
  *	Sleepycat Software.  All rights reserved.
  *
- *	$Id: btree.src,v 10.21 2000/02/17 20:24:06 bostic Exp $
+ *	$Id: btree.src,v 10.21.2.1 2000/07/13 18:56:35 bostic Exp $
  */
 
 PREFIX	bam
@@ -251,4 +251,30 @@ ARG	fileid		int32_t		ld
 ARG	meta_pgno	db_pgno_t	lu
 ARG	root_pgno	db_pgno_t	lu
 POINTER	meta_lsn	DB_LSN *	lu
+END
+
+/*
+ * BTREE-curadj: undo cursor adjustments on abort txn.
+ *     Should only be processed during DB_TXN_ABORT.
+ * NOTE: the first_indx field gets used to hold
+ * 	signed index adjustment in one case.
+ *	care should be taken if its size is changed.
+ */
+BEGIN curadj		64
+/* Fileid of db effected. */
+ARG	fileid		int32_t		ld
+/* Which adjustment. */
+ARG	mode		db_ca_mode	ld
+/* Page entry is from. */
+ARG	from_pgno	db_pgno_t	lu
+/* Page entry  went to. */
+ARG	to_pgno		db_pgno_t	lu
+/* Left page of root split. */
+ARG	left_pgno	db_pgno_t	lu
+/* First index of dup set. Also used as adjustment. */
+ARG	first_indx	u_int32_t	lu
+/* Index entry is from. */
+ARG	from_indx	u_int32_t	lu
+/* Index where entry went. */
+ARG	to_indx		u_int32_t	lu
 END

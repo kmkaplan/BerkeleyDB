@@ -1,5 +1,5 @@
 # Berkeley DB
-#	$Id: magic.txt,v 10.9 1999/11/24 15:51:36 bostic Exp $
+#	$Id: magic.txt,v 10.9.2.1 2000/07/07 22:47:40 krinsky Exp $
 #
 # Ian Darwin's file /etc/magic files: big/little-endian version.
 #
@@ -47,3 +47,10 @@
 >16	belong	>0		(Btree, version %d, big-endian)
 12	lelong	0x00053162	Berkeley DB
 >16	lelong	>0		(Btree, version %d, little-endian)
+
+12	long	0x00042253	Berkeley DB
+>16	long	>0		(Queue, version %d, native byte-order)
+12	belong	0x00042253	Berkeley DB
+>16	belong	>0		(Queue, version %d, big-endian)
+12	lelong	0x00042253	Berkeley DB
+>16	lelong	>0		(Queue, version %d, little-endian)

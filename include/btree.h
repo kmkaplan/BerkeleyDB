@@ -39,7 +39,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $Id: btree.h,v 11.25 2000/05/07 14:00:33 bostic Exp $
+ * $Id: btree.h,v 11.25.2.2 2000/07/13 18:40:33 bostic Exp $
  */
 
 /* Forward structure declarations. */
@@ -216,8 +216,11 @@ struct __cursor {
  * The in-memory, per-tree btree/recno data structure.
  */
 struct __btree {			/* Btree access method. */
-	db_pgno_t bt_lpgno;		/* Last insert location. */
-
+	/*
+	 * !!!
+	 * These fields are write-once (when the structure is created) and
+	 * so are ignored as far as multi-threading is concerned.
+	 */
 	db_pgno_t bt_meta;		/* Database meta-data page. */
 	db_pgno_t bt_root;		/* Database root page. */
 
@@ -237,11 +240,30 @@ struct __btree {			/* Btree access method. */
 
 	/*
 	 * !!!
+	 * The bt_lpgno field is NOT protected by any mutex, and for this
+	 * reason must be advisory only, so, while it is read/written by
+	 * multiple threads, DB is completely indifferent to the quality
+	 * of its information.
+	 */
+	db_pgno_t bt_lpgno;		/* Last insert location. */
+
+	/*
+	 * !!!
+	 * The re_modified field is NOT protected by any mutex, and for this
+	 * reason cannot be anything more complicated than a zero/non-zero
+	 * value.  The actual writing of the backing source file cannot be
+	 * threaded, so clearing the flag isn't a problem.
+	 */
+	int	  re_modified;		/* If the tree was modified. */
+
+	/*
+	 * !!!
 	 * These fields are ignored as far as multi-threading is concerned.
 	 * There are no transaction semantics associated with backing files,
 	 * nor is there any thread protection.
 	 */
 	DB_FH		 re_fh;		/* Source file handle. */
+	int		 re_eof;	/* Backing source file EOF reached. */
 	db_recno_t	 re_last;	/* Last record number read. */
 	void		*re_cmap;	/* Current point in mapped space. */
 	void		*re_smap;	/* Start of mapped space. */
@@ -249,11 +271,19 @@ struct __btree {			/* Btree access method. */
 	size_t		 re_msize;	/* Size of mapped region. */
 					/* Recno input function. */
 	int (*re_irec) __P((DBC *, db_recno_t));
-
-#define	RECNO_MODIFIED	0x01		/* Tree was modified. */
-#define	RECNO_READFILE	0x02		/* Backing source file to read. */
-	u_int32_t	 flags;
 };
+
+/*
+ * Modes for the __bam_curadj recovery records.
+ * These appear in log records, so we wire the values and
+ * do not leave it up to the compiler.
+ */
+typedef enum {
+	DB_CA_DI	= 1,
+	DB_CA_DUP	= 2,
+	DB_CA_RSPLIT	= 3,
+	DB_CA_SPLIT	= 4
+} db_ca_mode;
 
 #include "btree_auto.h"
 #include "btree_ext.h"

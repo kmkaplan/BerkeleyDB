@@ -4,13 +4,13 @@
  * Copyright (c) 2000
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: db_vrfy.c,v 1.31 2000/05/31 16:47:55 krinsky Exp $
+ * $Id: db_vrfy.c,v 1.31.2.3 2000/07/27 15:52:12 krinsky Exp $
  */
 
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: db_vrfy.c,v 1.31 2000/05/31 16:47:55 krinsky Exp $";
+static const char revid[] = "$Id: db_vrfy.c,v 1.31.2.3 2000/07/27 15:52:12 krinsky Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -48,9 +48,10 @@ static int  __db_vrfy_invalid
 static int  __db_vrfy_orderchkonly __P((DB *,
 		VRFY_DBINFO *, const char *, const char *, u_int32_t));
 static int  __db_vrfy_pagezero __P((DB *, VRFY_DBINFO *, DB_FH *, u_int32_t));
-static int  __db_vrfy_subdbs __P((DB *, VRFY_DBINFO *, char *, u_int32_t));
+static int  __db_vrfy_subdbs 
+		__P((DB *, VRFY_DBINFO *, const char *, u_int32_t));
 static int  __db_vrfy_structure
-		__P((DB *, VRFY_DBINFO *, char *, db_pgno_t, u_int32_t));
+		__P((DB *, VRFY_DBINFO *, const char *, db_pgno_t, u_int32_t));
 static int  __db_vrfy_walkpages
 		__P((DB *, VRFY_DBINFO *, void *, int (*)(void *, const void *),
 		u_int32_t));
@@ -112,7 +113,7 @@ __db_verify_callback(handle, str_arg)
 	str = (char *)str_arg;
 	f = (FILE *)handle;
 
-	if (fprintf(f, str) != (int)strlen(str))
+	if (fprintf(f, "%s", str) != (int)strlen(str))
 		return (EIO);
 
 	return (0);
@@ -324,7 +325,7 @@ __db_verify_internal(dbp_orig, name, subdb, handle, callback, flags)
 	/* If we're verifying, verify inter-page structure. */
 	if (!LF_ISSET(DB_SALVAGE) && isbad == 0)
 		if ((ret =
-		    __db_vrfy_structure(dbp, vdp, real_name, 0, flags)) != 0) {
+		    __db_vrfy_structure(dbp, vdp, name, 0, flags)) != 0) {
 			if (ret == DB_VERIFY_BAD)
 				isbad = 1;
 			else if (ret != 0)
@@ -680,7 +681,7 @@ static int
 __db_vrfy_structure(dbp, vdp, dbname, meta_pgno, flags)
 	DB *dbp;
 	VRFY_DBINFO *vdp;
-	char *dbname;
+	const char *dbname;
 	db_pgno_t meta_pgno;
 	u_int32_t flags;
 {
@@ -1156,6 +1157,12 @@ __db_vrfy_meta(dbp, vdp, meta, pgno, flags)
 		    meta->free, pgno));
 	}
 
+	/*                                                                    
+	 * We have now verified the common fields of the metadata page.  
+	 * Clear the flag that told us they had been incompletely checked.
+	 */
+	F_CLR(pip, VRFY_INCOMPLETE);
+
 err:	if ((t_ret = __db_vrfy_putpageinfo(vdp, pip)) != 0 && ret == 0)
 		ret = t_ret;
 
@@ -1232,7 +1239,7 @@ static int
 __db_vrfy_subdbs(dbp, vdp, dbname, flags)
 	DB *dbp;
 	VRFY_DBINFO *vdp;
-	char *dbname;
+	const char *dbname;
 	u_int32_t flags;
 {
 	DB *mdbp;

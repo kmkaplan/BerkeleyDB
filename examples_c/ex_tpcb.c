@@ -4,7 +4,7 @@
  * Copyright (c) 1997, 1998, 1999, 2000
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: ex_tpcb.c,v 11.17 2000/05/22 15:17:04 sue Exp $
+ * $Id: ex_tpcb.c,v 11.17.2.1 2000/06/09 14:11:32 bostic Exp $
  */
 
 #include "db_config.h"
@@ -558,6 +558,9 @@ random_int(lo, hi)
 	u_int32_t ret;
 	int t;
 
+#ifndef RAND_MAX
+#define	RAND_MAX	0x7fffffff
+#endif
 	t = rand();
 	ret = (u_int32_t)(((double)t / ((double)(RAND_MAX) + 1)) *
 	    (hi - lo + 1));
