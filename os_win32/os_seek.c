@@ -79,10 +79,15 @@ __os_seek(dbenv, fhp, pgsize, pageno, relative, isrewind, db_whence)
 		    __os_win32_errno() : 0;
 	}
 
-	if (ret != 0)
+	if (ret == 0) {
+		fhp->pgsize = pgsize;
+		fhp->pgno = pageno;
+		fhp->offset = relative;
+	} else {
 		__db_err(dbenv, "seek: %lu %d %d: %s",
 		    (u_long)pgsize * pageno + relative,
 		    isrewind, db_whence, strerror(ret));
+	}
 
 	return (ret);
 }

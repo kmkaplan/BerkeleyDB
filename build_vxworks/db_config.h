@@ -296,13 +296,13 @@
 #define PACKAGE_NAME "Berkeley DB"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "Berkeley DB 4.1.24"
+#define PACKAGE_STRING "Berkeley DB 4.1.25"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "db-4.1.24"
+#define PACKAGE_TARNAME "db-4.1.25"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.1.24"
+#define PACKAGE_VERSION "4.1.25"
 
 /* Define to 1 if the `S_IS*' macros in <sys/stat.h> do not work properly. */
 /* #undef STAT_MACROS_BROKEN */

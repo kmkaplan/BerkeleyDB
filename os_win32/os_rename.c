@@ -24,7 +24,6 @@ __os_rename(dbenv, oldname, newname, flags)
 	u_int32_t flags;
 {
 	int ret;
-	char oldbuf[MAX_PATH], newbuf[MAX_PATH];
 
 	ret = 0;
 	if (DB_GLOBAL(j_rename) != NULL) {
@@ -45,21 +44,10 @@ __os_rename(dbenv, oldname, newname, flags)
 		} else {
 			/*
 			 * There is no MoveFileEx for Win9x/Me, so we have to
-			 * do the best we can.
+			 * do the best we can.  Note that MoveFile returns 1
+			 * if the names refer to the same file, so we don't
+			 * need to check that here.
 			 */
-			if (!GetLongPathName(oldname, oldbuf, sizeof oldbuf) ||
-			    !GetLongPathName(newname, newbuf, sizeof newbuf)) {
-				ret = __os_win32_errno();
-				goto done;
-			}
-
-			/*
-			 * If the old and new names differ only in case, we're
-			 * done.
-			 */
-			if (strcasecmp(oldbuf, newbuf) == 0)
-				goto done;
-
 			(void)DeleteFile(newname);
 			if (!MoveFile(oldname, newname))
 				ret = __os_win32_errno();
