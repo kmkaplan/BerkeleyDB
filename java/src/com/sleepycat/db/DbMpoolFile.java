@@ -10,47 +10,36 @@
 package com.sleepycat.db;
 
 /**
- *  The memory pool interfaces for the Berkeley DB database environment are
- *  methods of the {@link com.sleepycat.db.DbEnv DbEnv} handle. The {@link
- *  com.sleepycat.db.DbEnv DbEnv} memory pool methods and the DbMpoolFile class
- *  provide general-purpose, page-oriented buffer management of files. Although
- *  designed to work with the other {@link com.sleepycat.db.Db Db} classes, they
- *  are also useful for more general purposes. The memory pools are referred to
- *  in this document as simply <i>pools</i> .</p> <p>
+ *  The memory pool interfaces for the Berkeley DB database
+ *  environment are methods of the {@link com.sleepycat.db.DbEnv
+ *  DbEnv} handle. The {@link com.sleepycat.db.DbEnv DbEnv} memory
+ *  pool methods and the DbMpoolFile class provide general-purpose,
+ *  page-oriented buffer management of files. Although designed to
+ *  work with the other {@link com.sleepycat.db.Db Db} classes, they
+ *  are also useful for more general purposes. The memory pools are
+ *  referred to in this document as simply <i>pools</i> .</p> <p>
  *
- *  In the Berkeley DB Java API, the DbMpoolFile class provides a very limited
- *  set of operations. It is only intended to modify settings for a {@link
- *  com.sleepycat.db.Db Db} object using the {@link com.sleepycat.db.Db#get_mpf
- *  Db.get_mpf} method.</p>
- *
+ *  In the Berkeley DB Java API, the DbMpoolFile class provides a very
+ *  limited set of operations. It is only intended to modify settings
+ *  for a {@link com.sleepycat.db.Db Db} object using the {@link
+ *  com.sleepycat.db.Db#get_mpf Db.get_mpf} method.</p>
  */
 public class DbMpoolFile {
     private long swigCPtr;
-    /**
-     */
     protected boolean swigCMemOwn;
 
 
-    /**
-     *  Constructor for the DbMpoolFile object
-     *
-     */
     protected DbMpoolFile(long cPtr, boolean cMemoryOwn) {
         swigCMemOwn = cMemoryOwn;
         swigCPtr = cPtr;
     }
 
 
-    /**
-     *  Constructor for the DbMpoolFile object
-     */
     protected DbMpoolFile() {
         this(0, false);
     }
 
 
-    /**
-     */
     protected void delete() {
         if (swigCPtr != 0 && swigCMemOwn) {
             swigCMemOwn = false;
@@ -59,19 +48,13 @@ public class DbMpoolFile {
     }
 
 
-    /**
-     *  Gets the cPtr attribute of the DbMpoolFile class
-     *
-     *@return      The cPtr value
-     */
     protected static long getCPtr(DbMpoolFile obj) {
         return (obj == null) ? 0 : obj.swigCPtr;
     }
 
 
     /**
-     *@return                  Description of the Return Value
-     *@deprecated              As of Berkeley DB 4.2, replaced by {@link
+     * @deprecated    As of Berkeley DB 4.2, replaced by {@link
      *      #getPriority()}
      */
     public int get_priority() throws DbException {
@@ -80,14 +63,16 @@ public class DbMpoolFile {
 
 
     /**
-     *  The DbMpoolFile.getPriority method returns the cache priority.</p> <p>
+     *  The DbMpoolFile.getPriority method returns the cache priority.
+     *  </p> <p>
      *
-     *  The DbMpoolFile.getPriority method may be called at any time during the
-     *  life of the application.</p>
+     *  The DbMpoolFile.getPriority method may be called at any time
+     *  during the life of the application.</p>
      *
-     *@return               The DbMpoolFile.getPriority method returns the cache
-     *      priority.</p>
-     *@throws  DbException  Signals that an exception of some sort has occurred.
+     * @throws  DbException  Signals that an exception of some sort
+     *      has occurred.
+     * @return               The DbMpoolFile.getPriority method
+     *      returns the cache priority.</p>
      */
     public int getPriority() throws DbException {
         return db_javaJNI.DbMpoolFile_get_priority(swigCPtr);
@@ -95,7 +80,7 @@ public class DbMpoolFile {
 
 
     /**
-     *@deprecated              As of Berkeley DB 4.2, replaced by {@link
+     * @deprecated    As of Berkeley DB 4.2, replaced by {@link
      *      #setPriority(int)}
      */
     public void set_priority(int priority) throws DbException {
@@ -104,28 +89,31 @@ public class DbMpoolFile {
 
 
     /**
-     *  Set the cache priority for pages from the specified file. The priority
-     *  of a page biases the replacement algorithm to be more or less likely to
-     *  discard a page when space is needed in the buffer pool. The bias is
-     *  temporary, and pages will eventually be discarded if they are not
-     *  referenced again. The DbMpoolFile.setPriority method is only advisory,
-     *  and does not guarantee pages will be treated in a specific way.</p> <p>
+     *  Set the cache priority for pages from the specified file. The
+     *  priority of a page biases the replacement algorithm to be more
+     *  or less likely to discard a page when space is needed in the
+     *  buffer pool. The bias is temporary, and pages will eventually
+     *  be discarded if they are not referenced again. The
+     *  DbMpoolFile.setPriority method is only advisory, and does not
+     *  guarantee pages will be treated in a specific way.</p> <p>
      *
-     *  To set the priority for the pages belonging to a particular database,
-     *  call the DbMpoolFile.setPriority method using the {@link
-     *  com.sleepycat.db.DbMpoolFile DbMpoolFile} handle returned by calling the
-     *  {@link com.sleepycat.db.Db#get_mpf Db.get_mpf} method.</p> <p>
+     *  To set the priority for the pages belonging to a particular
+     *  database, call the DbMpoolFile.setPriority method using the
+     *  {@link com.sleepycat.db.DbMpoolFile DbMpoolFile} handle
+     *  returned by calling the {@link com.sleepycat.db.Db#get_mpf
+     *  Db.get_mpf} method.</p> <p>
      *
-     *  The DbMpoolFile.setPriority method may be called at any time during the
-     *  life of the application.</p>
+     *  The DbMpoolFile.setPriority method may be called at any time
+     *  during the life of the application.</p>
      *
-     *@param  priority      must be set to one of the following values:
+     * @param  priority      must be set to one of the following
+     *      values:
      *      <ul>
      *        <li> {@link com.sleepycat.db.Db#DB_PRIORITY_VERY_LOW
      *        Db.DB_PRIORITY_VERY_LOW}<p>
      *
-     *        The lowest priority: pages are the most likely to be discarded.
-     *        </li>
+     *        The lowest priority: pages are the most likely to be
+     *        discarded. </li>
      *      </ul>
      *
      *      <ul>
@@ -153,11 +141,12 @@ public class DbMpoolFile {
      *        <li> {@link com.sleepycat.db.Db#DB_PRIORITY_VERY_HIGH
      *        Db.DB_PRIORITY_VERY_HIGH}<p>
      *
-     *        The highest priority: pages are the least likely to be discarded.
-     *        </li>
+     *        The highest priority: pages are the least likely to be
+     *        discarded. </li>
      *      </ul>
      *
-     *@throws  DbException  Signals that an exception of some sort has occurred.
+     * @throws  DbException  Signals that an exception of some sort
+     *      has occurred.
      */
     public void setPriority(int priority) throws DbException {
         db_javaJNI.DbMpoolFile_set_priority(swigCPtr, priority);
@@ -165,8 +154,7 @@ public class DbMpoolFile {
 
 
     /**
-     *@return                  Description of the Return Value
-     *@deprecated              As of Berkeley DB 4.2, replaced by {@link
+     * @deprecated    As of Berkeley DB 4.2, replaced by {@link
      *      #getFlags()}
      */
     public int get_flags() throws DbException {
@@ -177,12 +165,13 @@ public class DbMpoolFile {
     /**
      *  The DbMpoolFile.getFlags method returns the flags.</p> <p>
      *
-     *  The DbMpoolFile.getFlags method may be called at any time during the
-     *  life of the application.</p>
+     *  The DbMpoolFile.getFlags method may be called at any time
+     *  during the life of the application.</p>
      *
-     *@return               The DbMpoolFile.getFlags method returns the flags.
-     *      </p>
-     *@throws  DbException  Signals that an exception of some sort has occurred.
+     * @throws  DbException  Signals that an exception of some sort
+     *      has occurred.
+     * @return               The DbMpoolFile.getFlags method returns
+     *      the flags.</p>
      */
     public int getFlags() throws DbException {
         return db_javaJNI.DbMpoolFile_get_flags(swigCPtr);
@@ -190,7 +179,7 @@ public class DbMpoolFile {
 
 
     /**
-     *@deprecated              As of Berkeley DB 4.2, replaced by {@link
+     * @deprecated    As of Berkeley DB 4.2, replaced by {@link
      *      #setFlags(int,boolean)}
      */
     public void set_flags(int flags, boolean onoff) throws DbException {
@@ -203,28 +192,31 @@ public class DbMpoolFile {
      *
      *  To set the flags for a particular database, call the
      *  DbMpoolFile.setFlags method using the {@link
-     *  com.sleepycat.db.DbMpoolFile DbMpoolFile} handle stored in the <b>mpf
-     *  </b> field of the {@link com.sleepycat.db.Db Db} handle.</p>
+     *  com.sleepycat.db.DbMpoolFile DbMpoolFile} handle stored in the
+     *  <b>mpf</b> field of the {@link com.sleepycat.db.Db Db} handle.
+     *  </p>
      *
-     *@param  flags         must be set by bitwise inclusively <b>OR</b> 'ing
-     *      together one or more of the following values:
+     * @param  flags         must be set by bitwise inclusively <b>OR
+     *      </b>'ing together one or more of the following values:
+     *
      *      <ul>
      *        <li> {@link com.sleepycat.db.Db#DB_MPOOL_NOFILE
      *        Db.DB_MPOOL_NOFILE}<p>
      *
-     *        If set, no backing temporary file will be opened for in-memory
-     *        databases, even if they expand to fill the entire cache. Attempts
-     *        to create new file pages after the cache has been filled will
-     *        fail. <p>
+     *        If set, no backing temporary file will be opened for
+     *        in-memory databases, even if they expand to fill the
+     *        entire cache. Attempts to create new file pages after
+     *        the cache has been filled will fail. <p>
      *
-     *        The <code>Db.DB_MPOOL_NOFILE</code> flag may be used to configure
-     *        Berkeley DB at any time during the life of the application.</p>
-     *        </li>
+     *        The <code>Db.DB_MPOOL_NOFILE</code> flag may be used to
+     *        configure Berkeley DB at any time during the life of the
+     *        application.</p> </li>
      *      </ul>
      *
-     *@param  onoff         If <b>onoff</b> is false, the specified flags are
-     *      cleared; otherwise they are set.
-     *@throws  DbException  Signals that an exception of some sort has occurred.
+     * @param  onoff         If <b>onoff</b> is false, the specified
+     *      flags are cleared; otherwise they are set.
+     * @throws  DbException  Signals that an exception of some sort
+     *      has occurred.
      */
     public void setFlags(int flags, boolean onoff) throws DbException {
         db_javaJNI.DbMpoolFile_set_flags(swigCPtr, flags, onoff);
@@ -232,8 +224,7 @@ public class DbMpoolFile {
 
 
     /**
-     *@return                  Description of the Return Value
-     *@deprecated              As of Berkeley DB 4.2, replaced by {@link
+     * @deprecated    As of Berkeley DB 4.2, replaced by {@link
      *      #getMaxsize()}
      */
     public long get_maxsize() throws DbException {
@@ -242,15 +233,16 @@ public class DbMpoolFile {
 
 
     /**
-     *  The DbMpoolFile.getMaxsize method returns the size of the cache in
-     *  bytes.</p> <p>
+     *  The DbMpoolFile.getMaxsize method returns the size of the
+     *  cache in bytes.</p> <p>
      *
-     *  The DbMpoolFile.getMaxsize method may be called at any time during the
-     *  life of the application.</p>
+     *  The DbMpoolFile.getMaxsize method may be called at any time
+     *  during the life of the application.</p>
      *
-     *@return               The DbMpoolFile.getMaxsize method returns the size
-     *      of the cache in bytes.</p>
-     *@throws  DbException  Signals that an exception of some sort has occurred.
+     * @throws  DbException  Signals that an exception of some sort
+     *      has occurred.
+     * @return               The DbMpoolFile.getMaxsize method returns
+     *      the size of the cache in bytes.</p>
      */
     public long getMaxsize() throws DbException {
         return db_javaJNI.DbMpoolFile_get_maxsize(swigCPtr);
@@ -258,7 +250,7 @@ public class DbMpoolFile {
 
 
     /**
-     *@deprecated              As of Berkeley DB 4.2, replaced by {@link
+     * @deprecated    As of Berkeley DB 4.2, replaced by {@link
      *      #setMaxsize(long)}
      */
     public void set_maxsize(long bytes) throws DbException {
@@ -267,22 +259,23 @@ public class DbMpoolFile {
 
 
     /**
-     *  Set the maximum size for the file to be <b>bytes</b> bytes. Attempts to
-     *  allocate new pages in the file after the limit has been reached will
-     *  fail.</p> <p>
+     *  Set the maximum size for the file to be <b>bytes</b> bytes.
+     *  Attempts to allocate new pages in the file after the limit has
+     *  been reached will fail.</p> <p>
      *
-     *  To set the maximum file size for a particular database, call the
-     *  DbMpoolFile.setMaxsize method using the {@link
-     *  com.sleepycat.db.DbMpoolFile DbMpoolFile} handle stored in the <b>mpf
-     *  </b> field of the {@link com.sleepycat.db.Db Db} handle. Attempts to
-     *  insert new items into the database after the limit has been reached may
-     *  fail.</p> <p>
+     *  To set the maximum file size for a particular database, call
+     *  the DbMpoolFile.setMaxsize method using the {@link
+     *  com.sleepycat.db.DbMpoolFile DbMpoolFile} handle stored in the
+     *  <b>mpf</b> field of the {@link com.sleepycat.db.Db Db} handle.
+     *  Attempts to insert new items into the database after the limit
+     *  has been reached may fail.</p> <p>
      *
-     *  The DbMpoolFile.setMaxsize method may be called at any time during the
-     *  life of the application.</p>
+     *  The DbMpoolFile.setMaxsize method may be called at any time
+     *  during the life of the application.</p>
      *
-     *@param  bytes         The maximum size of the files in bytes.
-     *@throws  DbException  Signals that an exception of some sort has occurred.
+     * @param  bytes         The maximum size of the files in bytes.
+     * @throws  DbException  Signals that an exception of some sort
+     *      has occurred.
      */
     public void setMaxsize(long bytes) throws DbException {
         db_javaJNI.DbMpoolFile_set_maxsize(swigCPtr, bytes);

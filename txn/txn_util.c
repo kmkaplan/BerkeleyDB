@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: txn_util.c,v 11.24 2003/06/30 17:20:31 bostic Exp $";
+static const char revid[] = "$Id: txn_util.c,v 11.25 2003/12/03 14:33:07 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -232,10 +232,10 @@ __txn_remlock(dbenv, txn, lock, locker)
 } while (0)
 
 int
-__txn_doevents(dbenv, txn, is_commit, preprocess)
+__txn_doevents(dbenv, txn, opcode, preprocess)
 	DB_ENV *dbenv;
 	DB_TXN *txn;
-	int is_commit, preprocess;
+	int opcode, preprocess;
 {
 	DB_LOCKREQ req;
 	TXN_EVENT *e;
@@ -260,18 +260,26 @@ __txn_doevents(dbenv, txn, is_commit, preprocess)
 		return (ret);
 	}
 
+	/*
+	 * Prepare should only cause a preprocess, since the transaction
+	 * isn't over.
+	 */
+	DB_ASSERT(opcode != TXN_PREPARE);
 	while ((e = TAILQ_FIRST(&txn->events)) != NULL) {
 		TAILQ_REMOVE(&txn->events, e, links);
 		/*
-		 * Deferred events other than closes should only happen on
-		 * commits, not aborts. If so just free resources.
+		 * Most deferred events should only happen on
+		 * commits, not aborts or prepares.  The one exception
+		 * is a close which gets done on commit and abort, but
+		 * not prepare. If we're not doing operations, then we
+		 * can just go free resources.
 		 */
-		if (!is_commit && e->op != TXN_CLOSE)
+		if (opcode == TXN_ABORT && e->op != TXN_CLOSE)
 			goto dofree;
 		switch (e->op) {
 		case TXN_CLOSE:
 			/* If we didn't abort this txn, we screwed up badly. */
-			DB_ASSERT(!is_commit);
+			DB_ASSERT(opcode == TXN_ABORT);
 			if ((t_ret =
 			    __db_close(e->u.c.dbp, NULL, 0)) != 0 && ret == 0)
 				ret = t_ret;

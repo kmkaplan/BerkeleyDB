@@ -4,33 +4,35 @@
 package com.sleepycat.db;
 
 /**
- *  The DbRepStat object is used to return replication subsystem statistics.</p>
- *
+ *  The DbRepStat object is used to return replication subsystem
+ *  statistics.</p>
  */
 public class DbRepStat {
     /**
      *  The current replication mode. Set to {@link
-     *  com.sleepycat.db.Db#DB_REP_MASTER Db.DB_REP_MASTER} if the environment
-     *  is a replication master, {@link com.sleepycat.db.Db#DB_REP_CLIENT
-     *  Db.DB_REP_CLIENT} if the environment is a replication client, {@link
+     *  com.sleepycat.db.Db#DB_REP_MASTER Db.DB_REP_MASTER} if the
+     *  environment is a replication master, {@link
+     *  com.sleepycat.db.Db#DB_REP_CLIENT Db.DB_REP_CLIENT} if the
+     *  environment is a replication client, {@link
      *  com.sleepycat.db.Db#DB_REP_LOGSONLY Db.DB_REP_LOGSONLY} if the
-     *  environment is a log-files-only replica, or 0 if replication is not
-     *  configured.
+     *  environment is a log-files-only replica, or 0 if replication
+     *  is not configured.
      *</ul>
      *
      */
     public int st_status;
     /**
-     *  In replication environments configured as masters, the next LSN
-     *  expected. In replication environments configured as clients, the next
-     *  LSN to be used.
+     *  In replication environments configured as masters, the next
+     *  LSN expected. In replication environments configured as
+     *  clients, the next LSN to be used.
      *</ul>
      *
      */
     public DbLsn st_next_lsn;
     /**
-     *  The LSN of the first log record we have after missing log records being
-     *  waited for, or 0 if no log records are currently missing.
+     *  The LSN of the first log record we have after missing log
+     *  records being waited for, or 0 if no log records are currently
+     *  missing.
      *</ul>
      *
      */
@@ -60,8 +62,8 @@ public class DbRepStat {
      */
     public int st_gen;
     /**
-     *  The site is currently in client recovery. When this field is set, LSN
-     *  values are not authoritative.
+     *  The site is currently in client recovery. When this field is
+     *  set, LSN values are not authoritative.
      *</ul>
      *
      */
@@ -92,6 +94,7 @@ public class DbRepStat {
     public int st_log_queued_total;
     /**
      *  The number of log records received and appended to the log.
+     *
      *</ul>
      *
      */
@@ -116,6 +119,7 @@ public class DbRepStat {
     public int st_master_changes;
     /**
      *  The number of messages received with a bad generation number.
+     *
      *</ul>
      *
      */
@@ -152,14 +156,16 @@ public class DbRepStat {
     public int st_newsites;
     /**
      *  The number of sites believed to be in the replication group.
+     *
      *</ul>
      *
      */
     public int st_nsites;
     /**
-     *  Transmission limited. This indicates the number of times that data
-     *  transmission was stopped to limit the amount of data sent in response to
-     *  a single call to {@link com.sleepycat.db.DbEnv#replicationProcessMessage
+     *  Transmission limited. This indicates the number of times that
+     *  data transmission was stopped to limit the amount of data sent
+     *  in response to a single call to {@link
+     *  com.sleepycat.db.DbEnv#replicationProcessMessage
      *  DbEnv.replicationProcessMessage}.
      *</ul>
      *
@@ -221,6 +227,7 @@ public class DbRepStat {
     public int st_election_priority;
     /**
      *  The current election phase (0 if no election is in progress).
+     *
      *</ul>
      *
      */
@@ -240,10 +247,10 @@ public class DbRepStat {
 
 
     /**
-     *  Provide a string representation of all the fields contained within this
-     *  class.
+     *  Provide a string representation of all the fields contained
+     *  within this class.
      *
-     *@return    The string representation.
+     * @return    The string representation.
      */
     public String toString() {
         return "DbRepStat:"

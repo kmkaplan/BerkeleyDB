@@ -11,7 +11,7 @@
 <body bgcolor=white>
 <table width="100%"><tr valign=top>
 <td><h3><dl><dt>Berkeley DB Reference Guide:<dd>Berkeley DB Transactional Data Store Applications</dl></h3></td>
-<td align=right><a href="../../ref/transapp/atomicity.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/transapp/read.html"><img src="../../images/next.gif" alt="Next"></a>
+<td align=right><a href="../transapp/atomicity.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../toc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../transapp/read.html"><img src="../../images/next.gif" alt="Next"></a>
 </td></tr></table>
 <p>
 <h3 align=center>Isolation</h3>
@@ -120,7 +120,7 @@ add_color(DB_ENV *dbenv, DB *dbp, char *color, int increment)
 				dbenv-&gt;err(dbenv, t_ret, "DB_TXN-&gt;abort");
 				exit (1);
 			}
-			if (++fail == MAXIMUM_RETRY)
+			if (fail++ == MAXIMUM_RETRY)
 				return (ret);
 			continue;
 		case DB_NOTFOUND:
@@ -151,7 +151,7 @@ add_color(DB_ENV *dbenv, DB *dbp, char *color, int increment)
 				dbenv-&gt;err(dbenv, t_ret, "DB_TXN-&gt;abort");
 				exit (1);
 			}
-			if (++fail == MAXIMUM_RETRY)
+			if (fail++ == MAXIMUM_RETRY)
 				return (ret);
 			break;
 		}
@@ -163,7 +163,7 @@ lock.  We do this because the application expects to write the key/data
 pair in a subsequent operation, and the transaction is much more likely to
 deadlock if we first obtain a read lock and subsequently a write lock, than
 if we obtain the write lock initially.</p>
-<table width="100%"><tr><td><br></td><td align=right><a href="../../ref/transapp/atomicity.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/transapp/read.html"><img src="../../images/next.gif" alt="Next"></a>
+<table width="100%"><tr><td><br></td><td align=right><a href="../transapp/atomicity.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../toc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../transapp/read.html"><img src="../../images/next.gif" alt="Next"></a>
 </td></tr></table>
 <p><font size=1><a href="../../sleepycat/legal.html">Copyright (c) 1996-2003</a> <a href="http://www.sleepycat.com">Sleepycat Software, Inc.</a> - All rights reserved.</font>
 </body>

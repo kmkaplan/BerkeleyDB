@@ -10,39 +10,27 @@
 package com.sleepycat.db;
 
 /**
- *  The DbLsn object is a <b>log sequence number</b> which specifies a unique
- *  location in a log file. A DbLsn consists of two unsigned 32-bit integers --
- *  one specifies the log file number, and the other specifies an offset in the
- *  log file.</p>
- *
+ *  The DbLsn object is a <b>log sequence number</b> which specifies a
+ *  unique location in a log file. A DbLsn consists of two unsigned
+ *  32-bit integers -- one specifies the log file number, and the
+ *  other specifies an offset in the log file.</p>
  */
 public class DbLsn {
     private long swigCPtr;
-    /**
-     */
     protected boolean swigCMemOwn;
 
 
-    /**
-     *  Constructor for the DbLsn object
-     *
-     */
     protected DbLsn(long cPtr, boolean cMemoryOwn) {
         swigCMemOwn = cMemoryOwn;
         swigCPtr = cPtr;
     }
 
 
-    /**
-     *  Constructor for the DbLsn object
-     */
     protected DbLsn() {
         this(0, false);
     }
 
 
-    /**
-     */
     protected void finalize() {
         try {
             delete();
@@ -53,8 +41,6 @@ public class DbLsn {
     }
 
 
-    /**
-     */
     void delete() {
         if (swigCPtr != 0 && swigCMemOwn) {
             db_javaJNI.delete_DbLsn(swigCPtr);
@@ -64,24 +50,19 @@ public class DbLsn {
     }
 
 
-    /**
-     *  Gets the cPtr attribute of the DbLsn class
-     *
-     *@return      The cPtr value
-     */
     protected static long getCPtr(DbLsn obj) {
         return (obj == null) ? 0 : obj.swigCPtr;
     }
 
 
     /**
-     *  The DbLsn constructor constructs a DbLsn with the specified file and
-     *  offset.</p>
+     *  The DbLsn constructor constructs a DbLsn with the specified
+     *  file and offset.</p>
      *
-     *@param  file             the log file number.
-     *@param  offset           the log file offset.
-     *@throws  DbException     Signals that an exception of some sort has
-     *      occurred.
+     * @param  file          the log file number.
+     * @param  offset        the log file offset.
+     * @throws  DbException  Signals that an exception of some sort
+     *      has occurred.
      */
     public DbLsn(int file, int offset) throws DbException {
         this(db_javaJNI.new_DbLsn(file, offset), true);
@@ -89,8 +70,7 @@ public class DbLsn {
 
 
     /**
-     *@return                  Description of the Return Value
-     *@deprecated              As of Berkeley DB 4.2, replaced by {@link
+     * @deprecated    As of Berkeley DB 4.2, replaced by {@link
      *      #getFile()}
      */
     public int get_file() throws DbException {
@@ -99,11 +79,13 @@ public class DbLsn {
 
 
     /**
-     *  The DbLsn.getFile method returns the DbLsn object's file number.</p>
+     *  The DbLsn.getFile method returns the DbLsn object's file
+     *  number.</p>
      *
-     *@return               The DbLsn.getFile method returns the DbLsn object's
-     *      file number.</p>
-     *@throws  DbException  Signals that an exception of some sort has occurred.
+     * @throws  DbException  Signals that an exception of some sort
+     *      has occurred.
+     * @return               The DbLsn.getFile method returns the
+     *      DbLsn object's file number.</p>
      */
     public int getFile() throws DbException {
         return db_javaJNI.DbLsn_get_file(swigCPtr);
@@ -111,8 +93,7 @@ public class DbLsn {
 
 
     /**
-     *@return                  Description of the Return Value
-     *@deprecated              As of Berkeley DB 4.2, replaced by {@link
+     * @deprecated    As of Berkeley DB 4.2, replaced by {@link
      *      #getOffset()}
      */
     public int get_offset() throws DbException {
@@ -121,11 +102,13 @@ public class DbLsn {
 
 
     /**
-     *  The DbLsn.getOffset method returns the DbLsn object's file number.</p>
+     *  The DbLsn.getOffset method returns the DbLsn object's file
+     *  number.</p>
      *
-     *@return               The DbLsn.getOffset method returns the DbLsn
-     *      object's file number.</p>
-     *@throws  DbException  Signals that an exception of some sort has occurred.
+     * @throws  DbException  Signals that an exception of some sort
+     *      has occurred.
+     * @return               The DbLsn.getOffset method returns the
+     *      DbLsn object's file number.</p>
      */
     public int getOffset() throws DbException {
         return db_javaJNI.DbLsn_get_offset(swigCPtr);

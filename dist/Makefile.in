@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 11.224 2003/10/16 18:56:58 sullivan Exp $
+# $Id: Makefile.in,v 11.226 2003/11/28 18:50:05 bostic Exp $
 
 srcdir=	@srcdir@/..
 builddir=.
@@ -845,9 +845,7 @@ uninstall_utilities:
 		$(rm) -f $$i $$i.exe; \
 	done)
 
-DOCLIST=\
-	api_c api_cxx api_java api_tcl images index.html java ref \
-	reftoc.html sleepycat utility
+DOCLIST=api_c api_cxx api_tcl images index.html java ref sleepycat utility
 install_docs:
 	@echo "Installing documentation: $(DESTDIR)$(docdir) ..."
 	@test -d $(DESTDIR)$(docdir) || \

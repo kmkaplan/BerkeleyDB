@@ -5,25 +5,25 @@
  *  Copyright (c) 2001-2003
  *  Sleepycat Software.  All rights reserved.
  *
- *  $Id: DbUtil.java,v 11.16 2003/11/21 03:23:14 bostic Exp $
+ *  $Id: DbUtil.java,v 11.17 2003/11/28 18:35:47 bostic Exp $
  */
 package com.sleepycat.db;
 
 /**
- *  DbUtil is a simple, package-private wrapper class that holds a few static
- *  utility functions other parts of the package share and that don't have a
- *  good home elsewhere. (For now, that's limited to byte-array-to-int
- *  conversion and back.)
- *
+ *  DbUtil is a simple, package-private wrapper class that holds a few
+ *  static utility functions other parts of the package share and that
+ *  don't have a good home elsewhere. (For now, that's limited to
+ *  byte-array-to-int conversion and back.)
  */
 
 class DbUtil {
     /**
-     *  Get the u_int32_t stored beginning at offset "offset" into array "arr".
-     *  We have to do the conversion manually since it's a C-native int, and
-     *  we're not really supposed to make this kind of cast in Java.
+     *  Get the u_int32_t stored beginning at offset "offset" into
+     *  array "arr". We have to do the conversion manually since it's
+     *  a C-native int, and we're not really supposed to make this
+     *  kind of cast in Java.
      *
-     *@return         Description of the Return Value
+     * @return    Description of the Return Value
      */
     static int array2int(byte[] arr, int offset) {
         int b1;
@@ -70,10 +70,9 @@ class DbUtil {
 
 
     /**
-     *  Store the specified u_int32_t, with endianness appropriate to the
-     *  platform we're running on, into four consecutive bytes of the specified
-     *  byte array, starting from the specified offset.
-     *
+     *  Store the specified u_int32_t, with endianness appropriate to
+     *  the platform we're running on, into four consecutive bytes of
+     *  the specified byte array, starting from the specified offset.
      */
     static void int2array(int n, byte[] arr, int offset) {
         int b1;
@@ -117,10 +116,10 @@ class DbUtil {
 
 
     /**
-     *  Convert a byte array to a concise, readable string suitable for use in
-     *  toString methods of the *Stat classes.
+     *  Convert a byte array to a concise, readable string suitable
+     *  for use in toString methods of the *Stat classes.
      *
-     *@return       Description of the Return Value
+     * @return    Description of the Return Value
      */
     public static String byteArrayToString(byte[] barr) {
         if (barr == null) {
@@ -149,10 +148,10 @@ class DbUtil {
 
 
     /**
-     *  Convert an object array to a string, suitable for use in toString
-     *  methods of the *Stat classes.
+     *  Convert an object array to a string, suitable for use in
+     *  toString methods of the *Stat classes.
      *
-     *@return       Description of the Return Value
+     * @return    Description of the Return Value
      */
     public static String objectArrayToString(Object[] arr, String name) {
         if (arr == null) {
@@ -173,7 +172,7 @@ class DbUtil {
 
 
     /**
-     *@return    Description of the Return Value
+     * @return    Description of the Return Value
      */
     private native static boolean is_big_endian();
 }

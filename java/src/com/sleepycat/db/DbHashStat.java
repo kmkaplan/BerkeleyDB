@@ -4,61 +4,61 @@
 package com.sleepycat.db;
 
 /**
- *  The DbHashStat object is used to return Hash database statistics.</p>
- *
+ *  The DbHashStat object is used to return Hash database statistics.
+ *  </p>
  */
 public class DbHashStat {
     /**
-     *  Magic number that identifies the file as a Hash file. Returned if
-     *  Db.DB_FAST_STAT is set.
+     *  Magic number that identifies the file as a Hash file. Returned
+     *  if Db.DB_FAST_STAT is set.
      *</ul>
      *
      */
     public int hash_magic;
     /**
-     *  The version of the Hash database. Returned if Db.DB_FAST_STAT is set.
-     *
+     *  The version of the Hash database. Returned if Db.DB_FAST_STAT
+     *  is set.
      *</ul>
      *
      */
     public int hash_version;
-    /**
-     */
     public int hash_metaflags;
     /**
-     *  The number of unique keys in the database. If Db.DB_FAST_STAT was
-     *  specified the count will be the last saved value unless it has never
-     *  been calculated, in which case it will be 0. Returned if Db.DB_FAST_STAT
-     *  is set.
+     *  The number of unique keys in the database. If Db.DB_FAST_STAT
+     *  was specified the count will be the last saved value unless it
+     *  has never been calculated, in which case it will be 0.
+     *  Returned if Db.DB_FAST_STAT is set.
      *</ul>
      *
      */
     public int hash_nkeys;
     /**
-     *  The number of key/data pairs in the database. If Db.DB_FAST_STAT was
-     *  specified the count will be the last saved value unless it has never
-     *  been calculated, in which case it will be 0. Returned if Db.DB_FAST_STAT
-     *  is set.
+     *  The number of key/data pairs in the database. If
+     *  Db.DB_FAST_STAT was specified the count will be the last saved
+     *  value unless it has never been calculated, in which case it
+     *  will be 0. Returned if Db.DB_FAST_STAT is set.
      *</ul>
      *
      */
     public int hash_ndata;
     /**
-     *  The underlying Hash database page (and bucket) size, in bytes. Returned
-     *  if Db.DB_FAST_STAT is set.
+     *  The underlying Hash database page (and bucket) size, in bytes.
+     *  Returned if Db.DB_FAST_STAT is set.
      *</ul>
      *
      */
     public int hash_pagesize;
     /**
-     *  The desired fill factor (number of items per bucket) specified at
-     *  database-creation time. Returned if Db.DB_FAST_STAT is set.
+     *  The desired fill factor (number of items per bucket) specified
+     *  at database-creation time. Returned if Db.DB_FAST_STAT is set.
+     *
      *</ul>
      *
      */
     public int hash_ffactor;
     /**
-     *  The number of hash buckets. Returned if Db.DB_FAST_STAT is set.
+     *  The number of hash buckets. Returned if Db.DB_FAST_STAT is
+     *  set.
      *</ul>
      *
      */
@@ -88,8 +88,8 @@ public class DbHashStat {
      */
     public int hash_big_bfree;
     /**
-     *  The number of overflow pages (overflow pages are pages that contain
-     *  items that did not fit in the main bucket page).
+     *  The number of overflow pages (overflow pages are pages that
+     *  contain items that did not fit in the main bucket page).
      *</ul>
      *
      */
@@ -115,10 +115,10 @@ public class DbHashStat {
 
 
     /**
-     *  Provide a string representation of all the fields contained within this
-     *  class.
+     *  Provide a string representation of all the fields contained
+     *  within this class.
      *
-     *@return    The string representation.
+     * @return    The string representation.
      */
     public String toString() {
         return "DbHashStat:"

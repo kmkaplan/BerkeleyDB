@@ -1,4 +1,4 @@
-# $Id: dbname.awk,v 1.6 2003/11/14 02:43:15 ubell Exp $
+# $Id: dbname.awk,v 1.7 2003/11/21 20:00:03 ubell Exp $
 #
 # Take a comma-separated list of database names and spit out all the
 # log records that affect those databases.
@@ -30,6 +30,7 @@ NR == 1 {
 }
 /name:/ {
 	if (register >= 2) {
+		myfile = -2;
 		for (i = 0; i <= nfiles; i++) {
 			if ($2 == filenames[i]) {
 				if (register == 2) {

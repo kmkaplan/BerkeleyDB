@@ -16,7 +16,7 @@
 </td>
 <td align=right>
 <a href="../api_cxx/api_index.html"><img src="../images/api.gif" alt="API"></a>
-<a href="../reftoc.html"><img src="../images/ref.gif" alt="Ref"></a>
+<a href="../ref/toc.html"><img src="../images/ref.gif" alt="Ref"></a>
 </td></tr></table>
 <hr size=1 noshade>
 <tt>
@@ -123,8 +123,10 @@ The key <a href="../api_cxx/dbt_class.html">Dbt</a> operated on.
 </dl>
 <h3>Errors</h3>
 <p>The Dbc::put method
-may fail and throw <a href="../api_cxx/except_class.html">DbException</a> or return a non-zero error
-for the following conditions:</p>
+may fail and throw
+<a href="../api_cxx/except_class.html">DbException</a>,
+encapsulating one of the following non-zero errors, or return one of
+the following non-zero errors:</p>
 <p><dl compact>
 <p><dt>EACCES<dd>An attempt was made to modify a read-only database.
 </dl>
@@ -156,8 +158,7 @@ resolve a deadlock, the Dbc::put method will fail and
 either return <a href="../ref/program/errorret.html#DB_LOCK_DEADLOCK">DB_LOCK_DEADLOCK</a> or
 throw a <a href="../api_cxx/deadlock_class.html">DbDeadlockException</a> exception.</p>
 <p>If a Berkeley DB Concurrent Data Store database environment configured for lock timeouts was unable
-to grant a lock in the allowed time, the
-Dbc::put method will fail and
+to grant a lock in the allowed time, the Dbc::put method will fail and
 either return <a href="../ref/program/errorret.html#DB_LOCK_NOTGRANTED">DB_LOCK_NOTGRANTED</a> or
 throw a <a href="../api_cxx/lockng_class.html">DbLockNotGrantedException</a> exception.</p>
 <hr size=1 noshade>
@@ -167,7 +168,7 @@ throw a <a href="../api_cxx/lockng_class.html">DbLockNotGrantedException</a> exc
 <a href="../api_cxx/dbc_list.html">Database Cursors and Related Methods</a>
 </tt>
 <table width="100%"><tr><td><br></td><td align=right>
-<a href="../api_cxx/api_index.html"><img src="../images/api.gif" alt="API"></a><a href="../reftoc.html"><img src="../images/ref.gif" alt="Ref"></a>
+<a href="../api_cxx/api_index.html"><img src="../images/api.gif" alt="API"></a><a href="../ref/toc.html"><img src="../images/ref.gif" alt="Ref"></a>
 </td></tr></table>
 <p><font size=1><a href="../sleepycat/legal.html">Copyright (c) 1996-2003</a> <a href="http://www.sleepycat.com">Sleepycat Software, Inc.</a> - All rights reserved.</font>
 </body>

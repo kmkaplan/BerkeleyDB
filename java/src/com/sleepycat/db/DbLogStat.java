@@ -4,8 +4,8 @@
 package com.sleepycat.db;
 
 /**
- *  The DbLogStat object is used to return logging subsystem statistics.</p>
- *
+ *  The DbLogStat object is used to return logging subsystem
+ *  statistics.</p>
  */
 public class DbLogStat {
     /**
@@ -39,8 +39,8 @@ public class DbLogStat {
      */
     public int st_lg_size;
     /**
-     *  The number of bytes over and above <b>st_w_mbytes</b> written to this
-     *  log.
+     *  The number of bytes over and above <b>st_w_mbytes</b> written
+     *  to this log.
      *</ul>
      *
      */
@@ -52,15 +52,15 @@ public class DbLogStat {
      */
     public int st_w_mbytes;
     /**
-     *  The number of bytes over and above <b>st_wc_mbytes</b> written to this
-     *  log since the last checkpoint.
+     *  The number of bytes over and above <b>st_wc_mbytes</b> written
+     *  to this log since the last checkpoint.
      *</ul>
      *
      */
     public int st_wc_bytes;
     /**
-     *  The number of megabytes written to this log since the last checkpoint.
-     *
+     *  The number of megabytes written to this log since the last
+     *  checkpoint.
      *</ul>
      *
      */
@@ -72,8 +72,8 @@ public class DbLogStat {
      */
     public int st_wcount;
     /**
-     *  The number of times the log has been written to disk because the
-     *  in-memory log record cache filled up.
+     *  The number of times the log has been written to disk because
+     *  the in-memory log record cache filled up.
      *</ul>
      *
      */
@@ -85,15 +85,15 @@ public class DbLogStat {
      */
     public int st_scount;
     /**
-     *  The number of times that a thread of control was forced to wait before
-     *  obtaining the region lock.
+     *  The number of times that a thread of control was forced to
+     *  wait before obtaining the region lock.
      *</ul>
      *
      */
     public int st_region_wait;
     /**
-     *  The number of times that a thread of control was able to obtain the
-     *  region lock without waiting.
+     *  The number of times that a thread of control was able to
+     *  obtain the region lock without waiting.
      *</ul>
      *
      */
@@ -112,6 +112,7 @@ public class DbLogStat {
     public int st_cur_offset;
     /**
      *  The log file number of the last record known to be on disk.
+     *
      *</ul>
      *
      */
@@ -130,13 +131,14 @@ public class DbLogStat {
     public int st_regsize;
     /**
      *  The maximum number of commits contained in a single log flush.
+     *
      *</ul>
      *
      */
     public int st_maxcommitperflush;
     /**
-     *  The minimum number of commits contained in a single log flush that
-     *  contained a commit.
+     *  The minimum number of commits contained in a single log flush
+     *  that contained a commit.
      *</ul>
      *
      */
@@ -144,10 +146,10 @@ public class DbLogStat {
 
 
     /**
-     *  Provide a string representation of all the fields contained within this
-     *  class.
+     *  Provide a string representation of all the fields contained
+     *  within this class.
      *
-     *@return    The string representation.
+     * @return    The string representation.
      */
     public String toString() {
         return "DbLogStat:"

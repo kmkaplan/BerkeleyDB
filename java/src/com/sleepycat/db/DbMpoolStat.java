@@ -4,18 +4,20 @@
 package com.sleepycat.db;
 
 /**
- *  The DbMpoolStat object is used to return memory pool statistics.</p>
- *
+ *  The DbMpoolStat object is used to return memory pool statistics.
+ *  </p>
  */
 public class DbMpoolStat {
     /**
      *  Gigabytes of cache (total cache size is st_gbytes + st_bytes).
+     *
      *</ul>
      *
      */
     public int st_gbytes;
     /**
      *  Bytes of cache (total cache size is st_gbytes + st_bytes).
+     *
      *</ul>
      *
      */
@@ -33,10 +35,10 @@ public class DbMpoolStat {
      */
     public int st_regsize;
     /**
-     *  Requested pages mapped into the process' address space (there is no
-     *  available information about whether or not this request caused disk I/O,
-     *  although examining the application page fault rate may be helpful).
-     *
+     *  Requested pages mapped into the process' address space (there
+     *  is no available information about whether or not this request
+     *  caused disk I/O, although examining the application page fault
+     *  rate may be helpful).
      *</ul>
      *
      */
@@ -85,8 +87,8 @@ public class DbMpoolStat {
     public int st_rw_evict;
     /**
      *  Dirty pages written using the {@link
-     *  com.sleepycat.db.DbEnv#memoryPoolTrickle DbEnv.memoryPoolTrickle}
-     *  method.
+     *  com.sleepycat.db.DbEnv#memoryPoolTrickle
+     *  DbEnv.memoryPoolTrickle} method.
      *</ul>
      *
      */
@@ -122,48 +124,50 @@ public class DbMpoolStat {
      */
     public int st_hash_searches;
     /**
-     *  The longest chain ever encountered in buffer hash table lookups.
+     *  The longest chain ever encountered in buffer hash table
+     *  lookups.
      *</ul>
      *
      */
     public int st_hash_longest;
     /**
-     *  Total number of hash elements traversed during hash table lookups.
+     *  Total number of hash elements traversed during hash table
+     *  lookups.
      *</ul>
      *
      */
     public int st_hash_examined;
     /**
-     *  The number of times that a thread of control was able to obtain a hash
-     *  bucket lock without waiting.
+     *  The number of times that a thread of control was able to
+     *  obtain a hash bucket lock without waiting.
      *</ul>
      *
      */
     public int st_hash_nowait;
     /**
-     *  The number of times that a thread of control was forced to wait before
-     *  obtaining a hash bucket lock.
+     *  The number of times that a thread of control was forced to
+     *  wait before obtaining a hash bucket lock.
      *</ul>
      *
      */
     public int st_hash_wait;
     /**
-     *  The maximum number of times any hash bucket lock was waited for by a
-     *  thread of control.
+     *  The maximum number of times any hash bucket lock was waited
+     *  for by a thread of control.
      *</ul>
      *
      */
     public int st_hash_max_wait;
     /**
-     *  The number of times that a thread of control was able to obtain a region
-     *  lock without waiting.
+     *  The number of times that a thread of control was able to
+     *  obtain a region lock without waiting.
      *</ul>
      *
      */
     public int st_region_nowait;
     /**
-     *  The number of times that a thread of control was forced to wait before
-     *  obtaining a region lock.
+     *  The number of times that a thread of control was forced to
+     *  wait before obtaining a region lock.
      *</ul>
      *
      */
@@ -182,6 +186,7 @@ public class DbMpoolStat {
     public int st_alloc_buckets;
     /**
      *  Maximum number of hash buckets checked during an allocation.
+     *
      *</ul>
      *
      */
@@ -201,10 +206,10 @@ public class DbMpoolStat {
 
 
     /**
-     *  Provide a string representation of all the fields contained within this
-     *  class.
+     *  Provide a string representation of all the fields contained
+     *  within this class.
      *
-     *@return    The string representation.
+     * @return    The string representation.
      */
     public String toString() {
         return "DbMpoolStat:"

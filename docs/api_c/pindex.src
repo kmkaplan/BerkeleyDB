@@ -273,34 +273,6 @@ __APIREL__/api_c/env_set_flags.html__OCT__15 turn off synchronous @transaction c
 __APIREL__/api_c/env_set_flags.html__OCT__DB_TXN_WRITE_NOSYNC DB_ENV-__GT__set_flags@DB_TXN_WRITE_NOSYNC
 __APIREL__/api_c/env_set_flags.html__OCT__16 configure for @stress testing
 __APIREL__/api_c/env_set_flags.html__OCT__DB_YIELDCPU DB_ENV-__GT__set_flags@DB_YIELDCPU
-__APIREL__/api_c/env_set_lg_bsize.html__OCT__2 @DB_ENV-__GT__set_lg_bsize
-__APIREL__/api_c/env_set_lg_bsize.html__OCT__3 @DB_ENV-__GT__get_lg_bsize
-__APIREL__/api_c/env_set_lg_dir.html__OCT__2 @DB_ENV-__GT__set_lg_dir
-__APIREL__/api_c/env_set_lg_dir.html__OCT__3 @DB_ENV-__GT__get_lg_dir
-__APIREL__/api_c/env_set_lg_max.html__OCT__2 @DB_ENV-__GT__set_lg_max
-__APIREL__/api_c/env_set_lg_max.html__OCT__3 @DB_ENV-__GT__get_lg_max
-__APIREL__/api_c/env_set_lg_regionmax.html__OCT__2 @DB_ENV-__GT__set_lg_regionmax
-__APIREL__/api_c/env_set_lg_regionmax.html__OCT__3 @DB_ENV-__GT__get_lg_regionmax
-__APIREL__/api_c/env_set_lk_conflicts.html__OCT__2 @DB_ENV-__GT__set_lk_conflicts
-__APIREL__/api_c/env_set_lk_conflicts.html__OCT__3 @DB_ENV-__GT__get_lk_conflicts
-__APIREL__/api_c/env_set_lk_detect.html__OCT__2 @DB_ENV-__GT__set_lk_detect
-__APIREL__/api_c/env_set_lk_detect.html__OCT__3 @DB_ENV-__GT__get_lk_detect
-__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_DEFAULT DB_ENV-__GT__set_lk_detect@DB_LOCK_DEFAULT
-__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_EXPIRE DB_ENV-__GT__set_lk_detect@DB_LOCK_EXPIRE
-__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_MAXLOCKS DB_ENV-__GT__set_lk_detect@DB_LOCK_MAXLOCKS
-__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_MINLOCKS DB_ENV-__GT__set_lk_detect@DB_LOCK_MINLOCKS
-__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_MINWRITE DB_ENV-__GT__set_lk_detect@DB_LOCK_MINWRITE
-__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_OLDEST DB_ENV-__GT__set_lk_detect@DB_LOCK_OLDEST
-__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_RANDOM DB_ENV-__GT__set_lk_detect@DB_LOCK_RANDOM
-__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_YOUNGEST DB_ENV-__GT__set_lk_detect@DB_LOCK_YOUNGEST
-__APIREL__/api_c/env_set_lk_max_lockers.html__OCT__2 @DB_ENV-__GT__set_lk_max_lockers
-__APIREL__/api_c/env_set_lk_max_lockers.html__OCT__3 @DB_ENV-__GT__get_lk_max_lockers
-__APIREL__/api_c/env_set_lk_max_locks.html__OCT__2 @DB_ENV-__GT__set_lk_max_locks
-__APIREL__/api_c/env_set_lk_max_locks.html__OCT__3 @DB_ENV-__GT__get_lk_max_locks
-__APIREL__/api_c/env_set_lk_max_objects.html__OCT__2 @DB_ENV-__GT__set_lk_max_objects
-__APIREL__/api_c/env_set_lk_max_objects.html__OCT__3 @DB_ENV-__GT__get_lk_max_objects
-__APIREL__/api_c/env_set_mp_mmapsize.html__OCT__2 @DB_ENV-__GT__set_mp_mmapsize
-__APIREL__/api_c/env_set_mp_mmapsize.html__OCT__3 @DB_ENV-__GT__get_mp_mmapsize
 __APIREL__/api_c/env_set_paniccall.html__OCT__2 @DB_ENV-__GT__set_paniccall
 __APIREL__/api_c/env_set_rpc_server.html__OCT__2 @DB_ENV-__GT__set_rpc_server
 __APIREL__/api_c/env_set_rpc_server.html__OCT__DB_NOSERVER DB_ENV-__GT__set_rpc_server@DB_NOSERVER
@@ -321,10 +293,6 @@ __APIREL__/api_c/env_set_timeout.html__OCT__DB_SET_TXN_TIMEOUT DB_ENV-__GT__set_
 __APIREL__/api_c/env_set_tmp_dir.html__OCT__2 @DB_ENV-__GT__set_tmp_dir
 __APIREL__/api_c/env_set_tmp_dir.html__OCT__3 @temporary files
 __APIREL__/api_c/env_set_tmp_dir.html__OCT__4 @DB_ENV-__GT__get_tmp_dir
-__APIREL__/api_c/env_set_tx_max.html__OCT__2 @DB_ENV-__GT__set_tx_max
-__APIREL__/api_c/env_set_tx_max.html__OCT__3 @DB_ENV-__GT__get_tx_max
-__APIREL__/api_c/env_set_tx_timestamp.html__OCT__2 @DB_ENV-__GT__set_tx_timestamp
-__APIREL__/api_c/env_set_tx_timestamp.html__OCT__3 @DB_ENV-__GT__get_tx_timestamp
 __APIREL__/api_c/env_set_verbose.html__OCT__2 @DB_ENV-__GT__set_verbose
 __APIREL__/api_c/env_set_verbose.html__OCT__3 @DB_ENV-__GT__get_verbose
 __APIREL__/api_c/env_set_verbose.html__OCT__DB_VERB_CHKPOINT DB_ENV-__GT__set_verbose@DB_VERB_CHKPOINT
@@ -341,6 +309,24 @@ __APIREL__/api_c/env_set_errfile.html__OCT__3 @DB_ENV-__GT__get_errfile
 __APIREL__/api_c/dbm.html__OCT__2 @dbm/ndbm
 __APIREL__/api_c/hsearch.html__OCT__2 @hsearch
 __APIREL__/api_c/hsearch.html__OCT__3 @hcreate
+__APIREL__/api_c/env_set_lk_conflicts.html__OCT__2 @DB_ENV-__GT__set_lk_conflicts
+__APIREL__/api_c/env_set_lk_conflicts.html__OCT__3 @DB_ENV-__GT__get_lk_conflicts
+__APIREL__/api_c/env_set_lk_detect.html__OCT__2 @DB_ENV-__GT__set_lk_detect
+__APIREL__/api_c/env_set_lk_detect.html__OCT__3 @DB_ENV-__GT__get_lk_detect
+__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_DEFAULT DB_ENV-__GT__set_lk_detect@DB_LOCK_DEFAULT
+__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_EXPIRE DB_ENV-__GT__set_lk_detect@DB_LOCK_EXPIRE
+__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_MAXLOCKS DB_ENV-__GT__set_lk_detect@DB_LOCK_MAXLOCKS
+__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_MINLOCKS DB_ENV-__GT__set_lk_detect@DB_LOCK_MINLOCKS
+__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_MINWRITE DB_ENV-__GT__set_lk_detect@DB_LOCK_MINWRITE
+__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_OLDEST DB_ENV-__GT__set_lk_detect@DB_LOCK_OLDEST
+__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_RANDOM DB_ENV-__GT__set_lk_detect@DB_LOCK_RANDOM
+__APIREL__/api_c/env_set_lk_detect.html__OCT__DB_LOCK_YOUNGEST DB_ENV-__GT__set_lk_detect@DB_LOCK_YOUNGEST
+__APIREL__/api_c/env_set_lk_max_lockers.html__OCT__2 @DB_ENV-__GT__set_lk_max_lockers
+__APIREL__/api_c/env_set_lk_max_lockers.html__OCT__3 @DB_ENV-__GT__get_lk_max_lockers
+__APIREL__/api_c/env_set_lk_max_locks.html__OCT__2 @DB_ENV-__GT__set_lk_max_locks
+__APIREL__/api_c/env_set_lk_max_locks.html__OCT__3 @DB_ENV-__GT__get_lk_max_locks
+__APIREL__/api_c/env_set_lk_max_objects.html__OCT__2 @DB_ENV-__GT__set_lk_max_objects
+__APIREL__/api_c/env_set_lk_max_objects.html__OCT__3 @DB_ENV-__GT__get_lk_max_objects
 __APIREL__/api_c/lock_class.html__OCT__2 @DB_LOCK
 __APIREL__/api_c/lock_detect.html__OCT__2 @DB_ENV-__GT__lock_detect
 __APIREL__/api_c/lock_detect.html__OCT__DB_LOCK_DEFAULT DB_ENV-__GT__lock_detect@DB_LOCK_DEFAULT
@@ -374,7 +360,15 @@ __APIREL__/api_c/lock_vec.html__OCT__DB_LOCK_WRITE DB_ENV-__GT__lock_vec@DB_LOCK
 __APIREL__/api_c/lock_vec.html__OCT__DB_LOCK_IWRITE DB_ENV-__GT__lock_vec@DB_LOCK_IWRITE
 __APIREL__/api_c/lock_vec.html__OCT__DB_LOCK_IREAD DB_ENV-__GT__lock_vec@DB_LOCK_IREAD
 __APIREL__/api_c/lock_vec.html__OCT__DB_LOCK_IWR DB_ENV-__GT__lock_vec@DB_LOCK_IWR
-__APIREL__/api_c/lock_vec.html__OCT__object DB_ENV-__GT__lock_vec@object
+__APIREL__/api_c/lock_vec.html__OCT__obj DB_ENV-__GT__lock_vec@obj
+__APIREL__/api_c/env_set_lg_bsize.html__OCT__2 @DB_ENV-__GT__set_lg_bsize
+__APIREL__/api_c/env_set_lg_bsize.html__OCT__3 @DB_ENV-__GT__get_lg_bsize
+__APIREL__/api_c/env_set_lg_dir.html__OCT__2 @DB_ENV-__GT__set_lg_dir
+__APIREL__/api_c/env_set_lg_dir.html__OCT__3 @DB_ENV-__GT__get_lg_dir
+__APIREL__/api_c/env_set_lg_max.html__OCT__2 @DB_ENV-__GT__set_lg_max
+__APIREL__/api_c/env_set_lg_max.html__OCT__3 @DB_ENV-__GT__get_lg_max
+__APIREL__/api_c/env_set_lg_regionmax.html__OCT__2 @DB_ENV-__GT__set_lg_regionmax
+__APIREL__/api_c/env_set_lg_regionmax.html__OCT__3 @DB_ENV-__GT__get_lg_regionmax
 __APIREL__/api_c/log_archive.html__OCT__2 @DB_ENV-__GT__log_archive
 __APIREL__/api_c/log_archive.html__OCT__DB_ARCH_ABS DB_ENV-__GT__log_archive@DB_ARCH_ABS
 __APIREL__/api_c/log_archive.html__OCT__DB_ARCH_DATA DB_ENV-__GT__log_archive@DB_ARCH_DATA
@@ -398,6 +392,8 @@ __APIREL__/api_c/logc_get.html__OCT__DB_NEXT DB_LOGC-__GT__get@DB_NEXT
 __APIREL__/api_c/logc_get.html__OCT__DB_PREV DB_LOGC-__GT__get@DB_PREV
 __APIREL__/api_c/logc_get.html__OCT__DB_SET DB_LOGC-__GT__get@DB_SET
 __APIREL__/api_c/lsn_class.html__OCT__2 @DB_LSN
+__APIREL__/api_c/env_set_mp_mmapsize.html__OCT__2 @DB_ENV-__GT__set_mp_mmapsize
+__APIREL__/api_c/env_set_mp_mmapsize.html__OCT__3 @DB_ENV-__GT__get_mp_mmapsize
 __APIREL__/api_c/memp_set_flags.html__OCT__2 @DB_MPOOLFILE-__GT__set_flags
 __APIREL__/api_c/memp_set_flags.html__OCT__3 @DB_MPOOLFILE-__GT__get_flags
 __APIREL__/api_c/memp_set_flags.html__OCT__DB_MPOOL_NOFILE DB_MPOOLFILE-__GT__set_flags@DB_MPOOL_NOFILE
@@ -490,6 +486,10 @@ __APIREL__/api_c/set_func_unlink.html__OCT__2 @db_env_set_func_unlink
 __APIREL__/api_c/set_func_unmap.html__OCT__2 @db_env_set_func_unmap
 __APIREL__/api_c/set_func_write.html__OCT__2 @db_env_set_func_write
 __APIREL__/api_c/set_func_yield.html__OCT__2 @db_env_set_func_yield
+__APIREL__/api_c/env_set_tx_max.html__OCT__2 @DB_ENV-__GT__set_tx_max
+__APIREL__/api_c/env_set_tx_max.html__OCT__3 @DB_ENV-__GT__get_tx_max
+__APIREL__/api_c/env_set_tx_timestamp.html__OCT__2 @DB_ENV-__GT__set_tx_timestamp
+__APIREL__/api_c/env_set_tx_timestamp.html__OCT__3 @DB_ENV-__GT__get_tx_timestamp
 __APIREL__/api_c/txn_abort.html__OCT__2 @DB_TXN-__GT__abort
 __APIREL__/api_c/txn_begin.html__OCT__2 @DB_ENV-__GT__txn_begin
 __APIREL__/api_c/txn_begin.html__OCT__DB_DIRTY_READ DB_ENV-__GT__txn_begin@DB_DIRTY_READ
@@ -823,32 +823,3 @@ __APIREL__/ref/xa/faq.html__OCT__3 @XA FAQ
 __APIREL__/ref/xa/xa_config.html__OCT__2 configuring Berkeley DB with the @Tuxedo System
 __APIREL__/ref/xa/xa_intro.html__OCT__2 @XA Resource Manager
 __APIREL__/ref/xa/xa_intro.html__OCT__3 XA @Resource Manager
-__APIREL__/ref/xml/documents.html__OCT__2 XML @documents
-__APIREL__/ref/xml/intro.html__OCT__2 @XML
-__APIREL__/ref/xml_unix/conf.html__OCT__2 @configuring Berkeley DB XML for UNIX/POSIX systems
-__APIREL__/ref/xml_unix/conf.html__OCT__3 configuring Berkeley DB XML for @UNIX/POSIX systems
-__APIREL__/ref/xml_unix/conf.html__OCT__--enable-debug Configuring Berkeley DB XML@--enable-debug
-__APIREL__/ref/xml_unix/conf.html__OCT__--enable-diagnostic Configuring Berkeley DB XML@--enable-diagnostic
-__APIREL__/ref/xml_unix/conf.html__OCT__4 configuring the @Java API
-__APIREL__/ref/xml_unix/conf.html__OCT__--enable-java Configuring Berkeley DB XML@--enable-java
-__APIREL__/ref/xml_unix/conf.html__OCT__5 disabling @shared libraries
-__APIREL__/ref/xml_unix/conf.html__OCT__6 disabling @static libraries
-__APIREL__/ref/xml_unix/conf.html__OCT__--disable-shared Configuring Berkeley DB XML@--disable-shared
-__APIREL__/ref/xml_unix/conf.html__OCT__--disable-static Configuring Berkeley DB XML@--disable-static
-__APIREL__/ref/xml_unix/conf.html__OCT__7 configuring the Berkeley DB XML @test suite
-__APIREL__/ref/xml_unix/conf.html__OCT__--enable-test Configuring Berkeley DB XML@--enable-test
-__APIREL__/ref/xml_unix/conf.html__OCT__--enable-umrw Configuring Berkeley DB XML@--enable-umrw
-__APIREL__/ref/xml_unix/conf.html__OCT__--with-berkeleydb=DIR Configuring Berkeley DB XML@--with-berkeleydb=DIR
-__APIREL__/ref/xml_unix/conf.html__OCT__--with-xerces=DIR Configuring Berkeley DB XML@--with-xerces=DIR
-__APIREL__/ref/xml_unix/conf.html__OCT__--with-tcl=DIR Configuring Berkeley DB XML@--with-tcl=DIR
-__APIREL__/ref/xml_unix/flags.html__OCT__2 changing @compile or load options
-__APIREL__/ref/xml_unix/flags.html__OCT__3 changing compile or @load options
-__APIREL__/ref/xml_unix/install.html__OCT__2 @installing Berkeley DB XML for UNIX systems
-__APIREL__/ref/xml_unix/intro.html__OCT__2 @building Berkeley DB XML for UNIX/POSIX
-__APIREL__/ref/xml_unix/intro.html__OCT__3 building Berkeley DB XML for @UNIX/POSIX
-__APIREL__/ref/xml_unix/shlib.html__OCT__2 @shared libraries
-__APIREL__/ref/xml_unix/test.html__OCT__2 running the @test suite under UNIX
-__APIREL__/ref/xml_win/intro.html__OCT__2 @building Berkeley DB XML for Windows
-__APIREL__/ref/xml_win/intro.html__OCT__3 building Berkeley DB XML for @Windows
-__APIREL__/ref/xml_win/test.html__OCT__2 running the @test suite under Windows
-__APIREL__/ref/xml_win/test.html__OCT__3 running the test suite under @Windows

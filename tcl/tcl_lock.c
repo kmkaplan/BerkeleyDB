@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: tcl_lock.c,v 11.52 2003/04/24 16:25:54 bostic Exp $";
+static const char revid[] = "$Id: tcl_lock.c,v 11.53 2003/11/26 23:14:22 ubell Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -405,6 +405,7 @@ tcl_LockVec(interp, objc, objv, envp)
 		LKPUTOBJ,
 		LKTIMEOUT
 	};
+
 	DB_LOCK *lock;
 	DB_LOCKREQ list;
 	DBT obj;
@@ -416,6 +417,7 @@ tcl_LockVec(interp, objc, objv, envp)
 
 	result = TCL_OK;
 	memset(newname, 0, MSG_SIZE);
+	memset(&list, 0, sizeof(DB_LOCKREQ));
 	flag = 0;
 	freeobj = 0;
 

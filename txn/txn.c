@@ -39,7 +39,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: txn.c,v 11.217 2003/11/14 05:32:32 ubell Exp $";
+static const char revid[] = "$Id: txn.c,v 11.219 2003/12/03 14:33:06 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -536,30 +536,33 @@ __txn_commit(txnp, flags)
 			 * the events and preprocess any trades now so we don't
 			 * release the locks below.
 			 */
-			if ((ret = __txn_doevents(dbenv, txnp, 0, 1)) != 0)
+			if ((ret =
+			    __txn_doevents(dbenv, txnp, TXN_PREPARE, 1)) != 0)
 				goto err;
 
+			memset(&request, 0, sizeof(request));
 			if (LOCKING_ON(dbenv)) {
 				request.op = DB_LOCK_PUT_READ;
 				if (IS_REP_MASTER(dbenv) &&
 				    !IS_ZERO_LSN(txnp->last_lsn)) {
 					memset(&list_dbt, 0, sizeof(list_dbt));
 					request.obj = &list_dbt;
-				} else
-					request.obj = NULL;
-				if ((ret = __lock_vec(dbenv,
-				    txnp->txnid, 0, &request, 1, NULL)) != 0)
-					goto err;
-
+				}
+				ret = __lock_vec(dbenv,
+				    txnp->txnid, 0, &request, 1, NULL);
 			}
 
-			SET_LOG_FLAGS(dbenv, txnp, lflags);
-			if (!IS_ZERO_LSN(txnp->last_lsn)) {
-				if ((ret = __txn_regop_log(dbenv, txnp,
+			if (ret == 0 && !IS_ZERO_LSN(txnp->last_lsn)) {
+				SET_LOG_FLAGS(dbenv, txnp, lflags);
+				ret = __txn_regop_log(dbenv, txnp,
 				    &txnp->last_lsn, lflags, TXN_COMMIT,
-				    (int32_t)time(NULL), request.obj)) != 0)
-					goto err;
+				    (int32_t)time(NULL), request.obj);
 			}
+
+			if (request.obj != NULL && request.obj->data != NULL)
+				__os_free(dbenv, request.obj->data);
+			if (ret != 0)
+				goto err;
 		} else {
 			/* Log the commit in the parent! */
 			if (!IS_ZERO_LSN(txnp->last_lsn) &&
@@ -684,7 +687,7 @@ __txn_abort(txnp)
 		 * handle is closed.  Check the events and preprocess any
 		 * trades now so that we don't release the locks below.
 		 */
-		if ((ret = __txn_doevents(dbenv, txnp, 0, 1)) != 0)
+		if ((ret = __txn_doevents(dbenv, txnp, TXN_ABORT, 1)) != 0)
 			return (__db_panic(dbenv, ret));
 
 		/* Turn off timeouts. */
@@ -827,14 +830,16 @@ __txn_prepare(txnp, gid)
 	 * of those states, then we are calling prepare directly and we need
 	 * to fill in the td->xid.
 	 */
+	if ((ret = __txn_doevents(dbenv, txnp, TXN_PREPARE, 1)) != 0)
+		return (ret);
+	memset(&request, 0, sizeof(request));
 	if (LOCKING_ON(dbenv)) {
 		request.op = DB_LOCK_PUT_READ;
 		if (IS_REP_MASTER(dbenv) &&
 		    IS_ZERO_LSN(txnp->last_lsn)) {
 			memset(&list_dbt, 0, sizeof(list_dbt));
 			request.obj = &list_dbt;
-		} else
-			request.obj = NULL;
+		}
 		if ((ret = __lock_vec(dbenv,
 		    txnp->txnid, 0, &request, 1, NULL)) != 0)
 			return (ret);
@@ -856,8 +861,12 @@ __txn_prepare(txnp, gid)
 		    &td->begin_lsn, request.obj)) != 0) {
 			__db_err(dbenv, "DB_TXN->prepare: log_write failed %s",
 			    db_strerror(ret));
-			return (ret);
 		}
+		if (request.obj != NULL && request.obj->data != NULL)
+			__os_free(dbenv, request.obj->data);
+		if (ret != 0)
+			return (ret);
+		
 	}
 
 	MUTEX_THREAD_LOCK(dbenv, txnp->mgrp->mutexp);
@@ -1032,7 +1041,8 @@ __txn_end(txnp, is_commit)
 	do_closefiles = 0;
 
 	/* Process commit events. */
-	if ((ret = __txn_doevents(dbenv, txnp, is_commit, 0)) != 0)
+	if ((ret = __txn_doevents(dbenv,
+	    txnp, is_commit ? TXN_COMMIT : TXN_ABORT, 0)) != 0)
 		return (__db_panic(dbenv, ret));
 
 	/*
