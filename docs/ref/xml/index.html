@@ -1,0 +1,200 @@
+<!--$Id: index.so,v 1.2 2003/05/02 18:34:46 merrells Exp $-->
+<!--Copyright 1997-2003 by Sleepycat Software, Inc.-->
+<!--All rights reserved.-->
+<!--See the file LICENSE for redistribution information.-->
+<html>
+<head>
+<title>Berkeley DB Reference Guide: Indexing</title>
+<meta name="description" content="Berkeley DB: An embedded database programmatic toolkit.">
+<meta name="keywords" content="embedded,database,programmatic,toolkit,b+tree,btree,hash,hashing,transaction,transactions,locking,logging,access method,access methods,Java,C,C++">
+</head>
+<body bgcolor=white>
+<table width="100%"><tr valign=top>
+<td><h3><dl><dt>Berkeley DB Reference Guide:<dd>Berkeley DB XML</dl></h3></td>
+<td align=right><a href="../../ref/xml/env.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/xml/query.html"><img src="../../images/next.gif" alt="Next"></a>
+</td></tr></table>
+<p>
+<h3 align=center>Indexing</h3>
+<p>Berkeley DB XML offers effective and flexible indexing functionality that gives
+application developers powerful control over query performance. Berkeley DB XML
+indexing strategies are best illustrated by example. Consider the
+following XML document:</p>
+<blockquote><pre>&lt;book bookID="1234"&gt;
+&lt;author&gt;Abelson, H&lt;/author&gt;
+&lt;title&gt;Structure and Interpretation of Computer Programs&lt;/title&gt;
+&lt;isbn&gt;0-262-51036-7&lt;/isbn&gt;
+&lt;/book&gt;
+</pre></blockquote>
+<p>The following figure illustrates this XML document as a graph:</p>
+<p align=center><img src="xml_fig_3.gif" alt="xml_fig_3">
+<p>The graph consists of a series of nodes (book; bookID; author; title;
+ISBN), edges that connect the nodes (book.bookID; book.author;
+book.title; book.ISBN), and values (1234; Abelson, H; Structure and
+Interpretation of Computer Programs; 0-262-51036-7).</p>
+<p>The indexer maintains index keys based on the nodes, edges, and values
+of an XML document. Only XML document element and attribute nodes are
+indexed. Other XML document node types, such as declarations, comments,
+and processing instructions, are ignored.</p>
+<p>When creating index keys from a document, the indexer does not follow
+external references to document type definitions and external entities.
+References to internal entities within the document's character data
+are substituted for their replacement text. References to external
+entities are removed from the character data.</p>
+<p>The indexer concatenates character data mixed with child elements into
+a single value. For example, the fragment
+"&lt;a&gt;1&lt;b&gt;2&lt;/b&gt;3&lt;/a&gt;" has two
+element type values, element 'a' has value '13', and element 'b' has
+value '2'.</p>
+<p>The indexer expands CDATA sections when indexing a document. For
+example, the character data
+&lt;![CDATA[&lt;greeting&gt;Hello,
+world!&lt;/greeting&gt;]]&gt; would be indexed as if
+the character data were &lt;greeting&gt;Hello,
+world!&lt;/greeting&gt;.</p>
+<p>The indexer replaces namespace prefixes with the namespace URI to which
+they refer. This element type normalization ensures that documents
+containing the same element types, but different prefixes for the same
+namespace, will be considered to be identical.</p>
+<p>When defining an index within Berkeley DB XML, application developers must
+specify the name of the node to be indexed and the type of indexing
+strategy to be maintained for that node. For element nodes the name is
+the element type, and for attribute nodes the name is the attribute
+name. All nodes with that name are indexed, regardless of the path to
+the node. </p>
+<p>Applications must specify a value for four index types when defining an
+index:</p>
+<p><dl compact>
+<p><dt>Path Type<dd>The index must be created with a path type of either node or edge. Using
+the book example, an index defined with a path type of node would have
+five entries; one for each node of the graph, while an index defined
+with a path type of edge would have four entries; one for each edge of
+the graph.
+<p><dt>Node Type<dd>Node Type refers to whether the graph node represents an element or an
+attribute in the original XML document. Using the book example, an index
+with node type of element would have four entries: one each for book,
+author, ISBN and title. An index with node type of attribute would have
+one entry for the bookID node, as it is the only attribute in the
+original XML document.
+<p><dt>Key Type<dd>Key Type determines the type of index key that is created, and must be
+specified as equality, presence or substring.  A key type of equality
+allows the application to test whether a specified node exists with a
+given value.  A key type of presence allows the application to test
+whether a specified node exists with any value including a missing
+value. A key type of substring allows the application to test whether
+a specified node exists and contains a given substring.
+<p><dt>Syntax Type<dd>Syntax Type dictates how a value is to be compared, and must be
+specified as string, number, or none (for a presence index). Berkeley DB XML uses
+the XPath definition of string and number.
+</dl>
+<p>The following table summarizes the Berkeley DB XML index type options:</p>
+<table border=1 align=center>
+<tr><th><b>Index Axis Types</b></th><th>Path Type</th><th>Node Type</th><th>Key Type</th><th>Syntax Type</th></tr>
+<tr><td><b>Possible Values</b></td><td><p><i>Edge</i></p><p><i>Node</i></p></td><td><p><i>Element</i></p><p><i>Attribute</i></p></td><td><p><i>Equality</i></p><p><i>Presence</i></p><p><i>Substring</i></p></td><td><p><i>String or Number</i></p><p><i>None</i></p><p><i>String</i></p></td></tr>
+</table>
+<p>The following table enumerates the supported Berkeley DB XML indexing strategies:</p>
+<table border=1 align=center>
+<tr><th>Index Strategy(Path-Node-Key-Syntax)</th><th>Description</th></tr>
+<tr><td>none-none-none-none</td><td>Disable indexing for a node</td></tr>
+<tr><td>node-element-presence</td><td>Define an Element Presence Index</td></tr>
+<tr><td>node-attribute-presence</td><td>Define an Attribute Presence Index</td></tr>
+<tr><td>node-element-equality-string</td><td>Define an Element Equality Strings Index</td></tr>
+<tr><td>node-element-equality-number</td><td>Define an Element Equality Numbers Index</td></tr>
+<tr><td>node-element-substring-string</td><td>Define an Element Substring Index</td></tr>
+<tr><td>node-attribute-equality-string</td><td>Define an Attribute Equality Strings Index</td></tr>
+<tr><td>node-attribute-equality-number</td><td>Define an Attribute Equality Numbers Index</td></tr>
+<tr><td>node-attribute-substring-string</td><td>Define an Attribute Substring Index</td></tr>
+<tr><td>edge-element-presence</td><td>Define an Element Edge Presence Index</td></tr>
+<tr><td>edge-attribute-presence</td><td>Define an Attribute Edge Presence Index</td></tr>
+<tr><td>edge-element-equality-string</td><td>Define an Element Edge Equality Strings Index</td></tr>
+<tr><td>edge-element-equality-number</td><td>Define an Element Edge Equality Numbers Index</td></tr>
+<tr><td>edge-element-substring-string</td><td>Define an Element Edge Substring Index</td></tr>
+<tr><td>edge-attribute-equality-string</td><td>Define an Attribute Edge Equality Strings Index</td></tr>
+<tr><td>edge-attribute-equality-number</td><td>Define an Attribute Edge Equality Numbers Index</td></tr>
+<tr><td>edge-attribute-substring-string</td><td>Define an Attribute Edge Substrings Index</td></tr>
+</table>
+<p>The following code example demonstrates how to declare an index:</p>
+<blockquote><pre>void example()
+{
+	// Create and open a container.
+	XmlContainer container(0,"test.dbxml");
+	container.open(0,DB_CREATE);
+<p>
+	// Declare an index for title elements.
+	XmlIndexSpecification index(container.getIndexSpecification(0));
+	index.addIndex(
+		"",
+		"title",
+		"node-element-equality-string");
+	container.setIndexSpecification(0,index);
+	container.close();
+}</pre></blockquote>
+<h3>Index Keys</h3>
+<p>Indices are maintained for efficient query processing. Each type of index is suitable for a particular form of XPath expression.</p>
+<h3>Presence Index Keys</h3>
+<p>An index of type node-element-presence-none contains keys that record
+the presence of an element type within a document. They are suitable
+for path navigation expressions such as '/book/author/name/first', as
+the index records all documents that contain the element types that
+appear in the specified path. They are also suitable for expressions
+containing element type value predicates such as
+'/book[author='john']', as the index records all documents
+that have elements of type 'book' and 'author'.</p>
+<p>An index of type node-attribute-presence-none contains keys that record
+the presence of an attribute name within a document. They are suitable
+for expressions that include path navigation to attributes, such as
+'/book/@bookID', as the index records all documents that contain
+'bookID' attributes. For the same reason, they are also suitable for
+expressions that include attribute value predicates such as
+'/book[@bookID='a1b2c3']'.</p>
+<h3>Equality Index Keys</h3>
+<p>An index of type node-element-equality-string contains keys that record
+the value of an element type. They are suitable for expressions that
+include element type value predicates such as
+'/book[author='john']', as the index records all documents
+that have elements of type 'author' with the value 'john'. An equality
+index is always more selective than a presence index, so Berkeley DB XML query
+processing favors an equality index lookup over a presence index
+lookup.</p>
+<p>An index of type node-attribute-equality-string contains keys that
+record the value of an attribute. They are suitable for expressions that
+include attribute value predicates such as
+'/book[@bookID='a1b2c3']', as the index records all documents
+that have 'bookID' attributes with the value 'a1b2c3'. </p>
+<p>An index with key type equality and syntax type number contains equality
+keys that are compared numerically rather than lexically. The numeric
+syntax supports queries such as '/book[(year=&gt;1980 and
+year&lt;1990) or year=2000]'.</p>
+<p>The query processor uses equality indices for satisfying queries that
+use the XPath function 'starts-with'. For example,
+'/book[starts-with(title,'Structure')'].</p>
+<h3>Substring Index Keys</h3>
+<p>An index with key type substring (for example,
+node-element-substring-string) contains keys that support substring
+queries. XPath substring searches are expressed using the XPath function
+'contains'. For example the XPath query
+'/book[contains(title,'Computer')]' searches for documents
+that contain the word 'Computer' in their title. </p>
+<p>The Berkeley DB XML indexer creates one key for each three-character substring
+of the node value. For example, the indexer creates substring keys {abc,
+bcd, cde} if given a node value of 'abcde'.</p>
+<h3>Edge Index Keys</h3>
+<p>An index of type edge-element-presence-none is a more specific form of
+the node-element-presence-none index, and is suitable for expressions
+containing long path navigations. If an XML document is viewed as a
+graph, with the elements being nodes, then the index keys are formed
+from the edges between the nodes. For example, the XML fragment
+'&lt;a&gt;&lt;b&gt;&lt;c&gt;d&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;'
+has element nodes {a, b, c} and edges {a-b, b-c}. A query with a path
+expression such as '/a/b/c' can be efficiently satisfied with lookups
+into the index for the edges {a-b, b-c}. An edge index is always more
+selective than a node index, so the Berkeley DB XML query processor favors an
+edge index lookup over a node index lookup.</p>
+<p>Equality, and substring indices of node type 'edge' are also supported.
+Each works in the same way as its node counterpart. For example,
+indexing the above XML fragment with edge-element-equality-string would
+give us one key, 'b-c=d'.</p>
+<table width="100%"><tr><td><br></td><td align=right><a href="../../ref/xml/env.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/xml/query.html"><img src="../../images/next.gif" alt="Next"></a>
+</td></tr></table>
+<p><font size=1><a href="../../sleepycat/legal.html">Copyright (c) 1996-2003</a> <a href="http://www.sleepycat.com">Sleepycat Software, Inc.</a> - All rights reserved.</font>
+</body>
+</html>

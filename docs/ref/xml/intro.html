@@ -1,0 +1,62 @@
+<!--$Id: intro.so,v 1.3 2003/07/30 13:11:15 mhayes Exp $-->
+<!--Copyright 1997-2003 by Sleepycat Software, Inc.-->
+<!--All rights reserved.-->
+<!--See the file LICENSE for redistribution information.-->
+<html>
+<head>
+<title>Berkeley DB Reference Guide: Introduction</title>
+<meta name="description" content="Berkeley DB: An embedded database programmatic toolkit.">
+<meta name="keywords" content="embedded,database,programmatic,toolkit,b+tree,btree,hash,hashing,transaction,transactions,locking,logging,access method,access methods,Java,C,C++">
+</head>
+<body bgcolor=white>
+<a name="2"><!--meow--></a>
+<table width="100%"><tr valign=top>
+<td><h3><dl><dt>Berkeley DB Reference Guide:<dd>Berkeley DB XML</dl></h3></td>
+<td align=right><a href="../../ref/java/faq.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/xml/arch.html"><img src="../../images/next.gif" alt="Next"></a>
+</td></tr></table>
+<p>
+<h3 align=center>Introduction</h3>
+<p>Berkeley DB XML (DBXML) is a programmatic toolkit specifically designed to store
+and manage XML data in its native format.  This document provides a
+product overview and technical reference for Berkeley DB XML, and illustrates
+the product's core features and functionality.  Readers are assumed to
+have existing knowledge of XML, XPath, C++, and Berkeley DB.</p>
+<p>Berkeley DB XML is built on top of Sleepycat Software's existing database
+product, Berkeley DB, which provides fast, reliable, scalable, and
+mission-critical database support.  Application developers can choose
+the version of Berkeley DB that is most suitable for a particular application:
+Berkeley DB Data Store, Berkeley DB Concurrent Data Store, Berkeley DB Transactional Data Store, or Berkeley DB High Availability.  Berkeley DB XML provides the following
+functionality:</p>
+<p><dl compact>
+<p><dt>Embedded<dd>Berkeley DB XML is provided as a library that is linked into the client
+application. This provides superior performance by eliminating
+communication among processes or systems.
+<p><dt>Document Storage<dd>Within Berkeley DB XML, documents are stored in containers. A client application
+can operate on many containers at the same time, and can combine data
+from different containers.  Client applications can also create and
+manage Berkeley DB databases. Berkeley DB databases and containers can be used
+together at the same time, with full support for Berkeley DB transactions and
+recovery services.
+<p><dt>Native Storage<dd>Documents are returned to the client application exactly as they were
+stored.  Extraneous white space is preserved, thereby ensuring that the
+document is unchanged upon retrieval from the database. This is also
+called round tripping.
+<p><dt>Indexing<dd>Indexing strategies are defined at the container level, and a container
+may have multiple indices.  This flexibility allows the client
+application to facilitate different query patterns, and to exploit the
+schema common to each container.
+<p><dt>Query Processing<dd>The Query Processor uses a cost-based algorithm to select the most
+efficient plan for a given query. The algorithm considers available
+indices, data volume, disk IO, and the cost of computation when
+selecting a query plan.
+<p><dt>Threading<dd>Berkeley DB XML is thread-safe, and allows the application developer to use the
+thread package most appropriate to the application. Berkeley DB XML supports
+multithreaded and multiprocess applications.
+<p><dt>Standards<dd>Berkeley DB XML is implemented to conform to the W3C standards for XML, XML
+Namespaces, and XPath 1.0.
+</dl>
+<table width="100%"><tr><td><br></td><td align=right><a href="../../ref/java/faq.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/xml/arch.html"><img src="../../images/next.gif" alt="Next"></a>
+</td></tr></table>
+<p><font size=1><a href="../../sleepycat/legal.html">Copyright (c) 1996-2003</a> <a href="http://www.sleepycat.com">Sleepycat Software, Inc.</a> - All rights reserved.</font>
+</body>
+</html>
