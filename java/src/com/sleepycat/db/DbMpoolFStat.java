@@ -4,9 +4,8 @@
 package com.sleepycat.db;
 
 /**
- *  The DbMpoolFStat object is used to return memory pool per-file statistics.
- *  </p>
- *
+ *  The DbMpoolFStat object is used to return memory pool per-file
+ *  statistics.</p>
  */
 public class DbMpoolFStat {
     /**
@@ -60,10 +59,10 @@ public class DbMpoolFStat {
 
 
     /**
-     *  Provide a string representation of all the fields contained within this
-     *  class.
+     *  Provide a string representation of all the fields contained
+     *  within this class.
      *
-     *@return    The string representation.
+     * @return    The string representation.
      */
     public String toString() {
         return "DbMpoolFStat:"

@@ -1,4 +1,4 @@
-<!--$Id: txn_stat.so,v 10.54 2003/11/08 19:17:52 bostic Exp $-->
+<!--$Id: txn_stat.so,v 10.55 2003/11/27 02:15:22 bostic Exp $-->
 <!--Copyright 1997-2003 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <!--See the file LICENSE for redistribution information.-->
@@ -16,7 +16,7 @@
 </td>
 <td align=right>
 <a href="../api_cxx/api_index.html"><img src="../images/api.gif" alt="API"></a>
-<a href="../reftoc.html"><img src="../images/ref.gif" alt="Ref"></a>
+<a href="../ref/toc.html"><img src="../images/ref.gif" alt="Ref"></a>
 </td></tr></table>
 <hr size=1 noshade>
 <tt>
@@ -41,7 +41,7 @@ the memory reference; references inside the returned memory need not be
 individually freed.</p>
 <p>The following DB_TXN_STAT fields will be filled in:</p>
 <p><dl compact>
-<dt><a href="../api_cxx/lsn_class.html">DbLsn</a> st_last_ckp;<dd>The LSN of the last checkpoint.
+<dt>DbLsn st_last_ckp;<dd>The LSN of the last checkpoint.
 <dt>time_t st_time_ckp;<dd>The time the last completed checkpoint finished (as the number of seconds
 since the Epoch, returned by the IEEE/ANSI Std 1003.1 (POSIX) <b>time</b> function).
 <dt>u_int32_t st_last_txnid;<dd>The last transaction ID allocated.
@@ -63,7 +63,7 @@ the DB_TXN_ACTIVE structure will be filled in:
 <p><dl compact>
 <dt>u_int32_t txnid;<dd>The transaction ID of the transaction.
 <dt>u_int32_t parentid;<dd>The transaction ID of the parent transaction (or 0, if no parent).
-<dt><a href="../api_cxx/lsn_class.html">DbLsn</a> lsn;<dd>The current log sequence number when the transaction was begun.
+<dt>DbLsn lsn;<dd>The current log sequence number when the transaction was begun.
 <dt>u_int32_t xa_status;<dd>If the transaction is an XA transaction, the status of the transaction,
 otherwise 0.
 <dt>u_int8_t xid[DB_XIDDATASIZE];<dd>If the transaction is an XA transaction, the transaction's XA ID.
@@ -88,8 +88,10 @@ a pointer to the allocated statistics structure is copied.
 </dl>
 <h3>Errors</h3>
 <p>The DbEnv::txn_stat method
-may fail and throw <a href="../api_cxx/except_class.html">DbException</a> or return a non-zero error
-for the following conditions:</p>
+may fail and throw
+<a href="../api_cxx/except_class.html">DbException</a>,
+encapsulating one of the following non-zero errors, or return one of
+the following non-zero errors:</p>
 <p><dl compact>
 <p><dt>EINVAL<dd>An
 invalid flag value or parameter was specified.
@@ -101,7 +103,7 @@ invalid flag value or parameter was specified.
 <a href="../api_cxx/txn_list.html">Transaction Subsystem and Related Methods</a>
 </tt>
 <table width="100%"><tr><td><br></td><td align=right>
-<a href="../api_cxx/api_index.html"><img src="../images/api.gif" alt="API"></a><a href="../reftoc.html"><img src="../images/ref.gif" alt="Ref"></a>
+<a href="../api_cxx/api_index.html"><img src="../images/api.gif" alt="API"></a><a href="../ref/toc.html"><img src="../images/ref.gif" alt="Ref"></a>
 </td></tr></table>
 <p><font size=1><a href="../sleepycat/legal.html">Copyright (c) 1996-2003</a> <a href="http://www.sleepycat.com">Sleepycat Software, Inc.</a> - All rights reserved.</font>
 </body>

@@ -60,15 +60,15 @@ InputPath=.\Release\libdb_java42.dll
 SOURCE="$(InputPath)"
 
 "force_compilation.txt" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	mkdir "$(ProjDir)\Release\classes"
 	echo compiling Berkeley DB classes 
-	javac -g -d "$(ProjDir)/Release/classes" -classpath "$(ProjDir)/Release/classes" ..\java\src\com\sleepycat\db\*.java ..\java\src\com\sleepycat\db\release\*.java
+	mkdir "$(OUTDIR)\classes"
+	javac -g -d "$(OUTDIR)\classes" -classpath "$(OUTDIR)/classes" ..\java\src\com\sleepycat\db\*.java ..\java\src\com\sleepycat\db\$(OUTDIR)\*.java ..\java\src\com\sleepycat\bdb\bind\*.java ..\java\src\com\sleepycat\bdb\bind\serial\*.java ..\java\src\com\sleepycat\bdb\bind\tuple\*.java ..\java\src\com\sleepycat\bdb\*.java ..\java\src\com\sleepycat\bdb\collection\*.java ..\java\src\com\sleepycat\bdb\factory\*.java ..\java\src\com\sleepycat\bdb\util\*.java
 	echo compiling examples 
-	javac -g -d "$(ProjDir)/Release/classes" -classpath "$(ProjDir)/Release/classes" ..\examples_java\src\com\sleepycat\examples\db\*.java 
+	mkdir "$(OUTDIR)\classes.ex"
+	javac -g -d "$(OUTDIR)\classes.ex" -classpath "$(OUTDIR)\classes;$(OUTDIR)\classes.ex" ..\examples_java\src\com\sleepycat\examples\db\*.java ..\examples_java\src\com\sleepycat\examples\bdb\access\*.java ..\examples_java\src\com\sleepycat\examples\bdb\helloworld\*.java ..\examples_java\src\com\sleepycat\examples\bdb\shipment\basic\*.java ..\examples_java\src\com\sleepycat\examples\bdb\shipment\entity\*.java ..\examples_java\src\com\sleepycat\examples\bdb\shipment\tuple\*.java ..\examples_java\src\com\sleepycat\examples\bdb\shipment\sentity\*.java ..\examples_java\src\com\sleepycat\examples\bdb\shipment\marshal\*.java ..\examples_java\src\com\sleepycat\examples\bdb\shipment\factory\*.java
 	echo creating jar files 
-	cd "$(ProjDir)\Release\classes"
-	jar cf ../db.jar com/sleepycat/db/*.class 
-	jar cf ../dbexamples.jar com/sleepycat/examples/db/*.class 
+	jar cf "$(OUTDIR)\db.jar" -C "$(OUTDIR)\classes" .
+	jar cf "$(OUTDIR)\dbexamples.jar" -C "$(OUTDIR)\classes.ex" .
 	echo Java build finished 
 	
 # End Custom Build
@@ -105,17 +105,17 @@ InputPath=.\Debug\libdb_java42d.dll
 SOURCE="$(InputPath)"
 
 "force_compilation.txt" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	mkdir "$(ProjDir)\Debug\classes"
 	echo compiling Berkeley DB classes 
-	javac -g -d "$(ProjDir)/Debug/classes" -classpath "$(ProjDir)/Debug/classes" ..\java\src\com\sleepycat\db\*.java ..\java\src\com\sleepycat\db\debug\*.java
+	mkdir "$(OUTDIR)\classes"
+	javac -g -d "$(OUTDIR)\classes" -classpath "$(OUTDIR)/classes" ..\java\src\com\sleepycat\db\*.java ..\java\src\com\sleepycat\db\$(OUTDIR)\*.java ..\java\src\com\sleepycat\bdb\bind\*.java ..\java\src\com\sleepycat\bdb\bind\serial\*.java ..\java\src\com\sleepycat\bdb\bind\tuple\*.java ..\java\src\com\sleepycat\bdb\*.java ..\java\src\com\sleepycat\bdb\collection\*.java ..\java\src\com\sleepycat\bdb\factory\*.java ..\java\src\com\sleepycat\bdb\util\*.java
 	echo compiling examples 
-	javac -g -d "$(ProjDir)/Debug/classes" -classpath "$(ProjDir)/Debug/classes" ..\examples_java\src\com\sleepycat\examples\db\*.java 
+	mkdir "$(OUTDIR)\classes.ex"
+	javac -g -d "$(OUTDIR)\classes.ex" -classpath "$(OUTDIR)\classes;$(OUTDIR)\classes.ex" ..\examples_java\src\com\sleepycat\examples\db\*.java ..\examples_java\src\com\sleepycat\examples\bdb\access\*.java ..\examples_java\src\com\sleepycat\examples\bdb\helloworld\*.java ..\examples_java\src\com\sleepycat\examples\bdb\shipment\basic\*.java ..\examples_java\src\com\sleepycat\examples\bdb\shipment\entity\*.java ..\examples_java\src\com\sleepycat\examples\bdb\shipment\tuple\*.java ..\examples_java\src\com\sleepycat\examples\bdb\shipment\sentity\*.java ..\examples_java\src\com\sleepycat\examples\bdb\shipment\marshal\*.java ..\examples_java\src\com\sleepycat\examples\bdb\shipment\factory\*.java
 	echo creating jar files 
-	cd "$(ProjDir)\Debug\classes"
-	jar cf ../db.jar com/sleepycat/db/*.class 
-	jar cf ../dbexamples.jar com/sleepycat/examples/db/*.class 
+	jar cf "$(OUTDIR)\db.jar" -C "$(OUTDIR)\classes" .
+	jar cf "$(OUTDIR)\dbexamples.jar" -C "$(OUTDIR)\classes.ex" .
 	echo Java build finished 
-	
+
 # End Custom Build
 
 !ENDIF 

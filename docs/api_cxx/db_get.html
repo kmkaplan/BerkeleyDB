@@ -1,4 +1,4 @@
-<!--$Id: db_get.so,v 10.78 2003/11/08 19:17:18 bostic Exp $-->
+<!--$Id: db_get.so,v 10.79 2003/12/03 15:11:47 bostic Exp $-->
 <!--Copyright 1997-2003 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <!--See the file LICENSE for redistribution information.-->
@@ -16,7 +16,7 @@
 </td>
 <td align=right>
 <a href="../api_cxx/api_index.html"><img src="../images/api.gif" alt="API"></a>
-<a href="../reftoc.html"><img src="../images/ref.gif" alt="Ref"></a>
+<a href="../ref/toc.html"><img src="../images/ref.gif" alt="Ref"></a>
 </td></tr></table>
 <hr size=1 noshade>
 <tt>
@@ -163,8 +163,10 @@ the <b>txnid</b> parameter is a transaction handle returned from
 </dl>
 <h3>Errors</h3>
 <p>The Db::get method
-may fail and throw <a href="../api_cxx/except_class.html">DbException</a> or return a non-zero error
-for the following conditions:</p>
+may fail and throw
+<a href="../api_cxx/except_class.html">DbException</a>,
+encapsulating one of the following non-zero errors, or return one of
+the following non-zero errors:</p>
 <p><dl compact>
 <p><dt>DB_REP_HANDLE_DEAD<dd>The database handle has been invalidated because a replication election
 unrolled a committed transaction.
@@ -186,13 +188,12 @@ resolve a deadlock, the Db::get method will fail and
 either return <a href="../ref/program/errorret.html#DB_LOCK_DEADLOCK">DB_LOCK_DEADLOCK</a> or
 throw a <a href="../api_cxx/deadlock_class.html">DbDeadlockException</a> exception.</p>
 <p>If a Berkeley DB Concurrent Data Store database environment configured for lock timeouts was unable
-to grant a lock in the allowed time, the
-Db::get method will fail and
+to grant a lock in the allowed time, the Db::get method will fail and
 either return <a href="../ref/program/errorret.html#DB_LOCK_NOTGRANTED">DB_LOCK_NOTGRANTED</a> or
 throw a <a href="../api_cxx/lockng_class.html">DbLockNotGrantedException</a> exception.</p>
 <p>If the DB_CONSUME_WAIT flag was specified, lock or transaction
-timers were configured and the lock could not be granted before the wait-time
-expired, the Db::get method will fail and
+timers were configured and the lock could not be granted before the wait-time expired,
+the Db::get method will fail and
 either return DB_LOCK_NOTGRANTED or
 throw a <a href="../api_cxx/lockng_class.html">DbLockNotGrantedException</a> exception.</p>
 <p>If the requested item could not be returned due to insufficient memory, the Db::get method will fail and
@@ -205,7 +206,7 @@ throw a <a href="../api_cxx/memp_class.html">DbMemoryException</a> exception.</p
 <a href="../api_cxx/db_list.html">Databases and Related Methods</a>
 </tt>
 <table width="100%"><tr><td><br></td><td align=right>
-<a href="../api_cxx/api_index.html"><img src="../images/api.gif" alt="API"></a><a href="../reftoc.html"><img src="../images/ref.gif" alt="Ref"></a>
+<a href="../api_cxx/api_index.html"><img src="../images/api.gif" alt="API"></a><a href="../ref/toc.html"><img src="../images/ref.gif" alt="Ref"></a>
 </td></tr></table>
 <p><font size=1><a href="../sleepycat/legal.html">Copyright (c) 1996-2003</a> <a href="http://www.sleepycat.com">Sleepycat Software, Inc.</a> - All rights reserved.</font>
 </body>

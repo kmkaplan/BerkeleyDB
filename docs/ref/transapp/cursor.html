@@ -11,7 +11,7 @@
 <body bgcolor=white>
 <table width="100%"><tr valign=top>
 <td><h3><dl><dt>Berkeley DB Reference Guide:<dd>Berkeley DB Transactional Data Store Applications</dl></h3></td>
-<td align=right><a href="../../ref/transapp/read.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/transapp/nested.html"><img src="../../images/next.gif" alt="Next"></a>
+<td align=right><a href="../transapp/read.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../toc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../transapp/nested.html"><img src="../../images/next.gif" alt="Next"></a>
 </td></tr></table>
 <p>
 <h3 align=center>Transactional cursors</h3>
@@ -111,7 +111,7 @@ retry:	/* Begin the transaction. */
 			dbenv-&gt;err(dbenv, t_ret, "DB_TXN-&gt;abort");
 			exit (1);
 		}
-		if (++fail == MAXIMUM_RETRY)
+		if (fail++ == MAXIMUM_RETRY)
 			return (ret);
 		goto retry;
 	}
@@ -144,7 +144,7 @@ retry:	/* Begin the transaction. */
 				dbenv-&gt;err(dbenv, t_ret, "DB_TXN-&gt;abort");
 				exit (1);
 			}
-			if (++fail == MAXIMUM_RETRY)
+			if (fail++ == MAXIMUM_RETRY)
 				return (ret);
 			goto retry;
 		}
@@ -162,7 +162,7 @@ retry:	/* Begin the transaction. */
 	}
 	return (0);
 }</b></pre></blockquote>
-<table width="100%"><tr><td><br></td><td align=right><a href="../../ref/transapp/read.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/transapp/nested.html"><img src="../../images/next.gif" alt="Next"></a>
+<table width="100%"><tr><td><br></td><td align=right><a href="../transapp/read.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../toc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../transapp/nested.html"><img src="../../images/next.gif" alt="Next"></a>
 </td></tr></table>
 <p><font size=1><a href="../../sleepycat/legal.html">Copyright (c) 1996-2003</a> <a href="http://www.sleepycat.com">Sleepycat Software, Inc.</a> - All rights reserved.</font>
 </body>

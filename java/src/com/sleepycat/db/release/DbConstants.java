@@ -148,7 +148,7 @@ class DbConstants
     static final int DB_VERIFY = 0x0000002;
     static final int DB_VERSION_MAJOR = 4;
     static final int DB_VERSION_MINOR = 2;
-    static final int DB_VERSION_PATCH = 50;
+    static final int DB_VERSION_PATCH = 52;
     static final int DB_WRITECURSOR = 35;
     static final int DB_XA_CREATE = 0x0000002;
     static final int DB_XIDDATASIZE = 128;

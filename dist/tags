@@ -3670,7 +3670,7 @@ __txn_discard	../txn/txn.c	/^__txn_discard(txnp, flags)$/
 __txn_discard_pp	../txn/txn.c	/^__txn_discard_pp(txnp, flags)$/
 __txn_discard_proc	../rpc_server/c/db_server_proc.c	/^__txn_discard_proc(txnpcl_id, flags, replyp)$/
 __txn_dispatch_undo	../txn/txn.c	/^__txn_dispatch_undo(dbenv, txnp, rdbt, key_lsn, tx/
-__txn_doevents	../txn/txn_util.c	/^__txn_doevents(dbenv, txn, is_commit, preprocess)$/
+__txn_doevents	../txn/txn_util.c	/^__txn_doevents(dbenv, txn, opcode, preprocess)$/
 __txn_end	../txn/txn.c	/^__txn_end(txnp, is_commit)$/
 __txn_findlastckp	../txn/txn_region.c	/^__txn_findlastckp(dbenv, lsnp)$/
 __txn_force_abort	../txn/txn.c	/^__txn_force_abort(dbenv, buffer)$/

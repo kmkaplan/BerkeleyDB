@@ -10,38 +10,27 @@
 package com.sleepycat.db;
 
 /**
- *  The locking interfaces for the Berkeley DB database environment are methods
- *  of the {@link com.sleepycat.db.DbEnv DbEnv} handle. The DbLock object is the
- *  handle for a single lock, and has no methods of its own.</p>
- *
+ *  The locking interfaces for the Berkeley DB database environment
+ *  are methods of the {@link com.sleepycat.db.DbEnv DbEnv} handle.
+ *  The DbLock object is the handle for a single lock, and has no
+ *  methods of its own.</p>
  */
 public class DbLock {
     private long swigCPtr;
-    /**
-     */
     protected boolean swigCMemOwn;
 
 
-    /**
-     *  Constructor for the DbLock object
-     *
-     */
     protected DbLock(long cPtr, boolean cMemoryOwn) {
         swigCMemOwn = cMemoryOwn;
         swigCPtr = cPtr;
     }
 
 
-    /**
-     *  Constructor for the DbLock object
-     */
     protected DbLock() {
         this(0, false);
     }
 
 
-    /**
-     */
     protected void finalize() {
         try {
             delete();
@@ -52,8 +41,6 @@ public class DbLock {
     }
 
 
-    /**
-     */
     void delete() {
         if (swigCPtr != 0 && swigCMemOwn) {
             db_javaJNI.delete_DbLock(swigCPtr);
@@ -63,11 +50,6 @@ public class DbLock {
     }
 
 
-    /**
-     *  Gets the cPtr attribute of the DbLock class
-     *
-     *@return      The cPtr value
-     */
     protected static long getCPtr(DbLock obj) {
         return (obj == null) ? 0 : obj.swigCPtr;
     }

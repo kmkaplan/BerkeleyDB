@@ -4,8 +4,8 @@
 package com.sleepycat.db;
 
 /**
- *  The DbLockStat object is used to return lock region statistics.</p>
- *
+ *  The DbLockStat object is used to return lock region statistics.
+ *  </p>
  */
 public class DbLockStat {
     /**
@@ -81,8 +81,8 @@ public class DbLockStat {
      */
     public int st_maxnobjects;
     /**
-     *  The total number of locks not immediately available due to conflicts.
-     *
+     *  The total number of locks not immediately available due to
+     *  conflicts.
      *</ul>
      *
      */
@@ -102,6 +102,7 @@ public class DbLockStat {
     /**
      *  The total number of lock requests failing because {@link
      *  com.sleepycat.db.Db#DB_LOCK_NOWAIT Db.DB_LOCK_NOWAIT} was set.
+     *
      *</ul>
      *
      */
@@ -131,23 +132,23 @@ public class DbLockStat {
      */
     public int st_txntimeout;
     /**
-     *  The number of transactions that have timed out. This value is also a
-     *  component of <b>st_ndeadlocks</b> , the total number of deadlocks
-     *  detected.
+     *  The number of transactions that have timed out. This value is
+     *  also a component of <b>st_ndeadlocks</b> , the total number of
+     *  deadlocks detected.
      *</ul>
      *
      */
     public int st_ntxntimeouts;
     /**
-     *  The number of times that a thread of control was forced to wait before
-     *  obtaining the region lock.
+     *  The number of times that a thread of control was forced to
+     *  wait before obtaining the region lock.
      *</ul>
      *
      */
     public int st_region_wait;
     /**
-     *  The number of times that a thread of control was able to obtain the
-     *  region lock without waiting.
+     *  The number of times that a thread of control was able to
+     *  obtain the region lock without waiting.
      *</ul>
      *
      */
@@ -161,10 +162,10 @@ public class DbLockStat {
 
 
     /**
-     *  Provide a string representation of all the fields contained within this
-     *  class.
+     *  Provide a string representation of all the fields contained
+     *  within this class.
      *
-     *@return    The string representation.
+     * @return    The string representation.
      */
     public String toString() {
         return "DbLockStat:"

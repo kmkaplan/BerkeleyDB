@@ -1,4 +1,4 @@
-<!--$Id: lock_vec.so,v 10.67 2003/11/19 04:09:04 bostic Exp $-->
+<!--$Id: lock_vec.so,v 10.68 2003/11/25 23:23:12 bostic Exp $-->
 <!--Copyright 1997-2003 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <!--See the file LICENSE for redistribution information.-->
@@ -16,7 +16,7 @@
 </td>
 <td align=right>
 <a href="../api_c/api_index.html"><img src="../images/api.gif" alt="API"></a>
-<a href="../reftoc.html"><img src="../images/ref.gif" alt="Ref"></a>
+<a href="../ref/toc.html"><img src="../images/ref.gif" alt="Ref"></a>
 </td></tr></table>
 <hr size=1 noshade>
 <tt>
@@ -76,7 +76,7 @@ this by declaring the structure external or static, or by calling
 <p><dt>lockop_t <a name="op">op</a>;<dd>The operation to be performed, which must be set to one of the
 following values:
 <p><dl compact>
-<p><dt><a name="DB_LOCK_GET">DB_LOCK_GET</a><dd>Get the lock defined by the values of the <b>mode</b> and <b>object</b>
+<p><dt><a name="DB_LOCK_GET">DB_LOCK_GET</a><dd>Get the lock defined by the values of the <b>mode</b> and <b>obj</b>
 structure fields, for the specified <b>locker</b>.  Upon return from
 DB_ENV-&gt;lock_vec, if the <b>lock</b> field is non-NULL, a reference
 to the acquired lock is stored there.  (This reference is invalidated
@@ -86,15 +86,15 @@ lock.)
 structure field overrides any previously specified timeout value for
 this lock.  A value of 0 turns off any previously specified timeout.
 <p><dt><a name="DB_LOCK_PUT">DB_LOCK_PUT</a><dd>The lock to which the <b>lock</b> structure field refers is released.
-The <b>locker</b> parameter, and <b>mode</b> and <b>object</b> fields
+The <b>locker</b> parameter, and <b>mode</b> and <b>obj</b> fields
 are ignored.
 <p><dt><a name="DB_LOCK_PUT_ALL">DB_LOCK_PUT_ALL</a><dd>All locks held by the specified <b>locker</b> are released.  The
-<b>lock</b>, <b>mode</b>, and <b>object</b> structure fields are
+<b>lock</b>, <b>mode</b>, and <b>obj</b> structure fields are
 ignored.  Locks acquired in operations performed by the current call to
 DB_ENV-&gt;lock_vec which appear before the DB_LOCK_PUT_ALL
 operation are released; those acquired in operations appearing after
 the DB_LOCK_PUT_ALL operation are not released.
-<p><dt><a name="DB_LOCK_PUT_OBJ">DB_LOCK_PUT_OBJ</a><dd>All locks held on <b>object</b> are released.  The <b>locker</b>
+<p><dt><a name="DB_LOCK_PUT_OBJ">DB_LOCK_PUT_OBJ</a><dd>All locks held on <b>obj</b> are released.  The <b>locker</b>
 parameter and the <b>lock</b> and <b>mode</b> structure fields are
 ignored.  Locks acquired in operations performed by the current call to
 DB_ENV-&gt;lock_vec that appear before the DB_LOCK_PUT_OBJ
@@ -119,7 +119,7 @@ of the following values:
 <dt><a name="DB_LOCK_IWR">DB_LOCK_IWR</a><dd>intention to read and write (shared)
 </dl>
 <p>See <a href="../api_c/env_set_lk_conflicts.html">DB_ENV-&gt;set_lk_conflicts</a> and <a href="../ref/lock/stdmode.html">Standard Lock Modes</a> for more information on the lock conflict matrix.</p>
-<p><dt>const DBT <a name="object">object</a>;<dd>An untyped byte string that specifies the object to be locked or
+<p><dt>const DBT <a name="obj">obj</a>;<dd>An untyped byte string that specifies the object to be locked or
 released.  Applications using the locking subsystem directly while also
 doing locking via the Berkeley DB access methods must take care not to
 inadvertently lock objects that happen to be equal to the unique file
@@ -133,8 +133,7 @@ The <b>nlist</b> parameter specifies the number of elements in the
 </dl>
 <h3>Errors</h3>
 <p>The DB_ENV-&gt;lock_vec method
-may fail and return a non-zero error
-for the following conditions:</p>
+may fail and return one of the following non-zero errors:</p>
 <p><dl compact>
 <p><dt>DB_LOCK_DEADLOCK<dd>A transactional database environment operation was selected to resolve
 a deadlock.
@@ -158,7 +157,7 @@ invalid flag value or parameter was specified.
 <a href="../api_c/lock_list.html">Locking Subsystem and Related Methods</a>
 </tt>
 <table width="100%"><tr><td><br></td><td align=right>
-<a href="../api_c/api_index.html"><img src="../images/api.gif" alt="API"></a><a href="../reftoc.html"><img src="../images/ref.gif" alt="Ref"></a>
+<a href="../api_c/api_index.html"><img src="../images/api.gif" alt="API"></a><a href="../ref/toc.html"><img src="../images/ref.gif" alt="Ref"></a>
 </td></tr></table>
 <p><font size=1><a href="../sleepycat/legal.html">Copyright (c) 1996-2003</a> <a href="http://www.sleepycat.com">Sleepycat Software, Inc.</a> - All rights reserved.</font>
 </body>

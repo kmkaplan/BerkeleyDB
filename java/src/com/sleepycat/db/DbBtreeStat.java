@@ -4,71 +4,69 @@
 package com.sleepycat.db;
 
 /**
- *  The DbBtreeStat object is used to return Btree or Recno database statistics.
- *  </p>
- *
+ *  The DbBtreeStat object is used to return Btree or Recno database
+ *  statistics.</p>
  */
 public class DbBtreeStat {
     /**
-     *  Magic number that identifies the file as a Btree database. Returned if
-     *  Db.DB_FAST_STAT is set.
+     *  Magic number that identifies the file as a Btree database.
+     *  Returned if Db.DB_FAST_STAT is set.
      *</ul>
      *
      */
     public int bt_magic;
     /**
-     *  The version of the Btree database. Returned if Db.DB_FAST_STAT is set.
-     *
+     *  The version of the Btree database. Returned if Db.DB_FAST_STAT
+     *  is set.
      *</ul>
      *
      */
     public int bt_version;
-    /**
-     */
     public int bt_metaflags;
     /**
-     *  For the Btree Access Method, the number of unique keys in the database.
-     *  If Db.DB_FAST_STAT was specified and the database was created with the
-     *  {@link com.sleepycat.db.Db#DB_RECNUM Db.DB_RECNUM} flag, the count will
-     *  be exact, otherwise, the count will be the last saved value unless it
-     *  has never been calculated, in which case it will be 0. For the Recno
-     *  Access Method, the exact number of records in the database. Returned if
-     *  Db.DB_FAST_STAT is set.
+     *  For the Btree Access Method, the number of unique keys in the
+     *  database. If Db.DB_FAST_STAT was specified and the database
+     *  was created with the {@link com.sleepycat.db.Db#DB_RECNUM
+     *  Db.DB_RECNUM} flag, the count will be exact, otherwise, the
+     *  count will be the last saved value unless it has never been
+     *  calculated, in which case it will be 0. For the Recno Access
+     *  Method, the exact number of records in the database. Returned
+     *  if Db.DB_FAST_STAT is set.
      *</ul>
      *
      */
     public int bt_nkeys;
     /**
-     *  For the Btree Access Method, the number of key/data pairs in the
-     *  database. If Db.DB_FAST_STAT was specified the count will be the last
-     *  saved value unless it has never been calculated, in which case it will
-     *  be 0. For the Recno Access Method, the exact number of records in the
-     *  database. If the database has been configured to not renumber records
-     *  during deletion, the count of records will only reflect undeleted
-     *  records. Returned if Db.DB_FAST_STAT is set.
+     *  For the Btree Access Method, the number of key/data pairs in
+     *  the database. If Db.DB_FAST_STAT was specified the count will
+     *  be the last saved value unless it has never been calculated,
+     *  in which case it will be 0. For the Recno Access Method, the
+     *  exact number of records in the database. If the database has
+     *  been configured to not renumber records during deletion, the
+     *  count of records will only reflect undeleted records. Returned
+     *  if Db.DB_FAST_STAT is set.
      *</ul>
      *
      */
     public int bt_ndata;
     /**
-     *  Underlying database page size, in bytes. Returned if Db.DB_FAST_STAT is
-     *  set.
+     *  Underlying database page size, in bytes. Returned if
+     *  Db.DB_FAST_STAT is set.
      *</ul>
      *
      */
     public int bt_pagesize;
-    /**
-     */
     public int bt_maxkey;
     /**
      *  The minimum keys per page. Returned if Db.DB_FAST_STAT is set.
+     *
      *</ul>
      *
      */
     public int bt_minkey;
     /**
-     *  The length of fixed-length records. Returned if Db.DB_FAST_STAT is set.
-     *
+     *  The length of fixed-length records. Returned if
+     *  Db.DB_FAST_STAT is set.
      *</ul>
      *
      */
@@ -143,10 +141,10 @@ public class DbBtreeStat {
 
 
     /**
-     *  Provide a string representation of all the fields contained within this
-     *  class.
+     *  Provide a string representation of all the fields contained
+     *  within this class.
      *
-     *@return    The string representation.
+     * @return    The string representation.
      */
     public String toString() {
         return "DbBtreeStat:"

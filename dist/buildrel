@@ -1,4 +1,4 @@
-# $Id: buildrel,v 1.53 2003/11/21 03:19:12 bostic Exp $
+# $Id: buildrel,v 1.57 2003/11/28 19:21:02 bostic Exp $
 #
 # Build the distribution package.
 #
@@ -18,6 +18,7 @@ echo "Version: $VERSION"
 cd $D && cvs -q update
 
 # Build the documentation.
+cd db.docs && cvs -q update
 cd db.docs && sh build ../db.rel clean && sh build ../db.rel |& sed '/.html$/d'
 cd db.docs && sh build ../db.rel javadoc
 
@@ -37,6 +38,12 @@ cd $D && cvs -q status | \
 # Copy the already-built documentation into place
 rm -rf $R/docs && cp -r $D/docs $R/docs
 
+# Remove source directories we don't distribute.
+cd $R && rm -rf docs_src docs/api_java
+cd $R && rm -rf test/TODO test/upgrade test_perf test_purify
+cd $R && rm -rf test_server test_thread test_vxworks test_xa
+cd $R && rm -rf java/src/com/sleepycat/xa
+
 # Fix symbolic links and permissions.
 cd $R/dist && sh s_perm
 cd $R/dist && sh s_symlink
@@ -55,11 +62,8 @@ cd $R/build_run && make prefix=`pwd`/BDB install
 cd $R && rm -rf build_run && mkdir build_run
 cd $R/build_run && ../dist/configure --enable-smallbuild && make >& mklog
 
-# Clean up the tree.
-cd $R && rm -rf build_run docs_src docs/api_java
-cd $R && rm -rf test/TODO test/upgrade test_perf test_purify
-cd $R && rm -rf test_server test_thread test_vxworks test_xa
-cd $R && rm -rf java/src/com/sleepycat/xa
+# Remove the build directory
+cd $R && rm -rf build_run
 
 # ACQUIRE ROOT PRIVILEGES
 cd $R && find . -type d | xargs chmod 775
@@ -96,11 +100,11 @@ setenv T "$R/../db-$VERSION.NC.tar.gz"
 cd $RNC/.. && tar cf - db-$VERSION.NC | gzip --best > $T
 chmod 444 $T
 
-# Remove symbolic links to tags files.  They're large and we don't want
-# to store real symbolic links in the zip archive for portability reasons.
+# Remove tags files.  They're large and we don't want to store symbolic links
+# in the zip archive for portability reasons.
 # ACQUIRE ROOT PRIVILEGES
-cd $R && rm -f `find . -type l -name 'tags'`
-cd $RNC && rm -f `find . -type l -name 'tags'`
+cd $R && rm -f `find . -name 'tags'`
+cd $RNC && rm -f `find . -name 'tags'`
 # DISCARD ROOT PRIVILEGES
 
 # Create the crypto zip archive release.

@@ -4,13 +4,10 @@
 package com.sleepycat.db;
 
 /**
- *  The DbTxnStat object is used to return transaction subsystem statistics.</p>
- *
+ *  The DbTxnStat object is used to return transaction subsystem
+ *  statistics.</p>
  */
 public class DbTxnStat {
-    /**
-     *
-     */
     public static class Active {
         /**
          *  The transaction ID of the transaction.
@@ -19,15 +16,15 @@ public class DbTxnStat {
          */
         public int txnid;
         /**
-         *  The transaction ID of the parent transaction (or 0, if no parent).
-         *
+         *  The transaction ID of the parent transaction (or 0, if no
+         *  parent).
          *</ul>
          *
          */
         public int parentid;
         /**
-         *  The current log sequence number when the transaction was begun.
-         *
+         *  The current log sequence number when the transaction was
+         *  begun.
          *</ul>
          *
          */
@@ -40,8 +37,8 @@ public class DbTxnStat {
          */
         public int xa_status;
         /**
-         *  If the transaction is an XA transaction, the transaction's XA ID.
-         *
+         *  If the transaction is an XA transaction, the transaction's
+         *  XA ID.
          *</ul>
          *
          */
@@ -49,10 +46,10 @@ public class DbTxnStat {
 
 
         /**
-         *  Provide a string representation of all the fields contained within
-         *  this class.
+         *  Provide a string representation of all the fields
+         *  contained within this class.
          *
-         *@return    The string representation.
+         * @return    The string representation.
          */
         public String toString() {
             return "Active:"
@@ -73,9 +70,9 @@ public class DbTxnStat {
      */
     public DbLsn st_last_ckp;
     /**
-     *  The time the last completed checkpoint finished (as the number of
-     *  seconds since the Epoch, returned by the IEEE/ANSI Std 1003.1 (POSIX)
-     *  <b>time</b> function).
+     *  The time the last completed checkpoint finished (as the number
+     *  of seconds since the Epoch, returned by the IEEE/ANSI Std
+     *  1003.1 (POSIX) <b>time</b> function).
      *</ul>
      *
      */
@@ -124,23 +121,22 @@ public class DbTxnStat {
     public int st_nrestores;
     /**
      *  The maximum number of active transactions at any one time.
+     *
      *</ul>
      *
      */
     public int st_maxnactive;
-    /**
-     */
     public Active st_txnarray[];
     /**
-     *  The number of times that a thread of control was forced to wait before
-     *  obtaining the region lock.
+     *  The number of times that a thread of control was forced to
+     *  wait before obtaining the region lock.
      *</ul>
      *
      */
     public int st_region_wait;
     /**
-     *  The number of times that a thread of control was able to obtain the
-     *  region lock without waiting.
+     *  The number of times that a thread of control was able to
+     *  obtain the region lock without waiting.
      *</ul>
      *
      */
@@ -154,10 +150,10 @@ public class DbTxnStat {
 
 
     /**
-     *  Provide a string representation of all the fields contained within this
-     *  class.
+     *  Provide a string representation of all the fields contained
+     *  within this class.
      *
-     *@return    The string representation.
+     * @return    The string representation.
      */
     public String toString() {
         return "DbTxnStat:"
