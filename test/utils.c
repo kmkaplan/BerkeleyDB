@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)utils.c	10.29 (Sleepycat) 11/9/97";
+static const char sccsid[] = "@(#)utils.c	10.45 (Sleepycat) 5/3/98";
 #endif /* not lint */
 
 /*
@@ -21,10 +21,8 @@ static const char sccsid[] = "@(#)utils.c	10.29 (Sleepycat) 11/9/97";
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #include <errno.h>
-#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -70,7 +68,7 @@ dbopen_cmd(notused, interp, argc, argv)
 {
 	static int db_number = 0;
 	static struct {
-		char *str;
+		const char *str;
 		DBTYPE type;
 	} list[] = {
 		{"DB_UNKNOWN",	DB_UNKNOWN},
@@ -95,7 +93,8 @@ dbopen_cmd(notused, interp, argc, argv)
 	DBTYPE type;
 	DB_ENV *env;
 	DB_INFO *openinfo;
-	int mode, flags, ret;
+	u_int32_t flags;
+	int mode, ret, tclint;
 	char dbname[50], *name;
 
 	notused = NULL;
@@ -104,10 +103,12 @@ dbopen_cmd(notused, interp, argc, argv)
 	USAGE_GE(argc, 5, DBOPEN_USAGE, DO_INFO);
 
 	/* Check flags and mode. */
-	if ((Tcl_GetInt(interp, argv[2], &flags) != TCL_OK) ||
-	    (Tcl_GetInt(interp, argv[3], &mode) != TCL_OK)) {
-		Tcl_AppendResult(interp, "\nUsage: ", DBOPEN_USAGE,
-		    DB_INFO_FLAGS, NULL);
+	if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK)
+		goto usage;
+	flags = (u_int32_t)tclint;
+	if (Tcl_GetInt(interp, argv[3], &mode) != TCL_OK) {
+usage:		Tcl_AppendResult(interp,
+		    "\nUsage: ", DBOPEN_USAGE, DB_INFO_FLAGS, NULL);
 		return (TCL_OK);
 	}
 
@@ -117,7 +118,7 @@ dbopen_cmd(notused, interp, argc, argv)
 	process_env_options(interp, argc - 5, &argv[5], &env);
 
 	/* Figure out type. */
-	type = DB_HASH;				/* XXX: Shut the compiler up. */
+	COMPQUIET(type, DB_HASH);
 	for (lp = list; lp->str != NULL; ++lp)
 		if (strcmp(argv[4], lp->str) == 0) {
 			type = lp->type;
@@ -172,10 +173,11 @@ process_am_options(interp, argc, argv, openinfo)
 	DB_INFO **openinfo;
 {
 	DB_INFO *oi;
-	int err, ival;
+	int err, tclint;
 	char *option;
 
-	option = NULL;				/* XXX: Shut the compiler up. */
+	COMPQUIET(option, NULL);
+
 	err = TCL_OK;
 	oi = (DB_INFO *)calloc(sizeof(DB_INFO), 1);
 
@@ -191,31 +193,31 @@ process_am_options(interp, argc, argv, openinfo)
 
 		if (strcmp(option, "flags") == 0) {
 	/* Contains flags for all access methods */
-	    		if ((err = Tcl_GetInt(interp,
-	    		    argv[1], (int *)&ival)) != TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			oi->flags = ival;
+			oi->flags = (u_int32_t)tclint;
 		} else if (strcmp(option, "psize") == 0) {
-	    		if ((err = Tcl_GetInt(interp,
-	    		    argv[1], (int *)&ival)) != TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			oi->db_pagesize = ival;
+			oi->db_pagesize = (size_t)tclint;
 		} else if (strcmp(option, "order") == 0) {
-	    		if ((err = Tcl_GetInt(interp, argv[1],
-	    		    (int *)&ival)) != TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			oi->db_lorder = ival;
+			oi->db_lorder = (int)tclint;
 		} else if (strcmp(option, "cachesize") == 0) {
-	    		if ((err = Tcl_GetInt(interp, argv[1], &ival)) !=
-	    		    TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			oi->db_cachesize = (size_t)ival;
+			oi->db_cachesize = (size_t)tclint;
 		} else if (strcmp(option, "minkey") == 0) {
 	/* Btree flags */
-	    		if ((err = Tcl_GetInt(interp,
-	    		    argv[1], (int *)&ival)) != TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			oi->bt_minkey = ival;
+			oi->bt_minkey = (u_int32_t)tclint;
 		} else if (strcmp(option, "compare") == 0) {
 			/* Not sure how to handle this. */
 			err = TCL_ERROR;
@@ -224,20 +226,20 @@ process_am_options(interp, argc, argv, openinfo)
 			err = TCL_ERROR;
 		} else if (strcmp(option, "ffactor") == 0) {
 	/* Hash flags */
-	    		if ((err = Tcl_GetInt(interp,
-	    		    argv[1], (int *)&ival)) != TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			oi->h_ffactor = ival;
+			oi->h_ffactor = (u_int32_t)tclint;
 		} else if (strcmp(option, "nelem") == 0) {
-	    		if ((err = Tcl_GetInt(interp,
-	    		    argv[1], (int *)&ival)) != TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			oi->h_nelem = ival;
+			oi->h_nelem = (u_int32_t)tclint;
 		} else if (strcmp(option, "hash") == 0) {
-	    		if ((err = Tcl_GetInt(interp, argv[1], (int *)&ival))
-	    		    != TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			switch (ival) {
+			switch (tclint) {
 				case 2: oi->h_hash = __ham_func2; break;
 				case 3: oi->h_hash = __ham_func3; break;
 				case 4: oi->h_hash = __ham_func4; break;
@@ -249,20 +251,20 @@ process_am_options(interp, argc, argv, openinfo)
 			}
 		} else if (strcmp(option, "recdelim") == 0) {
 	/* Recno flags */
-	    		if ((err = Tcl_GetInt(interp,
-	    		    argv[1], (int *)&ival)) != TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			oi->re_delim = ival;
+			oi->re_delim = (int)tclint;
 		} else if (strcmp(option, "recpad") == 0) {
-	    		if ((err = Tcl_GetInt(interp,
-	    		    argv[1], (int *)&ival)) != TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			oi->re_pad = ival;
+			oi->re_pad = (int)tclint;
 		} else if (strcmp(option, "reclen") == 0) {
-	    		if ((err = Tcl_GetInt(interp,
-	    		    argv[1], (int *)&ival)) != TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			oi->re_len = (u_int32_t)ival;
+			oi->re_len = (u_int32_t)tclint;
 		} else if (strcmp(option, "recsrc") == 0)
 			oi->re_source = (char *)strdup(argv[1]);
 
@@ -270,8 +272,8 @@ process_am_options(interp, argc, argv, openinfo)
 		argv += 2;
 	}
 	if (err != TCL_OK) {
-		Tcl_AppendResult(interp, "\nInvalid ", option, " value: ",
-		    argv[1], "\n", NULL);
+		Tcl_AppendResult(interp,
+		    "\nInvalid ", option, " value: ", argv[1], "\n", NULL);
 		free(oi);
 		oi = NULL;
 	}
@@ -293,15 +295,15 @@ process_env_options(interp, argc, argv, envinfo)
 {
 	DB_ENV *env;
 	Tcl_CmdInfo info;
-	int err, ival, nconf;
 	u_int32_t flags;
+	int err, nconf, tclint;
 	char *option, *db_home, **config;
 
+	COMPQUIET(option, NULL);
 	err = TCL_OK;
 	flags = 0;
 	db_home = Tcl_GetVar(interp, "testdir", 0);
 	config = NULL;
-	option = NULL;				/* XXX: Shut the compiler up. */
 
 	env = (DB_ENV *)calloc(sizeof(DB_ENV), 1);
 	while (argc > 1) {
@@ -327,10 +329,10 @@ process_env_options(interp, argc, argv, envinfo)
 			return (TCL_OK);
 		} else if (strcmp(option, "dbflags") == 0) {
 	/* db_appinit parameters */
-	    		if ((err = Tcl_GetInt(interp,
-	    		    argv[1], (int *)&ival)) != TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			flags = ival;
+			flags = (u_int32_t)tclint;
 		} else if (strcmp(option, "dbhome") == 0) {
 			db_home = argv[1];
 		} else if (strcmp(option, "dbconfig") == 0) {
@@ -339,42 +341,95 @@ process_env_options(interp, argc, argv, envinfo)
 				break;
 		} else if (strcmp(option, "maxlocks") == 0) {
 	/* Lock flags */
-	    		if ((err = Tcl_GetInt(interp, argv[1], &ival)) !=
-	    		    TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			env->lk_max = ival;
+			env->lk_max = (u_int32_t)tclint;
 		} else if (strcmp(option, "nmodes") == 0) {
-	    		if ((err = Tcl_GetInt(interp, argv[1], &ival)) !=
-	    		    TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			env->lk_modes = ival;
+			env->lk_modes = (u_int32_t)tclint;
 		} else if (strcmp(option, "detect") == 0) {
-	    		if ((err = Tcl_GetInt(interp, argv[1], &ival)) !=
-	    		    TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			env->lk_detect = ival;
+			env->lk_detect = (u_int32_t)tclint;
 		} else if (strcmp(option, "conflicts") == 0) {
 			env->lk_conflicts = list_to_numarray(interp, argv[1]);
 			if (env->lk_conflicts == NULL)
 				break;
 		} else if (strcmp(option, "maxsize") == 0) {
 	/* Log flags */
-	    		if ((err = Tcl_GetInt(interp, argv[1], &ival)) !=
-	    		    TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			env->lg_max = (u_int32_t)ival;
+			env->lg_max = (u_int32_t)tclint;
 		} else if (strcmp(option, "cachesize") == 0) {
 	/* Mpool flags */
-	    		if ((err = Tcl_GetInt(interp, argv[1], &ival)) !=
-	    		    TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			env->mp_size = (size_t)ival;
+			env->mp_size = (size_t)tclint;
 		} else if (strcmp(option, "maxtxns") == 0) {
 	/* Txn flags */
-	    		if ((err = Tcl_GetInt(interp, argv[1], &ival)) !=
-	    		    TCL_OK)
+	    		if ((err =
+	    		    Tcl_GetInt(interp, argv[1], &tclint)) != TCL_OK)
 				break;
-			env->tx_max = ival;
+			env->tx_max = (u_int32_t)tclint;
+		} else if (strcmp(option, "rinit") == 0) {
+	/* Region init */
+			if ((err = db_value_set(1, DB_REGION_INIT)) != 0) {
+				if (err == EINVAL) {
+					Tcl_SetResult(interp,
+					    "EINVAL", TCL_STATIC);
+					return (TCL_ERROR);
+				}
+				Tcl_SetResult(interp,
+				    "env/rinit:", TCL_STATIC);
+				errno = err;
+				Tcl_AppendResult(interp,
+				    Tcl_PosixError(interp), 0);
+				return (TCL_ERROR);
+			}
+		} else if (strcmp(option, "shmem") == 0) {
+	/* Shared memory specification */
+			if (strcmp(argv[1], "anon") == 0) {
+				if ((err =
+				    db_value_set(1, DB_REGION_ANON)) != 0) {
+					if (err == EINVAL) {
+						Tcl_SetResult(interp,
+						    "EINVAL", TCL_STATIC);
+						return (TCL_ERROR);
+					}
+					Tcl_SetResult(interp,
+					    "env/shmem:", TCL_STATIC);
+					errno = err;
+					Tcl_AppendResult(interp,
+					    Tcl_PosixError(interp), 0);
+					return (TCL_ERROR);
+				}
+			} else if (strcmp(argv[1], "named") == 0) {
+				if ((err =
+				    db_value_set(1, DB_REGION_NAME)) != 0) {
+					if (err == EINVAL) {
+						Tcl_SetResult(interp,
+						    "EINVAL", TCL_STATIC);
+						return (TCL_ERROR);
+					}
+					Tcl_SetResult(interp,
+					    "env/shmem:", TCL_STATIC);
+					errno = err;
+					Tcl_AppendResult(interp,
+					    Tcl_PosixError(interp), 0);
+					return (TCL_ERROR);
+				}
+			} else {
+				Tcl_SetResult(interp,
+				    "Invalid shmem option", TCL_STATIC);
+				Tcl_AppendResult(interp, argv[1], NULL);
+				return (TCL_OK);
+			}
 		}
 
 		argc -= 2;
@@ -439,7 +494,8 @@ dbwidget_cmd(cd_dbp, interp, argc, argv)
 	DB_ENV *env;
 	DB_TXN *txnid;
 	Tcl_CmdInfo info;
-	int fd, flags, ret;
+	u_int32_t flags;
+	int fd, ret, tclint;
 	char cursname[128];
 
 	dbp = (DB *)cd_dbp;
@@ -519,7 +575,7 @@ dbwidget_cmd(cd_dbp, interp, argc, argv)
 		return (db_getbin_cmd(interp, argc, argv, dbp));
 	} else if (strcmp(argv[1], "locker") == 0) {
 		USAGE(argc, 2, DBLOCKER_USAGE, 0);
-		sprintf(cursname, "%d", dbp->locker);
+		sprintf(cursname, "%lu", (u_long)dbp->locker);
 		Tcl_SetResult(interp, cursname, TCL_VOLATILE);
 		return (TCL_OK);
 	} else if (strcmp(argv[1], "put") == 0) {
@@ -534,8 +590,9 @@ dbwidget_cmd(cd_dbp, interp, argc, argv)
 		return (db_put_cmd(interp, argc, argv, dbp));
 	} else if (strcmp(argv[1], "sync") == 0) {
 		USAGE(argc, 3, DBSYNC_USAGE, 0);
-		if (Tcl_GetInt(interp, argv[2], &flags) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK)
 			return (TCL_ERROR);
+		flags = (u_int32_t)tclint;
 		debug_check();
 		if ((ret = dbp->sync(dbp, flags)) < 0)
 			Tcl_SetResult(interp, "1", TCL_STATIC);
@@ -605,25 +662,28 @@ db_del_cmd(interp, argc, argv, dbp)
 	DBT key;
 	DB_TXN *txnid;
 	Tcl_CmdInfo info;
-	int ret, flags, rkey;
+	db_recno_t rkey;
+	u_int32_t flags;
+	int ret, tclint;
 
 	USAGE(argc, 5, DBDEL_USAGE, 0);
 
-	if (Tcl_GetInt(interp, argv[4], &flags) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[4], &tclint) != TCL_OK) {
 		Tcl_AppendResult(interp, "\n", DBDEL_USAGE, NULL);
 		return (TCL_ERROR);
 	}
+	flags = (u_int32_t)tclint;
 
+	memset(&key, 0, sizeof(key));
 	if (dbp->type == DB_RECNO) {
-		if (Tcl_GetInt(interp, argv[3], &rkey) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK)
 			return (TCL_ERROR);
+		rkey = (db_recno_t)tclint;
 		key.data = &rkey;
-		key.size = sizeof(int);
-		key.flags = 0;
+		key.size = sizeof(db_recno_t);
 	} else {
 		key.data = argv[3];
 		key.size = strlen(argv[3]) + 1;		/* Add NULL on end. */
-		key.flags = 0;
 	}
 
 	if (argv[2][0] == '0' && argv[2][1] == '\0')
@@ -664,36 +724,42 @@ db_get_cmd(interp, argc, argv, dbp)
 	DBT data, key;
 	DB_TXN *txnid;
 	Tcl_CmdInfo info;
-	int flags, ikey, ret;
+	db_recno_t ikey;
+	u_int32_t flags;
+	int ret, tclint;
 
 	USAGE_GE(argc, 5, DBGET_USAGE, 0);
 
-	if (Tcl_GetInt(interp, argv[4], &flags) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[4], &tclint) != TCL_OK) {
 		Tcl_AppendResult(interp, "\n", DBGET_USAGE, NULL);
 		return (TCL_ERROR);
 	}
+	flags = (u_int32_t)tclint;
 
+	memset(&key, 0, sizeof(key));
 	if (dbp->type == DB_RECNO || strcmp(argv[1], "getn") == 0) {
-		if (Tcl_GetInt(interp, argv[3], &ikey) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK)
 			return (TCL_ERROR);
+		ikey = (db_recno_t)tclint;
 		key.data = &ikey;
-		key.size = sizeof(int);
-		key.flags = 0;
+		key.size = sizeof(db_recno_t);
 	} else {
 		key.data = argv[3];
 		key.size = strlen(argv[3]) + 1;	/* Add Null on end */
-		key.flags = 0;
 	}
 
+	memset(&data, 0, sizeof(data));
 	if (flags == DB_DBT_PARTIAL) {
 		USAGE(argc, 7, DBGET_USAGE, 0);
-		if (Tcl_GetInt(interp, argv[5], (int *)&data.doff) != TCL_OK ||
-		    Tcl_GetInt(interp, argv[6], (int *)&data.dlen) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[5], &tclint) != TCL_OK)
 			return (TCL_ERROR);
+		data.doff = (size_t)tclint;
+		if (Tcl_GetInt(interp, argv[6], &tclint) != TCL_OK)
+			return (TCL_ERROR);
+		data.dlen = (size_t)tclint;
 		data.flags = DB_DBT_PARTIAL;
 		flags = 0;
-	} else
-		data.flags = 0;
+	}
 
 	if (argv[2][0] == '0' && argv[2][1] == '\0')
 		txnid = NULL;
@@ -745,30 +811,34 @@ db_getbin_cmd(interp, argc, argv, dbp)
 	DBT data, key;
 	DB_TXN *txnid;
 	Tcl_CmdInfo info;
-	int flags, rkey, ret;
+	db_recno_t rkey;
+	u_int32_t flags;
+	int ret, tclint;
 
 	USAGE(argc, 6, DBGETBIN_USAGE, 0);
 
-	if (Tcl_GetInt(interp, argv[5], &flags) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[5], &tclint) != TCL_OK) {
 		Tcl_AppendResult(interp, "\n", DBGET_USAGE, NULL);
 		return (TCL_ERROR);
 	}
+	flags = (u_int32_t)tclint;
 
+	memset(&key, 0, sizeof(key));
 	if (strcmp(argv[1], "getbinkey") == 0) {
 		if (dbt_from_file(interp, argv[4], &key) != TCL_OK)
 			return (TCL_ERROR);
 	} else if (dbp->type == DB_RECNO) {
-		if (Tcl_GetInt(interp, argv[4], &rkey) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[4], &tclint) != TCL_OK)
 			return (TCL_ERROR);
+		rkey = (db_recno_t)tclint;
 		key.data = &rkey;
-		key.size = sizeof(int);
-		key.flags = 0;
+		key.size = sizeof(db_recno_t);
 	} else {
 		key.data = argv[4];
 		key.size = strlen(argv[4]) + 1;	/* Add Null on end */
-		key.flags = 0;
 	}
-	data.flags = 0;
+
+	memset(&data, 0, sizeof(data));
 	if (strcmp(argv[1], "getbinkey") != 0)
 		F_SET(&data, DB_DBT_MALLOC);
 
@@ -821,30 +891,34 @@ db_put_cmd(interp, argc, argv, dbp)
 	DBT data, key;
 	DB_TXN *txnid;
 	Tcl_CmdInfo info;
-	int flags, ikey, ret;
+	db_recno_t ikey;
+	u_int32_t flags;
+	int ret, tclint;
 	char numbuf[16];
 
 	USAGE_GE(argc, 6, DBPUT_USAGE, 0);
 
-	if (Tcl_GetInt(interp, argv[5], &flags) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[5], &tclint) != TCL_OK) {
 		Tcl_AppendResult(interp, "\n", DBPUT_USAGE, NULL);
 		return (TCL_ERROR);
 	}
+	flags = (u_int32_t)tclint;
 
+	memset(&key, 0, sizeof(key));
 	if (strcmp(argv[1], "putn") == 0 || dbp->type == DB_RECNO) {
-		if (Tcl_GetInt(interp, argv[3], &ikey) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK)
 			return (TCL_ERROR);
+		ikey = (db_recno_t)tclint;
 		key.data = &ikey;
-		key.size = sizeof(int);
-		key.flags = 0;
+		key.size = sizeof(db_recno_t);
 	} else {
 		key.data = argv[3];
 		key.size = strlen(argv[3]) + 1;	/* Add Null on end */
-		key.flags = 0;
 	}
+
+	memset(&data, 0, sizeof(data));
 	data.data = argv[4];
 	data.size = strlen(argv[4]) + (strcmp(argv[1], "put0") == 0 ? 0 : 1);
-	data.flags = 0;
 
 	/*
 	 * If the partial flag is set, then arguments 6 and 7 are the
@@ -852,9 +926,12 @@ db_put_cmd(interp, argc, argv, dbp)
 	 */
 	if (flags == DB_DBT_PARTIAL) {
 		USAGE_GE(argc, 8, DBPPUT_USAGE, 0);
-		if (Tcl_GetInt(interp, argv[6], (int *)&data.doff) != TCL_OK ||
-		    Tcl_GetInt(interp, argv[7], (int *)&data.dlen) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[6], &tclint) != TCL_OK)
 			return (TCL_ERROR);
+		data.doff = (size_t)tclint;
+		if (Tcl_GetInt(interp, argv[7], &tclint) != TCL_OK)
+			return (TCL_ERROR);
+		data.dlen = (size_t)tclint;
 		data.flags = DB_DBT_PARTIAL;
 		data.size--;			/* Remove the NULL */
 		flags = 0;
@@ -876,13 +953,13 @@ db_put_cmd(interp, argc, argv, dbp)
 
 	if ((ret = dbp->put(dbp, txnid, &key, &data, flags)) == 0) {
 		if (LF_ISSET(DB_APPEND)) {
-			if (key.size != sizeof(int)) {
+			if (key.size != sizeof(db_recno_t)) {
 				Tcl_SetResult(interp,
 				    "Error: key not integer", TCL_STATIC);
 				return (TCL_ERROR);
 			}
-			memcpy(&ikey, key.data, sizeof(int));
-			sprintf(numbuf, "%d", ikey);
+			memcpy(&ikey, key.data, sizeof(db_recno_t));
+			sprintf(numbuf, "%ld", (long)ikey);
 			Tcl_SetResult(interp, numbuf, TCL_VOLATILE);
 		} else {
 			Tcl_SetResult(interp, "0", TCL_STATIC);
@@ -914,23 +991,27 @@ db_putbin_cmd(interp, argc, argv, dbp)
 	DBT data, key;
 	DB_TXN *txnid;
 	Tcl_CmdInfo info;
-	int flags, rkey, ret;
+	db_recno_t rkey;
+	u_int32_t flags;
+	int ret, tclint;
 	void *p;
 
 	USAGE(argc, 6, DBPUTBIN_USAGE, 0);
 
-	if (Tcl_GetInt(interp, argv[5], &flags) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[5], &tclint) != TCL_OK) {
 		Tcl_AppendResult(interp, "\n", DBPUT_USAGE, NULL);
 		return (TCL_ERROR);
 	}
+	flags = (u_int32_t)tclint;
 
+	memset(&key, 0, sizeof(key));
+	memset(&data, 0, sizeof(data));
 	if (strcmp(argv[1], "putbinkey") == 0) {
 		/* Get data from file. */
 		if (dbt_from_file(interp, argv[3], &key) != TCL_OK)
 			return (TCL_ERROR);
 		data.data = argv[4];
 		data.size = strlen(argv[4]) + 1;	/* Add Null on end */
-		data.flags = 0;
 		p = key.data;
 	} else {
 		if (dbt_from_file(interp, argv[4], &data) != TCL_OK)
@@ -938,15 +1019,14 @@ db_putbin_cmd(interp, argc, argv, dbp)
 		p = data.data;
 
 		if (dbp->type == DB_RECNO) {
-			if (Tcl_GetInt(interp, argv[3], &rkey) != TCL_OK)
+			if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK)
 				return (TCL_ERROR);
+			rkey = (db_recno_t)tclint;
 			key.data = &rkey;
-			key.size = sizeof(int);
-			key.flags = 0;
+			key.size = sizeof(db_recno_t);
 		} else {
 			key.data = argv[3];
 			key.size = strlen(argv[3]) + 1;	/* Add Null on end */
-			key.flags = 0;
 		}
 	}
 
@@ -989,14 +1069,16 @@ dbc_del_cmd(interp, argc, argv, dbc)
 	char *argv[];
 	DBC *dbc;
 {
-	int flags, ret;
+	u_int32_t flags;
+	int ret, tclint;
 
 	USAGE(argc, 3, DBCDEL_USAGE, 0);
 
-	if (Tcl_GetInt(interp, argv[2], &flags) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK) {
 		Tcl_AppendResult(interp, "\n", DBCDEL_USAGE, NULL);
 		return (TCL_ERROR);
 	}
+	flags = (u_int32_t)tclint;
 
 	debug_check();
 
@@ -1020,59 +1102,65 @@ dbc_get_cmd(interp, argc, argv, dbc)
 	DBC *dbc;
 {
 	DBT data, key;
-	int flags, rkey, ret;
+	db_recno_t rkey;
+	u_int32_t flags;
+	int ret, tclint;
 	char numbuf[16];
 
 	USAGE_GE(argc, 4, DBCGET_USAGE, 0);
 
-	if (Tcl_GetInt(interp, argv[3], &flags) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK) {
 		Tcl_AppendResult(interp, "\n", DBCGET_USAGE, NULL);
 		return (TCL_ERROR);
 	}
+	flags = (u_int32_t)tclint;
 
+	memset(&key, 0, sizeof(key));
 	if (dbc->dbp->type == DB_RECNO || strcmp(argv[1], "getn") == 0) {
-		if (Tcl_GetInt(interp, argv[2], &rkey) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK)
 			return (TCL_ERROR);
+		rkey = (db_recno_t)tclint;
 		key.data = &rkey;
-		key.size = sizeof(int);
-		key.flags = 0;
+		key.size = sizeof(db_recno_t);
 	} else {
 		key.data = argv[2];
 		key.size = strlen(argv[2]) + 1;	/* Add Null on end */
-		key.flags = 0;
 	}
 
+	memset(&data, 0, sizeof(data));
 	if (LF_ISSET(DB_DBT_PARTIAL)) {
 		USAGE(argc, 6, DBCGET_USAGE, 0);
-		if (Tcl_GetInt(interp, argv[4], (int *)&data.doff) != TCL_OK ||
-		    Tcl_GetInt(interp, argv[5], (int *)&data.dlen) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[4], &tclint) != TCL_OK)
 			return (TCL_ERROR);
+		data.doff = (size_t)tclint;
+		if (Tcl_GetInt(interp, argv[5], &tclint) != TCL_OK)
+			return (TCL_ERROR);
+		data.dlen = (size_t)tclint;
 		data.flags = DB_DBT_PARTIAL;
 		LF_CLR(DB_DBT_PARTIAL);
-	} else
-		data.flags = 0;
+	}
 
 	debug_check();
 
 	if (F_ISSET(dbc->dbp, DB_AM_THREAD)) {
 		F_SET(&data, DB_DBT_MALLOC);
 		switch(flags) {
-			case DB_FIRST:
-			case DB_LAST:
-			case DB_NEXT:
-			case DB_PREV:
-			case DB_CURRENT:
-			case DB_SET_RANGE:
-			case DB_SET_RECNO:
-			case DB_GET_RECNO:
-				F_SET(&key, DB_DBT_MALLOC);
-				break;
-			/* case DB_SET: Do nothing */
+		case DB_FIRST:
+		case DB_LAST:
+		case DB_NEXT:
+		case DB_PREV:
+		case DB_CURRENT:
+		case DB_SET_RANGE:
+		case DB_SET_RECNO:
+		case DB_GET_RECNO:
+			F_SET(&key, DB_DBT_MALLOC);
+			break;
+		/* case DB_SET: Do nothing */
 		}
 	}
 	if ((ret = dbc->c_get(dbc, &key, &data, flags)) == 0) {
 		if (dbc->dbp->type == DB_RECNO) {
-			if (key.size != sizeof(int)) {
+			if (key.size != sizeof(db_recno_t)) {
 				Tcl_SetResult(interp,
 				    "Error: key not integer", TCL_STATIC);
 				if (F_ISSET(&data, DB_DBT_MALLOC))
@@ -1081,8 +1169,8 @@ dbc_get_cmd(interp, argc, argv, dbc)
 					free(&key.data);
 				return (TCL_ERROR);
 			}
-			memcpy(&rkey, key.data, sizeof(int));
-			sprintf(numbuf, "%d", rkey);
+			memcpy(&rkey, key.data, sizeof(db_recno_t));
+			sprintf(numbuf, "%ld", (long)rkey);
 			Tcl_SetResult(interp, numbuf, TCL_VOLATILE);
 		} else
 			Tcl_SetResult(interp, key.data, TCL_VOLATILE);
@@ -1113,37 +1201,36 @@ dbc_getbin_cmd(interp, argc, argv, dbc)
 	DBC *dbc;
 {
 	DBT data, key, *dbt;
-	int flags, ret, rkey;
+	db_recno_t rkey;
+	u_int32_t flags;
+	int ret, tclint;
 	char nbuf[32];
 
 	USAGE(argc, 5, DBCGET_USAGE, 0);
 
-	if (Tcl_GetInt(interp, argv[4], &flags) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[4], &tclint) != TCL_OK) {
 		Tcl_AppendResult(interp, "\n", DBCGET_USAGE, NULL);
 		return (TCL_ERROR);
 	}
+	flags = (u_int32_t)tclint;
 
-	if (flags == DB_SET || flags == DB_KEYFIRST || flags == DB_KEYLAST) {
+	memset(&key, 0, sizeof(key));
+	if (flags == DB_SET || flags == DB_KEYFIRST || flags == DB_KEYLAST)
 		if (strcmp(argv[1], "getbinkey") == 0) {
 			if (dbt_from_file(interp, argv[3], &key) != TCL_OK)
 				return (TCL_ERROR);
 		} else if (dbc->dbp->type == DB_RECNO) {
-			if (Tcl_GetInt(interp, argv[3], &rkey) != TCL_OK)
+			if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK)
 				return (TCL_ERROR);
+			rkey = (db_recno_t)tclint;
 			key.data = &rkey;
-			key.size = sizeof(int);
-			key.flags = 0;
+			key.size = sizeof(db_recno_t);
 		} else {
 			key.data = argv[3];
 			key.size = strlen(argv[3]) + 1;	/* Add Null on end */
-			key.flags = 0;
 		}
-	} else {
-		key.data = NULL;
-		key.size = 0;
-		key.flags = 0;
-	}
-	data.flags = 0;
+
+	memset(&data, 0, sizeof(data));
 	if (strcmp(argv[1], "getbinkey") != 0 && dbc->dbp->type != DB_RECNO)
 		F_SET(&data, DB_DBT_MALLOC);
 
@@ -1164,8 +1251,8 @@ dbc_getbin_cmd(interp, argc, argv, dbc)
 		Tcl_SetResult(interp, data.data, TCL_VOLATILE);
 	} else if (dbc->dbp->type == DB_RECNO) {
 		dbt = &data;
-		memcpy(&rkey, key.data, sizeof(int));
-		sprintf(nbuf, "%d", rkey);
+		memcpy(&rkey, key.data, sizeof(db_recno_t));
+		sprintf(nbuf, "%ld", (long)rkey);
 		Tcl_SetResult(interp, nbuf, TCL_VOLATILE);
 	} else {
 		dbt = &data;
@@ -1188,36 +1275,39 @@ dbc_put_cmd(interp, argc, argv, dbc)
 	DBC *dbc;
 {
 	DBT data, key;
-	int flags, ikey, ret;
+	db_recno_t ikey;
+	u_int32_t flags;
+	int ret, tclint;
 
 	USAGE(argc, 5, DBCPUT_USAGE, 0);
 
-	if (Tcl_GetInt(interp, argv[4], &flags) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[4], &tclint) != TCL_OK) {
 		Tcl_AppendResult(interp, "\n", DBCPUT_USAGE, NULL);
 		return (TCL_ERROR);
 	}
-
-	memset(&key, 0, sizeof(key));
+	flags = (u_int32_t)tclint;
 
 	/*
 	 * If this is a DB_CURRENT, we should never look at the key, so
 	 * send it a NULL.
 	 */
+	memset(&key, 0, sizeof(key));
 	if (flags != DB_CURRENT)
 		if (strcmp(argv[1], "putn") == 0 ||
 		    dbc->dbp->type == DB_RECNO) {
-			if (Tcl_GetInt(interp, argv[2], &ikey) != TCL_OK)
+			if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK)
 				return (TCL_ERROR);
+			ikey = (db_recno_t)tclint;
 			key.data = &ikey;
-			key.size = sizeof(int);
+			key.size = sizeof(db_recno_t);
 		} else {
 			key.data = argv[2];
 			key.size = strlen(argv[2]) + 1;	/* Add Null on end */
 		}
 
+	memset(&data, 0, sizeof(data));
 	data.data = argv[3];
 	data.size = strlen(argv[3]) + 1;
-	data.flags = 0;
 
 	debug_check();
 
@@ -1254,9 +1344,17 @@ list_to_numarray(interp, str)
 			free (nums);
 			return (NULL);
 		}
-		*np = (u_int8_t) tmp;
+		*np = (u_int8_t)tmp;		/* XXX: Possible overflow. */
 	}
+#ifndef _WIN32
+	/*
+	 * XXX
+	 * This currently traps on Windows/NT, probably due to a mismatch of
+	 * malloc/free implementations between the TCL library and this module.
+	 * Sidestep the issue for now.
+	 */
 	free(argv);
+#endif
 	return (nums);
 }
 
@@ -1315,10 +1413,8 @@ debug_check()
 		fflush(stdout);
 	}
 
-#ifdef DEBUG
 	if (debug_on++ == debug_test || debug_stop)
 		__db_loadme();
-#endif
 }
 
 int
@@ -1327,26 +1423,31 @@ dbt_from_file(interp, file, dbt)
 	char *file;
 	DBT *dbt;
 {
-	off_t size;
-	size_t len;
+	size_t len, size;
 	ssize_t nr;
+	u_int32_t mbytes, bytes;
 	int fd;
 
 	/* Get data from file. */
 	fd = -1;
 	len = strlen(file) + 1;
-	errno = 0;
-	if ((errno = __db_open(file, DB_RDONLY, DB_RDONLY, 0, &fd)) != 0 ||
-	    (errno = __db_ioinfo(file, fd, &size, NULL)) != 0 ||
-	    (dbt->data = (void *)malloc((size_t)size + len)) == NULL ||
-	    (errno = __db_read(fd,
-	    ((u_int8_t *)dbt->data) + len, (size_t)size, &nr) != 0) ||
-	    nr != size ||
-	    (errno =__db_close(fd)) != 0) {
-		if (errno == 0)
-			errno = EIO;
-		if (fd != -1)
-			close (fd);
+	if ((errno = __db_open(file, DB_RDONLY, DB_RDONLY, 0, &fd)) != 0)
+		goto err;
+	if ((errno = __db_ioinfo(file, fd, &mbytes, &bytes, NULL)) != 0)
+		goto err;
+	size = mbytes * MEGABYTE + bytes;
+	if ((dbt->data = (void *)malloc(size + len)) == NULL)
+		goto err;
+	if ((errno =
+	    __db_read(fd, ((u_int8_t *)dbt->data) + len, size, &nr)) != 0)
+		goto err;
+	if (nr != (ssize_t)size) {
+		errno = EIO;
+		goto err;
+	}
+	if ((errno =__db_close(fd)) != 0) {
+err:		if (fd != -1)
+			close(fd);
 		Tcl_SetResult(interp, Tcl_PosixError(interp), TCL_STATIC);
 		return (TCL_ERROR);
 	}
@@ -1372,7 +1473,8 @@ dbt_to_file(interp, file, dbt)
 	char *p;
 
 	/* Got key; write it to file. */
-	for (len = 1, p = (char *)(dbt->data); *p != '\0'; len++, p++);
+	for (len = 1, p = (char *)(dbt->data); *p != '\0'; len++, p++)
+		;
 	p++;
 
 	fd = -1;
@@ -1402,7 +1504,8 @@ set_get_result(interp, dbt)
 	u_int8_t *p;
 	char numbuf[32], sprbuf[128], *outbuf;
 
-	for (i = 0, p = dbt->data; i < dbt->size && *p == '\0'; i++, p++);
+	for (i = 0, p = dbt->data; i < dbt->size && *p == '\0'; i++, p++)
+		;
 	/*
 	 * If this is a partial get, we need to make sure that the last
 	 * character is a NUL so that tcl can handle it.
@@ -1425,7 +1528,7 @@ set_get_result(interp, dbt)
 		if (outbuf != dbt->data)
 			free(outbuf);
 	} else {
-		sprintf(&numbuf[0], "%d", i);
+		sprintf(&numbuf[0], "%lu", (u_long)i);
 		sprintf(&sprbuf[0], " %%.%ds", dbt->size - i);
 		outbuf = (char *)malloc(dbt->size - i + 5);
 		sprintf(outbuf, sprbuf, p);
@@ -1496,7 +1599,7 @@ randomint_cmd(notused, interp, argc, argv)
 #endif
 	t = rand();
 	if (t > RAND_MAX)
-		printf("Max random is higher than %d\n", RAND_MAX);
+		printf("Max random is higher than %ld\n", (long)RAND_MAX);
 	ret = (int)(((double)t / ((double)(RAND_MAX) + 1)) * (hi - lo + 1));
 	ret += lo;
 	sprintf(retbuf, "%d", ret);

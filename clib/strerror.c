@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -40,7 +40,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)strerror.c	10.1 (Sleepycat) 4/12/97";
+static const char sccsid[] = "@(#)strerror.c	10.3 (Sleepycat) 4/10/98";
 #endif /* not lint */
 
 /*
@@ -60,9 +60,8 @@ strerror(num)
 #undef	UPREFIX
 #define	UPREFIX	"Unknown error: "
 	static char ebuf[40] = UPREFIX;		/* 64-bit number + slop */
-	register unsigned int errnum;
-	register char *p, *t;
-	char tmp[40];
+	int errnum;
+	char *p, *t, tmp[40];
 
 	errnum = num;				/* convert to unsigned */
 	if (errnum < sys_nerr)

@@ -2,7 +2,7 @@
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1996, 1997
+.\" Copyright (c) 1996, 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
 .\" Copyright (c) 1994, 1995
@@ -36,15 +36,15 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	@(#)db_txn.so	10.27 (Sleepycat) 11/2/97
+.\"	@(#)db_txn.so	10.33 (Sleepycat) 5/3/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)macros.so	10.36 (Sleepycat) 11/28/97
+.\"	@(#)macros.so	10.45 (Sleepycat) 5/4/98
 .\"
 .\" We don't want hyphenation for any HTML documents.
 .ie '\*[HTML]'YES'\{\
@@ -85,19 +85,18 @@
 \}
 ..
 .\" Scoped name for Java.
-.\" Produces a.b, for Java, otherwise just b.
-.\" This macro is used for constants that must
-.\" be scoped in Java, but are global otherwise.
+.\" Produces Db.b, for Java, otherwise just b.  This macro is used for
+.\" constants that must be scoped in Java, but are global otherwise.
 .\" This macro takes two arguments:
 .\"	+ the class
 .\"	+ the name within the class or following the prefix
 .de Sj
 .ie '\*[TYPE]'JAVA'\{\
 .TP 5
-\\$1.\\$2\}
+Db.\\$1\}
 .el\{\
 .TP 5
-\\$2\}
+\\$1\}
 ..
 .\" The general information text macro.
 .de Gn
@@ -241,7 +240,9 @@ The default error behavior can be changed, see
 .IR DbLog (3),
 .IR DbLsn (3),
 .IR DbMpool (3),
+.if !'\*[TYPE]'JAVA'\{\
 .IR DbMpoolFile (3),
+\}
 .IR Dbt (3),
 .IR DbTxn (3),
 .IR DbTxnMgr (3)
@@ -391,8 +392,15 @@ based on the
 argument to
 .IR \\$1 ,
 which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
-It is expected that applications will use a single DB_ENV structure as the
-argument to all of the subsystems in the DB package.
+Applications will normally use the same DB_ENV structure (initialized
+by
+.IR db_appinit (3)),
+as an argument to all of the subsystems in the DB package.
+.PP
+References to the DB_ENV structure are maintained by DB,
+so it may not be discarded until the last close function,
+corresponding to an open function for which it was an argument,
+has returned.
 In order to ensure compatibility with future releases of DB, all fields of
 the DB_ENV structure that are not explicitly set should be initialized to 0
 before the first time the structure is used.
@@ -463,7 +471,7 @@ appropriate set method, before calling
 ..
 .\" The DB_ENV common fields macros.
 .de Se
-.ie '\*[TYPE]'JAVA'\{\
+.if '\*[TYPE]'JAVA'\{\
 .TP 5
 DbErrcall db_errcall;
 .ns
@@ -475,7 +483,6 @@ int db_verbose;
 The error fields of the DbEnv behave as described for
 .IR DbEnv (3).
 \}
-.el\{\
 .ie '\*[TYPE]'CXX'\{\
 .TP 5
 void *(*db_errcall)(char *db_errpfx, char *buffer);
@@ -507,7 +514,7 @@ const char *db_errpfx;
 int db_verbose;
 The error fields of the DB_ENV behave as described for
 .IR db_appinit (3).
-\}
+.sp
 \}
 ..
 .\" The open flags.
@@ -521,7 +528,7 @@ don't already exist.
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
-.Sj Db DB_CREATE
+.Sj DB_CREATE
 Create any underlying files, as necessary.
 If the files do not already exist and the DB_CREATE flag is not specified,
 the call will fail.
@@ -532,12 +539,17 @@ the call will fail.
 .\"	+ the object it returns.
 .de Ft
 .TP 5
-.Sj Db DB_THREAD
+.Sj DB_THREAD
 Cause the \\$2 handle returned by the
 .I \\$1
 .Al function method
 to be useable by multiple threads within a single address space,
 i.e., to be ``free-threaded''.
+.if '\*[TYPE]'JAVA'\{\
+Threading is assumed in the Java API,
+so no special flags are required,
+and DB functions will always behave as if the DB_THREAD flag was specified.
+\}
 ..
 .\" The mode macro.
 .\" This macro takes one argument:
@@ -767,7 +779,7 @@ the region removal will fail.
 In the case of catastrophic or system failure,
 database recovery must be performed (see
 .IR db_recover (1)
-or the DB_RECOVER flags to
+or the DB_RECOVER and DB_RECOVER_FATAL flags to
 .IR \\*(Va (3)).
 Alternatively, if recovery is not required because no database state is
 maintained across failures,
@@ -878,7 +890,7 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH DB_TXN 3 "November 2, 1997"
+.TH DB_TXN 3 "May 3, 1998"
 .UC 7
 .SH NAME
 db_txn \- DB transaction management
@@ -890,7 +902,7 @@ db_txn \- DB transaction management
 int
 txn_open(const char *dir,
 .ti +5
-int flags, int mode, DB_ENV *dbenv, DB_TXNMGR **regionp);
+u_int32_t flags, int mode, DB_ENV *dbenv, DB_TXNMGR **regionp);
 
 int
 txn_begin(DB_TXNMGR *txnp, DB_TXN *pid, DB_TXN **tid);
@@ -908,7 +920,7 @@ u_int32_t
 txn_id(DB_TXN *tid);
 
 int
-txn_checkpoint(const DB_TXNMGR *txnp, int kbyte, int min);
+txn_checkpoint(const DB_TXNMGR *txnp, u_int32_t kbyte, u_int32_t min);
 
 int
 txn_close(DB_TXNMGR *txnp);
@@ -943,12 +955,12 @@ Transaction semantics can be applied to the access methods described in
 .IR db_open (3)
 through function call parameters.
 .PP
-The model intended for transactional use (and that is used by the
-access methods) is that write-ahead logging is provided by
+The model intended for transactional use (and the one that is used by
+the access methods) is write-ahead logging provided by
 .IR db_log (3)
-to record both before- and after-image logging.
-Locking follows a two-phase protocol (i.e., all locks are released
-at transaction commit).
+to record both before- and after-images.
+Locking follows a two-phase protocol, with all locks being released
+at transaction commit.
 .PP
 .Co "transaction region" txn
 .PP
@@ -958,9 +970,9 @@ at transaction commit).
 DB_TXN_NOSYNC
 On transaction commit, do not synchronously flush the log.
 This means that transactions exhibit the ACI (atomicity,
-consistency and isolation) properties, but not D (durability), i.e., 
+consistency and isolation) properties, but not D (durability), i.e.,
 database integrity will be maintained but it is possible that some number
-of the most recently committed transactions may be undone during recovery 
+of the most recently committed transactions may be undone during recovery
 instead of being redone.
 .sp
 The number of transactions that are potentially at risk is governed by
@@ -996,7 +1008,7 @@ If
 .I lk_info
 is NULL, no locking is done in this transaction environment.
 .TP 5
-unsigned int tx_max;
+u_int32_t tx_max;
 The maximum number of simultaneous transactions that are supported.
 This bounds the size of backing files and is used to derive limits for
 the size of the lock region and logfiles.
@@ -1252,6 +1264,14 @@ The number of transactions that have begun.
 u_int32_t st_ncommits;
 The number of transactions that have committed.
 .Nt
+u_int32_t st_region_wait;
+The number of times that a thread of control was forced to wait before
+obtaining the region lock.
+.Nt
+u_int32_t st_region_nowait;
+The number of times that a thread of control was able to obtain
+the region lock without waiting.
+.Nt
 DB_TXN_ACTIVE *st_txnarray;
 A pointer to an array of
 .I st_nactive
@@ -1301,6 +1321,8 @@ with the appropriate
 and
 .I txn_abort
 calls.
+Databases accessed by a transaction must not be closed
+during the transaction.
 Note,
 it is not necessary to transaction protect read-only transactions,
 unless those transactions require repeatable reads.
@@ -1400,6 +1422,100 @@ If any of the responses are negative, the caller should issue a
 In general, the
 .I txn_prepare
 call requires that the transaction log be flushed to disk.
+.\"
+.\" See the file LICENSE for redistribution information.
+.\"
+.\" Copyright (c) 1998
+.\"	Sleepycat Software.  All rights reserved.
+.\"
+.\"	@(#)limits.so	8.1 (Sleepycat) 5/3/98
+.\"
+.de Ll
+.SH "LOG FILE LIMITS
+Log file sizes impose a time limit on the length of time a database
+may be accessed under transaction protection, before it needs to be
+dumped and reloaded (see
+.IR db_dump(3)
+and
+.IR db_load(3)).
+Unfortunately, the limits are potentially difficult to calculate.
+.PP
+The log file name consists of "log." followed by 5 digits, resulting
+in a maximum of 99,999 log files.
+Consider an application performing 600 transactions per second, for
+15 hours a day, logged into 10Mb log files, where each transaction
+is logging approximately 100 bytes of data.  The calculation:
+.PP
+.nf
+.RS
+(10 * 2^20 * 99999) /
+.ti +5
+(600 * 60 * 60 * 15 * 100) = 323.63
+.RE
+.fi
+.PP
+indicates that the system will run out of log file space in
+roughly 324 days.
+If we increase the maximum size of the files from 10Mb to 100Mb,
+the same calculation indicates that the application will run out
+of log file space in roughly 9 years.
+.PP
+There is no way to reset the log file name space in Berkeley DB.
+If your application is reaching the end of its log file name space,
+you should:
+.TP 5
+1.
+Archive your databases as if to prepare for catastrophic failure (see
+.IR db_archive (1)
+for more information).
+.TP 5
+2.
+Dump and re-load
+.B all
+your databases (see
+.IR db_dump (1)
+and
+.IR db_load (1)
+for more information).
+.TP 5
+3.
+Remove all of the log files from the database environment (see
+.IR db_archive (1)
+for more information).
+.TP 5
+4.
+Restart your applications.
+..
+.de Tl
+.SH "TRANSACTION ID LIMITS
+The transaction ID space in Berkeley DB is 2^31, or 2 billion entries.
+It is possible that some environments may need to be aware of this
+limitation.
+Consider an application performing 600 transactions a second for 15
+hours a day.
+The transaction ID space will run out in roughly 66 days:
+.PP
+.nf
+.RS
+2^31 / (600 * 15 * 60 * 60) = 66
+.RE
+.fi
+.PP
+Doing only 100 transactions a second exhausts the transaction ID space
+in roughly one year.
+.PP
+The transaction ID space is reset each time recovery is run.
+If you reach the end of your transaction ID space,
+shut down your applications and restart them after running recovery (see
+.IR db_recover (1)
+for more information).
+The most recently allocated transaction ID is the
+.I st_last_txnid
+value in the transaction statistics information, and is displayed by the
+.IR db_stat (1)
+utility.
+..
+.Tl
 .SH "ENVIRONMENT VARIABLES"
 The following environment variables affect the execution of
 .IR db_txn :

@@ -1,13 +1,13 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)java_Db.cpp	10.1 (Sleepycat) 11/10/97";
+static const char sccsid[] = "@(#)java_Db.cpp	10.4 (Sleepycat) 4/10/98";
 #endif /* not lint */
 
 #include <jni.h>
@@ -58,7 +58,9 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_Db_del
     if (!verify_non_null(jnienv, db))
         return;
     DB_TXN *dbtxnid = get_DB_TXN(jnienv, txnid);
-    LockedDBT dbkey(jnienv, key);
+    LockedDBT dbkey(jnienv, key, 0);
+    if (dbkey.has_error())
+        return;
 
     err = db->del(db, dbtxnid, dbkey.dbt, dbflags);
     verify_return(jnienv, err);
@@ -72,26 +74,33 @@ JNIEXPORT jint JNICALL Java_com_sleepycat_db_Db_fd
     DB *db = get_DB(jnienv, jthis);
 
     if (!verify_non_null(jnienv, db))
-        return -1;
+        return 0;
     err = db->fd(db, &return_value);
     verify_return(jnienv, err);
     return return_value;
 }
 
-JNIEXPORT void JNICALL Java_com_sleepycat_db_Db_get
+JNIEXPORT jint JNICALL Java_com_sleepycat_db_Db_get
   (JNIEnv *jnienv, /*Db*/ jobject jthis, /*DbTxn*/ jobject txnid,
    /*Dbt*/ jobject key, /*Dbt*/ jobject data, jint flags)
 {
     int err;
     DB *db = get_DB(jnienv, jthis);
     DB_TXN *dbtxnid = get_DB_TXN(jnienv, txnid);
-    LockedDBT dbkey(jnienv, key);
-    LockedDBT dbdata(jnienv, data);
+    LockedDBT dbkey(jnienv, key, 0);
+    if (dbkey.has_error())
+        return 0;
+    LockedDBT dbdata(jnienv, data, 1);
+    if (dbdata.has_error())
+        return 0;
 
     if (!verify_non_null(jnienv, db))
-        return;
+        return 0;
     err = db->get(db, dbtxnid, dbkey.dbt, dbdata.dbt, flags);
-    verify_return(jnienv, err);
+    if (err != 0 && err != DB_NOTFOUND) {
+        verify_return(jnienv, err);
+    }
+    return err;
 }
 
 JNIEXPORT jint JNICALL Java_com_sleepycat_db_Db_put
@@ -101,11 +110,15 @@ JNIEXPORT jint JNICALL Java_com_sleepycat_db_Db_put
     int err;
     DB *db = get_DB(jnienv, jthis);
     DB_TXN *dbtxnid = get_DB_TXN(jnienv, txnid);
-    LockedDBT dbkey(jnienv, key);
-    LockedDBT dbdata(jnienv, data);
+    LockedDBT dbkey(jnienv, key, 0);
+    if (dbkey.has_error())
+        return 0;
+    LockedDBT dbdata(jnienv, data, 0);
+    if (dbdata.has_error())
+        return 0;
 
     if (!verify_non_null(jnienv, db))
-        return -1;
+        return 0;
     err = db->put(db, dbtxnid, dbkey.dbt, dbdata.dbt, flags);
     if (err != 0 && err != DB_KEYEXIST) {
         verify_return(jnienv, err);
@@ -145,7 +158,7 @@ JNIEXPORT jint JNICALL Java_com_sleepycat_db_Db_get_1type
 {
     DB *db = get_DB(jnienv, jthis);
     if (!verify_non_null(jnienv, db))
-        return -1;
+        return 0;
 
     return (jint)db->type;
 }
@@ -163,9 +176,11 @@ JNIEXPORT jobject JNICALL Java_com_sleepycat_db_Db_open
     LockedString dbfname(jnienv, fname);
 
     if (verify_non_null(jnienv, db_dbenv)) {
+        flags |= DB_THREAD;
         err = db_open(dbfname.string, (DBTYPE)type, flags, mode,
                       db_dbenv, dbinfo, &db);
         if (verify_return(jnienv, err)) {
+            db->db_malloc = java_db_malloc;
             retval = create_default_object(jnienv, name_DB);
             set_private_info(jnienv, name_DB, retval, db);
         }

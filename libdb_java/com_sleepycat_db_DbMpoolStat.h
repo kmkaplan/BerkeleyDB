@@ -17,14 +17,6 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbMpoolStat_finalize
 
 /*
  * Class:     com_sleepycat_db_DbMpoolStat
- * Method:    get_st_cachesize
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolStat_get_1st_1cachesize
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbMpoolStat
  * Method:    get_st_cache_hit
  * Signature: ()J
  */
@@ -37,6 +29,46 @@ JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolStat_get_1st_1cache_1hit
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolStat_get_1st_1cache_1miss
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbMpoolStat
+ * Method:    get_st_cachesize
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolStat_get_1st_1cachesize
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbMpoolStat
+ * Method:    get_st_hash_buckets
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolStat_get_1st_1hash_1buckets
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbMpoolStat
+ * Method:    get_st_hash_examined
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolStat_get_1st_1hash_1examined
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbMpoolStat
+ * Method:    get_st_hash_longest
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolStat_get_1st_1hash_1longest
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbMpoolStat
+ * Method:    get_st_hash_searches
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolStat_get_1st_1hash_1searches
   (JNIEnv *, jobject);
 
 /*
@@ -85,38 +117,6 @@ JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolStat_get_1st_1ro_1evict
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolStat_get_1st_1rw_1evict
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbMpoolStat
- * Method:    get_st_hash_buckets
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolStat_get_1st_1hash_1buckets
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbMpoolStat
- * Method:    get_st_hash_searches
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolStat_get_1st_1hash_1searches
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbMpoolStat
- * Method:    get_st_hash_longest
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolStat_get_1st_1hash_1longest
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbMpoolStat
- * Method:    get_st_hash_examined
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolStat_get_1st_1hash_1examined
   (JNIEnv *, jobject);
 
 #ifdef __cplusplus

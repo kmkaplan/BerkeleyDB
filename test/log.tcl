@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)log.tcl	10.4 (Sleepycat) 11/22/97
+#	@(#)log.tcl	10.7 (Sleepycat) 4/21/98
 #
 # Options are:
 # -dir <directory in which to store memp>
@@ -55,7 +55,7 @@ proc logtest { args } {
 proc log001 { dir max } {
 source ./include.tcl
 puts "Log001: Open/Close/Create/Unlink test"
-	log_unlink "" 1
+	log_unlink $testdir 1
 	log_cleanup $dir
 
 	# Try opening without Create flag should error
@@ -76,11 +76,11 @@ puts "Log001: Open/Close/Create/Unlink test"
 	error_check_good log:$dir [is_substr $lp log] 1
 
 	# Try unlinking while we're still attached, should fail.
-	error_check_good log_unlink:$dir [log_unlink "" 0] -1
+	error_check_good log_unlink:$dir [log_unlink $testdir 0] -1
 
 	# Now close it and unlink it
 	error_check_good log_close:$lp [$lp close] 0
-	error_check_good log_unlink:$dir [log_unlink "" 0] 0
+	error_check_good log_unlink:$dir [log_unlink $testdir 0] 0
 	log_cleanup $dir
 }
 
@@ -88,7 +88,7 @@ proc log002 { dir max nrecs } {
 source ./include.tcl
 puts "Log002: Basic put/get test"
 
-	log_unlink "" 1
+	log_unlink $testdir 1
 	log_cleanup $dir
 
 	set lp [ log "" $DB_CREATE 0644 -maxsize $max ]
@@ -147,7 +147,7 @@ puts "Log002: Basic put/get test"
 
 	# Close and unlink the file
 	error_check_good log_close:$lp [$lp close] 0
-	error_check_good log_unlink:$dir [log_unlink "" 0] 0
+	error_check_good log_unlink:$dir [log_unlink $testdir 0] 0
 	log_cleanup $dir
 }
 
@@ -155,7 +155,7 @@ proc log003 { dir {max 32768} } {
 puts "Log003: Multiple log test w/trunc, file, compare functionality"
 source ./include.tcl
 
-	log_unlink "" 1
+	log_unlink $testdir 1
 	log_cleanup $dir
 
 	set lp [ log "" $DB_CREATE 0644 -maxsize $max ]
@@ -194,6 +194,11 @@ source ./include.tcl
 	set flist [glob $dir/log*]
 	foreach p $info_list {
 		set f [$lp file [lindex $p 0]]
+
+		# Change all backslash separators on Windows to forward slash
+		# separators, which is what the rest of the test suite expects.
+		regsub -all {\\} $f {/} f
+
 		error_check_bad log_file:$f [lsearch $flist $f] -1
 	}
 
@@ -206,7 +211,7 @@ source ./include.tcl
 
 	# Close and unlink the file
 	error_check_good log_close:$lp [$lp close] 0
-	error_check_good log_unlink:$dir [log_unlink "" 0] 0
+	error_check_good log_unlink:$dir [log_unlink $testdir 0] 0
 	log_cleanup $dir
 
 	puts "Test003 Complete"
@@ -216,7 +221,7 @@ proc log004 { dir {max 32768} } {
 puts "Log004: Verify log_flush behavior"
 source ./include.tcl
 
-	log_unlink "" 1
+	log_unlink $testdir 1
 	log_cleanup $dir
 	set short_rec "abcdefghijklmnopqrstuvwxyz"
 	set long_rec [repeat $short_rec 200]
@@ -241,7 +246,7 @@ source ./include.tcl
 		error_check_good log_close $ret 0
 
 		# Now, remove the log region
-		set ret [log_unlink "" 0]
+		set ret [log_unlink $testdir 0]
 		error_check_good log_unlink $ret 0
 
 		# Re-open the log and try to read the record.
@@ -254,7 +259,7 @@ source ./include.tcl
 
 		# Close and unlink the file
 		error_check_good log_close:$lp [$lp close] 0
-		error_check_good log_unlink:$dir [log_unlink "" 0] 0
+		error_check_good log_unlink:$dir [log_unlink $testdir 0] 0
 		log_cleanup $dir
 	}
 
@@ -293,7 +298,7 @@ source ./include.tcl
 		error_check_good log_close $ret 0
 
 		# Now, remove the log region
-		set ret [log_unlink "" 0]
+		set ret [log_unlink $testdir 0]
 		error_check_good log_unlink $ret 0
 
 		# Re-open the log and try to read the record.
@@ -306,7 +311,7 @@ source ./include.tcl
 
 		# Close and unlink the file
 		error_check_good log_close:$lp [$lp close] 0
-		error_check_good log_unlink:$dir [log_unlink "" 0] 0
+		error_check_good log_unlink:$dir [log_unlink $testdir 0] 0
 		log_cleanup $dir
 	}
 
@@ -323,4 +328,3 @@ proc log_cleanup { dir } {
 		}
 	}
 }
-

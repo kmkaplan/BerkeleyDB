@@ -1,13 +1,13 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)java_DbTxnMgr.cpp	10.1 (Sleepycat) 11/10/97";
+static const char sccsid[] = "@(#)java_DbTxnMgr.cpp	10.2 (Sleepycat) 4/10/98";
 #endif /* not lint */
 
 #include <jni.h>

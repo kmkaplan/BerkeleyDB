@@ -25,22 +25,6 @@ JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbTxnStat_get_1last_1ckp
 
 /*
  * Class:     com_sleepycat_db_DbTxnStat
- * Method:    get_pending_ckp
- * Signature: ()Lcom/sleepycat/db/DbLsn;
- */
-JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbTxnStat_get_1pending_1ckp
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbTxnStat
- * Method:    get_time_ckp
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbTxnStat_get_1time_1ckp
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbTxnStat
  * Method:    get_last_txnid
  * Signature: ()I
  */
@@ -77,6 +61,22 @@ JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbTxnStat_get_1nbegins
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbTxnStat_get_1ncommits
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbTxnStat
+ * Method:    get_pending_ckp
+ * Signature: ()Lcom/sleepycat/db/DbLsn;
+ */
+JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbTxnStat_get_1pending_1ckp
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbTxnStat
+ * Method:    get_time_ckp
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbTxnStat_get_1time_1ckp
   (JNIEnv *, jobject);
 
 #ifdef __cplusplus

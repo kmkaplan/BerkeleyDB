@@ -2,18 +2,18 @@
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)DbTxnMgr.sox	10.8 (Sleepycat) 11/24/97
+.\"	@(#)DbTxnMgr.sox	10.14 (Sleepycat) 5/4/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)macros.so	10.36 (Sleepycat) 11/28/97
+.\"	@(#)macros.so	10.45 (Sleepycat) 5/4/98
 .\"
 .\" We don't want hyphenation for any HTML documents.
 .ie '\*[HTML]'YES'\{\
@@ -54,19 +54,18 @@
 \}
 ..
 .\" Scoped name for Java.
-.\" Produces a.b, for Java, otherwise just b.
-.\" This macro is used for constants that must
-.\" be scoped in Java, but are global otherwise.
+.\" Produces Db.b, for Java, otherwise just b.  This macro is used for
+.\" constants that must be scoped in Java, but are global otherwise.
 .\" This macro takes two arguments:
 .\"	+ the class
 .\"	+ the name within the class or following the prefix
 .de Sj
 .ie '\*[TYPE]'JAVA'\{\
 .TP 5
-\\$1.\\$2\}
+Db.\\$1\}
 .el\{\
 .TP 5
-\\$2\}
+\\$1\}
 ..
 .\" The general information text macro.
 .de Gn
@@ -210,7 +209,9 @@ The default error behavior can be changed, see
 .IR DbLog (3),
 .IR DbLsn (3),
 .IR DbMpool (3),
+.if !'\*[TYPE]'JAVA'\{\
 .IR DbMpoolFile (3),
+\}
 .IR Dbt (3),
 .IR DbTxn (3),
 .IR DbTxnMgr (3)
@@ -360,8 +361,15 @@ based on the
 argument to
 .IR \\$1 ,
 which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
-It is expected that applications will use a single DB_ENV structure as the
-argument to all of the subsystems in the DB package.
+Applications will normally use the same DB_ENV structure (initialized
+by
+.IR db_appinit (3)),
+as an argument to all of the subsystems in the DB package.
+.PP
+References to the DB_ENV structure are maintained by DB,
+so it may not be discarded until the last close function,
+corresponding to an open function for which it was an argument,
+has returned.
 In order to ensure compatibility with future releases of DB, all fields of
 the DB_ENV structure that are not explicitly set should be initialized to 0
 before the first time the structure is used.
@@ -432,7 +440,7 @@ appropriate set method, before calling
 ..
 .\" The DB_ENV common fields macros.
 .de Se
-.ie '\*[TYPE]'JAVA'\{\
+.if '\*[TYPE]'JAVA'\{\
 .TP 5
 DbErrcall db_errcall;
 .ns
@@ -444,7 +452,6 @@ int db_verbose;
 The error fields of the DbEnv behave as described for
 .IR DbEnv (3).
 \}
-.el\{\
 .ie '\*[TYPE]'CXX'\{\
 .TP 5
 void *(*db_errcall)(char *db_errpfx, char *buffer);
@@ -476,7 +483,7 @@ const char *db_errpfx;
 int db_verbose;
 The error fields of the DB_ENV behave as described for
 .IR db_appinit (3).
-\}
+.sp
 \}
 ..
 .\" The open flags.
@@ -490,7 +497,7 @@ don't already exist.
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
-.Sj Db DB_CREATE
+.Sj DB_CREATE
 Create any underlying files, as necessary.
 If the files do not already exist and the DB_CREATE flag is not specified,
 the call will fail.
@@ -501,12 +508,17 @@ the call will fail.
 .\"	+ the object it returns.
 .de Ft
 .TP 5
-.Sj Db DB_THREAD
+.Sj DB_THREAD
 Cause the \\$2 handle returned by the
 .I \\$1
 .Al function method
 to be useable by multiple threads within a single address space,
 i.e., to be ``free-threaded''.
+.if '\*[TYPE]'JAVA'\{\
+Threading is assumed in the Java API,
+so no special flags are required,
+and DB functions will always behave as if the DB_THREAD flag was specified.
+\}
 ..
 .\" The mode macro.
 .\" This macro takes one argument:
@@ -736,7 +748,7 @@ the region removal will fail.
 In the case of catastrophic or system failure,
 database recovery must be performed (see
 .IR db_recover (1)
-or the DB_RECOVER flags to
+or the DB_RECOVER and DB_RECOVER_FATAL flags to
 .IR \\*(Va (3)).
 Alternatively, if recovery is not required because no database state is
 maintained across failures,
@@ -847,14 +859,14 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.\" Stat field macro
+.\" Stat field macro.
 .de Sf
 .ie '\*[TYPE]'CXX'\{\
 \\$1 \\$3;\}
 .el\{\
 \\$2 get_\\$3();\}
 ..
-.TH DbTxnMgr 3 "November 24, 1997"
+.TH DbTxnMgr 3 "May 4, 1998"
 .UC 7
 .SH NAME
 DbTxnMgr \- Db transaction management
@@ -867,13 +879,13 @@ DbTxnMgr \- Db transaction management
 static int
 DbTxnMgr::open(const char *dir,
 .ti +5
-int flags, int mode, DbEnv *dbenv, DbTxnMgr **regionp);
+u_int32_t flags, int mode, DbEnv *dbenv, DbTxnMgr **regionp);
 
 int
 DbTxnMgr::begin(DbTxn *pid, DbTxn **tid);
 
 int
-DbTxnMgr::checkpoint(int kbyte, int min) const;
+DbTxnMgr::checkpoint(u_int32_t kbyte, u_int32_t min) const;
 
 int
 DbTxnMgr::close();
@@ -949,7 +961,7 @@ at transaction commit).
 .Fm
 .Ft DbTxnMgr::open DbTxnMgr
 .TP 5
-.Sj Db DB_TXN_NOSYNC
+.Sj DB_TXN_NOSYNC
 On transaction commit, do not synchronously flush the log.
 This means that transactions exhibit the ACI (atomicity,
 consistency and isolation) properties, but not D (durability), i.e.,
@@ -1001,10 +1013,11 @@ field contains a return value from the method
 If
 .I lk_info
 is NULL, no locking is done in this transaction environment.
-.TP 5
 .ie '\*[TYPE]'CXX'\{\
-unsigned int tx_max;\}
+.TP 5
+u_int32_t tx_max;\}
 .el\{\
+.TP 5
 int tx_max;\}
 The maximum number of simultaneous transactions that are supported.
 This bounds the size of backing files and is used to derive limits for
@@ -1042,24 +1055,24 @@ redo
 An integer value that is set to one of the following values:
 .RS
 .TP 5
-DB_TXN_BACKWARD_ROLL
+.Sj DB_TXN_BACKWARD_ROLL
 The log is being read backward to determine which transactions have been
 committed and which transactions were not (and should therefore be aborted
 during recovery).
 .TP 5
-DB_TXN_FORWARD_ROLL
+.Sj DB_TXN_FORWARD_ROLL
 The log is being played forward, any transaction ids encountered that
 have not been entered into the list referenced by
 .I info
 should be ignored.
 .TP 5
-DB_TXN_OPENFILES
+.Sj DB_TXN_OPENFILES
 The log is being read to open all the files required to perform recovery.
 .TP 5
-DB_TXN_REDO
+.Sj DB_TXN_REDO
 Redo the operation described by the log record.
 .TP 5
-DB_TXN_UNDO
+.Sj DB_TXN_UNDO
 Undo the operation described by the log record.
 .RE
 .TP 5
@@ -1207,6 +1220,14 @@ The number of transactions that have begun.
 .Nt
 .Sf u_int32_t int st_ncommits
 The number of transactions that have committed.
+.Nt
+.Sf u_int32_t st_region_wait
+The number of times that a thread of control was forced to wait before
+obtaining the region lock.
+.Nt
+.Sf u_int32_t st_region_nowait
+The number of times that a thread of control was able to obtain
+the region lock without waiting.
 .if '\*[TYPE]'CXX'\{
 .Nt
 DB_TXN_ACTIVE *st_txnarray;

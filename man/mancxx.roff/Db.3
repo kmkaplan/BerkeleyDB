@@ -2,18 +2,18 @@
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)Db.sox	10.10 (Sleepycat) 11/25/97
+.\"	@(#)Db.sox	10.16 (Sleepycat) 5/4/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)macros.so	10.36 (Sleepycat) 11/28/97
+.\"	@(#)macros.so	10.45 (Sleepycat) 5/4/98
 .\"
 .\" We don't want hyphenation for any HTML documents.
 .ie '\*[HTML]'YES'\{\
@@ -54,19 +54,18 @@
 \}
 ..
 .\" Scoped name for Java.
-.\" Produces a.b, for Java, otherwise just b.
-.\" This macro is used for constants that must
-.\" be scoped in Java, but are global otherwise.
+.\" Produces Db.b, for Java, otherwise just b.  This macro is used for
+.\" constants that must be scoped in Java, but are global otherwise.
 .\" This macro takes two arguments:
 .\"	+ the class
 .\"	+ the name within the class or following the prefix
 .de Sj
 .ie '\*[TYPE]'JAVA'\{\
 .TP 5
-\\$1.\\$2\}
+Db.\\$1\}
 .el\{\
 .TP 5
-\\$2\}
+\\$1\}
 ..
 .\" The general information text macro.
 .de Gn
@@ -210,7 +209,9 @@ The default error behavior can be changed, see
 .IR DbLog (3),
 .IR DbLsn (3),
 .IR DbMpool (3),
+.if !'\*[TYPE]'JAVA'\{\
 .IR DbMpoolFile (3),
+\}
 .IR Dbt (3),
 .IR DbTxn (3),
 .IR DbTxnMgr (3)
@@ -360,8 +361,15 @@ based on the
 argument to
 .IR \\$1 ,
 which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
-It is expected that applications will use a single DB_ENV structure as the
-argument to all of the subsystems in the DB package.
+Applications will normally use the same DB_ENV structure (initialized
+by
+.IR db_appinit (3)),
+as an argument to all of the subsystems in the DB package.
+.PP
+References to the DB_ENV structure are maintained by DB,
+so it may not be discarded until the last close function,
+corresponding to an open function for which it was an argument,
+has returned.
 In order to ensure compatibility with future releases of DB, all fields of
 the DB_ENV structure that are not explicitly set should be initialized to 0
 before the first time the structure is used.
@@ -432,7 +440,7 @@ appropriate set method, before calling
 ..
 .\" The DB_ENV common fields macros.
 .de Se
-.ie '\*[TYPE]'JAVA'\{\
+.if '\*[TYPE]'JAVA'\{\
 .TP 5
 DbErrcall db_errcall;
 .ns
@@ -444,7 +452,6 @@ int db_verbose;
 The error fields of the DbEnv behave as described for
 .IR DbEnv (3).
 \}
-.el\{\
 .ie '\*[TYPE]'CXX'\{\
 .TP 5
 void *(*db_errcall)(char *db_errpfx, char *buffer);
@@ -476,7 +483,7 @@ const char *db_errpfx;
 int db_verbose;
 The error fields of the DB_ENV behave as described for
 .IR db_appinit (3).
-\}
+.sp
 \}
 ..
 .\" The open flags.
@@ -490,7 +497,7 @@ don't already exist.
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
-.Sj Db DB_CREATE
+.Sj DB_CREATE
 Create any underlying files, as necessary.
 If the files do not already exist and the DB_CREATE flag is not specified,
 the call will fail.
@@ -501,12 +508,17 @@ the call will fail.
 .\"	+ the object it returns.
 .de Ft
 .TP 5
-.Sj Db DB_THREAD
+.Sj DB_THREAD
 Cause the \\$2 handle returned by the
 .I \\$1
 .Al function method
 to be useable by multiple threads within a single address space,
 i.e., to be ``free-threaded''.
+.if '\*[TYPE]'JAVA'\{\
+Threading is assumed in the Java API,
+so no special flags are required,
+and DB functions will always behave as if the DB_THREAD flag was specified.
+\}
 ..
 .\" The mode macro.
 .\" This macro takes one argument:
@@ -736,7 +748,7 @@ the region removal will fail.
 In the case of catastrophic or system failure,
 database recovery must be performed (see
 .IR db_recover (1)
-or the DB_RECOVER flags to
+or the DB_RECOVER and DB_RECOVER_FATAL flags to
 .IR \\*(Va (3)).
 Alternatively, if recovery is not required because no database state is
 maintained across failures,
@@ -847,14 +859,14 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.\" Stat field macro
+.\" Stat field macro.
 .de Sf
 .ie '\*[TYPE]'CXX'\{\
 u_int32_t \\$1;\}
 .el\{\
 int get_\\$1();\}
 ..
-.TH Db 3 "November 25, 1997"
+.TH Db 3 "May 4, 1998"
 .UC 7
 .SH NAME
 Db \- database access class
@@ -867,13 +879,13 @@ Db \- database access class
 static int
 Db::open(const char *fname, DBTYPE type,
 .ti +5
-int flags, int mode, DbEnv *dbenv, DbInfo *dbinfo, Db **dbpp);
+u_int32_t flags, int mode, DbEnv *dbenv, DbInfo *dbinfo, Db **dbpp);
 
 DBTYPE
 Db::get_type(void) const;
 
 int
-Db::close(int flags);
+Db::close(u_int32_t flags);
 
 int
 Db::cursor(DbTxn *txnid, Dbc **cursorp);
@@ -885,16 +897,16 @@ int
 Db::fd(int *fdp);
 
 int
-Db::get(DbTxn *txnid, Dbt *key, Dbt *data, int flags);
+Db::get(DbTxn *txnid, Dbt *key, Dbt *data, u_int32_t flags);
 
 int
-Db::put(DbTxn *txnid, Dbt *key, Dbt *data, int flags);
+Db::put(DbTxn *txnid, Dbt *key, Dbt *data, u_int32_t flags);
 
 int
-Db::stat(void *sp, void *(*db_malloc)(size_t), int flags);
+Db::stat(void *sp, void *(*db_malloc)(size_t), u_int32_t flags);
 
 int
-Db::sync(int flags);
+Db::sync(u_int32_t flags);
 \}
 .el\{\
 import com.sleepycat.db.*;
@@ -924,7 +936,7 @@ public int fd()
 .ti +5
 throws DbException;
 
-public void get(DbTxn txnid, Dbt key, Dbt data, int flags)
+public int get(DbTxn txnid, Dbt key, Dbt data, int flags)
 .ti +5
 throws DbException;
 
@@ -1007,18 +1019,18 @@ will then determine if it is of type DB_BTREE, DB_HASH or DB_RECNO.
 .PP
 .Fm
 .TP 5
-.Sj Db DB_NOMMAP
+.Sj DB_NOMMAP
 Do not map this file (see
 .IR DbMpool (3)
 for further information).
 .TP 5
-.Sj Db DB_RDONLY
+.Sj DB_RDONLY
 Open the database for reading only.
 Any attempt to write the database using the access methods will fail
 regardless of the actual permissions of any underlying files.
 .Ft Db::open Db
 .TP 5
-.Sj Db DB_TRUNCATE
+.Sj DB_TRUNCATE
 ``Truncate'' the database if it exists, i.e.,
 behave as if the database were just created,
 discarding any previous contents.
@@ -1057,7 +1069,7 @@ with the
 argument set to DB_UNKNOWN.
 .ie '\*[TYPE]'CXX'\{
 .TP 5
-int Db::close(int flags);\}
+int Db::close(u_int32_t flags);\}
 .el\{
 .TP 5
 public void Db.close(int flags);\}
@@ -1077,7 +1089,7 @@ The
 parameter must be set to 0 or the following value:
 .RS
 .TP 5
-DB_NOSYNC
+.Sj DB_NOSYNC
 Do not flush cached information to disk.
 .RE
 .IP
@@ -1135,7 +1147,7 @@ for more information.
 .Rt cursor
 .ie '\*[TYPE]'CXX'\{
 .TP 5
-int Db::del(DbTxn *txnid, Dbt *key, int flags);\}
+int Db::del(DbTxn *txnid, Dbt *key, u_int32_t flags);\}
 .el\{
 .TP 5
 public void Db.del(DbTxn txnid, Dbt key, int flags);\}
@@ -1191,7 +1203,7 @@ Applications should use the lock manager where possible.
 .Rt fd
 .ie '\*[TYPE]'CXX'\{
 .TP 5
-int Db::get(DbTxn *txnid, Dbt *key, Dbt *data, int flags);\}
+int Db::get(DbTxn *txnid, Dbt *key, Dbt *data, u_int32_t flags);\}
 .el\{
 .TP 5
 public int Db.get(DbTxn txnid, Dbt key, Dbt data, int flags);\}
@@ -1227,7 +1239,7 @@ The
 parameter must be set to 0 or the following value:
 .RS
 .TP 5
-DB_GET_RECNO
+.Sj DB_GET_RECNO
 Retrieve a specific numbered record from a database.
 Upon return,
 both the
@@ -1270,7 +1282,7 @@ method returns DB_NOTFOUND.
 .Ro get
 .ie '\*[TYPE]'CXX'\{
 .TP 5
-int Db::put(DbTxn *txnid, Dbt *key, Dbt *data, int flags);\}
+int Db::put(DbTxn *txnid, Dbt *key, Dbt *data, u_int32_t flags);\}
 .el\{
 .TP 5
 public int Db::put(DbTxn txnid, Dbt key, Dbt data, int flags);\}
@@ -1287,14 +1299,14 @@ The flags value is specified by
 together one or more of the following values:
 .RS
 .TP 5
-.Sj Db DB_APPEND
+.Sj DB_APPEND
 Append the key/data pair to the end of the database.
 For DB_APPEND to be specified,
 the underlying database must be of type recno.
 The record number allocated to the record is returned in the specified
 .IR key .
 .TP 5
-.Sj Db DB_NOOVERWRITE
+.Sj DB_NOOVERWRITE
 Enter the new key/data pair only if the key does not already appear
 in the database.
 .RE
@@ -1317,7 +1329,7 @@ and DB_KEYEXIST if the DB_NOOVERWRITE
 was set and the key already exists in the file.
 .ie '\*[TYPE]'CXX'\{
 .TP 5
-int Db::sync(int flags);\}
+int Db::sync(u_int32_t flags);\}
 .el\{
 .TP 5
 public void Db.sync(int flags);\}
@@ -1337,7 +1349,7 @@ method description above for a discussion of Db and cached data.
 .TP 5
 int Db::stat(void *sp,
 .ti +5
-void *(*db_malloc)(size_t), int flags);
+void *(*db_malloc)(size_t), u_int32_t flags);
 .br
 A method to create a statistical structure and copy a pointer
 to it into user-specified memory locations.
@@ -1376,7 +1388,7 @@ parameter must be set to 0 or the following value:
 .IP
 .RS
 .TP 5
-DB_RECORDCOUNT
+.Sj DB_RECORDCOUNT
 In the case of a btree or recno database,
 fill in the
 .I bt_nrecs
@@ -1410,7 +1422,7 @@ The version of the btree file type.
 Permanent database flags,
 including DB_DUP, DB_FIXEDLEN, DB_RECNUM and DB_RENUMBER.
 .\".Nt
-.\"u_int32_t bt_maxkey;
+.\"Sf bt_maxkey
 .\"The
 .\".I bt_maxkey
 .\"value specified to

@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)cxx_table.cpp	10.7 (Sleepycat) 10/28/97";
+static const char sccsid[] = "@(#)cxx_table.cpp	10.11 (Sleepycat) 4/10/98";
 #endif /* not lint */
 
 #include "db_cxx.h"
@@ -31,7 +31,7 @@ Db::~Db()
 {
 }
 
-int Db::close(int flags)
+int Db::close(u_int32_t flags)
 {
     DB *db = unwrap(this);
     if (!db) {
@@ -72,7 +72,7 @@ int Db::cursor(DbTxn *txnid, Dbc **cursorp)
     return 0;
 }
 
-int Db::del(DbTxn *txnid, Dbt *key, int flags)
+int Db::del(DbTxn *txnid, Dbt *key, u_int32_t flags)
 {
     DB *db = unwrap(this);
     int err;
@@ -103,7 +103,7 @@ int Db::fd(int *fdp)
     return 0;
 }
 
-int Db::get(DbTxn *txnid, Dbt *key, Dbt *value, int flags)
+int Db::get(DbTxn *txnid, Dbt *key, Dbt *value, u_int32_t flags)
 {
 
     DB *db = unwrap(this);
@@ -114,14 +114,19 @@ int Db::get(DbTxn *txnid, Dbt *key, Dbt *value, int flags)
         return EINVAL;
     }
     if ((err = db->get(db, unwrap(txnid), key, value, flags)) != 0) {
-        DB_ERROR("Db::get", err);
-        return err;
+        // DB_NOTFOUND is a "normal" return, so should not be
+        // thrown as an error
+        //
+        if (err != DB_NOTFOUND) {
+            DB_ERROR("Db::get", err);
+            return err;
+        }
     }
-    return 0;
+    return err;
 }
 
 // static method
-int Db::open(const char *fname, DBTYPE type, int flags,
+int Db::open(const char *fname, DBTYPE type, u_int32_t flags,
              int mode, DbEnv *dbenv, DbInfo *info, Db **table_returned)
 {
     *table_returned = 0;
@@ -137,7 +142,7 @@ int Db::open(const char *fname, DBTYPE type, int flags,
     return 0;
 }
 
-int Db::put(DbTxn *txnid, Dbt *key, Dbt *value, int flags)
+int Db::put(DbTxn *txnid, Dbt *key, Dbt *value, u_int32_t flags)
 {
     DB *db = unwrap(this);
     int err;
@@ -159,7 +164,7 @@ int Db::put(DbTxn *txnid, Dbt *key, Dbt *value, int flags)
     return err;
 }
 
-int Db::stat(void *sp, void *(*db_malloc)(size_t), int flags)
+int Db::stat(void *sp, void *(*db_malloc)(size_t), u_int32_t flags)
 {
     DB *db = unwrap(this);
     if (!db) {
@@ -174,7 +179,7 @@ int Db::stat(void *sp, void *(*db_malloc)(size_t), int flags)
     return 0;
 }
 
-int Db::sync(int flags)
+int Db::sync(u_int32_t flags)
 {
     DB *db = unwrap(this);
     if (!db) {
@@ -220,7 +225,7 @@ int Dbc::close()
     return 0;
 }
 
-int Dbc::del(int flags)
+int Dbc::del(u_int32_t flags)
 {
     DBC *cursor = this;
     int err;
@@ -232,7 +237,7 @@ int Dbc::del(int flags)
     return 0;
 }
 
-int Dbc::get(Dbt* key, Dbt *data, int flags)
+int Dbc::get(Dbt* key, Dbt *data, u_int32_t flags)
 {
     DBC *cursor = this;
     int err;
@@ -246,7 +251,7 @@ int Dbc::get(Dbt* key, Dbt *data, int flags)
     return err;
 }
 
-int Dbc::put(Dbt* key, Dbt *data, int flags)
+int Dbc::put(Dbt* key, Dbt *data, u_int32_t flags)
 {
     DBC *cursor = this;
     int err;
@@ -270,12 +275,12 @@ Dbt::Dbt()
     memset(dbt, 0, sizeof(DBT));
 }
 
-Dbt::Dbt(void *data, size_t size)
+Dbt::Dbt(void *data_arg, size_t size_arg)
 {
     DBT *dbt = this;
     memset(dbt, 0, sizeof(DBT));
-    set_data(data);
-    set_size(size);
+    set_data(data_arg);
+    set_size(size_arg);
 }
 
 Dbt::~Dbt()

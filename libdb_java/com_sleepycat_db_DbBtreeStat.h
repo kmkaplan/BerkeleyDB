@@ -17,202 +17,10 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbBtreeStat_finalize
 
 /*
  * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_flags
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1flags
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_maxkey
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1maxkey
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_minkey
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1minkey
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_re_len
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1re_1len
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_re_pad
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1re_1pad
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_pagesize
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1pagesize
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_levels
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1levels
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_nrecs
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1nrecs
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_int_pg
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1int_1pg
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_leaf_pg
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1leaf_1pg
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_dup_pg
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1dup_1pg
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_over_pg
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1over_1pg
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_free
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1free
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_freed
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1freed
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_int_pgfree
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1int_1pgfree
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_leaf_pgfree
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1leaf_1pgfree
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_dup_pgfree
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1dup_1pgfree
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_over_pgfree
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1over_1pgfree
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_pfxsaved
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1pfxsaved
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_split
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1split
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_rootsplit
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1rootsplit
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_fastsplit
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1fastsplit
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
  * Method:    get_bt_added
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1added
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_deleted
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1deleted
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbBtreeStat
- * Method:    get_bt_get
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1get
   (JNIEnv *, jobject);
 
 /*
@@ -233,10 +41,202 @@ JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1cache_1miss
 
 /*
  * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_deleted
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1deleted
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_dup_pg
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1dup_1pg
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_dup_pgfree
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1dup_1pgfree
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_fastsplit
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1fastsplit
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_flags
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1flags
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_free
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1free
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_freed
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1freed
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_get
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1get
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_int_pg
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1int_1pg
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_int_pgfree
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1int_1pgfree
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_leaf_pg
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1leaf_1pg
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_leaf_pgfree
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1leaf_1pgfree
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_levels
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1levels
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
  * Method:    get_bt_magic
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1magic
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_maxkey
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1maxkey
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_minkey
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1minkey
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_nrecs
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1nrecs
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_over_pg
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1over_1pg
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_over_pgfree
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1over_1pgfree
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_pagesize
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1pagesize
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_pfxsaved
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1pfxsaved
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_re_len
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1re_1len
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_re_pad
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1re_1pad
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_rootsplit
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1rootsplit
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbBtreeStat
+ * Method:    get_bt_split
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbBtreeStat_get_1bt_1split
   (JNIEnv *, jobject);
 
 /*

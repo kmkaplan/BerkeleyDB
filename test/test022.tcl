@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test022.tcl	8.2 (Sleepycat) 8/17/97
+#	@(#)test022.tcl	8.4 (Sleepycat) 4/10/98
 #
 # DB Test 22 {access method}
 # Test multiple data directories.  Do a bunch of different opens
@@ -61,15 +61,15 @@ proc ddir_test { fulldir m e args } {
 	# Now create one file in each directory
 	set db1 [eval [concat dbopen $fulldir/data1/datafile1.db \
 	    [expr $DB_CREATE | $DB_TRUNCATE] 0644 $m -dbenv $e $args]]
-	error_check_good db_open1 [is_substr $db1 db] 1
+	error_check_good dbopen1 [is_valid_db $db1] TRUE
 
 	set db2 [eval [concat dbopen $fulldir/data2/datafile2.db \
 	    [expr $DB_CREATE | $DB_TRUNCATE] 0644 $m -dbenv $e $args]]
-	error_check_good db_open2 [is_substr $db2 db] 1
+	error_check_good dbopen2 [is_valid_db $db2] TRUE
 
 	set db3 [eval [concat dbopen $fulldir/data3/datafile3.db \
 	    [expr $DB_CREATE | $DB_TRUNCATE] 0644 $m -dbenv $e $args]]
-	error_check_good db_open3 [is_substr $db3 db] 1
+	error_check_good dbopen3 [is_valid_db $db3] TRUE
 
 	# Close the files
 	error_check_good db_close1 [$db1 close] 0
@@ -80,13 +80,13 @@ proc ddir_test { fulldir m e args } {
 	# sure that we find them.
 
 	set db1 [dbopen datafile1.db 0 0 DB_UNKNOWN -dbenv $e]
-	error_check_good db_open1 [is_substr $db1 db] 1
+	error_check_good dbopen1 [is_valid_db $db1] TRUE
 
 	set db2 [dbopen datafile2.db 0 0 DB_UNKNOWN -dbenv $e]
-	error_check_good db_open2 [is_substr $db2 db] 1
+	error_check_good dbopen2 [is_valid_db $db2] TRUE
 
 	set db3 [dbopen datafile3.db 0 0 DB_UNKNOWN -dbenv $e]
-	error_check_good db_open3 [is_substr $db3 db] 1
+	error_check_good dbopen3 [is_valid_db $db3] TRUE
 
 	# Finally close all the files
 	error_check_good db_close1 [$db1 close] 0

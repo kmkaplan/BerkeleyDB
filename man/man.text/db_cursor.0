@@ -10,13 +10,13 @@ SSYYNNOOPPSSIISS
        DDBBccuurrssoorr-->>cc__cclloossee((DDBBCC **ccuurrssoorr));;
 
        iinntt
-       DDBBccuurrssoorr-->>cc__ddeell((DDBBCC **ccuurrssoorr,, iinntt ffllaaggss));;
+       DDBBccuurrssoorr-->>cc__ddeell((DDBBCC **ccuurrssoorr,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
-       DDBBccuurrssoorr-->>cc__ggeett((DDBBCC **ccuurrssoorr,, DDBBTT **kkeeyy,, DDBBTT **ddaattaa,, iinntt ffllaaggss));;
+       DDBBccuurrssoorr-->>cc__ggeett((DDBBCC **ccuurrssoorr,, DDBBTT **kkeeyy,, DDBBTT **ddaattaa,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
-       DDBBccuurrssoorr-->>cc__ppuutt((DDBBCC **,, DDBBTT **kkeeyy,, DDBBTT **ddaattaa,, iinntt ffllaaggss));;
+       DDBBccuurrssoorr-->>cc__ppuutt((DDBBCC **,, DDBBTT **kkeeyy,, DDBBTT **ddaattaa,, uu__iinntt3322__tt ffllaaggss));;
 
 DDEESSCCRRIIPPTTIIOONN
        The  DB  library  is  a family of groups of functions that
@@ -72,7 +72,7 @@ DDEESSCCRRIIPPTTIIOONN
             The _c___c_l_o_s_e function returns the value  of  _e_r_r_n_o  on
             failure and 0 on success.
 
-       int (*c_del)(DBC *cursor, int flags);
+       int (*c_del)(DBC *cursor, u_int32_t flags);
             A  pointer  to  a  function that deletes the key/data
             pair currently referenced by the cursor.
 
@@ -87,7 +87,8 @@ DDEESSCCRRIIPPTTIIOONN
             failure, 0 on success, and DB_KEYEMPTY if the element
             has already been deleted.
 
-       int (*c_get)(DBC *cursor, DBT *key, DBT *data, int flags);
+       int (*c_get)(DBC *cursor, DBT *key, DBT *data, u_int32_t
+            flags);
             A pointer to a function that retrieves key/data pairs
             from the database.  The address and length of the key
             are returned  in  the  structure  referenced  by  _k_e_y
@@ -111,7 +112,6 @@ DDEESSCCRRIIPPTTIIOONN
             the same database file  without  using  locking,  the
             results are undefined.  For more detail, see the sec-
             tion below on cursor stability.
-
 
             The parameter _f_l_a_g_s must be set to exactly one of the
             following values:
@@ -195,41 +195,42 @@ DDEESSCCRRIIPPTTIIOONN
                  the data item, and, in the  case  of  the  btree
                  access method, the returned key/data pair is the
                  smallest key greater than or equal to the speci-
-                 fied  key,  permitting  partial  key matches and
-                 range searches.
+                 fied  key (as determined by the comparison func-
+                 tion), permitting partial key matches and  range
+                 searches.
 
             DB_SET_RECNO
-                 Move the cursor to the specific numbered  record
+                 Move  the cursor to the specific numbered record
                  of  the  database,  and  return  the  associated
-                 key/data pair.  The _d_a_t_a field of the  specified
-                 _k_e_y  must be a pointer to a memory location from
-                 which a _d_b___r_e_c_n_o___t may be read, as described  in
+                 key/data  pair.  The _d_a_t_a field of the specified
+                 _k_e_y must be a pointer to a memory location  from
+                 which  a _d_b___r_e_c_n_o___t may be read, as described in
                  _d_b___d_b_t(3).  This memory location will be read to
                  determine the record to be retrieved.
 
                  For DB_SET_RECNO to be specified, the underlying
-                 database  must be of type btree and it must have
-                 been  created  with  the  DB_RECNUM  flag   (see
+                 database must be of type btree and it must  have
+                 been   created  with  the  DB_RECNUM  flag  (see
                  _d_b___o_p_e_n(3)).
 
             DB_GET_RECNO
-                 Return  the  record  number  associated with the
-                 cursor.  The record number will be  returned  in
+                 Return the record  number  associated  with  the
+                 cursor.   The  record number will be returned in
                  the data DBT as described in _d_b___d_b_t(3).  The _k_e_y
                  parameter is ignored.
 
                  For DB_GET_RECNO to be specified, the underlying
-                 database  must be of type btree and it must have
-                 been  created  with  the  DB_RECNUM  flag   (see
+                 database must be of type btree and it must  have
+                 been   created  with  the  DB_RECNUM  flag  (see
                  _d_b___o_p_e_n(3)).
 
-            Otherwise,  the  _c___g_e_t  function returns the value of
+            Otherwise, the _c___g_e_t function returns  the  value  of
             _e_r_r_n_o on failure and 0 on success.
 
-            If _c___g_e_t fails for any reason, the state of the  cur-
+            If  _c___g_e_t fails for any reason, the state of the cur-
             sor will be unchanged.
 
-       int (*c_put)(DBC *, DBT *key, DBT *data, int flags);
+       int (*c_put)(DBC *, DBT *key, DBT *data, u_int32_t flags);
             A  pointer  to  a function that stores key/data pairs
             into the database.
 
@@ -381,8 +382,8 @@ EERRRROORRSS
        library functions: DB->del(3), calloc(3), fcntl(2),
        fflush(3), lock_get(3), lock_id(3), lock_put(3),
        lock_vec(3), log_put(3), malloc(3), memcpy(3), memmove(3),
-       memp_fget(3), memp_fput(3), memp_fset(3), memset(3), real-
-       loc(3), and strerror(3).
+       memp_fget(3), memp_fput(3), memp_fset(3), memset(3),
+       realloc(3), and strerror(3).
 
        In addition, the _D_B_c_u_r_s_o_r_-_>_c___d_e_l  function  may  fail  and
        return _e_r_r_n_o for the following conditions:
@@ -434,6 +435,7 @@ EERRRROORRSS
 
        In addition, the _D_B_c_u_r_s_o_r_-_>_c___p_u_t  function  may  fail  and
        return _e_r_r_n_o for the following conditions:
+
 
        [EACCES]
             An attempt was made to modify a read-only database.

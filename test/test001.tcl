@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test001.tcl	10.4 (Sleepycat) 8/24/97
+#	@(#)test001.tcl	10.7 (Sleepycat) 4/26/98
 #
 # DB Test 1 {access method}
 # Use the first 10,000 entries from the dictionary.
@@ -27,6 +27,7 @@ proc test001 { method {nentries 10000} args } {
 	cleanup $testdir
 	set db [eval [concat dbopen \
 	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	set did [open $dict]
 
 	set flags 0
@@ -51,11 +52,11 @@ proc test001 { method {nentries 10000} args } {
 		} else {
 			set key $str
 		}
-		$db $put $txn $key $str $flags
+		set ret [$db $put $txn $key $str $flags]
+		error_check_good put $ret 0
+
 		set ret [$db get $txn $key $flags]
-		if { [string compare $ret $str] != 0 } {
-			error "Test001: put $key got $ret"
-		}
+		error_check_good get $ret $str
 		incr count
 	}
 	close $did
@@ -109,16 +110,12 @@ proc test001 { method {nentries 10000} args } {
 
 # Check function for test001; keys and data are identical
 proc test001.check { key data } {
-	if { [string compare $key $data] != 0 } {
-		error "Test001: key/data mismatch: |$key| |$data|"
-	}
+	error_check_good "key/data mismatch" $data $key
 }
 
 proc test001_recno.check { key data } {
 global dict
 global kvals
 	error_check_good key"$key"_exists [info exists kvals($key)] 1
-	if { [string compare $kvals($key) $data] != 0 } {
-		error "Test001: key/data mismatch: |$key| got |$data| expected $kvals($key)"
-	}
+	error_check_good "key/data mismatch, key $key" $data $kvals($key)
 }

@@ -1,13 +1,13 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)mp_pr.c	10.20 (Sleepycat) 11/26/97";
+static const char sccsid[] = "@(#)mp_pr.c	10.24 (Sleepycat) 4/26/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -15,7 +15,6 @@ static const char sccsid[] = "@(#)mp_pr.c	10.20 (Sleepycat) 11/26/97";
 
 #include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #endif
@@ -24,8 +23,6 @@ static const char sccsid[] = "@(#)mp_pr.c	10.20 (Sleepycat) 11/26/97";
 #include "shqueue.h"
 #include "db_shash.h"
 #include "mp.h"
-
-void __memp_debug __P((DB_MPOOL *, FILE *, int));
 
 static void __memp_pbh __P((FILE *, DB_MPOOL *, BH *, int));
 static void __memp_pdbmf __P((FILE *, DB_MPOOLFILE *, int));
@@ -79,7 +76,8 @@ memp_stat(dbmp, gspp, fspp, db_malloc)
 		for (len = 0,
 		    mfp = SH_TAILQ_FIRST(&dbmp->mp->mpfq, __mpoolfile);
 		    mfp != NULL;
-		    ++len, mfp = SH_TAILQ_NEXT(mfp, q, __mpoolfile));
+		    ++len, mfp = SH_TAILQ_NEXT(mfp, q, __mpoolfile))
+			;
 
 		UNLOCKREGION(dbmp);
 
@@ -174,12 +172,13 @@ __memp_debug(dbmp, fp, data)
 	    DB_LINE, (u_long)getpid());
 
 	if (data)
-		(void)fprintf(fp, "    fd: %d; addr %lx; maddr %lx\n",
-		    dbmp->fd, (u_long)dbmp->addr, (u_long)dbmp->maddr);
+		(void)fprintf(fp, "    addr %lx; maddr %lx\n",
+		    (u_long)dbmp->addr, (u_long)dbmp->reginfo.addr);
 
 	/* Display the DB_MPOOLFILE structures. */
 	for (cnt = 0, dbmfp = TAILQ_FIRST(&dbmp->dbmfq);
-	    dbmfp != NULL; ++cnt, dbmfp = TAILQ_NEXT(dbmfp, q));
+	    dbmfp != NULL; ++cnt, dbmfp = TAILQ_NEXT(dbmfp, q))
+		;
 	(void)fprintf(fp, "%lu process-local files\n", cnt);
 	for (dbmfp = TAILQ_FIRST(&dbmp->dbmfq);
 	    dbmfp != NULL; dbmfp = TAILQ_NEXT(dbmfp, q)) {
@@ -251,7 +250,8 @@ __memp_pmp(fp, dbmp, mp, data)
 
 	/* Display the MPOOLFILE structures. */
 	for (cnt = 0, mfp = SH_TAILQ_FIRST(&dbmp->mp->mpfq, __mpoolfile);
-	    mfp != NULL; ++cnt, mfp = SH_TAILQ_NEXT(mfp, q, __mpoolfile));
+	    mfp != NULL; ++cnt, mfp = SH_TAILQ_NEXT(mfp, q, __mpoolfile))
+		;
 	(void)fprintf(fp, "%d total files\n", cnt);
 	for (cnt = 1, mfp = SH_TAILQ_FIRST(&dbmp->mp->mpfq, __mpoolfile);
 	    mfp != NULL; ++cnt, mfp = SH_TAILQ_NEXT(mfp, q, __mpoolfile)) {

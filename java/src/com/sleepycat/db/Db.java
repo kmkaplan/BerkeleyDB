@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)Db.java	10.2 (Sleepycat) 11/20/97
+ *	@(#)Db.java	10.4 (Sleepycat) 4/10/98
  */
 
 package com.sleepycat.db;
@@ -177,7 +177,8 @@ public class Db
     public native int fd()
          throws DbException;
 
-    public native void get(DbTxn txnid, Dbt key, Dbt data, int flags)
+    // returns: 0, DB_NOTFOUND, or throws error
+    public native int get(DbTxn txnid, Dbt key, Dbt data, int flags)
          throws DbException;
 
     // returns: 0, DB_KEYEXIST, or throws error

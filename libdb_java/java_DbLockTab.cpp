@@ -1,13 +1,13 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)java_DbLockTab.cpp	10.1 (Sleepycat) 11/10/97";
+static const char sccsid[] = "@(#)java_DbLockTab.cpp	10.3 (Sleepycat) 4/10/98";
 #endif /* not lint */
 
 #include <jni.h>
@@ -53,7 +53,9 @@ JNIEXPORT /*DbLock*/ jobject JNICALL Java_com_sleepycat_db_DbLockTab_get
     int err;
     DB_LOCKTAB *dblocktab = get_DB_LOCKTAB(jnienv, jthis);
     DB_LOCK dblock;
-    LockedDBT dbobj(jnienv, obj);
+    LockedDBT dbobj(jnienv, obj, 0);
+    if (dbobj.has_error())
+        return 0;
     /*DbLock*/ jobject retval = NULL;
 
     if (!verify_non_null(jnienv, dblocktab))

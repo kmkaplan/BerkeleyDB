@@ -1,6 +1,6 @@
 /*	BSDI $Id: queue.h,v 2.4 1996/07/02 13:22:11 bostic Exp $	*/
 
-/* 
+/*
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
  *

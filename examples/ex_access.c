@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)ex_access.c	10.12 (Sleepycat) 11/10/97
+ *	@(#)ex_access.c	10.14 (Sleepycat) 4/10/98
  */
 
 #include "config.h"
@@ -66,7 +66,6 @@ main(argc, argv)
 
 	/* Initialize the database. */
 	memset(&dbinfo, 0, sizeof(dbinfo));
-	dbinfo.db_cachesize = 32 * 1024;	/* Cachesize: 32K. */
 	dbinfo.db_pagesize = 1024;		/* Page size: 1K. */
 
 	/* Create the database. */
@@ -154,6 +153,7 @@ db_init(home)
 	}
 	dbenv->db_errfile = stderr;
 	dbenv->db_errpfx = progname;
+	dbenv->mp_size = 32 * 1024;		/* Cachesize: 32K. */
 
 	if ((errno = db_appinit(home, NULL, dbenv, DB_CREATE)) != 0) {
 		fprintf(stderr,

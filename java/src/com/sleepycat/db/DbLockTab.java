@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)DbLockTab.java	10.3 (Sleepycat) 11/25/97
+ *	@(#)DbLockTab.java	10.4 (Sleepycat) 4/10/98
  */
 
 package com.sleepycat.db;

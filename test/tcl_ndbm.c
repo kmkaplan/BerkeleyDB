@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)tcl_ndbm.c	10.5 (Sleepycat) 7/2/97";
+static const char sccsid[] = "@(#)tcl_ndbm.c	10.12 (Sleepycat) 4/27/98";
 #endif /* not lint */
 
 /*
@@ -22,18 +22,17 @@ static const char sccsid[] = "@(#)tcl_ndbm.c	10.5 (Sleepycat) 7/2/97";
 
 #include <errno.h>
 #include <fcntl.h>
-#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #endif
 
 #include <tcl.h>
 
-#define	DB_DBM_HSEARCH
+#define	DB_DBM_HSEARCH	1
 #include "db_int.h"
 
 #include "dbtest.h"
 #include "test_ext.h"
-#include "common_ext.h"
 
 /*
  * ndbmopen_cmd --
@@ -54,8 +53,9 @@ ndbmopen_cmd(notused, interp, argc, argv)
 {
 	static int db_number = 0;
 	DBM *dbm;
+	u_int32_t flags;
+	int mode, oflags, tclint;
 	char dbname[50], *name;
-	int flags, mode, oflags;
 
 	notused = NULL;
 
@@ -67,9 +67,11 @@ ndbmopen_cmd(notused, interp, argc, argv)
 	debug_check();
 
 	/* Check flags and mode. */
-	if ((Tcl_GetInt(interp, argv[2], &flags) != TCL_OK) ||
-	    (Tcl_GetInt(interp, argv[3], &mode) != TCL_OK)) {
-		Tcl_ResetResult(interp);
+	if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK)
+		goto usage;
+	flags = (u_int32_t)tclint;
+	if (Tcl_GetInt(interp, argv[3], &mode) != TCL_OK) {
+usage:		Tcl_ResetResult(interp);
 		Tcl_AppendResult(interp, "\nUsage: ", NDBMOPEN_USAGE, NULL);
 		return (TCL_OK);
 	}
@@ -113,14 +115,14 @@ ndbmopen_cmd(notused, interp, argc, argv)
 #define NDBMCLEAR_USAGE "ndbmN clearerr"
 #define NDBMCLOSE_USAGE "ndbmN close"
 #define NDBMDEL_USAGE "ndbmN delete key"
+#define NDBMDIRFNO_USAGE "ndbmM dirfno"
 #define NDBMERROR_USAGE "ndbmN error"
 #define NDBMFETCH_USAGE "ndbmN fetch key"
 #define NDBMFIRST_USAGE "ndbmN firstkey"
 #define NDBMNEXT_USAGE "ndbmN nextkey"
+#define NDBMPAGFNO_USAGE "ndbmM pagfno"
+#define NDBMRDONLY_USAGE "ndbmM rdonly"
 #define NDBMSTORE_USAGE "ndbmN store key datum flags"
-
-int dbm_clearerr __P((DBM *));			/* XXX: Shut the compiler up. */
-int dbm_error __P((DBM *));			/* XXX: Shut the compiler up. */
 
 int
 ndbmwidget_cmd(cd_dbm, interp, argc, argv)
@@ -132,9 +134,9 @@ ndbmwidget_cmd(cd_dbm, interp, argc, argv)
 	DBM *dbm;
 	datum data, key;
 	int flags, ret;
-	char *cmd;
+	char *cmd, fdval[16];
 
-	cmd = NULL;				/* XXX: Shut the compiler up. */
+	COMPQUIET(cmd, NULL);
 
 	USAGE_GE(argc, 2, NDBMWIDGET_USAGE, 0);
 
@@ -160,6 +162,12 @@ ndbmwidget_cmd(cd_dbm, interp, argc, argv)
 		debug_check();
 		ret = dbm_delete(dbm, key);
 		cmd = "dbm_delete:";
+	} else if (strcmp(argv[1], "dirfno") == 0) {
+		USAGE(argc, 2, NDBMDIRFNO_USAGE, 0);
+		ret = dbm_dirfno(dbm);
+		sprintf(fdval, "%d", ret);
+		Tcl_SetResult(interp, fdval, TCL_VOLATILE);
+		return (TCL_OK);
 	} else if (strcmp(argv[1], "error") == 0) {
 		USAGE(argc, 2, NDBMERROR_USAGE, 0);
 		debug_check();
@@ -195,6 +203,19 @@ ndbmwidget_cmd(cd_dbm, interp, argc, argv)
 		else
 			Tcl_SetResult(interp, data.dptr, TCL_VOLATILE);
 		return (TCL_OK);
+	} else if (strcmp(argv[1], "pagfno") == 0) {
+		USAGE(argc, 2, NDBMPAGFNO_USAGE, 0);
+		ret = dbm_pagfno(dbm);
+		sprintf(fdval, "%d", ret);
+		Tcl_SetResult(interp, fdval, TCL_VOLATILE);
+		return (TCL_OK);
+	} else if (strcmp(argv[1], "rdonly") == 0) {
+		USAGE(argc, 2, NDBMRDONLY_USAGE, 0);
+		if (dbm_rdonly(dbm))
+			Tcl_SetResult(interp, "1", TCL_STATIC);
+		else
+			Tcl_SetResult(interp, "0", TCL_STATIC);
+		return (TCL_OK);
 	} else if (strcmp(argv[1], "store") == 0) {
 		USAGE(argc, 5, NDBMSTORE_USAGE, 0);
 		if (Tcl_GetInt(interp, argv[4], &flags) != TCL_OK)
@@ -205,7 +226,7 @@ ndbmwidget_cmd(cd_dbm, interp, argc, argv)
 		data.dsize = strlen(argv[3]) + 1;
 		debug_check();
 		ret = dbm_store(dbm, key, data, flags);
-		cmd = "dbm_store: ";
+		cmd = "dbm_store:";
 	} else {
 		Tcl_SetResult(interp, NDBMWIDGET_USAGE, TCL_STATIC);
 		return (TCL_ERROR);

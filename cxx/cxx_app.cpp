@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)cxx_app.cpp	10.11 (Sleepycat) 10/25/97";
+static const char sccsid[] = "@(#)cxx_app.cpp	10.14 (Sleepycat) 4/10/98";
 #endif /* not lint */
 
 #include "db_cxx.h"
@@ -29,7 +29,7 @@ static DbEnv *currentApp = 0;
 
 ostream *DbEnv::error_stream_ = 0;
 
-DbEnv::DbEnv(const char *homeDir, char *const *db_config, int flags)
+DbEnv::DbEnv(const char *homeDir, char *const *db_config, u_int32_t flags_arg)
 :   error_model_(Exception)
 {
     DB_ENV *env = this;
@@ -37,7 +37,7 @@ DbEnv::DbEnv(const char *homeDir, char *const *db_config, int flags)
 
     int err;
 
-    if ((err = db_appinit(homeDir, db_config, env, flags)) != 0) {
+    if ((err = db_appinit(homeDir, db_config, env, flags_arg)) != 0) {
         DB_ERROR("DbEnv::DbEnv", err);
     }
     currentApp = this;
@@ -66,13 +66,13 @@ DbEnv::~DbEnv()
     }
 }
 
-int DbEnv::appinit(const char *homeDir, char *const *db_config, int flags)
+int DbEnv::appinit(const char *homeDir, char *const *db_config, u_int32_t flags_arg)
 {
     DB_ENV *env = this;
 
     int err;
 
-    if ((err = db_appinit(homeDir, db_config, env, flags)) != 0) {
+    if ((err = db_appinit(homeDir, db_config, env, flags_arg)) != 0) {
         DB_ERROR("DbEnv::appinit", err);
     }
     currentApp = this;
@@ -237,8 +237,6 @@ DbInfo &DbInfo::operator = (const DbInfo &that)
     memcpy(to, from, sizeof(DB_INFO));
     return *this;
 }
-
-
 
 DB_RW_ACCESS(DbInfo, int, lorder, db_lorder)
 DB_RW_ACCESS(DbInfo, size_t, cachesize, db_cachesize)

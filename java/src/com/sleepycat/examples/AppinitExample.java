@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)AppinitExample.java	10.2 (Sleepycat) 11/20/97
+ *	@(#)AppinitExample.java	10.3 (Sleepycat) 4/10/98
  */
 
 package com.sleepycat.examples;

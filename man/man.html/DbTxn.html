@@ -2,9 +2,9 @@
 <HEAD>
 <TITLE>DbTxn</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>DbTxn</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        <B>#include</B> <B>&lt;db</B>_<B>cxx.h&gt;</B>
@@ -47,11 +47,11 @@
        Transaction semantics can be applied to the access methods
        described in <B><A HREF="Db.html">Db(3)</A></B> through method call parameters.
 
-       The model intended for transactional use (and that is used
-       by  the  access  methods)  is  that write-ahead logging is
+       The model intended for transactional use (and the one that
+       is  used  by  the  access  methods) is write-ahead logging
        provided by <B><A HREF="DbLog.html">DbLog(3)</A></B> to record  both  before-  and  after-
-       image  logging.   Locking  follows  a  two-phase  protocol
-       (i.e., all locks are released at transaction commit).
+       images.   Locking  follows  a two-phase protocol, with all
+       locks being released at transaction commit.
 
   DbTxn::prepare
        The DbTxn::prepare method initiates the beginning of a two
@@ -129,9 +129,11 @@
        databases are opened, the application can  group  sets  of
        operations   into   transactions,   by   surrounding   the
        operations   with   the    appropriate    DbTxnMgr::begin,
-       DbTxn::commit  and  DbTxn::abort  calls.   Note, it is not
-       necessary to transaction protect  read-only  transactions,
-       unless those transactions require repeatable reads.
+       DbTxn::commit  and DbTxn::abort calls.  Databases accessed
+       by  a  transaction  must  not   be   closed   during   the
+       transaction.   Note,  it  is  not necessary to transaction
+       protect read-only transactions, unless those  transactions
+       require repeatable reads.
 
        The Db access methods will make the appropriate calls into
        the lock, log and  memory  pool  subsystems  in  order  to
@@ -206,6 +208,29 @@
 
 
 </PRE>
+<H2>TRANSACTION ID LIMITS</H2><PRE>
+       The transaction ID space in Berkeley  DB  is  2^31,  or  2
+       billion  entries.   It  is possible that some environments
+       may need to be aware  of  this  limitation.   Consider  an
+       application  performing  600  transactions a second for 15
+       hours a day.  The transaction ID space  will  run  out  in
+       roughly 66 days:
+
+              2^31 / (600 * 15 * 60 * 60) = 66
+
+       Doing   only   100  transactions  a  second  exhausts  the
+       transaction ID space in roughly one year.
+
+       The transaction ID space is reset each  time  recovery  is
+       run.   If  you reach the end of your transaction ID space,
+       shut down your applications and restart them after running
+       recovery  (see  <B><A HREF="db_recover.html">db_recover(1)</A></B>  for more information).  The
+       most   recently   allocated   transaction   ID   is    the
+       st_last_txnid   value   in   the   transaction  statistics
+       information, and is displayed by the <B><A HREF="db_stat.html">db_stat(1)</A></B> utility.
+
+
+</PRE>
 <H2>ERRORS</H2><PRE>
        Methods marked as returning errno will, by default,  throw
        an exception that encapsulates the error information.  The
@@ -263,7 +288,7 @@
        <B><A HREF="DbTxnMgr.html">DbTxnMgr(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

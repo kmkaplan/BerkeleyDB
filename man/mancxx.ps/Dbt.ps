@@ -1,6 +1,6 @@
 %!PS-Adobe-3.0
 %%Creator: groff version 1.10
-%%CreationDate: Fri Nov 28 16:33:48 1997
+%%CreationDate: Mon May  4 20:57:17 1998
 %%DocumentNeededResources: font Times-Bold
 %%+ font Times-Roman
 %%+ font Times-Italic
@@ -334,144 +334,143 @@ E F0(and)2.5 E F1(set_ulen)2.5 E F0(.).24 E(u_int32_t dlen;)108 259.2 Q
 (set_\215a)5.007 E(gs)-.1 E F0 7.507(.T).27 G 2.507(he \215ags v)-7.507
 F 2.507(alue is speci\214ed by)-.25 F/F2 10/Times-Bold@0 SF(or)5.008 E
 F0('ing)A(together one or more of the follo)133 388.8 Q(wing v)-.25 E
-(alues:)-.25 E(DB_DBT_MALLOC)133 405.6 Q .85(Ignored e)158 417.6 R .85
+(alues:)-.25 E(DB_DBT_MALLOC)133 417.6 Q .85(Ignored e)158 429.6 R .85
 (xcept when retrie)-.15 F .849
 (ving information from a database, e.g., a)-.25 F F1(Db::g)3.349 E(et)
 -.1 E F0(or)3.349 E F1(Dbc::g)3.349 E(et)-.1 E F0(call.)3.349 E .594
-(This \215ag causes Db to allocate memory for the returned k)158 429.6 R
+(This \215ag causes Db to allocate memory for the returned k)158 441.6 R
 .895 -.15(ey o)-.1 H 3.095(rd).15 G .595(ata item \(using)-3.095 F F1
-(malloc)3.095 E F0 .595(\(3\), or).31 F .51(the user)158 441.6 R .51
+(malloc)3.095 E F0 .595(\(3\), or).31 F .51(the user)158 453.6 R .51
 (-speci\214ed malloc method\) and return a pointer to it in the)-.2 F F1
 (data)3.009 E F0 .509(\214eld of the k)3.009 F .809 -.15(ey o)-.1 H
-3.009(rd).15 G(ata)-3.009 E .648(Dbt object.)158 453.6 R .648(The allocated memory becomes the responsibility of the calling application.)
+3.009(rd).15 G(ata)-3.009 E .648(Dbt object.)158 465.6 R .648(The allocated memory becomes the responsibility of the calling application.)
 5.648 F .649(It is)5.649 F
-(an error to specify both DB_DBT_MALLOC and DB_DBT_USERMEM.)158 465.6 Q
-(DB_DBT_USERMEM)133 482.4 Q .85(Ignored e)158 494.4 R .85
+(an error to specify both DB_DBT_MALLOC and DB_DBT_USERMEM.)158 477.6 Q
+(DB_DBT_USERMEM)133 506.4 Q .85(Ignored e)158 518.4 R .85
 (xcept when retrie)-.15 F .849
 (ving information from a database, e.g., a)-.25 F F1(Db::g)3.349 E(et)
 -.1 E F0(or)3.349 E F1(Dbc::g)3.349 E(et)-.1 E F0(call.)3.349 E(The)158
-506.4 Q F1(data)3.523 E F0 1.023(\214eld of the k)3.523 F 1.323 -.15
+530.4 Q F1(data)3.523 E F0 1.023(\214eld of the k)3.523 F 1.323 -.15
 (ey o)-.1 H 3.523(rd).15 G 1.023
 (ata object must reference memory that is at least)-3.523 F F1(ulen)
-3.524 E F0 1.024(bytes in)3.524 F 3.617(length. If)158 518.4 R 1.117(the length of the requested item is less than or equal to that number of bytes, the)
-3.617 F .823(item is copied into the memory referenced by the)158 530.4
+3.524 E F0 1.024(bytes in)3.524 F 3.617(length. If)158 542.4 R 1.117(the length of the requested item is less than or equal to that number of bytes, the)
+3.617 F .823(item is copied into the memory referenced by the)158 554.4
 R F1(data)3.323 E F0 3.324(\214eld. Otherwise,)3.323 F .824
-(an error is returned,)3.324 F(the)158 542.4 Q F1(size)3.002 E F0 .501
+(an error is returned,)3.324 F(the)158 566.4 Q F1(size)3.002 E F0 .501
 (\214eld is set to the length needed for the requested item, and the)
 3.001 F F1(errno)3.001 E F0 -.25(va)3.001 G .501(riable is set to).25 F
-2.5(ENOMEM. It)158 554.4 R
+2.5(ENOMEM. It)158 578.4 R
 (is an error to specify both DB_DBT_MALLOC and DB_DBT_USERMEM.)2.5 E
-(DB_DBT_P)133 571.2 Q(AR)-.92 E(TIAL)-.6 E .523(Ignored e)158 583.2 R
+(DB_DBT_P)133 607.2 Q(AR)-.92 E(TIAL)-.6 E .523(Ignored e)158 619.2 R
 .523(xcept when speci\214ed for a data parameter)-.15 F 3.024(,w)-.4 G
 .524(here this \215ag causes the partial retrie)-3.024 F -.25(va)-.25 G
-(l).25 E .17(or storage of an item.)158 595.2 R .169
+(l).25 E .17(or storage of an item.)158 631.2 R .169
 (If the calling application is doing a get, the)5.17 F F1(dlen)2.669 E
 F0 .169(bytes starting)2.669 F F1(dof)2.669 E(f)-.18 E F0(bytes)2.669 E
-1.427(from the be)158 607.2 R 1.427(ginning of the retrie)-.15 F -.15
+1.427(from the be)158 643.2 R 1.427(ginning of the retrie)-.15 F -.15
 (ve)-.25 G 3.927(dd).15 G 1.427(ata record are returned as if the)-3.927
 F 3.928(yc)-.15 G 1.428(omprised the entire)-3.928 F 3.093(record. If)
-158 619.2 R(an)3.093 E 3.093(yo)-.15 G 3.093(ra)-3.093 G .593
+158 655.2 R(an)3.093 E 3.093(yo)-.15 G 3.093(ra)-3.093 G .593
 (ll of the speci\214ed bytes do not e)-3.093 F .592
-(xist in the record, the get is successful and)-.15 F(the e)158 631.2 Q
-(xisting bytes or 0 bytes are returned.)-.15 E -.15(Fo)158 655.2 S 2.82
+(xist in the record, the get is successful and)-.15 F(the e)158 667.2 Q
+(xisting bytes or 0 bytes are returned.)-.15 E -.15(Fo)158 691.2 S 2.82
 (re).15 G .32(xample, if the data portion of a retrie)-2.97 F -.15(ve)
 -.25 G 2.82(dr).15 G .32(ecord w)-2.82 F .32
 (as 100 bytes, and a partial retrie)-.1 F -.25(va)-.25 G 2.82(lw).25 G
-(as)-2.92 E .055(done using a Dbt ha)158 667.2 R .055(ving a)-.2 F F1
+(as)-2.92 E .055(done using a Dbt ha)158 703.2 R .055(ving a)-.2 F F1
 (dlen)2.555 E F0 .054(\214eld of 20 and a)2.554 F F1(dof)2.554 E(f)-.18
 E F0 .054(\214eld of 85, the get call w)2.554 F .054(ould succeed, the)
--.1 F F1(data)158 679.2 Q F0(\214eld w)2.5 E
+-.1 F F1(data)158 715.2 Q F0(\214eld w)2.5 E
 (ould reference the last 15 bytes of the record, and the)-.1 E F1(size)
-2.5 E F0(\214eld w)2.5 E(ould be set to 15.)-.1 E .171
-(If the calling application is doing a put, the)158 703.2 R F1(dlen)
-2.671 E F0 .171(bytes starting)2.671 F F1(dof)2.671 E(f)-.18 E F0 .172
-(bytes from the be)2.671 F .172(ginning of)-.15 F .65(the speci\214ed k)
-158 715.2 R -.15(ey)-.1 G 1.75 -.55('s d).15 H .649
-(ata record are replaced by the data speci\214ed by the).55 F F1(data)
-3.149 E F0(and)3.149 E F1(size)3.149 E F0(objects.)3.149 E(If)158 727.2
-Q F1(dlen)2.938 E F0 .439(is smaller than)2.939 F F1(size)2.939 E F0
-2.939(,t).18 G .439(he record will gro)-2.939 F 1.739 -.65(w, a)-.25 H
-.439(nd if).65 F F1(dlen)2.939 E F0 .439(is lar)2.939 F .439(ger than)
--.18 F F1(size)2.939 E F0 2.939(,t).18 G .439(he record will)-2.939 F
-(No)266.295 768 Q -.15(ve)-.15 G(mber 24, 1997).15 E(2)189.295 E EP
+2.5 E F0(\214eld w)2.5 E(ould be set to 15.)-.1 E(April 10, 1998)276.695
+768 Q(2)199.695 E EP
 %%Page: 3 3
 %%BeginPageSetup
 BP
 %%EndPageSetup
-/F0 10/Times-Roman@0 SF 412.18(Dbt\(3\) Dbt\(3\))72 48 R 2.606
-(shrink. If)158 84 R .106(the speci\214ed bytes do not e)2.606 F .106
+/F0 10/Times-Roman@0 SF 412.18(Dbt\(3\) Dbt\(3\))72 48 R .171
+(If the calling application is doing a put, the)158 84 R/F1 10
+/Times-Italic@0 SF(dlen)2.671 E F0 .171(bytes starting)2.671 F F1(dof)
+2.671 E(f)-.18 E F0 .172(bytes from the be)2.671 F .172(ginning of)-.15
+F .65(the speci\214ed k)158 96 R -.15(ey)-.1 G 1.75 -.55('s d).15 H .649
+(ata record are replaced by the data speci\214ed by the).55 F F1(data)
+3.149 E F0(and)3.149 E F1(size)3.149 E F0(objects.)3.149 E(If)158 108 Q
+F1(dlen)2.938 E F0 .439(is smaller than)2.939 F F1(size)2.939 E F0 2.939
+(,t).18 G .439(he record will gro)-2.939 F 1.739 -.65(w, a)-.25 H .439
+(nd if).65 F F1(dlen)2.939 E F0 .439(is lar)2.939 F .439(ger than)-.18 F
+F1(size)2.939 E F0 2.939(,t).18 G .439(he record will)-2.939 F 2.606
+(shrink. If)158 120 R .106(the speci\214ed bytes do not e)2.606 F .106
 (xist, the record will be e)-.15 F .106
-(xtended using nul bytes as neces-)-.15 F(sary)158 96 Q 2.5(,a)-.65 G
+(xtended using nul bytes as neces-)-.15 F(sary)158 132 Q 2.5(,a)-.65 G
 (nd the put call will succeed.)-2.5 E 1.542
-(It is an error to attempt a partial put using the)158 120 R/F1 10
-/Times-Italic@0 SF(Db::put)4.042 E F0 1.542
-(method in a database that supports)4.042 F .49(duplicate records.)158
-132 R -.15(Pa)5.49 G .49(rtial puts in databases supporting duplicate records must be done using a)
-.15 F F1(Db::cur)158 144 Q(sor)-.1 E F0 2.803(method. It)2.802 F .303
+(It is an error to attempt a partial put using the)158 156 R F1(Db::put)
+4.042 E F0 1.542(method in a database that supports)4.042 F .49
+(duplicate records.)158 168 R -.15(Pa)5.49 G .49(rtial puts in databases supporting duplicate records must be done using a)
+.15 F F1(Db::cur)158 180 Q(sor)-.1 E F0 2.803(method. It)2.802 F .303
 (is an error to attempt a partial put with dif)2.803 F(fering)-.25 E F1
 (dlen)2.803 E F0(and)2.803 E F1(size)2.803 E F0 -.25(va)2.803 G .303
-(lues in).25 F 2.5(ar)158 156 S(ecno database with \214x)-2.5 E
-(ed-length records.)-.15 E -.15(Fo)158 180 S 2.697(re).15 G .197
+(lues in).25 F 2.5(ar)158 192 S(ecno database with \214x)-2.5 E
+(ed-length records.)-.15 E -.15(Fo)158 216 S 2.697(re).15 G .197
 (xample, if the data portion of a retrie)-2.847 F -.15(ve)-.25 G 2.697
 (dr).15 G .197(ecord w)-2.697 F .196(as 100 bytes, and a partial put w)
--.1 F .196(as done)-.1 F 1.093(using a Dbt ha)158 192 R 1.093(ving a)-.2
+-.1 F .196(as done)-.1 F 1.093(using a Dbt ha)158 228 R 1.093(ving a)-.2
 F F1(dlen)3.593 E F0 1.093(\214eld of 20, a)3.593 F F1(dof)3.593 E(f)
 -.18 E F0 1.093(\214eld of 85, and a)3.593 F F1(size)3.594 E F0 1.094
-(\214eld of 30, the resulting)3.594 F .786(record w)158 204 R .786
+(\214eld of 30, the resulting)3.594 F .786(record w)158 240 R .786
 (ould be 115 bytes in length, where the last 30 bytes w)-.1 F .786
-(ould be those speci\214ed by the)-.1 F(put call.)158 216 Q .033
-(The def)108 232.8 R .033(ault algorithm of associating returned k)-.1 F
+(ould be those speci\214ed by the)-.1 F(put call.)158 252 Q .033
+(The def)108 268.8 R .033(ault algorithm of associating returned k)-.1 F
 .333 -.15(ey o)-.1 H 2.533(rd).15 G .033
 (ata items with the Db handle returned by)-2.533 F F1(Db::open)2.534 E
-F0(\(3\)).24 E .092(will ob)108 244.8 R .092(viously not w)-.15 F .092(ork when Db handles are being used concurrently by multiple threads within a process,)
--.1 F .904(i.e, when DB_THREAD w)108 256.8 R .904(as speci\214ed to)-.1
+F0(\(3\)).24 E .092(will ob)108 280.8 R .092(viously not w)-.15 F .092(ork when Db handles are being used concurrently by multiple threads within a process,)
+-.1 F .904(i.e, when DB_THREAD w)108 292.8 R .904(as speci\214ed to)-.1
 F F1(Db::open)3.405 E F0(\(3\).).24 E/F2 10/Times-Bold@0 SF .905
 (When multiple thr)5.905 F .905(eads ar)-.18 F 3.405(eu)-.18 G .905
 (sing the r)-3.405 F(etur)-.18 E(ned)-.15 E 2.412(Db handle concurr)108
-268.8 R(ently)-.18 E 4.912(,e)-.55 G 2.412
+304.8 R(ently)-.18 E 4.912(,e)-.55 G 2.412
 (ither the DB_DBT_MALLOC or DB_DBT_USERMEM \215ags must be)-4.912 F
-(speci\214ed f)108 280.8 Q(or any Dbt used f)-.25 E(or k)-.25 E
+(speci\214ed f)108 316.8 Q(or any Dbt used f)-.25 E(or k)-.25 E
 (ey or data r)-.1 E(etrie)-.18 E -.1(va)-.15 G(l.).1 E/F3 9/Times-Bold@0
-SF(LOGICAL RECORD NUMBERS)72 297.6 Q F0 1.312
+SF(LOGICAL RECORD NUMBERS)72 333.6 Q F0 1.312
 (In all cases for the recno access method, and when calling the)108
-309.6 R F1(Db::g)3.812 E(et)-.1 E F0(and)3.812 E F1(Dbc::g)3.812 E(et)
+345.6 R F1(Db::g)3.812 E(et)-.1 E F0(and)3.812 E F1(Dbc::g)3.812 E(et)
 -.1 E F0 1.312(functions with the)3.812 F
-(DB_GET_RECNO \215ag speci\214ed, the)108 321.6 Q F1(data)2.5 E F0 .196
-(\214eld of the k)108 345.6 R .496 -.15(ey m)-.1 H .196
+(DB_GET_RECNO \215ag speci\214ed, the)108 357.6 Q F1(data)2.5 E F0 .196
+(\214eld of the k)108 381.6 R .496 -.15(ey m)-.1 H .196
 (ust be a pointer to a memory location of type).15 F F1(db_r)2.696 E
 (ecno_t)-.37 E F0 2.696(,a).68 G 2.695(st)-2.696 G -1.95(ypedef ')-2.695
 F 2.695(di)-.5 G 2.695(nt)-2.695 G .195(he <db_cxx.h>)-2.695 F 1.178
-(include \214le.)108 357.6 R 1.178(This type is a 32-bit unsigned type, \(which limits the number of logical records in a recno)
+(include \214le.)108 393.6 R 1.178(This type is a 32-bit unsigned type, \(which limits the number of logical records in a recno)
 6.178 F 2.148
 (database, and the maximum logical record which may be directly retrie)
-108 369.6 R -.15(ve)-.25 G 4.648(df).15 G 2.148
-(rom a btree database, to)-4.648 F 2.5(4,294,967,296\). The)108 381.6 R
+108 405.6 R -.15(ve)-.25 G 4.648(df).15 G 2.148
+(rom a btree database, to)-4.648 F 2.5(4,294,967,296\). The)108 417.6 R
 F1(size)2.5 E F0(\214eld of the k)2.5 E .3 -.15(ey s)-.1 H
 (hould be the size of that type, e.g.,).15 E
-(in the C programming language, `)108 405.6 Q(`sizeof\(db_recno_t\)')
+(in the C programming language, `)108 441.6 Q(`sizeof\(db_recno_t\)')
 -.74 E('.)-.74 E(Logical record numbers are 1-based, not 0-based, i.e., the \214rst record in the database is record number 1.)
-108 429.6 Q F3 -.09(BU)72 446.4 S(GS).09 E F0 .099
-(The Db access methods pro)108 458.4 R .099(vide no guarantees about byte string alignment, and applications are responsible)
--.15 F(for maintaining an)108 470.4 Q 2.5(yn)-.15 G(ecessary alignment.)
--2.5 E .37(The name Dbt is a mnemonic for `)108 487.2 R .37
+108 465.6 Q F3 -.09(BU)72 482.4 S(GS).09 E F0 .099
+(The Db access methods pro)108 494.4 R .099(vide no guarantees about byte string alignment, and applications are responsible)
+-.15 F(for maintaining an)108 506.4 Q 2.5(yn)-.15 G(ecessary alignment.)
+-2.5 E .37(The name Dbt is a mnemonic for `)108 523.2 R .37
 (`data base thang')-.74 F .369(', and w)-.74 F .369
 (as used because noone could think of a reason-)-.1 F(able name that w)
-108 499.2 Q(asn')-.1 E 2.5(ta)-.18 G(lready in use some)-2.5 E
-(where else.)-.25 E F3(SEE ALSO)72 516 Q F1(db_ar)108 528 Q -.15(ch)-.37
+108 535.2 Q(asn')-.1 E 2.5(ta)-.18 G(lready in use some)-2.5 E
+(where else.)-.25 E F3(SEE ALSO)72 552 Q F1(db_ar)108 564 Q -.15(ch)-.37
 G(ive).15 E F0(\(1\),).18 E F1(db_c)2.5 E(hec)-.15 E(kpoint)-.2 E F0
 (\(1\),).68 E F1(db_deadloc)2.5 E(k)-.2 E F0(\(1\),).67 E F1(db_dump)2.5
 E F0(\(1\),).19 E F1(db_load)2.5 E F0(\(1\),).77 E F1(db_r)2.5 E(eco)
 -.37 E(ver)-.1 E F0(\(1\),).73 E F1(db_stat)2.5 E F0(\(1\),).68 E F1
-(db_intr)108 540 Q(o)-.45 E F0(\(3\),).18 E F1(db_internal)2.5 E F0
+(db_intr)108 576 Q(o)-.45 E F0(\(3\),).18 E F1(db_internal)2.5 E F0
 (\(3\),).51 E F1(db_thr)2.5 E(ead)-.37 E F0(\(3\),).77 E F1(Db)2.5 E F0
 (\(3\),).23 E F1(Dbc)2.5 E F0(\(3\),).31 E F1(DbEn)2.5 E(v)-.4 E F0
 (\(3\),).32 E F1(DbException)2.5 E F0(\(3\),).24 E F1(DbInfo)2.5 E F0
-(\(3\),).18 E F1(DbLoc)108 552 Q(k)-.2 E F0(\(3\),).67 E F1(DbLoc)2.5 E
+(\(3\),).18 E F1(DbLoc)108 588 Q(k)-.2 E F0(\(3\),).67 E F1(DbLoc)2.5 E
 (kT)-.2 E(ab)-.92 E F0(\(3\),).23 E F1(DbLo)2.5 E(g)-.1 E F0(\(3\),).22
 E F1(DbLsn)2.5 E F0(\(3\),).24 E F1(DbMpool)2.5 E F0(\(3\),).51 E F1
 (DbMpoolF)2.5 E(ile)-.45 E F0(\(3\),).18 E F1(Dbt)2.5 E F0(\(3\),).68 E
-F1(DbTxn)2.5 E F0(\(3\),).24 E F1(DbTxnMgr)108 564 Q F0(\(3\)).73 E(No)
-266.295 768 Q -.15(ve)-.15 G(mber 24, 1997).15 E(3)189.295 E EP
+F1(DbTxn)2.5 E F0(\(3\),).24 E F1(DbTxnMgr)108 600 Q F0(\(3\)).73 E
+(April 10, 1998)276.695 768 Q(3)199.695 E EP
 %%Trailer
 end
 %%EOF

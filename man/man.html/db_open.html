@@ -2,40 +2,40 @@
 <HEAD>
 <TITLE>db_open</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>db_open</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        <B>#include</B> <B>&lt;db.h&gt;</B>
 
        <B>int</B>
-       <B>db</B>_<B>open(const</B> <B>char</B> <B>*file,</B> <B>DBTYPE</B> <B>type,</B>
-            <B>int</B> <B>flags,</B> <B>int</B> <B>mode,</B> <B>DB</B>_<B>ENV</B> <B>*dbenv,</B> <B>DB</B>_<B>INFO</B> <B>*dbinfo,</B> <B>DB</B> <B>**dbpp);</B>
+       <B>db</B>_<B>open(const</B> <B>char</B> <B>*file,</B> <B>DBTYPE</B> <B>type,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags,</B>
+            <B>int</B> <B>mode,</B> <B>DB</B>_<B>ENV</B> <B>*dbenv,</B> <B>DB</B>_<B>INFO</B> <B>*dbinfo,</B> <B>DB</B> <B>**dbpp);</B>
 
        <B>int</B>
-       <B>DB-&gt;close(DB</B> <B>*db,</B> <B>int</B> <B>flags);</B>
+       <B>DB-&gt;close(DB</B> <B>*db,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
        <B>DB-&gt;cursor(DB</B> <B>*db,</B> <B>DB</B>_<B>TXN</B> <B>*txnid,</B> <B>DBC</B> <B>**cursorp);</B>
 
        <B>int</B>
-       <B>DB-&gt;del(DB</B> <B>*db,</B> <B>DB</B>_<B>TXN</B> <B>*txnid,</B> <B>DBT</B> <B>*key,</B> <B>int</B> <B>flags);</B>
+       <B>DB-&gt;del(DB</B> <B>*db,</B> <B>DB</B>_<B>TXN</B> <B>*txnid,</B> <B>DBT</B> <B>*key,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
        <B>DB-&gt;fd(DB</B> <B>*db,</B> <B>int</B> <B>*fdp);</B>
 
        <B>int</B>
-       <B>DB-&gt;get(DB</B> <B>*db,</B> <B>DB</B>_<B>TXN</B> <B>*txnid,</B> <B>DBT</B> <B>*key,</B> <B>DBT</B> <B>*data,</B> <B>int</B> <B>flags);</B>
+       <B>DB-&gt;get(DB</B> <B>*db,</B> <B>DB</B>_<B>TXN</B> <B>*txnid,</B> <B>DBT</B> <B>*key,</B> <B>DBT</B> <B>*data,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
-       <B>DB-&gt;put(DB</B> <B>*db,</B> <B>DB</B>_<B>TXN</B> <B>*txnid,</B> <B>DBT</B> <B>*key,</B> <B>DBT</B> <B>*data,</B> <B>int</B> <B>flags);</B>
+       <B>DB-&gt;put(DB</B> <B>*db,</B> <B>DB</B>_<B>TXN</B> <B>*txnid,</B> <B>DBT</B> <B>*key,</B> <B>DBT</B> <B>*data,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
-       <B>DB-&gt;sync(DB</B> <B>*db,</B> <B>int</B> <B>flags);</B>
+       <B>DB-&gt;sync(DB</B> <B>*db,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
-       <B>DB-&gt;stat(DB</B> <B>*db,</B> <B>void</B> <B>*sp,</B> <B>void</B> <B>*(*db</B>_<B>malloc)(size</B>_<B>t),</B> <B>int</B> <B>flags);</B>
+       <B>DB-&gt;stat(DB</B> <B>*db,</B> <B>void</B> <B>*sp,</B> <B>void</B> <B>*(*db</B>_<B>malloc)(size</B>_<B>t),</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
 
 </PRE>
@@ -135,304 +135,236 @@
        The access methods make calls to the other  subsystems  in
        the  DB  library  based  on the dbenv argument to db_open,
        which  is  a  pointer  to  a  structure  of  type   DB_ENV
-       (typedef'd  in  &lt;db.h&gt;).  It is expected that applications
-       will use a single DB_ENV structure as the argument to  all
-       of  the  subsystems in the DB package.  In order to ensure
-       compatibility with future releases of DB,  all  fields  of
-       the DB_ENV structure that are not explicitly set should be
-       initialized to 0 before the first time  the  structure  is
-       used.   Do  this  by  declaring  the structure external or
-       static, or by calling the C library  routine  <B>bzero(3)</B>  or
+       (typedef'd in &lt;db.h&gt;).  Applications will normally use the
+       same DB_ENV structure (initialized by  <B><A HREF="db_appinit.html">db_appinit(3)</A></B>),  as
+       an argument to all of the subsystems in the DB package.
+
+       References  to  the DB_ENV structure are maintained by DB,
+       so it may not be discarded until the last close  function,
+       corresponding  to  an  open  function  for which it was an
+       argument, has returned.  In order to ensure  compatibility
+       with  future  releases  of  DB,  all  fields of the DB_ENV
+       structure  that  are  not   explicitly   set   should   be
+       initialized  to  0  before the first time the structure is
+       used.  Do this by  declaring  the  structure  external  or
+       static,  or  by  calling the C library routine <B>bzero(3)</B> or
        <B>memset(3)</B>.
 
-       The  fields  of  the  DB_ENV structure used by db_open are
-       described below.  If dbenv is NULL or any  of  its  fields
+       The fields of the DB_ENV structure  used  by  db_open  are
+       described  below.   If  dbenv is NULL or any of its fields
        are set to 0, defaults appropriate for the system are used
        where possible.
 
-       The following  fields  in  the  DB_ENV  structure  may  be
+       The  following  fields  in  the  DB_ENV  structure  may be
        initialized before calling db_open:
 
        DB_LOG *lg_info;
-            If  modifications  to the file being opened should be
-            logged, the lg_info field  contains  a  return  value
-            from  the  function log_open.  If lg_info is NULL, no
+            If modifications to the file being opened  should  be
+            logged,  the  lg_info  field  contains a return value
+            from the function log_open.  If lg_info is  NULL,  no
             logging is done by the DB access methods.
 
        DB_LOCKTAB *lk_info;
-            If locking is required for the file being opened  (as
-            is  the  case  when multiple processes or threads are
-            accessing the same file), the lk_info field  contains
-            a  return  value  from  the  function  lock_open.  If
-            lk_info is NULL, no locking is done by the DB  access
+            If  locking is required for the file being opened (as
+            is the case when multiple processes  or  threads  are
+            accessing  the same file), the lk_info field contains
+            a return  value  from  the  function  lock_open.   If
+            lk_info  is NULL, no locking is done by the DB access
             methods.
 
-            If  both locking and transactions are being performed
-            (i.e., both lk_info and tx_info  are  non-NULL),  the
-            transaction  ID  will  be  used as the locker ID.  If
+            If both locking and transactions are being  performed
+            (i.e.,  both  lk_info  and tx_info are non-NULL), the
+            transaction ID will be used as  the  locker  ID.   If
             only locking is being performed, db_open will acquire
-            a  locker ID from <B><A HREF="db_lock.html">lock_id(3)</A></B>, and will use it for all
+            a locker ID from <B><A HREF="db_lock.html">lock_id(3)</A></B>, and will use it for  all
             locks required for this instance of db_open.
 
        DB_MPOOL *mp_info;
-            If the cache for the  file  being  opened  should  be
+            If  the  cache  for  the  file being opened should be
             maintained in a shared buffer pool, the mp_info field
-            contains a return value from the function  memp_open.
-            If  mp_info  is  NULL,  a  memory  pool  may still be
+            contains  a return value from the function memp_open.
+            If mp_info is  NULL,  a  memory  pool  may  still  be
             created  by  DB,  but  it  will  be  private  to  the
             application and managed by DB.
 
        DB_TXNMGR *tx_info;
-            If  the accesses to the file being opened should take
+            If the accesses to the file being opened should  take
             place  in  the  context  of  transactions  (providing
-            atomicity  and  error  recovery),  the  tx_info field
-            contains a return value from  the  function  txn_open
-            (see  <B><A HREF="db_txn.html">db_txn(3)</A></B>).  If transactions are specified, the
-            application is responsible for making suitable  calls
-            to  txn_begin, txn_abort, and txn_commit.  If tx_info
-            is NULL, no transaction support is  done  by  the  DB
+            atomicity and  error  recovery),  the  tx_info  field
+            contains  a  return  value from the function txn_open
+            (see <B><A HREF="db_txn.html">db_txn(3)</A></B>).  If transactions are specified,  the
+            application  is responsible for making suitable calls
+            to txn_begin, txn_abort, and txn_commit.  If  tx_info
+            is  NULL,  no  transaction  support is done by the DB
             access methods.
 
-            When  the access methods are used in conjunction with
-            transactions,  the   application   must   abort   the
-            transaction   (using   txn_abort)   if   any  of  the
-            transaction protected access method calls (i.e.,  any
-            calls  other  than  open,  close  and sync) returns a
-            system error (e.g., deadlock, which returns  EAGAIN).
-            As  described  by  <B><A HREF="db_intro.html">db_intro(3)</A></B>, a system error is any
+            When the access methods are used in conjunction  with
+            transactions,   the   application   must   abort  the
+            transaction  (using  txn_abort)   if   any   of   the
+            transaction  protected access method calls (i.e., any
+            calls other than open,  close  and  sync)  returns  a
+            system  error (e.g., deadlock, which returns EAGAIN).
+            As described by <B><A HREF="db_intro.html">db_intro(3)</A></B>, a system  error  is  any
             value greater than 0.
 
 
 </PRE>
 <H2>DB_INFO</H2><PRE>
-       The access methods are configured using the  DB_INFO  data
-       structure  argument  to db_open.  The DB_INFO structure is
+       The  access  methods are configured using the DB_INFO data
+       structure argument to db_open.  The DB_INFO  structure  is
        typedef'd in &lt;db.h&gt; and has a large number of fields, most
-       specific  to  a  single  access method, although a few are
-       shared.  The fields that are common to all access  methods
-       are  listed  here;  those specific to an individual access
-       method are described below.  No reference to  the  DB_INFO
-       structure  is  maintained  by  DB,  so  it  is possible to
+       specific to a single access method,  although  a  few  are
+       shared.   The fields that are common to all access methods
+       are listed here; those specific to  an  individual  access
+       method  are  described below.  No reference to the DB_INFO
+       structure is maintained  by  DB,  so  it  is  possible  to
        discard it as soon as the db_open call returns.
 
-       In order to ensure compatibility with future  releases  of
-       DB,   all  fields  of  the  DB_INFO  structure  should  be
+       In  order  to ensure compatibility with future releases of
+       DB,  all  fields  of  the  DB_INFO  structure  should   be
        initialized to 0 before the structure is used.  Do this by
-       declaring  the structure external or static, or by calling
+       declaring the structure external or static, or by  calling
        the C library function <B>bzero(3)</B> or <B>memset(3)</B>.
 
-       If possible, defaults appropriate for the system are  used
-       for  the DB_INFO fields if dbinfo is NULL or any fields of
+       If  possible, defaults appropriate for the system are used
+       for the DB_INFO fields if dbinfo is NULL or any fields  of
        the DB_INFO structure are set to 0.  The following DB_INFO
        fields may be initialized before calling db_open:
 
        size_t db_cachesize;
             A suggested maximum size of the memory pool cache, in
-            bytes.  If db_cachesize is 0, an appropriate  default
-            is  used.   If  the  mp_info field is also specified,
-            this field is ignored.
+            bytes.   If db_cachesize is 0, an appropriate default
+            is used.  It is an error to specify both the  mp_info
+            field and a non-zero db_cachesize.
 
             <B>Note,</B> <B>the</B> <B>minimum</B> <B>number</B> <B>of</B> <B>pages</B> <B>in</B> <B>the</B> <B>cache</B> <B>should</B>
-            <B>be</B>  <B>no</B> <B>less</B> <B>than</B> <B>10,</B> <B>and</B> <B>the</B> <B>access</B> <B>methods</B> <B>will</B> <B>fail</B>
-            <B>if</B> <B>an</B> <B>insufficiently</B> <B>large</B> <B>cache</B>  <B>is</B>  <B>specified.</B>   In
-            addition,   for   applications  that  exhibit  strong
-            locality in their data  access  patterns,  increasing
-            the  size  of  the  cache  can  significantly improve
+            <B>be</B> <B>no</B> <B>less</B> <B>than</B> <B>10,</B> <B>and</B> <B>the</B> <B>access</B> <B>methods</B> <B>will</B>  <B>fail</B>
+            <B>if</B>  <B>an</B>  <B>insufficiently</B>  <B>large</B> <B>cache</B> <B>is</B> <B>specified.</B>  In
+            addition,  for  applications  that   exhibit   strong
+            locality  in  their  data access patterns, increasing
+            the size  of  the  cache  can  significantly  improve
             application performance.
 
        int db_lorder;
-            The byte order for integers in  the  stored  database
-            metadata.   The  number should represent the order as
-            an integer, for example,  big  endian  order  is  the
-            number  4,321,  and little endian order is the number
-            1,234.  If db_lorder is 0,  the  host  order  of  the
+            The  byte  order  for integers in the stored database
+            metadata.  The number should represent the  order  as
+            an  integer,  for  example,  big  endian order is the
+            number 4,321, and little endian order is  the  number
+            1,234.   If  db_lorder  is  0,  the host order of the
             machine where the DB library was compiled is used.
 
-            The   value  of  db_lorder  is  ignored  except  when
-            databases are being created.  If a  database  already
+            The  value  of  db_lorder  is  ignored  except   when
+            databases  are  being created.  If a database already
             exists, the byte order it uses is determined when the
             file is read.
 
-            <B>The</B> <B>access</B> <B>methods</B> <B>provide</B> <B>no</B>  <B>guarantees</B>  <B>about</B>  <B>the</B>
-            <B>byte</B>  <B>ordering</B>  <B>of</B> <B>the</B> <B>application</B> <B>data</B> <B>stored</B> <B>in</B> <B>the</B>
-            <B>database,</B>  <B>and</B>  <B>applications</B>  <B>are</B>   <B>responsible</B>   <B>for</B>
+            <B>The</B>  <B>access</B>  <B>methods</B>  <B>provide</B> <B>no</B> <B>guarantees</B> <B>about</B> <B>the</B>
+            <B>byte</B> <B>ordering</B> <B>of</B> <B>the</B> <B>application</B> <B>data</B> <B>stored</B>  <B>in</B>  <B>the</B>
+            <B>database,</B>   <B>and</B>   <B>applications</B>  <B>are</B>  <B>responsible</B>  <B>for</B>
             <B>maintaining</B> <B>any</B> <B>necessary</B> <B>ordering.</B>
 
        size_t db_pagesize;
-            The  size  of  the  pages  used  to hold items in the
-            database, in bytes.  The minimum  page  size  is  512
-            bytes  and  the  maximum  page size is 64K bytes.  If
-            db_pagesize is 0, a page size is  selected  based  on
-            the   underlying  filesystem  I/O  block  size.   The
-            selected size has a lower limit of 512 bytes  and  an
+            The size of the pages  used  to  hold  items  in  the
+            database,  in  bytes.   The  minimum page size is 512
+            bytes and the maximum page size  is  64K  bytes.   If
+            db_pagesize  is  0,  a page size is selected based on
+            the  underlying  filesystem  I/O  block  size.    The
+            selected  size  has a lower limit of 512 bytes and an
             upper limit of 16K bytes.
 
        void *(*db_malloc)(size_t);
-            The  flag  DB_DBT_MALLOC,  when  specified in the DBT
-            structure, will cause  the  DB  library  to  allocate
-            memory  which  then becomes the responsibility of the
-            calling  application.    See   <B><A HREF="db_dbt.html">db_dbt(3)</A></B>   for   more
+            The flag DB_DBT_MALLOC, when  specified  in  the  DBT
+            structure,  will  cause  the  DB  library to allocate
+            memory which then becomes the responsibility  of  the
+            calling   application.    See   <B><A HREF="db_dbt.html">db_dbt(3)</A></B>   for  more
             information.
 
-            On  systems  where  separate heaps are maintained for
-            applications  and  libraries  (notably  Windows  NT),
-            specifying  the  DB_DBT_MALLOC flag will fail because
-            the DB library will allocate memory from a  different
-            heap  than  the  application will use to free it.  To
-            avoid this problem, the db_malloc field should be set
-            to point to the application's allocation routine.  If
-            db_malloc is non-NULL, it will be  used  to  allocate
-            the  memory  returned  when the DB_DBT_MALLOC flag is
-            set.  The db_malloc function must match  the  calling
+            On  systems  where  there  may  be  multiple  library
+            versions  of  malloc (notably Windows NT), specifying
+            the DB_DBT_MALLOC  flag  will  fail  because  the  DB
+            library  will  allocate  memory from a different heap
+            than the application will use to free it.   To  avoid
+            this  problem,  the  db_malloc field should be set to
+            point to the application's  allocation  routine.   If
+            db_malloc  is  non-NULL,  it will be used to allocate
+            the memory returned when the  DB_DBT_MALLOC  flag  is
+            set.   The  db_malloc function must match the calling
             conventions of the <B>malloc(3)</B> library routine.
 
 
 </PRE>
 <H2>BTREE</H2><PRE>
-       The  btree  data  structure  is  a  sorted,  balanced tree
-       structure storing associated  key/data  pairs.   Searches,
-       insertions,  and  deletions in the btree will all complete
-       in O (lg base N) where base is the average number of  keys
-       per  page.   Often,  inserting  ordered  data  into btrees
-       results in pages that are half-full.  This  implementation
-       has  been  modified  to  make ordered (or inverse ordered)
-       insertion the best case, resulting in nearly perfect  page
+       The btree  data  structure  is  a  sorted,  balanced  tree
+       structure  storing  associated  key/data pairs.  Searches,
+       insertions, and deletions in the btree will  all  complete
+       in  O (lg base N) where base is the average number of keys
+       per page.   Often,  inserting  ordered  data  into  btrees
+       results  in pages that are half-full.  This implementation
+       has been modified to make  ordered  (or  inverse  ordered)
+       insertion  the best case, resulting in nearly perfect page
        space utilization.
 
-       Space  freed  by deleting key/data pairs from the database
-       is never reclaimed from the  filesystem,  although  it  is
-       reused  where possible.  This means that the btree storage
-       structure is grow-only.  If  sufficiently  many  keys  are
+       Space freed by deleting key/data pairs from  the  database
+       is  never  reclaimed  from  the filesystem, although it is
+       reused where possible.  This means that the btree  storage
+       structure  is  grow-only.   If  sufficiently many keys are
        deleted from a tree that shrinking the underlying database
-       file is desirable, this can be accomplished by creating  a
+       file  is desirable, this can be accomplished by creating a
        new tree from a scan of the existing one.
 
-       The   following   additional   fields  and  flags  may  be
-       initialized  in  the  DB_INFO  structure  before   calling
+       The  following  additional  fields  and   flags   may   be
+       initialized   in  the  DB_INFO  structure  before  calling
        db_open, when using the btree access method:
 
        int (*bt_compare)(const DBT *, const DBT *);
-            The   bt_compare   function  is  the  key  comparison
+            The  bt_compare  function  is  the   key   comparison
             function.  It must return an integer less than, equal
             to, or greater than zero if the first key argument is
             considered to be respectively less than, equal to, or
-            greater  than  the  second  key  argument.   The same
-            comparison function must be  used  on  a  given  tree
-            every  time it is opened.  If bt_compare is NULL, the
-            keys  are  compared  lexically,  with  shorter   keys
-            collating before longer keys.
+            greater than  the  second  key  argument.   The  same
+            comparison  function  must  be  used  on a given tree
+            every time it is opened.
 
-       int bt_minkey;
+            The data and size fields of  the  DBT  are  the  only
+            fields  that  may  be  used  for the purposes of this
+            comparison.
+
+            If  bt_compare  is  NULL,  the  keys   are   compared
+            lexically,  with shorter keys collating before longer
+            keys.
+
+       u_int32_t bt_minkey;
             The minimum number of keys that will be stored on any
-            single page.  This value is used to  determine  which
-            keys  will be stored on overflow pages, i.e. if a key
-            or data item is larger than the pagesize  divided  by
-            the  bt_minkey  value,  it will be stored on overflow
-            pages instead of in the page itself.   The  bt_minkey
-            value  specified  must be at least 2; if bt_minkey is
+            single  page.   This value is used to determine which
+            keys will be stored on overflow pages, i.e. if a  key
+            or  data  item is larger than the pagesize divided by
+            the bt_minkey value, it will be  stored  on  overflow
+            pages  instead  of in the page itself.  The bt_minkey
+            value specified must be at least 2; if  bt_minkey  is
             0, a value of 2 is used.
 
        size_t (*bt_prefix)(const DBT *, const DBT *);
             The  bt_prefix  function  is  the  prefix  comparison
-            function.   If  specified,  this function must return
-            the number of bytes of the second key  argument  that
-            are  necessary  to  determine that it is greater than
-            the first key argument.  If the keys are  equal,  the
+            function.  If specified, this  function  must  return
+            the  number  of bytes of the second key argument that
+            are necessary to determine that it  is  greater  than
+            the  first  key argument.  If the keys are equal, the
             key length should be returned.
 
+            The data and size fields of  the  DBT  are  the  only
+            fields  that  may  be  used  for the purposes of this
+            comparison.
+
             This is used to compress the keys stored on the btree
-            internal pages.   The  usefulness  of  this  is  data
-            dependent,   but   in  some  data  sets  can  produce
-            significantly reduced tree sizes  and  search  times.
-            If  bt_prefix  is NULL, and no comparison function is
-            specified, a default lexical comparison  function  is
+            internal  pages.   The  usefulness  of  this  is data
+            dependent,  but  in  some  data  sets   can   produce
+            significantly  reduced  tree  sizes and search times.
+            If bt_prefix is NULL, and no comparison  function  is
+            specified,  a  default lexical comparison function is
             used.  If bt_prefix is NULL and a comparison function
             is specified, no prefix comparison is done.
 
-       unsigned long flags;
-            The following additional flags may  be  specified  by
-            <B>or</B>'ing together one or more of the following values:
-
-            DB_DUP
-                 Permit   duplicate   keys   in  the  tree,  i.e.
-                 insertion when the  key  of  the  key/data  pair
-                 being  inserted  already exists in the tree will
-                 be successful.  The ordering  of  duplicates  in
-                 the   tree   is   determined  by  the  order  of
-                 insertion,  unless  the  ordering  is  otherwise
-                 specified  by  use of a cursor (see <B><A HREF="db_cursor.html">db_cursor(3)</A></B>
-                 for  more  information.)   It  is  an  error  to
-                 specify both DB_DUP and DB_RECNUM.
-
-            DB_RECNUM
-                 Support   retrieval  from  btrees  using  record
-                 numbers.   For   more   information,   see   the
-                 DB_SET_RECNO   flag   to  the  DB-&gt;get  function
-                 (below),  and  the  cursor  c_get  function  (in
-                 <B><A HREF="db_cursor.html">db_cursor(3)</A></B>).
-
-                 Logical  record numbers in btrees are mutable in
-                 the face of record insertion or  deletion.   See
-                 the  DB_RENUMBER flag in the RECNO section below
-                 for further discussion.
-
-                 Maintaining  record  counts   within   a   btree
-                 introduces a serious point of contention, namely
-                 the page locations where the record  counts  are
-                 stored.   In  addition,  the entire tree must be
-                 locked during  both  insertions  and  deletions,
-                 effectively  single-threading the tree for those
-                 operations.  Specifying DB_RECNUM can result  in
-                 serious   performance   degradation   for   some
-                 applications and data sets.
-
-                 It is  an  error  to  specify  both  DB_DUP  and
-                 DB_RECNUM.
-
-
-</PRE>
-<H2>HASH</H2><PRE>
-       The  hash data structure is an extensible, dynamic hashing
-       scheme.  Backward compatible interfaces to  the  functions
-       described  in <B>dbm(3)</B>, <B>ndbm(3)</B> and <B>hsearch(3)</B> are provided,
-       however these interfaces are not compatible with  previous
-       file formats.
-
-       The   following   additional   fields  and  flags  may  be
-       initialized  in  the  DB_INFO  structure  before   calling
-       db_open, when using the hash access method:
-
-       unsigned int h_ffactor;
-            The  desired density within the hash table.  It is an
-            approximation  of  the  number  of  keys  allowed  to
-            accumulate  in  any  one bucket, determining when the
-            hash table grows or shrinks.  The default value is 0,
-            indicating  that  the  fill  factor  will be selected
-            dynamically as pages are filled.
-
-       u_int32_t (*h_hash)(const void *, u_int32_t);
-            The h_hash field is a user defined hash function;  if
-            h_hash  is  NULL,  a  default  hash function is used.
-            Since no hash function performs equally well  on  all
-            possible  data,  the  user may find that the built-in
-            hash function performs poorly with a particular  data
-            set.   User  specified  hash  functions  must  take a
-            pointer to a byte string and a  length  as  arguments
-            and return a u_int32_t value.
-
-            If  a  hash  function  is  specified,  hash_open will
-            attempt to determine if the hash  function  specified
-            is  the  same  as the one with which the database was
-            created, and will fail if it detects that it is  not.
-
-       unsigned int h_nelem;
-            An  estimate of the final size of the hash table.  If
-            not set or set  too  low,  hash  tables  will  expand
-            gracefully  as  keys  are  entered, although a slight
-            performance degradation may be noticed.  The  default
-            value is 1.
-
-       unsigned long flags;
+       u_int32_t flags;
             The  following  additional  flags may be specified by
             <B>or</B>'ing together one or more of the following values:
 
@@ -444,109 +376,192 @@
                  the  tree  is  determined  by   the   order   of
                  insertion,  unless  the  ordering  is  otherwise
                  specified by use of a cursor  (see  <B><A HREF="db_cursor.html">db_cursor(3)</A></B>
+                 for  more  information.)   It  is  an  error  to
+                 specify both DB_DUP and DB_RECNUM.
+
+            DB_RECNUM
+                 Support  retrieval  from  btrees  using   record
+                 numbers.    For   more   information,   see  the
+                 DB_SET_RECNO  flag  to  the   DB-&gt;get   function
+                 (below),  and  the  cursor  c_get  function  (in
+                 <B><A HREF="db_cursor.html">db_cursor(3)</A></B>).
+
+                 Logical record numbers in btrees are mutable  in
+                 the  face  of record insertion or deletion.  See
+                 the DB_RENUMBER flag in the RECNO section  below
+                 for further discussion.
+
+                 Maintaining   record   counts   within  a  btree
+                 introduces a serious point of contention, namely
+                 the  page  locations where the record counts are
+                 stored.  In addition, the entire  tree  must  be
+                 locked  during  both  insertions  and deletions,
+                 effectively single-threading the tree for  those
+                 operations.   Specifying DB_RECNUM can result in
+                 serious   performance   degradation   for   some
+                 applications and data sets.
+
+                 It  is  an  error  to  specify  both  DB_DUP and
+                 DB_RECNUM.
+
+
+</PRE>
+<H2>HASH</H2><PRE>
+       The hash data structure is an extensible, dynamic  hashing
+       scheme.   Backward  compatible interfaces to the functions
+       described in <B>dbm(3)</B>, <B>ndbm(3)</B> and <B>hsearch(3)</B> are  provided,
+       however  these interfaces are not compatible with previous
+       file formats.
+
+       The  following  additional  fields  and   flags   may   be
+       initialized   in  the  DB_INFO  structure  before  calling
+       db_open, when using the hash access method:
+
+       u_int32_t h_ffactor;
+            The desired density within the hash table.  It is  an
+            approximation  of  the  number  of  keys  allowed  to
+            accumulate in any one bucket,  determining  when  the
+            hash table grows or shrinks.  The default value is 0,
+            indicating that the  fill  factor  will  be  selected
+            dynamically as pages are filled.
+
+       u_int32_t (*h_hash)(const void *, u_int32_t);
+            The  h_hash field is a user defined hash function; if
+            h_hash is NULL, a  default  hash  function  is  used.
+            Since  no  hash function performs equally well on all
+            possible data, the user may find  that  the  built-in
+            hash  function performs poorly with a particular data
+            set.  User  specified  hash  functions  must  take  a
+            pointer  to  a  byte string and a length as arguments
+            and return a u_int32_t value.
+
+            If a  hash  function  is  specified,  hash_open  will
+            attempt  to  determine if the hash function specified
+            is the same as the one with which  the  database  was
+            created,  and will fail if it detects that it is not.
+
+       u_int32_t h_nelem;
+            An estimate of the final size of the hash table.   If
+            not  set  or  set  too  low,  hash tables will expand
+            gracefully as keys are  entered,  although  a  slight
+            performance  degradation may be noticed.  The default
+            value is 1.
+
+       u_int32_t flags;
+            The following additional flags may  be  specified  by
+            <B>or</B>'ing together one or more of the following values:
+
+            DB_DUP
+                 Permit   duplicate   keys   in  the  tree,  i.e.
+                 insertion when the  key  of  the  key/data  pair
+                 being  inserted  already exists in the tree will
+                 be successful.  The ordering  of  duplicates  in
+                 the   tree   is   determined  by  the  order  of
+                 insertion,  unless  the  ordering  is  otherwise
+                 specified  by  use of a cursor (see <B><A HREF="db_cursor.html">db_cursor(3)</A></B>
                  for more information.)
 
 
 </PRE>
 <H2>RECNO</H2><PRE>
-       The  recno  access  method  provides support for fixed and
-       variable length records, optionally backed by a flat  text
+       The recno access method provides  support  for  fixed  and
+       variable  length records, optionally backed by a flat text
        (byte  stream)  file.   Both  fixed  and  variable  length
        records are accessed by their logical record number.
 
        It is valid to create a record whose record number is more
-       than  one  greater  than  the last record currently in the
-       database.  For example, the creation of record  number  8,
-       when  records  6  and 7 do not yet exist, is not an error.
-       However, any  attempt  to  retrieve  such  records  (e.g.,
+       than one greater than the last  record  currently  in  the
+       database.   For  example, the creation of record number 8,
+       when records 6 and 7 do not yet exist, is  not  an  error.
+       However,  any  attempt  to  retrieve  such  records (e.g.,
        records 6 and 7) will return DB_KEYEMPTY.
 
-       Deleting  a  record will not, by default, renumber records
-       following the deleted record (see  DB_RENUMBER  below  for
-       more   information).   Any  attempt  to  retrieve  deleted
+       Deleting a record will not, by default,  renumber  records
+       following  the  deleted  record (see DB_RENUMBER below for
+       more  information).   Any  attempt  to  retrieve   deleted
        records will return DB_KEYEMPTY.
 
-       The  following  additional  fields  and   flags   may   be
-       initialized   in  the  DB_INFO  structure  before  calling
+       The   following   additional   fields  and  flags  may  be
+       initialized  in  the  DB_INFO  structure  before   calling
        db_open, when using the recno access method:
 
        int re_delim;
             For variable length records, if the re_source file is
-            specified  and  the  DB_DELIMITER  flag  is  set, the
-            delimiting byte used to mark the end of a  record  in
-            the  source file.  If the re_source file is specified
-            and the  DB_DELIMITER  flag  is  not  set,  &lt;newline&gt;
-            characters  (i.e.  ``\n'',  0x0a)  are interpreted as
+            specified and  the  DB_DELIMITER  flag  is  set,  the
+            delimiting  byte  used to mark the end of a record in
+            the source file.  If the re_source file is  specified
+            and  the  DB_DELIMITER  flag  is  not  set, &lt;newline&gt;
+            characters (i.e. ``\n'',  0x0a)  are  interpreted  as
             end-of-record markers.
 
        u_int32_t re_len;
             The length of a fixed-length record.
 
        int re_pad;
-            For fixed length records, if the DB_PAD flag is  set,
-            the  pad  character for short records.  If the DB_PAD
-            flag is not set, &lt;space&gt; characters (i.e., 0x20)  are
+            For  fixed length records, if the DB_PAD flag is set,
+            the pad character for short records.  If  the  DB_PAD
+            flag  is not set, &lt;space&gt; characters (i.e., 0x20) are
             used for padding.
 
        char *re_source;
             The purpose of the re_source field is to provide fast
-            access  and  modification  to  databases   that   are
+            access   and   modification  to  databases  that  are
             normally stored as flat text files.
 
-            If  the  re_source field is non-NULL, it specifies an
-            underlying flat text database file that  is  read  to
-            initialize  a  transient record number index.  In the
-            case of variable  length  records,  the  records  are
-            separated  by  the byte value re_delim.  For example,
+            If the re_source field is non-NULL, it  specifies  an
+            underlying  flat  text  database file that is read to
+            initialize a transient record number index.   In  the
+            case  of  variable  length  records,  the records are
+            separated by the byte value re_delim.   For  example,
             standard UNIX byte stream files can be interpreted as
-            a  sequence  of  variable length records separated by
+            a sequence of variable length  records  separated  by
             &lt;newline&gt; characters.
 
-            In addition,  when  cached  data  would  normally  be
-            written  back  to the underlying database file (e.g.,
-            the close or sync  functions  are  called),  the  in-
-            memory  copy  of the database will be written back to
+            In  addition,  when  cached  data  would  normally be
+            written back to the underlying database  file  (e.g.,
+            the  close  or  sync  functions  are called), the in-
+            memory copy of the database will be written  back  to
             the re_source file.
 
-            By default, the backing source file is  read  lazily,
-            i.e.,  records  are not read from the file until they
-            are  requested  by  the  application.   <B>If</B>   <B>multiple</B>
-            <B>processes</B>   <B>(not</B>   <B>threads)</B>  <B>are</B>  <B>accessing</B>  <B>a</B>  <B>recno</B>
-            <B>database</B>  <B>concurrently</B>  <B>and</B>   <B>either</B>   <B>inserting</B>   <B>or</B>
-            <B>deleting</B>  <B>records,</B>  <B>the</B>  <B>backing</B>  <B>source</B> <B>file</B> <B>must</B> <B>be</B>
-            <B>read</B> <B>in</B>  <B>its</B>  <B>entirety</B>  <B>before</B>  <B>more</B>  <B>than</B>  <B>a</B>  <B>single</B>
-            <B>process</B>  <B>accesses</B> <B>the</B> <B>database,</B> <B>and</B> <B>only</B> <B>that</B> <B>process</B>
+            By  default,  the backing source file is read lazily,
+            i.e., records are not read from the file  until  they
+            are   requested  by  the  application.   <B>If</B>  <B>multiple</B>
+            <B>processes</B>  <B>(not</B>  <B>threads)</B>  <B>are</B>  <B>accessing</B>   <B>a</B>   <B>recno</B>
+            <B>database</B>   <B>concurrently</B>   <B>and</B>   <B>either</B>  <B>inserting</B>  <B>or</B>
+            <B>deleting</B> <B>records,</B> <B>the</B> <B>backing</B>  <B>source</B>  <B>file</B>  <B>must</B>  <B>be</B>
+            <B>read</B>  <B>in</B>  <B>its</B>  <B>entirety</B>  <B>before</B>  <B>more</B>  <B>than</B>  <B>a</B> <B>single</B>
+            <B>process</B> <B>accesses</B> <B>the</B> <B>database,</B> <B>and</B> <B>only</B> <B>that</B>  <B>process</B>
             <B>should</B> <B>specify</B> <B>the</B> <B>backing</B> <B>source</B> <B>file</B> <B>as</B> <B>part</B> <B>of</B> <B>the</B>
-            <B>db</B>_<B>open</B>  <B>call.</B>   See  the  DB_SNAPSHOT flag below for
+            <B>db</B>_<B>open</B> <B>call.</B>  See the  DB_SNAPSHOT  flag  below  for
             more information.
 
             <B>Reading</B> <B>and</B> <B>writing</B> <B>the</B> <B>backing</B> <B>source</B> <B>file</B> <B>specified</B>
             <B>by</B>  <B>re</B>_<B>source</B>  <B>cannot</B>  <B>be</B>  <B>transactionally</B>  <B>protected</B>
-            <B>because</B> <B>it</B> <B>involves</B> <B>filesystem</B>  <B>operations</B>  <B>that</B>  <B>are</B>
+            <B>because</B>  <B>it</B>  <B>involves</B>  <B>filesystem</B> <B>operations</B> <B>that</B> <B>are</B>
             <B>not</B> <B>part</B> <B>of</B> <B>the</B> <B>DB</B> <B>transaction</B> <B>methodology.</B>  For this
-            reason, if a temporary database is used to  hold  the
-            records,  i.e.,  a  NULL  was  specified  as the file
-            argument to db_open,  it  is  possible  to  lose  the
-            contents  of  the re_source file, e.g., if the system
-            crashes at the right instant.  If a file is  used  to
+            reason,  if  a temporary database is used to hold the
+            records, i.e., a  NULL  was  specified  as  the  file
+            argument  to  db_open,  it  is  possible  to lose the
+            contents of the re_source file, e.g., if  the  system
+            crashes  at  the right instant.  If a file is used to
             hold the database, i.e., a file name was specified as
-            the  file  argument  to  db_open,   normal   database
-            recovery   on  that  file  can  be  used  to  prevent
-            information loss, although it is still possible  that
-            the  contents of re_source will be lost if the system
+            the   file   argument  to  db_open,  normal  database
+            recovery  on  that  file  can  be  used  to   prevent
+            information  loss, although it is still possible that
+            the contents of re_source will be lost if the  system
             crashes.
 
-            The re_source file must already  exist  (but  may  be
+            The  re_source  file  must  already exist (but may be
             zero-length) when db_open is called.
 
-            For  all of the above reasons, the re_source field is
-            generally used to specify databases  that  are  read-
-            only   for  DB  applications,  and  that  are  either
-            generated on the fly by software tools,  or  modified
+            For all of the above reasons, the re_source field  is
+            generally  used  to  specify databases that are read-
+            only  for  DB  applications,  and  that  are   either
+            generated  on  the fly by software tools, or modified
             using a different mechanism, e.g., a text editor.
 
-       unsigned long flags;
-            The  following  additional  flags may be specified by
+       u_int32_t flags;
+            The following additional flags may  be  specified  by
             <B>or</B>'ing together one or more of the following values:
 
             DB_DELIMITER
@@ -555,14 +570,14 @@
             DB_FIXEDLEN
                  The   records   are   fixed-length,   not   byte
                  delimited.    The   structure   element   re_len
-                 specifies the length  of  the  record,  and  the
-                 structure  element  re_pad  is  used  as the pad
+                 specifies  the  length  of  the  record, and the
+                 structure element re_pad  is  used  as  the  pad
                  character.
 
-                 Any records added to the database that are  less
+                 Any  records added to the database that are less
                  than re_len bytes long are automatically padded.
-                 Any attempt to insert records into the  database
-                 that  are  greater  than  re_len bytes long will
+                 Any  attempt to insert records into the database
+                 that are greater than  re_len  bytes  long  will
                  cause the call to fail immediately and return an
                  error.
 
@@ -570,77 +585,77 @@
                  The re_pad field is set.
 
             DB_RENUMBER
-                 Specifying   the  DB_RENUMBER  flag  causes  the
+                 Specifying  the  DB_RENUMBER  flag  causes   the
                  logical record numbers to be mutable, and change
-                 as  records  are  added  to and deleted from the
-                 database.  For example, the deletion  of  record
-                 number  4  causes records numbered 5 and greater
+                 as records are added to  and  deleted  from  the
+                 database.   For  example, the deletion of record
+                 number 4 causes records numbered 5  and  greater
                  to be renumbered downward by 1.  If a cursor was
-                 positioned   to   record  number  4  before  the
+                 positioned  to  record  number  4   before   the
                  deletion,  it  will  reference  the  new  record
-                 number  4,  if any such record exists, after the
-                 deletion.  If  a  cursor  was  positioned  after
-                 record  number 4 before the deletion, it will be
+                 number 4, if any such record exists,  after  the
+                 deletion.   If  a  cursor  was  positioned after
+                 record number 4 before the deletion, it will  be
                  shifted downward 1 logical record, continuing to
                  reference the same record as it did before.
 
-                 Using  the c_put or put interfaces to create new
-                 records will  cause  the  creation  of  multiple
-                 records  if  the  record number is more than one
+                 Using the c_put or put interfaces to create  new
+                 records  will  cause  the  creation  of multiple
+                 records if the record number is  more  than  one
                  greater than the largest record currently in the
                  database.  For example, creating record 28, when
-                 record 25 was previously the last record in  the
-                 database,  will create records 26 and 27 as well
-                 as 28.  Attempts to retrieve records  that  were
-                 created  in  this manner will result in an error
+                 record  25 was previously the last record in the
+                 database, will create records 26 and 27 as  well
+                 as  28.   Attempts to retrieve records that were
+                 created in this manner will result in  an  error
                  return of DB_KEYEMPTY.
 
-                 If a created record is not at  the  end  of  the
-                 database,  all  records following the new record
-                 will be automatically renumbered  upward  by  1.
+                 If  a  created  record  is not at the end of the
+                 database, all records following the  new  record
+                 will  be  automatically  renumbered upward by 1.
                  For  example,  the  creation  of  a  new  record
                  numbered 8 causes records numbered 8 and greater
-                 to  be  renumbered upward by 1.  If a cursor was
-                 positioned to record number 8 or greater  before
-                 the  insertion,  it  will  be  shifted  upward 1
+                 to be renumbered upward by 1.  If a  cursor  was
+                 positioned  to record number 8 or greater before
+                 the insertion,  it  will  be  shifted  upward  1
                  logical record, continuing to reference the same
                  record as it did before.
 
-                 For  these reasons, concurrent access to a recno
+                 For these reasons, concurrent access to a  recno
                  database with the DB_RENUMBER flag specified may
                  be   largely   meaningless,   although   it   is
                  supported.
 
             DB_SNAPSHOT
                  This flag specifies that any specified re_source
-                 file  be  read  in  its entirety when db_open is
-                 called.  If this  flag  is  not  specified,  the
+                 file be read in its  entirety  when  db_open  is
+                 called.   If  this  flag  is  not specified, the
                  re_source file may be read lazily.
 
 
 </PRE>
 <H2>DB OPERATIONS</H2><PRE>
-       The  DB structure returned by db_open describes a database
-       type, and includes a set of functions to  perform  various
-       actions,  as  described  below.   Each  of these functions
-       takes a pointer to a DB structure, and  may  take  one  or
-       more  DBT *'s and a flag value as well.  The fields of the
+       The DB structure returned by db_open describes a  database
+       type,  and  includes a set of functions to perform various
+       actions, as described  below.   Each  of  these  functions
+       takes  a  pointer  to  a DB structure, and may take one or
+       more DBT *'s and a flag value as well.  The fields of  the
        DB structure are as follows:
 
        DBTYPE type;
-            The type of the underlying access  method  (and  file
-            format).    Set   to  one  of  DB_BTREE,  DB_HASH  or
-            DB_RECNO.  This field may be used  to  determine  the
+            The  type  of  the underlying access method (and file
+            format).   Set  to  one  of  DB_BTREE,   DB_HASH   or
+            DB_RECNO.   This  field  may be used to determine the
             type of the database after a return from db_open with
             the type argument set to DB_UNKNOWN.
 
-       int (*close)(DB *db, int flags);
-            A  pointer  to  a  function  to  flush   any   cached
-            information  to  disk,  close  any  open cursors (see
+       int (*close)(DB *db, u_int32_t flags);
+            A   pointer   to  a  function  to  flush  any  cached
+            information to disk,  close  any  open  cursors  (see
             <B><A HREF="db_cursor.html">db_cursor(3)</A></B>),  free  any  allocated  resources,  and
             close any underlying files.  Since key/data pairs are
-            cached in memory, failing to sync the file  with  the
-            close  or sync function may result in inconsistent or
+            cached  in  memory, failing to sync the file with the
+            close or sync function may result in inconsistent  or
             lost information.
 
             The flags parameter must be set to 0 or the following
@@ -649,56 +664,57 @@
             DB_NOSYNC
                  Do not flush cached information to disk.
 
-            The  DB_NOSYNC flag is a dangerous option.  It should
+            The DB_NOSYNC flag is a dangerous option.  It  should
             only be set if the application is doing logging (with
-            transactions)  so  that  the  database is recoverable
-            after a  system  or  application  crash,  or  if  the
-            database  is  always generated from scratch after any
+            transactions) so that  the  database  is  recoverable
+            after  a  system  or  application  crash,  or  if the
+            database is always generated from scratch  after  any
             system or application crash.
 
-            <B>It</B> <B>is</B> <B>important</B> <B>to</B> <B>understand</B>  <B>that</B>  <B>flushing</B>  <B>cached</B>
-            <B>information</B>  <B>to</B>  <B>disk</B>  <B>only</B>  <B>minimizes</B>  <B>the</B> <B>window</B> <B>of</B>
-            <B>opportunity</B> <B>for</B> <B>corrupted</B> <B>data.</B>  While  unlikely,  it
-            is  possible  for  database corruption to happen if a
+            <B>It</B>  <B>is</B>  <B>important</B>  <B>to</B> <B>understand</B> <B>that</B> <B>flushing</B> <B>cached</B>
+            <B>information</B> <B>to</B> <B>disk</B>  <B>only</B>  <B>minimizes</B>  <B>the</B>  <B>window</B>  <B>of</B>
+            <B>opportunity</B>  <B>for</B>  <B>corrupted</B> <B>data.</B>  While unlikely, it
+            is possible for database corruption to  happen  if  a
             system or application crash occurs while writing data
-            to  the database.  To ensure that database corruption
+            to the database.  To ensure that database  corruption
             never   occurs,   applications   must   either:   use
             transactions and logging with automatic recovery, use
-            logging and application-specific recovery, or edit  a
-            copy  of  the  database,  and,  once all applications
-            using the database have  successfully  called  close,
-            replace  the original database with the updated copy.
+            logging  and application-specific recovery, or edit a
+            copy of the  database,  and,  once  all  applications
+            using  the  database  have successfully called close,
+            replace the original database with the updated  copy.
 
-            When  multiple  threads  are  using  the  DB   handle
-            concurrently,  only  a  single thread may call the DB
+            When   multiple  threads  are  using  the  DB  handle
+            concurrently, only a single thread may  call  the  DB
             handle close function.
 
-            The close function returns  the  value  of  errno  on
+            The  close  function  returns  the  value of errno on
             failure and 0 on success.
 
        int (*cursor)(DB *db, DB_TXN *txnid, DBC **cursorp);
             A pointer to a function to create a cursor and copy a
-            pointer to it into the memory referenced by  cursorp.
+            pointer  to it into the memory referenced by cursorp.
 
-            A  cursor  is  a structure used to provide sequential
-            access through a database.  This  interface  and  its
-            associated   functions   replaces  the  functionality
-            provided by the seq function in previous releases  of
+            A cursor is a structure used  to  provide  sequential
+            access  through  a  database.  This interface and its
+            associated  functions  replaces   the   functionality
+            provided  by the seq function in previous releases of
             the DB library.
 
-            If  the  file  is  being  accessed  under transaction
-            protection, the txnid parameter is a  transaction  ID
-            returned   from   txn_begin,   otherwise,  NULL.   If
-            transaction protection is enabled,  cursors  must  be
-            opened   and   closed   within   the   context  of  a
-            transaction, and the txnid  parameter  specifies  the
-            transaction  context in which the cursor may be used.
+            If the  file  is  being  accessed  under  transaction
+            protection,  the  txnid parameter is a transaction ID
+            returned  from  txn_begin,   otherwise,   NULL.    If
+            transaction  protection  is  enabled, cursors must be
+            opened  and  closed   within   the   context   of   a
+            transaction,  and  the  txnid parameter specifies the
+            transaction context in which the cursor may be  used.
             See <B><A HREF="db_cursor.html">db_cursor(3)</A></B> for more information.
 
-            The cursor function returns the  value  of  errno  on
+            The  cursor  function  returns  the value of errno on
             failure and 0 on success.
 
-       int (*del)(DB *db, DB_TXN *txnid, DBT *key, int flags);
+       int (*del)(DB *db, DB_TXN *txnid, DBT *key, u_int32_t
+            flags);
             A pointer to a function to remove key/data pairs from
             the database.  The key/data pair associated with  the
             specified key is discarded from the database.  In the
@@ -736,7 +752,7 @@
             and 0 on success.
 
        int (*get)(DB *db, DB_TXN *txnid,
-                 DBT *key, DBT *data, int flags);
+                 DBT *key, DBT *data, u_int32_t flags);
             A  pointer  to  a  function  that is an interface for
             keyed retrieval from the database.  The  address  and
             length  of the data associated with the specified key
@@ -783,7 +799,7 @@
             value of errno on failure and 0 on success.
 
        int (*put)(DB *db, DB_TXN *txnid,
-                 DBT *key, DBT *data, int flags);
+                 DBT *key, DBT *data, u_int32_t flags);
             A  pointer  to  a function to store key/data pairs in
             the database.  If the database  supports  duplicates,
             the  put  function adds the new data value at the end
@@ -814,13 +830,12 @@
             the designated database allows duplicates, a call  to
             put with the DB_NOOVERWRITE flag set will fail if the
             key already exists in the database.
-
             The put  function  returns  the  value  of  errno  on
             failure,   0  on  success,  and  DB_KEYEXIST  if  the
             DB_NOOVERWRITE flag  was  set  and  the  key  already
             exists in the file.
 
-       int (*sync)(DB *db, int flags);
+       int (*sync)(DB *db, u_int32_t flags);
             A   pointer   to  a  function  to  flush  any  cached
             information to disk.  If the database  is  in  memory
             only, the sync function has no effect and will always
@@ -836,7 +851,7 @@
             failure and 0 on success.
 
        int (*stat)(DB *db, void *sp,
-                 void *(*db_malloc)(size_t), int flags);
+                 void *(*db_malloc)(size_t), u_int32_t flags);
             A  pointer  to  a  function  to  create a statistical
             structure  and  copy  a  pointer  to  it  into  user-
             specified  memory  locations.  Specifically, if sp is
@@ -921,6 +936,7 @@
                  Number of tree overflow pages.
             u_int32_t bt_free;
                  Number of pages on the free list.
+
             u_int32_t bt_freed;
                  Number of pages made available for reuse because
                  they were emptied.
@@ -1215,6 +1231,7 @@
        Michael   Stonebraker,   Heidi  Stettner,  Joseph  Kalash,
        Antonin  Guttman,  Nadene  Lynn,  Memorandum  No.  UCB/ERL
        M82/32, May 1982.
+
        <B><A HREF="db_archive.html">db_archive(1)</A></B>, <B><A HREF="db_checkpoint.html">db_checkpoint(1)</A></B>, <B><A HREF="db_deadlock.html">db_deadlock(1)</A></B>, <B><A HREF="db_dump.html">db_dump(1)</A></B>,
        <B><A HREF="db_load.html">db_load(1)</A></B>, <B><A HREF="db_recover.html">db_recover(1)</A></B>, <B><A HREF="db_stat.html">db_stat(1)</A></B>, <B><A HREF="db_intro.html">db_intro(3)</A></B>,
        <B><A HREF="db_appinit.html">db_appinit(3)</A></B>, <B><A HREF="db_cursor.html">db_cursor(3)</A></B>, <B><A HREF="db_dbm.html">db_dbm(3)</A></B>, <B><A HREF="db_internal.html">db_internal(3)</A></B>,
@@ -1222,7 +1239,7 @@
        <B><A HREF="db_txn.html">db_txn(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

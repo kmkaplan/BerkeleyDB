@@ -2,26 +2,26 @@
 <HEAD>
 <TITLE>DbLockTab</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>DbLockTab</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        <B>#include</B> <B>&lt;db</B>_<B>cxx.h&gt;</B>
 
        <B>static</B> <B>int</B>
        <B>DbLockTab::open(const</B> <B>char</B> <B>*dir,</B>
-            <B>int</B> <B>flags,</B> <B>int</B> <B>mode,</B> <B>DbEnv</B> <B>*dbenv,</B> <B>DbLockTab</B> <B>**regionp);</B>
+            <B>u</B>_<B>int32</B>_<B>t</B> <B>flags,</B> <B>int</B> <B>mode,</B> <B>DbEnv</B> <B>*dbenv,</B> <B>DbLockTab</B> <B>**regionp);</B>
 
        <B>int</B>
        <B>DbLockTab::id(u</B>_<B>int32</B>_<B>t</B> <B>*idp);</B>
 
        <B>int</B>
-       <B>DbLockTab::vec(u</B>_<B>int32</B>_<B>t</B> <B>locker,</B> <B>int</B> <B>flags,</B>
+       <B>DbLockTab::vec(u</B>_<B>int32</B>_<B>t</B> <B>locker,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags,</B>
             <B>DB</B>_<B>LOCKREQ</B> <B>list[],</B> <B>int</B> <B>nlist,</B> <B>DB</B>_<B>LOCKREQ</B> <B>**elistp);</B>
 
        <B>int</B>
-       <B>DbLockTab::get(u</B>_<B>int32</B>_<B>t</B> <B>locker,</B> <B>int</B> <B>flags,</B>
+       <B>DbLockTab::get(u</B>_<B>int32</B>_<B>t</B> <B>locker,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags,</B>
             <B>const</B> <B>Dbt</B> <B>*obj,</B> <B>const</B> <B>db</B>_<B>lockmode</B>_<B>t</B> <B>lock</B>_<B>mode,</B> <B>DB</B>_<B>LOCK</B> <B>*lock);</B>
 
        <B>int</B>
@@ -31,7 +31,7 @@
        <B>DbLockTab::unlink(const</B> <B>char</B> <B>*dir,</B> <B>int</B> <B>force,</B> <B>DbEnv</B> <B>*dbenv);</B>
 
        <B>int</B>
-       <B>DbLockTab::detect(int</B> <B>flags,</B> <B>int</B> <B>atype);</B>
+       <B>DbLockTab::detect(u</B>_<B>int32</B>_<B>t</B> <B>flags,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>atype);</B>
 
 
 </PRE>
@@ -52,7 +52,7 @@
 
        The DbLockTab class is intended to provide general-purpose
        locking.   While  designed  to  work  with  the  other  Db
-       functions,  this  class  is  also  useful for more general
+       classes,  this  class  is  also  useful  for  more general
        locking purposes.  Locks can be shared between  processes.
        In most cases, when multiple treads or processes are using
        locking, the deadlock detector, <B><A HREF="db_deadlock.html">db_deadlock(1)</A></B>, should  be
@@ -162,98 +162,100 @@
             DB_LOCK_YOUNGEST
                  Abort the youngest transaction.
 
-       unsigned int lk_max;
+       u_int32_t lk_max;
             The maximum number of locks to be held  or  requested
             in  the table.  This value is used by DbLockTab::open
             to estimate how much space to  allocate  for  various
             lock-table   data   structures.   If  lk_max  is  not
             explicitly set, a default value is used.
 
-       int lk_modes;
-            The number of lock modes to be recognized by the lock
-            table   (including  the  ``not-granted''  mode).   If
-            lk_modes is 0, the value DB_LOCK_RW_N  is  used;  see
-            below for a description of that value.
+       u_int32_t lk_modes;
 
-       The  DbLockTab::open  method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B> or
+       The number of lock modes to  be  recognized  by  the  lock
+            table (including
+            the ``not-granted'' mode).  If  lk_modes  is  0,  the
+            value   DB_LOCK_RW_N   is   used;  see  below  for  a
+            description of that value.
+
+       The DbLockTab::open  method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>  or
        returns the value of errno on failure and 0 on success.
 
   DbLockTab::id
-       The DbLockTab::id method copies  a  locker  ID,  which  is
-       guaranteed  to be unique in the specified lock table, into
+       The  DbLockTab::id  method  copies  a  locker ID, which is
+       guaranteed to be unique in the specified lock table,  into
        the memory location referenced by idp.
 
-       The access methods (see Db::open  in  <B><A HREF="Db.html">Db(3)</A></B>),  generate  a
-       unique  locker  ID  for  each  file  that  is  opened with
-       locking.  During Db access method operation,  this  locker
-       ID  will  be  used for all lock calls unless a transaction
-       identifier was specified for the call, in which  case  the
+       The  access  methods  (see  Db::open in <B><A HREF="Db.html">Db(3)</A></B>), generate a
+       unique locker  ID  for  each  file  that  is  opened  with
+       locking.   During  Db access method operation, this locker
+       ID will be used for all lock calls  unless  a  transaction
+       identifier  was  specified for the call, in which case the
        transaction ID specified is used for locking.
 
-       The   DbLockTab::id  method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>  or
+       The  DbLockTab::id  method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>   or
        returns the value of errno on failure and 0 on success.
 
   DbLockTab::vec
-       The DbLockTab::vec method atomically obtains and  releases
-       one   or   more  locks  from  the  specified  table.   The
-       DbLockTab::vec method is intended to  support  acquisition
-       or   trading  of  multiple  locks  under  one  lock  table
-       semaphore,  as  is  needed  for  lock   coupling   or   in
+       The  DbLockTab::vec method atomically obtains and releases
+       one  or  more  locks  from  the  specified   table.    The
+       DbLockTab::vec  method  is intended to support acquisition
+       or  trading  of  multiple  locks  under  one  lock   table
+       semaphore,   as   is   needed  for  lock  coupling  or  in
        multigranularity locking for lock escalation.
 
-       The  locker  argument  specified  to  DbLockTab::vec is an
+       The locker argument  specified  to  DbLockTab::vec  is  an
        unsigned  32-bit  integer  quantity.   It  represents  the
        entity requesting or releasing the lock.
 
        The flags value must be set to 0 or the following value:
 
        DB_LOCK_NOWAIT
-            If  a  lock  cannot  be granted because the requested
-            lock  conflicts  with  an   existing   lock,   return
+            If a lock cannot be  granted  because  the  requested
+            lock   conflicts   with   an  existing  lock,  return
             immediately instead of waiting for the lock to become
             available.
 
-       The list array provided to DbLockTab::vec is typedef'd  in
-       &lt;db_cxx.h&gt;  as  DB_LOCKREQ.  A DB_LOCKREQ structure has at
-       least the following  fields,  which  must  be  initialized
+       The  list array provided to DbLockTab::vec is typedef'd in
+       &lt;db_cxx.h&gt; as DB_LOCKREQ.  A DB_LOCKREQ structure  has  at
+       least  the  following  fields,  which  must be initialized
        before calling DbLockTab::vec:
 
        lockop_t op;
-            The  operation  to be performed, which must be set to
+            The operation to be performed, which must be  set  to
             one of the following values:
 
             DB_LOCK_GET
-                 Get a lock, as defined by the values of  locker,
-                 obj  and mode.  Upon return from DbLockTab::vec,
-                 if the lock field is non-NULL,  a  reference  to
-                 the   acquired  lock  is  stored  there.   (This
-                 reference  is  invalidated  by   any   call   to
-                 DbLockTab::vec  or DbLock::put that releases the
+                 Get  a lock, as defined by the values of locker,
+                 obj and mode.  Upon return from  DbLockTab::vec,
+                 if  the  lock  field is non-NULL, a reference to
+                 the  acquired  lock  is  stored  there.    (This
+                 reference   is   invalidated   by  any  call  to
+                 DbLockTab::vec or DbLock::put that releases  the
                  lock.)  See <B><A HREF="DbLock.html">DbLock(3)</A></B>.
 
             DB_LOCK_PUT
-                 The lock referenced by the contents of the  lock
+                 The  lock referenced by the contents of the lock
                  field is released.
 
             DB_LOCK_PUT_ALL
                  All locks held by the locker are released.  (Any
-                 locks acquired as a part of the current call  to
+                 locks  acquired as a part of the current call to
                  DbLockTab::vec    that    appear    after    the
-                 DB_LOCK_PUT_ALL entry  are  not  considered  for
+                 DB_LOCK_PUT_ALL  entry  are  not  considered for
                  this operation).
 
             DB_LOCK_PUT_OBJ
                  All locks held by the locker, on the object obj,
-                 with  the  mode  specified  by  lock_mode,   are
-                 released.   A  lock_mode of DB_LOCK_NG indicates
+                 with   the  mode  specified  by  lock_mode,  are
+                 released.  A lock_mode of  DB_LOCK_NG  indicates
                  that all locks on the object should be released.
-                 Note  that  any  locks acquired as a part of the
+                 Note that any locks acquired as a  part  of  the
                  current call to DbLockTab::vec that occur before
                  the DB_LOCK_PUT_OBJ will also be released; those
                  acquired afterwards will not be released.
 
        const Dbt obj;
-            An untyped byte string that specifies the  object  to
+            An  untyped  byte string that specifies the object to
             be locked or released.
 
        const lockmode_t mode;
@@ -265,34 +267,33 @@
 
        The nlist argument specifies the number of elements in the
        list array.
-
-       If  any  of the requested locks cannot be acquired, or any
-       of the locks  to  be  released  cannot  be  released,  the
-       operations  before the failing operation are guaranteed to
-       have completed successfully, and DbLockTab::vec returns  a
+       If any of the requested locks cannot be acquired,  or  any
+       of  the  locks  to  be  released  cannot  be released, the
+       operations before the failing operation are guaranteed  to
+       have  completed successfully, and DbLockTab::vec returns a
        non-zero value.  In addition, if elistp is not NULL, it is
-       set to point  to  the  DB_LOCKREQ  entry  that  was  being
+       set  to  point  to  the  DB_LOCKREQ  entry  that was being
        processed when the error occurred.
 
-       In  the case of an error, DbLockTab::vec may return one of
+       In the case of an error, DbLockTab::vec may return one  of
        the following values:
 
        DB_LOCK_DEADLOCK
-            The specified locker was  selected  as  a  victim  in
+            The  specified  locker  was  selected  as a victim in
             order to resolve a deadlock.
 
        DB_LOCK_NOTHELD
-            The  lock  cannot  be released, as it was not held by
+            The lock cannot be released, as it was  not  held  by
             the locker.
 
        DB_LOCK_NOTGRANTED
-            A lock was requested that could not  be  granted  and
-            the  flag  parameter  was  set to DB_LOCK_NOWAIT.  In
+            A  lock  was  requested that could not be granted and
+            the flag parameter was  set  to  DB_LOCK_NOWAIT.   In
             this case, if non-NULL, elistp identifies the request
             that was granted.
 
-       Otherwise,    the    DbLockTab::vec    method   throws   a
-       <B><A HREF="DbException.html">DbException(3)</A></B> or returns the value of  errno  on  failure
+       Otherwise,   the   DbLockTab::vec    method    throws    a
+       <B><A HREF="DbException.html">DbException(3)</A></B>  or  returns  the value of errno on failure
        and 0 on success.
 
   DbLockTab::get
@@ -302,84 +303,85 @@
        the
 
        DbLockTab::vec method with the locker argument, elistp and
-       conflict  arguments,  and a single element list array, for
-       which the op field is DB_LOCK_GET, and the obj,  lock_mode
-       and  lock  fields  are represented by the arguments of the
-       same name.  Note that the type  of  the  obj  argument  to
-       DbLockTab::get  is different from the obj element found in
-       the  DB_LOCKREQ  structure.   The  DbLockTab::get   method
+       conflict arguments, and a single element list  array,  for
+       which  the op field is DB_LOCK_GET, and the obj, lock_mode
+       and lock fields are represented by the  arguments  of  the
+       same  name.   Note  that  the  type of the obj argument to
+       DbLockTab::get is different from the obj element found  in
+       the   DB_LOCKREQ  structure.   The  DbLockTab::get  method
        returns success and failure as described for the
 
        DbLockTab::vec method.
 
   DbLockTab::close
        The  DbLockTab::close  method  disassociates  the  calling
-       process from the lock table.  The  object  should  not  be
-       used  after  a  call to close.  Note that DbLockTab::close
-       does not release any  locks  still  held  by  the  closing
+       process  from  the  lock  table.  The object should not be
+       used after a call to close.   Note  that  DbLockTab::close
+       does  not  release  any  locks  still  held by the closing
        process.   (This  provides  functionality  for  long-lived
        locks.)
 
-       Processes that wish to have all their locks  released  can
+       Processes  that  wish to have all their locks released can
        do so by issuing the appropriate DbLockTab::vec call.
 
-       In  addition,  if  the dir argument to DbLockTab::open was
-       NULL and dbenv was not initialized  using  DbEnv::appinit,
-       all  files created for this shared region will be removed,
+       In addition, if the dir argument  to  DbLockTab::open  was
+       NULL  and  dbenv was not initialized using DbEnv::appinit,
+       all files created for this shared region will be  removed,
        as if DbLockTab::unlink were called.
 
-       When multiple  threads  are  using  the  DbLockTab  handle
-       concurrently,   only   a   single   thread  may  call  the
+       When  multiple  threads  are  using  the  DbLockTab object
+       concurrently,  only  a  single   thread   may   call   the
        DbLockTab::close method.
 
-       The DbLockTab::close method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>  or
+       The  DbLockTab::close  method  throws  a <B><A HREF="DbException.html">DbException(3)</A></B> or
        returns the value of errno on failure and 0 on success.
 
   DbLockTab::unlink
        The  DbLockTab::unlink  method  destroys  the  lock  table
-       identified by the directory dir, removing all  files  used
-       to  implement  the  lock table.  (The directory dir is not
-       removed.)   If  there  are  processes  that  have   called
-       DbLockTab::open  without  calling  DbLockTab::close (i.e.,
-       there are  processes  currently  using  the  lock  table),
+       identified  by  the directory dir, removing all files used
+       to implement the lock table.  (The directory  dir  is  not
+       removed.)    If  there  are  processes  that  have  called
+       DbLockTab::open without  calling  DbLockTab::close  (i.e.,
+       there  are  processes  currently  using  the  lock table),
        DbLockTab::unlink will fail without further action, unless
-       the force flag is set,  in  which  case  DbLockTab::unlink
-       will  attempt to remove the lock table files regardless of
+       the  force  flag  is  set, in which case DbLockTab::unlink
+       will attempt to remove the lock table files regardless  of
        any processes still using the lock table.
 
-       The result of attempting to forcibly  destroy  the  region
+       The  result  of  attempting to forcibly destroy the region
        when  a  process  has  the  region  open  is  unspecified.
-       Processes using a shared memory region  maintain  an  open
-       file  descriptor  for  it.   On  UNIX  systems, the region
-       removal should succeed and  processes  that  have  already
-       joined  the  region  should  continue to run in the region
-       without change, however processes attempting to  join  the
-       lock  table  will  either  fail or attempt to create a new
-       region.  On other systems, e.g., WNT, where the  <B>unlink(2)</B>
-       system  call  will  fail  if  any process has an open file
+       Processes  using  a  shared memory region maintain an open
+       file descriptor for  it.   On  UNIX  systems,  the  region
+       removal  should  succeed  and  processes that have already
+       joined the region should continue to  run  in  the  region
+       without  change,  however processes attempting to join the
+       lock table will either fail or attempt  to  create  a  new
+       region.   On other systems, e.g., WNT, where the <B>unlink(2)</B>
+       system call will fail if any  process  has  an  open  file
        descriptor for the file, the region removal will fail.
 
-       In the case of catastrophic or  system  failure,  database
-       recovery  must  be  performed  (see  <B><A HREF="db_recover.html">db_recover(1)</A></B>  or the
-       DB_RECOVER flags to <B><A HREF="DbEnv.html">DbEnv::appinit(3)</A></B>).  Alternatively, if
-       recovery  is  not  required  because  no database state is
-       maintained across failures, it is possible to clean  up  a
-       lock  table  by removing all of the files in the directory
-       specified to the DbLockTab::open  method,  as  lock  table
-       files  are  never  created in any directory other than the
-       one specified to  DbLockTab::open.   Note,  however,  that
-       this  has  the  potential  to  remove files created by the
-       other DB subsystems in this database environment.
+       In  the  case  of catastrophic or system failure, database
+       recovery must  be  performed  (see  <B><A HREF="db_recover.html">db_recover(1)</A></B>  or  the
+       DB_RECOVER      and      DB_RECOVER_FATAL     flags     to
+       <B><A HREF="DbEnv.html">DbEnv::appinit(3)</A></B>).  Alternatively,  if  recovery  is  not
+       required  because  no  database state is maintained across
+       failures, it is possible to  clean  up  a  lock  table  by
+       removing  all  of  the files in the directory specified to
+       the DbLockTab::open method, as lock table files are  never
+       created  in  any directory other than the one specified to
+       DbLockTab::open.   Note,  however,  that  this   has   the
+       potential   to  remove  files  created  by  the  other  DB
+       subsystems in this database environment.
 
        The DbLockTab::unlink method throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>  or
        returns the value of errno on failure and 0 on success.
 
   DbLockTab::detect
        The  DbLockTab::detect  method  runs  one iteration of the
-       deadlock detector on the table represented  by  DbLockTab.
-       The  deadlock  detector  traverses the lock table, detects
-       deadlocks,  and  if  it  finds  one,  marks  one  of   the
-       participating transactions for abort and then returns.
+       deadlock detector on the current lock table.  The deadlock
+       detector  traverses the lock table, detects deadlocks, and
+       if  it  finds  one,  marks  one   of   the   participating
+       transactions for abort and then returns.
 
        The  flags  value  is  specified by <B>or</B>'ing together one or
        more of the following values:
@@ -488,6 +490,7 @@
 
        The   DbLockTab::vec   method   may   fail   and  throw  a
        <B><A HREF="DbException.html">DbException(3)</A></B>
+
        or return errno for any of the errors  specified  for  the
        following DB and library functions: <B><A HREF="DbLock.html">DbLock::detect(3)</A></B>,
        <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>lseek(2)</B>, <B>memcpy(3)</B>, <B>memset(3)</B>,
@@ -528,7 +531,6 @@
 
        The   DbLockTab::unlink   method  may  fail  and  throw  a
        <B><A HREF="DbException.html">DbException(3)</A></B>
-
        or return errno for any of the errors  specified  for  the
        following DB and library functions: <B>close(2)</B>, <B>fcntl(2)</B>,
        <B>fflush(3)</B>, <B>malloc(3)</B>, <B>memcpy(3)</B>, <B>memset(3)</B>, <B>mmap(2)</B>,
@@ -571,7 +573,7 @@
        <B><A HREF="DbTxnMgr.html">DbTxnMgr(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

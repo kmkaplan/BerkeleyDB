@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)bug004.tcl	10.3 (Sleepycat) 10/4/97
+#	@(#)bug004.tcl	10.4 (Sleepycat) 4/10/98
 #
 # Bug Test004:
 # Check if we handle the case where we delete a key with the cursor on it

@@ -1,8 +1,13 @@
 Building the Win32 version of DB:
 
-This directory contains project files for both MSVC4.X and 5.0.
+This directory contains project files for both MSVC4.X and 5.0:
 
-In MSVC5.0, open the file "Berkeley_DB.dsp".  The 5.0 project files are
+	DB_DLL.mdp		Visual C++ 4.0 project file
+	DB_DLL.mak		Makefile exported by Visual C++ 4.0.
+	Berkeley_DB.dsw		Visual C++ 5.0 project file
+	*.dsp			Visual C++ 5.0 subprojects
+
+In MSVC5.0, open the file "Berkeley_DB.dsw".  The 5.0 project files are
 fully developed, allowing you to build both DLL and static versions of
 libdb, the test harness and the command-line utilities.  If you want to
 build absolutely everything, select the "db_buildall" subproject and

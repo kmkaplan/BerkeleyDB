@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)mdbscript.tcl	10.1 (Sleepycat) 4/12/97
+#	@(#)mdbscript.tcl	10.2 (Sleepycat) 4/10/98
 #
 # Process script for the multi-process db tester.
 # Usage: mdbscript dir file nentries iter procid procs seed

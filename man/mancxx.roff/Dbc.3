@@ -2,18 +2,18 @@
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)Dbc.sox	10.7 (Sleepycat) 11/24/97
+.\"	@(#)Dbc.sox	10.11 (Sleepycat) 4/10/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)macros.so	10.36 (Sleepycat) 11/28/97
+.\"	@(#)macros.so	10.45 (Sleepycat) 5/4/98
 .\"
 .\" We don't want hyphenation for any HTML documents.
 .ie '\*[HTML]'YES'\{\
@@ -54,19 +54,18 @@
 \}
 ..
 .\" Scoped name for Java.
-.\" Produces a.b, for Java, otherwise just b.
-.\" This macro is used for constants that must
-.\" be scoped in Java, but are global otherwise.
+.\" Produces Db.b, for Java, otherwise just b.  This macro is used for
+.\" constants that must be scoped in Java, but are global otherwise.
 .\" This macro takes two arguments:
 .\"	+ the class
 .\"	+ the name within the class or following the prefix
 .de Sj
 .ie '\*[TYPE]'JAVA'\{\
 .TP 5
-\\$1.\\$2\}
+Db.\\$1\}
 .el\{\
 .TP 5
-\\$2\}
+\\$1\}
 ..
 .\" The general information text macro.
 .de Gn
@@ -210,7 +209,9 @@ The default error behavior can be changed, see
 .IR DbLog (3),
 .IR DbLsn (3),
 .IR DbMpool (3),
+.if !'\*[TYPE]'JAVA'\{\
 .IR DbMpoolFile (3),
+\}
 .IR Dbt (3),
 .IR DbTxn (3),
 .IR DbTxnMgr (3)
@@ -360,8 +361,15 @@ based on the
 argument to
 .IR \\$1 ,
 which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
-It is expected that applications will use a single DB_ENV structure as the
-argument to all of the subsystems in the DB package.
+Applications will normally use the same DB_ENV structure (initialized
+by
+.IR db_appinit (3)),
+as an argument to all of the subsystems in the DB package.
+.PP
+References to the DB_ENV structure are maintained by DB,
+so it may not be discarded until the last close function,
+corresponding to an open function for which it was an argument,
+has returned.
 In order to ensure compatibility with future releases of DB, all fields of
 the DB_ENV structure that are not explicitly set should be initialized to 0
 before the first time the structure is used.
@@ -432,7 +440,7 @@ appropriate set method, before calling
 ..
 .\" The DB_ENV common fields macros.
 .de Se
-.ie '\*[TYPE]'JAVA'\{\
+.if '\*[TYPE]'JAVA'\{\
 .TP 5
 DbErrcall db_errcall;
 .ns
@@ -444,7 +452,6 @@ int db_verbose;
 The error fields of the DbEnv behave as described for
 .IR DbEnv (3).
 \}
-.el\{\
 .ie '\*[TYPE]'CXX'\{\
 .TP 5
 void *(*db_errcall)(char *db_errpfx, char *buffer);
@@ -476,7 +483,7 @@ const char *db_errpfx;
 int db_verbose;
 The error fields of the DB_ENV behave as described for
 .IR db_appinit (3).
-\}
+.sp
 \}
 ..
 .\" The open flags.
@@ -490,7 +497,7 @@ don't already exist.
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
-.Sj Db DB_CREATE
+.Sj DB_CREATE
 Create any underlying files, as necessary.
 If the files do not already exist and the DB_CREATE flag is not specified,
 the call will fail.
@@ -501,12 +508,17 @@ the call will fail.
 .\"	+ the object it returns.
 .de Ft
 .TP 5
-.Sj Db DB_THREAD
+.Sj DB_THREAD
 Cause the \\$2 handle returned by the
 .I \\$1
 .Al function method
 to be useable by multiple threads within a single address space,
 i.e., to be ``free-threaded''.
+.if '\*[TYPE]'JAVA'\{\
+Threading is assumed in the Java API,
+so no special flags are required,
+and DB functions will always behave as if the DB_THREAD flag was specified.
+\}
 ..
 .\" The mode macro.
 .\" This macro takes one argument:
@@ -736,7 +748,7 @@ the region removal will fail.
 In the case of catastrophic or system failure,
 database recovery must be performed (see
 .IR db_recover (1)
-or the DB_RECOVER flags to
+or the DB_RECOVER and DB_RECOVER_FATAL flags to
 .IR \\*(Va (3)).
 Alternatively, if recovery is not required because no database state is
 maintained across failures,
@@ -847,7 +859,7 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH Dbc 3 "November 24, 1997"
+.TH Dbc 3 "April 10, 1998"
 .UC 7
 .SH NAME
 Dbc \- database sequential access functions
@@ -861,13 +873,13 @@ int
 Dbc::close(void);
 
 int
-Dbc::del(int flags);
+Dbc::del(u_int32_t flags);
 
 int
-Dbc::get(Dbt *key, Dbt *data, int flags);
+Dbc::get(Dbt *key, Dbt *data, u_int32_t flags);
 
 int
-Dbc::put(Dbt *key, Dbt *data, int flags);
+Dbc::put(Dbt *key, Dbt *data, u_int32_t flags);
 \}
 .el\{\
 import com.sleepycat.db.*;
@@ -946,7 +958,7 @@ No further references to the Dbc object should be made.
 .IP
 .Rt Dbc::close
 .TP 5
-int Dbc::del(int flags);
+int Dbc::del(u_int32_t flags);
 A method that deletes the key/data pair currently
 referenced by the cursor.
 .IP
@@ -960,7 +972,7 @@ key will fail.
 and DB_KEYEMPTY if the element has already been deleted.
 .ie '\*[TYPE]'CXX'\{\
 .TP 5
-int Dbc::get(Dbt *key, Dbt *data, int flags);
+int Dbc::get(Dbt *key, Dbt *data, u_int32_t flags);
 A method that retrieves key/data pairs from the database.
 The address
 \}
@@ -1004,7 +1016,7 @@ The parameter
 must be set to exactly one of the following values:
 .RS
 .TP 5
-.Sj Db DB_FIRST
+.Sj DB_FIRST
 The cursor is set to reference the first key/data pair of the database,
 and that pair is returned.
 In the presence of duplicate key values,
@@ -1015,7 +1027,7 @@ the
 .I Dbc::get
 method will return DB_NOTFOUND.
 .TP 5
-.Sj Db DB_LAST
+.Sj DB_LAST
 The cursor is set to reference the last key/data pair of the database,
 and that pair is returned.
 In the presence of duplicate key values,
@@ -1026,7 +1038,7 @@ the
 .I Dbc::get
 method will return DB_NOTFOUND.
 .TP 5
-.Sj Db DB_NEXT
+.Sj DB_NEXT
 If the cursor is not yet initialized, DB_NEXT is identical to DB_FIRST.
 .IP
 Otherwise,
@@ -1040,7 +1052,7 @@ the
 .I Dbc::get
 method will return DB_NOTFOUND.
 .TP 5
-.Sj Db DB_PREV
+.Sj DB_PREV
 If the cursor is not yet initialized, DB_PREV is identical to DB_LAST.
 .IP
 Otherwise,
@@ -1054,7 +1066,7 @@ the
 .I Dbc::get
 method will return DB_NOTFOUND.
 .TP 5
-.Sj Db DB_CURRENT
+.Sj DB_CURRENT
 Return the key/data pair currently referenced by the cursor.
 .IP
 If the cursor key/data pair has been deleted,
@@ -1067,7 +1079,7 @@ the
 .I Dbc::get
 method will return EINVAL.
 .TP 5
-.Sj Db DB_SET
+.Sj DB_SET
 Move the cursor to the specified key/data pair of the database,
 and return the datum associated with the given key.
 .IP
@@ -1086,15 +1098,15 @@ the
 .I Dbc::get
 method will return DB_NOTFOUND.
 .TP 5
-.Sj Db DB_SET_RANGE
+.Sj DB_SET_RANGE
 The DB_SET_RANGE flag is identical to the DB_SET flag,
 except that the key is returned as well as the data item,
 and, in the case of the btree access method,
-the returned key/data pair is the smallest key greater than or equal to
-the specified key,
+the returned key/data pair is the smallest key greater than or
+equal to the specified key (as determined by the comparison function),
 permitting partial key matches and range searches.
 .TP 5
-.Sj Db DB_SET_RECNO
+.Sj DB_SET_RECNO
 Move the cursor to the specific numbered record of the database,
 and return the associated key/data pair.
 The
@@ -1121,7 +1133,7 @@ btree and it must have been created with the DB_RECNUM flag (see
 in
 .IR Db (3)).
 .TP 5
-.Sj Db DB_GET_RECNO
+.Sj DB_GET_RECNO
 Return the record number associated with the cursor.
 The record number
 will be returned in the data Dbt as described in
@@ -1144,7 +1156,7 @@ If
 fails for any reason, the state of the cursor will be unchanged.
 .TP 5
 .ie '\*[TYPE]'CXX'\{\
-int Dbc::put(Dbt *key, Dbt *data, int flags);
+int Dbc::put(Dbt *key, Dbt *data, u_int32_t flags);
 \}
 .el\{\
 int Dbc::put(Dbt key, Dbt data, int flags);
@@ -1156,7 +1168,7 @@ The
 parameter must be set to exactly one of the following values:
 .RS
 .TP 5
-.Sj Db DB_AFTER
+.Sj DB_AFTER
 In the case of the btree and hash access methods,
 insert the data element as a duplicate element of the key referenced
 by the cursor.
@@ -1189,7 +1201,7 @@ the
 .I Dbc::put
 method will return EINVAL.
 .TP 5
-.Sj Db DB_BEFORE
+.Sj DB_BEFORE
 In the case of the btree and hash access methods,
 insert the data element as a duplicate element of the key referenced
 by the cursor.
@@ -1222,7 +1234,7 @@ the
 .I Dbc::put
 method will return EINVAL.
 .TP 5
-.Sj Db DB_CURRENT
+.Sj DB_CURRENT
 Overwrite the data of the key/data pair referenced by the cursor with the
 specified data item.
 .IP
@@ -1235,7 +1247,7 @@ the
 .I Dbc::put
 method will return EINVAL.
 .TP 5
-.Sj Db DB_KEYFIRST
+.Sj DB_KEYFIRST
 In the case of the btree and hash access methods,
 insert the specified key/data pair into the database.
 If the key already exists in the database,
@@ -1243,7 +1255,7 @@ the inserted data item is added as the first of the data items for that key.
 .IP
 The DB_KEYFIRST flag may not be specified to the recno access method.
 .TP 5
-.Sj Db DB_KEYLAST
+.Sj DB_KEYLAST
 Insert the specified key/data pair into the database.
 If the key already exists in the database,
 the inserted data item is added as the last of the data items for that key.

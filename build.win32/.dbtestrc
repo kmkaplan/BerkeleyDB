@@ -1,10 +1,10 @@
 # DO NOT EDIT: automatically built by dist/distrib.
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test.tcl	10.18 (Sleepycat) 11/18/97
+#	@(#)test.tcl	10.26 (Sleepycat) 4/25/98
 
 # Load everything that we need
 set parms(test001) 10000
@@ -35,6 +35,7 @@ set parms(test025) 10000
 set parms(test026) {2000 5 26}
 set parms(test027) {100}
 set parms(test028) ""
+set parms(test029) 10000
 
 source ./include.tcl
 source ../test/testutils.tcl
@@ -48,9 +49,9 @@ if { [file exists $testdir] != 1 } {
 set alphabet "abcdefghijklmnopqrstuvwxyz"
 set recd_debug 0
 
-set loadtests 32
-set runtests 28
-set recdtests 4
+set loadtests 33
+set runtests 29
+set recdtests 5
 set deadtests 2
 set bugtests 7
 set rsrctests 1
@@ -120,6 +121,7 @@ proc r { args } {
 
 	set l [ lindex $args 0 ]
 	switch $l {
+		ampool { eval mpool -shmem anon [lrange $args 1 end] }
 		archive { eval archive [lrange $args 1 end] }
 		byte {
 			foreach method "DB_HASH DB_BTREE DB_RECNO DB_RRECNO" {
@@ -135,6 +137,7 @@ proc r { args } {
 		lock { eval locktest [lrange $args 1 end] }
 		log { eval logtest [lrange $args 1 end] }
 		mpool { eval mpool [lrange $args 1 end] }
+		nmpool { eval mpool -shmem named [lrange $args 1 end] }
 		mutex { eval mutex [lrange $args 1 end] }
 		ndbm { eval ndbm }
 		recd {
@@ -162,7 +165,25 @@ source include.tcl
 global runtests
 global recdtests
 	exec $RM -rf ALL.OUT
-	foreach i "DB_BTREE DB_HASH DB_RECNO DB_RRECNO" {
+	foreach i "archive byte lock log mpool ampool nmpool mutex txn" {
+		puts "Running $i tests"
+		if [catch {exec ./dbtest << "r $i" >>& ALL.OUT } res] {
+			set o [open ALL.OUT a]
+			puts $o "FAIL: $i test"
+			close $o
+		}
+	}
+
+	# Add deadlock detector tests
+	puts "Running deadlock detection tests."
+	if [catch {exec ./dbtest << "r dead"  >>& ALL.OUT} res] {
+		set o [open ALL.OUT a]
+		puts $o "FAIL: deadlock detector test"
+		close $o
+	}
+
+
+	foreach i "DB_BTREE DB_RBTREE DB_HASH DB_RECNO DB_RRECNO" {
 		puts "Running $i tests"
 		for { set j 1 } { $j <= $runtests } {incr j} {
 			if [catch {exec ./dbtest << "run_method $i $j $j" \
@@ -181,15 +202,6 @@ global recdtests
 		close $o
 	}
 
-	foreach i "archive byte lock log mpool mutex txn" {
-		puts "Running $i tests"
-		if [catch {exec ./dbtest << "r $i" >>& ALL.OUT } res] {
-			set o [open ALL.OUT a]
-			puts $o "FAIL: $i test"
-			close $o
-		}
-	}
-
 	# Run recovery tests
 	foreach method "DB_HASH DB_BTREE DB_RECNO DB_RRECNO" {
 		puts "Running recovery tests for $method"
@@ -202,14 +214,6 @@ global recdtests
 				close $o
 			}
 		}
-	}
-
-	# Add deadlock detector tests
-	puts "Running deadlock detection tests."
-	if [catch {exec ./dbtest << "r dead"  >>& ALL.OUT} res] {
-		set o [open ALL.OUT a]
-		puts $o "FAIL: deadlock detector test"
-		close $o
 	}
 
 	# Check historic interfaces
@@ -246,6 +250,11 @@ proc convert_method { method } {
 		db_btree { return DB_BTREE }
 		DB_BTREE { return DB_BTREE }
 		bt { return DB_BTREE }
+		rbtree { return DB_BTREE }
+		RBTREE { return DB_BTREE }
+		db_rbtree { return DB_BTREE }
+		DB_RBTREE { return DB_BTREE }
+		rbt { return DB_BTREE }
 		hash { return DB_HASH }
 		HASH { return DB_HASH }
 		db_hash { return DB_HASH }
@@ -263,23 +272,26 @@ proc is_rrecno { method } {
 	}
 }
 
+proc is_rbtree { method } {
+	set names { rbtree RBTREE db_rbtree DB_RBTREE rbt }
+	if { [lsearch $names $method] >= 0 } {
+		return 1
+	} else {
+		return 0
+	}
+}
 
-# If recno-with-renumbering is specified, then fix the arguments to specify
-# the DB_RENUMBER option for the -flags argument.
+
+# If recno-with-renumbering or btree-with-renumbering is specified, then
+# fix the arguments to specify the DB_RENUMBER/DB_RECNUM option for the
+# -flags argument.
 proc convert_args { method {largs ""} } {
 source ./include.tcl
+	set do_flags 0
 	if { [is_rrecno $method] == 1 } {
-		set ndx [lsearch $largs -flags]
-		if { $ndx >= 0 } {
-			# There is already a flags argument
-			incr ndx
-			set f [lindex $largs $ndx]
-			set f [expr $f | $DB_RENUMBER]
-			set largs [lreplace $largs $ndx $ndx $f]
-		} else {
-			# There is no flags argument
-			lappend largs -flags $DB_RENUMBER
-		}
+		return [add_to_args $DB_RENUMBER $largs]
+	} elseif { [is_rbtree $method] == 1 } {
+		return [add_to_args $DB_RECNUM $largs]
 	}
 	return $largs
 }
@@ -288,17 +300,25 @@ source ./include.tcl
 proc number_btree { method {largs ""} } {
 source ./include.tcl
 	if { [string compare $method "DB_BTREE"] == 0 } {
-		set ndx [lsearch $largs -flags]
-		if { $ndx >= 0 } {
-			# There is already a flags argument
-			incr ndx
-			set f [lindex $largs $ndx]
-			set f [expr $f | $DB_RECNUM]
-			set largs [lreplace $largs $ndx $ndx $f]
-		} else {
-			# There is no flags argument
-			lappend largs -flags $DB_RECNUM
-		}
+		return [add_to_args $DB_RECNUM $largs]
+	}
+	return $largs
+}
+
+# We want to set a flag value.  Since there already might be one in
+# args, we need to add to it.
+proc add_to_args { flag_val {largs ""} } {
+source ./include.tcl
+	set ndx [lsearch $largs -flags]
+	if { $ndx >= 0 } {
+		# There is already a flags argument
+		incr ndx
+		set f [lindex $largs $ndx]
+		set f [expr $f | $flag_val]
+		set largs [lreplace $largs $ndx $ndx $f]
+	} else {
+		# There is no flags argument
+		lappend largs -flags $flag_val
 	}
 	return $largs
 }

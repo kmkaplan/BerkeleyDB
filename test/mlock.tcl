@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)mlock.tcl	10.2 (Sleepycat) 10/4/97
+#	@(#)mlock.tcl	10.4 (Sleepycat) 4/10/98
 #
 # Exercise multi-process aspects of lock.
 proc lock004 { {maxlocks 1000} {conflicts {0 0 0 0 0 1 0 1 1} } } {
@@ -17,7 +17,7 @@ source ./include.tcl
 	# Open the lock
 	mlock_open $maxlocks $nmodes $conflicts
 	mlock_wait
-	set r [lock_unlink "" 0]
+	set r [lock_unlink $testdir 0]
 	error_check_good lock_unlink $r 0
 }
 

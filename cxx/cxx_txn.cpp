@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)cxx_txn.cpp	10.6 (Sleepycat) 10/25/97";
+static const char sccsid[] = "@(#)cxx_txn.cpp	10.8 (Sleepycat) 4/10/98";
 #endif /* not lint */
 
 #include "db_cxx.h"
@@ -46,7 +46,7 @@ int DbTxnMgr::begin(DbTxn *pid, DbTxn **tid)
     return err;
 }
 
-int DbTxnMgr::checkpoint(int kbyte, int min) const
+int DbTxnMgr::checkpoint(u_int32_t kbyte, u_int32_t min) const
 {
     int err;
     const DB_TXNMGR *mgr = unwrapConst(this);
@@ -75,7 +75,7 @@ int DbTxnMgr::close()
 }
 
 // static method
-int DbTxnMgr::open(const char *dir, int flags, int mode,
+int DbTxnMgr::open(const char *dir, u_int32_t flags, int mode,
                   DbEnv *dbenv, DbTxnMgr **regionp)
 {
     *regionp = 0;

@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test016.tcl	10.3 (Sleepycat) 8/22/97
+#	@(#)test016.tcl	10.6 (Sleepycat) 4/26/98
 #
 # DB Test 16 {access method}
 # Partial put test where partial puts make the record smaller.
@@ -35,6 +35,7 @@ global dvals
 	cleanup $testdir
 	set db [eval [concat dbopen \
 	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 
 	set flags 0
 	set txn 0
@@ -85,10 +86,7 @@ global dvals
 		    $repl_off $repl_len ]
 		error_check_good put $ret 0
 		set ret [$db get $txn $key $flags]
-		if { [string compare $ret $s1$s2$s3] != 0 } {
-			puts "Test016: put $s1$s2$s3 got $ret"
-			return
-		}
+		error_check_good put $ret $s1$s2$s3
 		incr count
 	}
 	close $did
@@ -144,8 +142,5 @@ proc test016.check { key data } {
 global datastr
 global dvals
 	error_check_good key"$key"_exists [info exists dvals($key)] 1
-	if { [string compare $data $dvals($key)] != 0 } {
-		error "Test016: data mismatch for key $key\
-		    Expected: |$dvals($key)| Got: |$data|"
-	}
+	error_check_good "data mismatch for key $key" $data $dvals($key)
 }

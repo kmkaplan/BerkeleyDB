@@ -1,4 +1,4 @@
-; @(#)libdb.def	8.8 (Sleepycat) 11/20/97
+; @(#)libdb.def	8.14 (Sleepycat) 4/26/98
 
 DESCRIPTION     'Berkeley DB 2.0 Library'
 CODE            SHARED READ EXECUTE
@@ -41,13 +41,6 @@ EXPORTS
 	txn_open				@37
 	txn_prepare				@38
 	txn_unlink				@39
-	dbm_close				@40
-	dbm_delete				@41
-	dbm_fetch				@42
-	dbm_firstkey				@43
-	dbm_nextkey				@45
-	dbm_open				@46
-	dbm_store				@47
 	db_appexit				@48
 	db_version				@49
 	db_appinit				@50
@@ -57,16 +50,61 @@ EXPORTS
 	txn_id					@54
 	txn_stat				@55
 	memp_trickle				@56
+	db_jump_set				@57
+	db_value_set				@58
+	log_stat				@59
+	lock_stat				@60
 ; these are only for testing
 	__db_loadme				@201
-	__db_rclose				@205
-	__db_ropen				@206
 	__db_mutex_unlock			@207
 	__db_mutex_init				@208
-	__db_rcreate				@209
 	__db_runlink				@210
 	__db_mutex_lock				@211
 	__ham_func2				@214
 	__ham_func3				@215
 	__ham_func4				@216
 	__ham_func5				@217
+	__db_hcreate				@218
+	__db_hsearch				@219
+	__db_hdestroy				@220
+	__db_dbm_init				@221
+	__db_dbm_delete				@222
+	__db_dbm_fetch				@223
+	__db_dbm_store				@224
+	__db_dbm_firstkey			@225
+	__db_dbm_nextkey			@226
+	__db_rdetach				@227
+	__db_rattach				@228
+	__db_ndbm_open				@229
+	__db_ndbm_store				@230
+	__db_ndbm_rdonly			@231
+	__db_ndbm_pagfno			@232
+	__db_ndbm_nextkey			@233
+	__db_ndbm_firstkey			@234
+	__db_ndbm_fetch				@235
+	__db_ndbm_error				@236
+	__db_ndbm_dirfno			@237
+	__db_ndbm_delete			@238
+	__db_ndbm_close				@239
+	__db_ndbm_clearerr			@240
+	__db_close				@241
+	__db_read				@242
+	__db_open				@243
+	__db_write				@244
+	__lock_dump_region			@245
+; these are needed for linking tools
+	__db_dump				@401
+	__db_rpath				@402
+	__db_dispatch				@403
+	__db_err				@404
+	__db_init_print				@405
+	__txn_init_print			@406
+	__log_init_print			@407
+	__ham_init_print			@408
+	__bam_init_print			@409
+	__db_jump				@410
+	__ham_pgin				@411
+	__ham_pgout				@412
+	__bam_pgin				@413
+	__bam_pgout				@414
+	__db_omode				@415

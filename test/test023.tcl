@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test023.tcl	8.3 (Sleepycat) 10/4/97
+#	@(#)test023.tcl	8.7 (Sleepycat) 4/26/98
 #
 # Duplicate delete test.
 # Add a key with duplicates (first time on-page, second time off-page)
@@ -13,10 +13,12 @@ proc test023 { method args } {
 	global dupnum
 	global dupstr
 	global alphabet
+	set omethod $method
 	set method [convert_method $method]
 	puts "Test023: $method delete duplicates/check cursor operations"
-	if { [string compare $method DB_RECNO] == 0 } {
-		puts "Test023: skipping for method RECNO"
+	if { [string compare $method DB_RECNO] == 0 || \
+	    [is_rbtree $omethod] == 1 } {
+		puts "Test023: skipping for method $omethod"
 		return
 	}
 
@@ -31,6 +33,7 @@ proc test023 { method args } {
 	set db [eval [concat dbopen \
 	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method -flags \
 	    $DB_DUP $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 
 	set flags 0
 	set txn 0
@@ -175,12 +178,8 @@ proc test023 { method args } {
 proc test023.check { key data } {
 	global dupnum
 	global dupstr
-	if { [string compare $key duplicate_val_test] != 0 } {
-		error "Test023: key mismatch: |$key| |duplicate_val_test|"
-	}
-	if { [string compare $data $dupnum$dupstr] != 0 } {
-		error "Test023: data mismatch: |$data| |$dupnum|"
-	}
+	error_check_good "bad key" $key duplicate_val_test
+	error_check_good "data mismatch for $key" $data $dupnum$dupstr
 	incr dupnum
 }
 

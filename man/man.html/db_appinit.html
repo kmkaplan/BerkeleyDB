@@ -2,9 +2,9 @@
 <HEAD>
 <TITLE>db_appinit</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>db_appinit</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        <B>#include</B> <B>&lt;db.h&gt;</B>
@@ -14,7 +14,7 @@
 
        <B>int</B>
        <B>db</B>_<B>appinit(char</B> <B>*db</B>_<B>home,</B>
-            <B>char</B> <B>*db</B>_<B>config[],</B> <B>DB</B>_<B>ENV</B> <B>*dbenv,</B> <B>int</B> <B>flags);</B>
+            <B>char</B> <B>*db</B>_<B>config[],</B> <B>DB</B>_<B>ENV</B> <B>*dbenv,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
        <B>db</B>_<B>appexit(DB</B>_<B>ENV</B> <B>*dbenv);</B>
@@ -103,18 +103,28 @@
        DB_RECOVER
             Run  normal  recovery  on  this  environment   before
             opening  it for normal use.  If this flag is set, the
-            DB_CREATE, DB_INIT_TXN, and  DB_INIT_LOG  flags  must
-            also  be  set  since  the regions will be removed and
-            recreated.  For further information, consult the  man
-            page for <B><A HREF="db_recover.html">db_recover(1)</A></B>.
+            DB_CREATE flag must also be  set  since  the  regions
+            will be removed and recreated.
+
+            The   db_appinit  function  returns  successfully  if
+            DB_RECOVER is specified and no log files exist, so it
+            is  necessary  to  ensure all necessary log files are
+            present  before  running   recovery.    For   further
+            information,  consult  the man page for <B><A HREF="db_archive.html">db_archive(1)</A></B>
+            and <B><A HREF="db_recover.html">db_recover(1)</A></B>.
 
        DB_RECOVER_FATAL
-            Run  catastrophic recovery on this environment before
-            opening it for normal use.  If this flag is set,  the
-            DB_CREATE,  DB_INIT_TXN,  and  DB_INIT_LOG flags must
-            also be set since the regions  will  be  removed  and
-            recreated.   For further information, consult the man
-            page for <B><A HREF="db_recover.html">db_recover(1)</A></B>.
+            Run catastrophic recovery on this environment  before
+            opening  it for normal use.  If this flag is set, the
+            DB_CREATE flag must also be  set  since  the  regions
+            will be removed and recreated.
+
+            The   db_appinit  function  returns  successfully  if
+            DB_RECOVER is specified and no log files exist, so it
+            is  necessary  to  ensure all necessary log files are
+            present  before  running   recovery.    For   further
+            information,  consult  the man page for <B><A HREF="db_archive.html">db_archive(1)</A></B>
+            and <B><A HREF="db_recover.html">db_recover(1)</A></B>.
 
        DB_THREAD
             Ensure that handles returned by the DB subsystems are
@@ -150,15 +160,21 @@
 
        The DB  environment  is  configured  based  on  the  dbenv
        argument  to db_appinit, which is a pointer to a structure
-       of type DB_ENV (typedef'd in &lt;db.h&gt;).  It is expected that
-       applications  will  use  a  single DB_ENV structure as the
-       argument to all of the subsystems in the DB  package.   In
-       order  to ensure compatibility with future releases of DB,
-       all fields of the DB_ENV structure that are not explicitly
-       set  should  be initialized to 0 before the first time the
-       structure is used.  Do this  by  declaring  the  structure
-       external  or  static,  or by calling the C library routine
-       <B>bzero(3)</B> or <B>memset(3)</B>.
+       of type DB_ENV (typedef'd in &lt;db.h&gt;).   Applications  will
+       normally  use  the  same  DB_ENV structure (initialized by
+       <B><A HREF="db_appinit.html">db_appinit(3)</A></B>), as an argument to all of the subsystems in
+       the DB package.
+
+       References  to  the DB_ENV structure are maintained by DB,
+       so it may not be discarded until the last close  function,
+       corresponding  to  an  open  function  for which it was an
+       argument, has returned.  In order to ensure  compatibility
+       with  future  releases  of  DB,  all  fields of the DB_ENV
+       structure  that  are  not   explicitly   set   should   be
+       initialized  to  0  before the first time the structure is
+       used.  Do this by  declaring  the  structure  external  or
+       static,  or  by  calling the C library routine <B>bzero(3)</B> or
+       <B>memset(3)</B>.
 
        The fields of the DB_ENV structure used by db_appinit  are
        described  below.  The dbenv argument may not be NULL.  If
@@ -388,6 +404,7 @@
             relative  to  this path.  Note, these temporary files
             can potentially be quite large, depending on the size
             of the database.
+
             If   DB_TMP_DIR   is  not  specified,  the  following
             environment   variables   are   checked   in   order:
             ``TMPDIR'', ``TEMP'', ``TMP'' and ``TempFolder''.  If
@@ -556,18 +573,21 @@
             The DB_THREAD flag was specified  and  spinlocks  are
             not implemented for this architecture.
 
-            The  DB_HOME or TMPDIR environment variables were set
+            The   DB_RECOVER   or   DB_RECOVER_FATAL   flag   was
+            specified, and no log files were found.
+
+            The DB_HOME or TMPDIR environment variables were  set
             but empty.
 
             An incorrectly formatted ``NAME VALUE'' entry or line
             was found.
 
        [ENOSPC]
-            HP-UX  only:  a previously created DB environment for
+            HP-UX only: a previously created DB  environment  for
             this process still exists.
 
-       The db_appexit function may fail and return errno for  any
-       of  the  errors specified for the following DB and library
+       The  db_appexit function may fail and return errno for any
+       of the errors specified for the following DB  and  library
        functions: <B><A HREF="db_lock.html">lock_close(3)</A></B>, <B><A HREF="db_log.html">log_close(3)</A></B>, <B><A HREF="db_mpool.html">memp_close(3)</A></B>, and
        <B><A HREF="db_txn.html">txn_close(3)</A></B>.
 
@@ -575,11 +595,18 @@
 </PRE>
 <H2>BUGS</H2><PRE>
        Due to the constraints of the PA-RISC memory architecture,
-       HP-UX does not allow a process to  map  a  file  into  its
-       address  space  multiple  times.  For this reason, each DB
+       HP-UX  does  not  allow  a  process to map a file into its
+       address space multiple times.  For this  reason,  each  DB
        environment may be opened only once by a process on HP-UX,
-       i.e.,  calls  to  appinit  will  fail  if the specified DB
+       i.e., calls to appinit  will  fail  if  the  specified  DB
        environment has been opened and not subsequently closed.
+
+       On Windows/95, files that are opened by multiple processes
+       do not share data correctly.  To tell Berkeley DB  to  use
+       the  paging  file to share memory among processes, use the
+       DB_REGION_NAME  flag   of   the   db_value_set   function.
+       Obviously,  you  do  not  need to do this if only a single
+       process will be accessing database files.
 
 
 </PRE>
@@ -591,7 +618,7 @@
        <B><A HREF="db_txn.html">db_txn(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

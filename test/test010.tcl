@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test010.tcl	10.2 (Sleepycat) 9/20/97
+#	@(#)test010.tcl	10.5 (Sleepycat) 4/25/98
 #
 # DB Test 10 {access method}
 # Use the first 10,000 entries from the dictionary.
@@ -13,10 +13,13 @@
 # Close file, reopen, do retrieve and re-verify.
 # This does not work for recno
 proc test010 { method {nentries 10000} {ndups 5} {tnum 10} args } {
+	set omethod $method
 	set method [convert_method $method]
+	set args [convert_args $method $args]
 	puts "Test0$tnum: $method ($args) $nentries small dup key/data pairs"
-	if { [string compare $method DB_RECNO] == 0 } {
-		puts "Test0$tnum skipping for method RECNO"
+	if { [string compare $method DB_RECNO] == 0 || \
+	    [is_rbtree $omethod] == 1 } {
+		puts "Test0$tnum skipping for method $omethod"
 		return
 	}
 
@@ -30,8 +33,10 @@ proc test010 { method {nentries 10000} {ndups 5} {tnum 10} args } {
 	set t2 $testdir/t2
 	set t3 $testdir/t3
 	cleanup $testdir
-	set db [eval [concat dbopen $testfile [expr $DB_CREATE | $DB_TRUNCATE] \
-	    0644 $method -flags $DB_DUP $args]]
+	set args [add_to_args $DB_DUP $args]
+	set db [eval [concat dbopen $testfile \
+	    [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	set did [open $dict]
 
 	set flags 0
@@ -90,6 +95,7 @@ proc test010 { method {nentries 10000} {ndups 5} {tnum 10} args } {
 
 	error_check_good db_close [$db close] 0
 	set db [dbopen $testfile 0 0 $method]
+	error_check_good dbopen [is_valid_db $db] TRUE
 
 	puts "\tTest0$tnum.b: Checking file for correct duplicates after close"
 	dup_check $db $txn $t1 $dlist

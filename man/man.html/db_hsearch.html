@@ -2,12 +2,12 @@
 <HEAD>
 <TITLE>db_hsearch</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>db_hsearch</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
-       <B>#define</B> <B>DB</B>_<B>DBM</B>_<B>HSEARCH</B>
+       <B>#define</B> <B>DB</B>_<B>DBM</B>_<B>HSEARCH</B>    <B>1</B>
        <B>#include</B> <B>&lt;db.h&gt;</B>
 
        <B>typedef</B> <B>enum</B> <B>{</B>
@@ -23,7 +23,7 @@
        <B>hsearch(ENTRY</B> <B>item,</B> <B>ACTION</B> <B>action);</B>
 
        <B>int</B>
-       <B>hcreate(unsigned</B> <B>int</B> <B>nelem);</B>
+       <B>hcreate(size</B>_<B>t</B> <B>nelem);</B>
 
        <B>void</B>
        <B>hdestroy(void);</B>
@@ -40,7 +40,7 @@
        #include  of  the  hsearch  include file (e.g., ``#include
        &lt;search.h&gt;'') with the following two lines:
 
-              #define DB_DBM_HSEARCH
+              #define DB_DBM_HSEARCH    1
               #include &lt;db.h&gt;
 
        and recompile.
@@ -69,8 +69,7 @@
             reference  to  an  ENTRY  structure  referencing  the
             existing key and its associated data element.
 
-       FIND
-            Retrieve   the   specified  key/data  pair  from  the
+       FIND Retrieve   the   specified  key/data  pair  from  the
             database.
 
 
@@ -133,7 +132,7 @@
        <B><A HREF="db_txn.html">db_txn(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

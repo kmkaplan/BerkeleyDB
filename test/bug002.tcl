@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)bug002.tcl	10.1 (Sleepycat) 4/12/97
+#	@(#)bug002.tcl	10.2 (Sleepycat) 4/10/98
 #
 # Bug Test002:
 # This test checks basic cursor operations.

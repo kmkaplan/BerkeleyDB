@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test015.tcl	10.3 (Sleepycat) 8/22/97
+#	@(#)test015.tcl	10.6 (Sleepycat) 4/26/98
 #
 # DB Test 15 {access method}
 # Partial put test when item does not exist.
@@ -57,6 +57,7 @@ global dvals
 	cleanup $testdir
 	set db [eval [concat dbopen $testfile [expr $DB_CREATE | $DB_TRUNCATE] \
 	    0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 
 	set flags 0
 	set txn 0
@@ -142,24 +143,23 @@ global dvals
 proc test015.check { key data } {
 global dvals
 	error_check_good key"$key"_exists [info exists dvals($key)] 1
-	if { [llength $dvals($key)] != [llength $data] } {
-		error "Test015: mismatch on padding for key $key.\
-		    Expected |$dvals($key)| got |$data|"
-	} elseif { [llength $data] == 2 } {
+	error_check_good "mismatch on padding for key $key" $data $dvals($key)
+	if { [llength $data] == 2 } {
 		if { [lindex $data 0] != [lindex $dvals($key) 0] } {
-			error "Test015: padding mismatch for key $key \
+			error "FAIL: Test015: padding mismatch for key $key \
 			    Expected [lindex $dvals($key) 0] \
 			    Got [lindex $data 0]"
 		}
 		if { [string compare [lindex $data 1] [lindex $dvals($key) 1] ]\
 		    != 0 } {
-			error "Test015: data mismatch for key $key\
+			error "FAIL: Test015: data mismatch for key $key\
 			    Expected [lindex $dvals($key) 1]\
 			    Got [lindex $data 1]"
 		}
 	} elseif { [string compare $dvals($key) $data] != 0 } {
 		if { [lindex $data 0] != [lindex $dvals($key) 0] } {
-			error "Test015: mismatch: expected |$dvals($keys)|\
+			error \
+			    "FAIL: Test015: mismatch: expected |$dvals($keys)|\
 			    \tGot |$data|"
 		}
 	}

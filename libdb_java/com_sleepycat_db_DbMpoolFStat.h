@@ -25,14 +25,6 @@ JNIEXPORT jstring JNICALL Java_com_sleepycat_db_DbMpoolFStat_get_1file_1name
 
 /*
  * Class:     com_sleepycat_db_DbMpoolFStat
- * Method:    get_st_pagesize
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolFStat_get_1st_1pagesize
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbMpoolFStat
  * Method:    get_st_cache_hit
  * Signature: ()J
  */
@@ -77,6 +69,14 @@ JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolFStat_get_1st_1page_1in
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolFStat_get_1st_1page_1out
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbMpoolFStat
+ * Method:    get_st_pagesize
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbMpoolFStat_get_1st_1pagesize
   (JNIEnv *, jobject);
 
 #ifdef __cplusplus

@@ -2,7 +2,7 @@
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1996, 1997
+.\" Copyright (c) 1996, 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
 .\" Copyright (c) 1990, 1993, 1994
@@ -36,15 +36,15 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	@(#)db_open.so	10.48 (Sleepycat) 11/25/97
+.\"	@(#)db_open.so	10.55 (Sleepycat) 5/3/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)macros.so	10.36 (Sleepycat) 11/28/97
+.\"	@(#)macros.so	10.45 (Sleepycat) 5/4/98
 .\"
 .\" We don't want hyphenation for any HTML documents.
 .ie '\*[HTML]'YES'\{\
@@ -85,19 +85,18 @@
 \}
 ..
 .\" Scoped name for Java.
-.\" Produces a.b, for Java, otherwise just b.
-.\" This macro is used for constants that must
-.\" be scoped in Java, but are global otherwise.
+.\" Produces Db.b, for Java, otherwise just b.  This macro is used for
+.\" constants that must be scoped in Java, but are global otherwise.
 .\" This macro takes two arguments:
 .\"	+ the class
 .\"	+ the name within the class or following the prefix
 .de Sj
 .ie '\*[TYPE]'JAVA'\{\
 .TP 5
-\\$1.\\$2\}
+Db.\\$1\}
 .el\{\
 .TP 5
-\\$2\}
+\\$1\}
 ..
 .\" The general information text macro.
 .de Gn
@@ -241,7 +240,9 @@ The default error behavior can be changed, see
 .IR DbLog (3),
 .IR DbLsn (3),
 .IR DbMpool (3),
+.if !'\*[TYPE]'JAVA'\{\
 .IR DbMpoolFile (3),
+\}
 .IR Dbt (3),
 .IR DbTxn (3),
 .IR DbTxnMgr (3)
@@ -391,8 +392,15 @@ based on the
 argument to
 .IR \\$1 ,
 which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
-It is expected that applications will use a single DB_ENV structure as the
-argument to all of the subsystems in the DB package.
+Applications will normally use the same DB_ENV structure (initialized
+by
+.IR db_appinit (3)),
+as an argument to all of the subsystems in the DB package.
+.PP
+References to the DB_ENV structure are maintained by DB,
+so it may not be discarded until the last close function,
+corresponding to an open function for which it was an argument,
+has returned.
 In order to ensure compatibility with future releases of DB, all fields of
 the DB_ENV structure that are not explicitly set should be initialized to 0
 before the first time the structure is used.
@@ -463,7 +471,7 @@ appropriate set method, before calling
 ..
 .\" The DB_ENV common fields macros.
 .de Se
-.ie '\*[TYPE]'JAVA'\{\
+.if '\*[TYPE]'JAVA'\{\
 .TP 5
 DbErrcall db_errcall;
 .ns
@@ -475,7 +483,6 @@ int db_verbose;
 The error fields of the DbEnv behave as described for
 .IR DbEnv (3).
 \}
-.el\{\
 .ie '\*[TYPE]'CXX'\{\
 .TP 5
 void *(*db_errcall)(char *db_errpfx, char *buffer);
@@ -507,7 +514,7 @@ const char *db_errpfx;
 int db_verbose;
 The error fields of the DB_ENV behave as described for
 .IR db_appinit (3).
-\}
+.sp
 \}
 ..
 .\" The open flags.
@@ -521,7 +528,7 @@ don't already exist.
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
-.Sj Db DB_CREATE
+.Sj DB_CREATE
 Create any underlying files, as necessary.
 If the files do not already exist and the DB_CREATE flag is not specified,
 the call will fail.
@@ -532,12 +539,17 @@ the call will fail.
 .\"	+ the object it returns.
 .de Ft
 .TP 5
-.Sj Db DB_THREAD
+.Sj DB_THREAD
 Cause the \\$2 handle returned by the
 .I \\$1
 .Al function method
 to be useable by multiple threads within a single address space,
 i.e., to be ``free-threaded''.
+.if '\*[TYPE]'JAVA'\{\
+Threading is assumed in the Java API,
+so no special flags are required,
+and DB functions will always behave as if the DB_THREAD flag was specified.
+\}
 ..
 .\" The mode macro.
 .\" This macro takes one argument:
@@ -767,7 +779,7 @@ the region removal will fail.
 In the case of catastrophic or system failure,
 database recovery must be performed (see
 .IR db_recover (1)
-or the DB_RECOVER flags to
+or the DB_RECOVER and DB_RECOVER_FATAL flags to
 .IR \\*(Va (3)).
 Alternatively, if recovery is not required because no database state is
 maintained across failures,
@@ -878,7 +890,7 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH DB_OPEN 3 "November 25, 1997"
+.TH DB_OPEN 3 "May 3, 1998"
 .UC 7
 .SH NAME
 db_open \- database access methods
@@ -888,33 +900,33 @@ db_open \- database access methods
 #include <db.h>
 
 int
-db_open(const char *file, DBTYPE type,
+db_open(const char *file, DBTYPE type, u_int32_t flags,
 .ti +5
-int flags, int mode, DB_ENV *dbenv, DB_INFO *dbinfo, DB **dbpp);
+int mode, DB_ENV *dbenv, DB_INFO *dbinfo, DB **dbpp);
 
 int
-DB->close(DB *db, int flags);
+DB->close(DB *db, u_int32_t flags);
 
 int
 DB->cursor(DB *db, DB_TXN *txnid, DBC **cursorp);
 
 int
-DB->del(DB *db, DB_TXN *txnid, DBT *key, int flags);
+DB->del(DB *db, DB_TXN *txnid, DBT *key, u_int32_t flags);
 
 int
 DB->fd(DB *db, int *fdp);
 
 int
-DB->get(DB *db, DB_TXN *txnid, DBT *key, DBT *data, int flags);
+DB->get(DB *db, DB_TXN *txnid, DBT *key, DBT *data, u_int32_t flags);
 
 int
-DB->put(DB *db, DB_TXN *txnid, DBT *key, DBT *data, int flags);
+DB->put(DB *db, DB_TXN *txnid, DBT *key, DBT *data, u_int32_t flags);
 
 int
-DB->sync(DB *db, int flags);
+DB->sync(DB *db, u_int32_t flags);
 
 int
-DB->stat(DB *db, void *sp, void *(*db_malloc)(size_t), int flags);
+DB->stat(DB *db, void *sp, void *(*db_malloc)(size_t), u_int32_t flags);
 .ft R
 .fi
 .SH DESCRIPTION
@@ -1106,9 +1118,10 @@ A suggested maximum size of the memory pool cache, in bytes.
 If
 .I db_cachesize
 is 0, an appropriate default is used.
-If the
+It is an error to specify both the
 .I mp_info
-field is also specified, this field is ignored.
+field and a non-zero
+.IR db_cachesize .
 .sp
 .ft B
 Note,
@@ -1162,11 +1175,10 @@ See
 .IR db_dbt (3)
 for more information.
 .sp
-On systems where separate heaps are maintained for applications and
-libraries (notably Windows NT),
-specifying the DB_DBT_MALLOC flag will fail because the DB library will
-allocate memory from a different heap than the application will use to
-free it.
+On systems where there may be multiple library versions of malloc
+(notably Windows NT), specifying the DB_DBT_MALLOC flag will fail
+because the DB library will allocate memory from a different heap
+than the application will use to free it.
 To avoid this problem, the
 .I db_malloc
 field should be set to point to the application's allocation routine.
@@ -1215,13 +1227,21 @@ first key argument is considered to be respectively less than, equal to,
 or greater than the second key argument.
 The same comparison function must be used on a given tree every time it
 is opened.
+.sp
+The
+.I data
+and
+.I size
+fields of the DBT are the only fields that may be used for the purposes
+of this comparison.
+.sp
 If
 .I bt_compare
 is NULL,
 the keys are compared lexically,
 with shorter keys collating before longer keys.
 .TP 5
-int bt_minkey;
+u_int32_t bt_minkey;
 The minimum number of keys that will be stored on any single page.
 This value is used to determine which keys will be stored on overflow
 pages, i.e. if a key or data item is larger than the pagesize divided
@@ -1244,6 +1264,13 @@ argument that are necessary to determine that it is greater than the first
 key argument.
 If the keys are equal, the key length should be returned.
 .sp
+The
+.I data
+and
+.I size
+fields of the DBT are the only fields that may be used for the purposes
+of this comparison.
+.sp
 This is used to compress the keys stored on the btree internal pages.
 The usefulness of this is data dependent,
 but in some data sets can produce significantly reduced tree sizes and
@@ -1257,7 +1284,7 @@ If
 is NULL and a comparison function is specified, no prefix comparison is
 done.
 .TP 5
-unsigned long flags;
+u_int32_t flags;
 The following additional flags may be specified by
 .BR or 'ing
 together one or more of the following values:
@@ -1317,7 +1344,7 @@ structure before calling
 .IR db_open ,
 when using the hash access method:
 .TP 5
-unsigned int h_ffactor;
+u_int32_t h_ffactor;
 The desired density within the hash table.
 It is an approximation of the number of keys allowed to accumulate in any
 one bucket, determining when the hash table grows or shrinks.
@@ -1344,14 +1371,14 @@ will attempt to determine if the hash function specified is the same as
 the one with which the database was created, and will fail if it detects
 that it is not.
 .TP 5
-unsigned int h_nelem;
+u_int32_t h_nelem;
 An estimate of the final size of the hash table.
 If not set or set too low,
 hash tables will expand gracefully as keys are entered,
 although a slight performance degradation may be noticed.
 The default value is 1.
 .TP 5
-unsigned long flags;
+u_int32_t flags;
 The following additional flags may be specified by
 .BR or 'ing
 together one or more of the following values:
@@ -1483,7 +1510,7 @@ applications,
 and that are either generated on the fly by software tools,
 or modified using a different mechanism, e.g., a text editor.
 .TP 5
-unsigned long flags;
+u_int32_t flags;
 The following additional flags may be specified by
 .BR or 'ing
 together one or more of the following values:
@@ -1588,7 +1615,7 @@ with the
 .I type
 argument set to DB_UNKNOWN.
 .TP 5
-int (*close)(DB *db, int flags);
+int (*close)(DB *db, u_int32_t flags);
 A pointer to a function to flush any cached information to disk,
 close any open cursors (see
 .IR db_cursor (3)),
@@ -1659,7 +1686,7 @@ for more information.
 .IP
 .Rt cursor
 .TP 5
-int (*del)(DB *db, DB_TXN *txnid, DBT *key, int flags);
+int (*del)(DB *db, DB_TXN *txnid, DBT *key, u_int32_t flags);
 .br
 A pointer to a function to remove key/data pairs from the database.
 The key/data pair associated with the specified
@@ -1703,7 +1730,7 @@ Applications should use the lock manager where possible.
 .TP 5
 int (*get)(DB *db, DB_TXN *txnid,
 .ti +5
-DBT *key, DBT *data, int flags);
+DBT *key, DBT *data, u_int32_t flags);
 .br
 A pointer to a function that is an interface for keyed retrieval from
 the database.
@@ -1770,7 +1797,7 @@ function returns DB_NOTFOUND.
 .TP 5
 int (*put)(DB *db, DB_TXN *txnid,
 .ti +5
-DBT *key, DBT *data, int flags);
+DBT *key, DBT *data, u_int32_t flags);
 .br
 A pointer to a function to store key/data pairs in the database.
 If the database supports duplicates,
@@ -1813,7 +1840,7 @@ and DB_KEYEXIST if the DB_NOOVERWRITE
 .I flag
 was set and the key already exists in the file.
 .TP 5
-int (*sync)(DB *db, int flags);
+int (*sync)(DB *db, u_int32_t flags);
 A pointer to a function to flush any cached information to disk.
 If the database is in memory only, the
 .I sync
@@ -1829,7 +1856,7 @@ function description above for a discussion of DB and cached data.
 .TP 5
 int (*stat)(DB *db, void *sp,
 .ti +5
-void *(*db_malloc)(size_t), int flags);
+void *(*db_malloc)(size_t), u_int32_t flags);
 .br
 A pointer to a function to create a statistical structure and copy a pointer
 to it into user-specified memory locations.

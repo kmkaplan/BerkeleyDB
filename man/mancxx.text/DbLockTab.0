@@ -8,17 +8,17 @@ SSYYNNOOPPSSIISS
 
        ssttaattiicc iinntt
        DDbbLLoocckkTTaabb::::ooppeenn((ccoonnsstt cchhaarr **ddiirr,,
-            iinntt ffllaaggss,, iinntt mmooddee,, DDbbEEnnvv **ddbbeennvv,, DDbbLLoocckkTTaabb ****rreeggiioonnpp));;
+            uu__iinntt3322__tt ffllaaggss,, iinntt mmooddee,, DDbbEEnnvv **ddbbeennvv,, DDbbLLoocckkTTaabb ****rreeggiioonnpp));;
 
        iinntt
        DDbbLLoocckkTTaabb::::iidd((uu__iinntt3322__tt **iiddpp));;
 
        iinntt
-       DDbbLLoocckkTTaabb::::vveecc((uu__iinntt3322__tt lloocckkeerr,, iinntt ffllaaggss,,
+       DDbbLLoocckkTTaabb::::vveecc((uu__iinntt3322__tt lloocckkeerr,, uu__iinntt3322__tt ffllaaggss,,
             DDBB__LLOOCCKKRREEQQ lliisstt[[]],, iinntt nnlliisstt,, DDBB__LLOOCCKKRREEQQ ****eelliissttpp));;
 
        iinntt
-       DDbbLLoocckkTTaabb::::ggeett((uu__iinntt3322__tt lloocckkeerr,, iinntt ffllaaggss,,
+       DDbbLLoocckkTTaabb::::ggeett((uu__iinntt3322__tt lloocckkeerr,, uu__iinntt3322__tt ffllaaggss,,
             ccoonnsstt DDbbtt **oobbjj,, ccoonnsstt ddbb__lloocckkmmooddee__tt lloocckk__mmooddee,, DDBB__LLOOCCKK **lloocckk));;
 
        iinntt
@@ -28,7 +28,7 @@ SSYYNNOOPPSSIISS
        DDbbLLoocckkTTaabb::::uunnlliinnkk((ccoonnsstt cchhaarr **ddiirr,, iinntt ffoorrccee,, DDbbEEnnvv **ddbbeennvv));;
 
        iinntt
-       DDbbLLoocckkTTaabb::::ddeetteecctt((iinntt ffllaaggss,, iinntt aattyyppee));;
+       DDbbLLoocckkTTaabb::::ddeetteecctt((uu__iinntt3322__tt ffllaaggss,, uu__iinntt3322__tt aattyyppee));;
 
 DDEESSCCRRIIPPTTIIOONN
        The DB library is a family of classes that provides a mod-
@@ -46,16 +46,18 @@ DDEESSCCRRIIPPTTIIOONN
        locking interface.
 
        The _D_b_L_o_c_k_T_a_b class is intended to provide general-purpose
-       locking.  While designed to work with the other  Db  func-
-       tions,  this class is also useful for more general locking
-       purposes.  Locks can be shared between processes.  In most
-       cases,  when  multiple treads or processes are using lock-
-       ing, the deadlock detector, _d_b___d_e_a_d_l_o_c_k(1), should be run.
+       locking.   While  designed  to  work  with  the  other  Db
+       classes,  this class is also useful for more general lock-
+       ing purposes.  Locks can be shared between processes.   In
+       most  cases,  when  multiple treads or processes are using
+       locking, the deadlock detector, _d_b___d_e_a_d_l_o_c_k(1), should  be
+       run.
 
   _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n
        The  _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n  method copies a pointer, to the lock
        table identified by the ddiirreeccttoorryy  _d_i_r,  into  the  memory
        location referenced by _r_e_g_i_o_n_p.
+
 
        If  the  _d_b_e_n_v argument to _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n was initialized
        using _D_b_E_n_v_:_:_a_p_p_i_n_i_t, _d_i_r is interpreted as  described  by
@@ -112,7 +114,6 @@ DDEESSCCRRIIPPTTIIOONN
        destroyed.  Any of the DbEnv fields that are  not  explic-
        itly set will default to appropriate values.
 
-
        The  following  fields in the DbEnv object may be initial-
        ized, using the appropriate  set  method,  before  calling
        _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n:
@@ -164,103 +165,110 @@ DDEESSCCRRIIPPTTIIOONN
             DB_LOCK_YOUNGEST
                  Abort the youngest transaction.
 
-       unsigned int lk_max;
+       u_int32_t lk_max;
             The maximum number of locks to be held  or  requested
             in  the table.  This value is used by _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n
             to estimate how much space to  allocate  for  various
             lock-table data structures.  If _l_k___m_a_x is not explic-
             itly set, a default value is used.
 
-       int lk_modes;
-            The number of lock modes to be recognized by the lock
-            table   (including  the  ``not-granted''  mode).   If
-            _l_k___m_o_d_e_s is 0, the value DB_LOCK_RW_N  is  used;  see
-            below for a description of that value.
+       u_int32_t lk_modes;
 
-       The  _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n  method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3) or
+       The number of lock modes to  be  recognized  by  the  lock
+            table (including
+            the ``not-granted'' mode).  If  _l_k___m_o_d_e_s  is  0,  the
+            value  DB_LOCK_RW_N is used; see below for a descrip-
+            tion of that value.
+
+       The _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n  method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)  or
        returns the value of _e_r_r_n_o on failure and 0 on success.
 
   _D_b_L_o_c_k_T_a_b_:_:_i_d
-       The _D_b_L_o_c_k_T_a_b_:_:_i_d method copies  a  locker  ID,  which  is
-       guaranteed  to be unique in the specified lock table, into
+       The  _D_b_L_o_c_k_T_a_b_:_:_i_d  method  copies  a  locker ID, which is
+       guaranteed to be unique in the specified lock table,  into
        the memory location referenced by _i_d_p.
 
-       The access methods (see _D_b_:_:_o_p_e_n  in  _D_b(3)),  generate  a
-       unique  locker  ID for each file that is opened with lock-
-       ing.  During Db access method operation,  this  locker  ID
+       The  access  methods  (see  _D_b_:_:_o_p_e_n in _D_b(3)), generate a
+       unique locker ID for each file that is opened  with  lock-
+       ing.   During  Db  access method operation, this locker ID
        will be used for all lock calls unless a transaction iden-
-       tifier was specified for  the  call,  in  which  case  the
+       tifier  was  specified  for  the  call,  in which case the
        transaction ID specified is used for locking.
 
-       The   _D_b_L_o_c_k_T_a_b_:_:_i_d  method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)  or
+       The  _D_b_L_o_c_k_T_a_b_:_:_i_d  method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)   or
        returns the value of _e_r_r_n_o on failure and 0 on success.
 
 
   _D_b_L_o_c_k_T_a_b_:_:_v_e_c
-       The _D_b_L_o_c_k_T_a_b_:_:_v_e_c method atomically obtains and  releases
-       one  or  more locks from the specified table.  The _D_b_L_o_c_k_-
-       _T_a_b_:_:_v_e_c method is  intended  to  support  acquisition  or
-       trading  of multiple locks under one lock table semaphore,
-       as is needed for  lock  coupling  or  in  multigranularity
+       The  _D_b_L_o_c_k_T_a_b_:_:_v_e_c method atomically obtains and releases
+       one or more locks from the specified table.   The  _D_b_L_o_c_k_-
+       _T_a_b_:_:_v_e_c  method  is  intended  to  support acquisition or
+       trading of multiple locks under one lock table  semaphore,
+       as  is  needed  for  lock  coupling or in multigranularity
        locking for lock escalation.
 
-       The  _l_o_c_k_e_r  argument  specified  to  _D_b_L_o_c_k_T_a_b_:_:_v_e_c is an
+       The _l_o_c_k_e_r argument  specified  to  _D_b_L_o_c_k_T_a_b_:_:_v_e_c  is  an
        unsigned  32-bit  integer  quantity.   It  represents  the
        entity requesting or releasing the lock.
 
        The _f_l_a_g_s value must be set to 0 or the following value:
 
+
        DB_LOCK_NOWAIT
-            If  a  lock  cannot  be granted because the requested
-            lock conflicts with an existing lock, return  immedi-
-            ately  instead  of  waiting  for  the  lock to become
+            If a lock cannot be  granted  because  the  requested
+            lock  conflicts with an existing lock, return immedi-
+            ately instead of  waiting  for  the  lock  to  become
             available.
 
-       The _l_i_s_t array provided to _D_b_L_o_c_k_T_a_b_:_:_v_e_c is typedef'd  in
-       <db_cxx.h>  as  DB_LOCKREQ.  A DB_LOCKREQ structure has at
-       least the following  fields,  which  must  be  initialized
+       The  _l_i_s_t array provided to _D_b_L_o_c_k_T_a_b_:_:_v_e_c is typedef'd in
+       <db_cxx.h> as DB_LOCKREQ.  A DB_LOCKREQ structure  has  at
+       least  the  following  fields,  which  must be initialized
        before calling _D_b_L_o_c_k_T_a_b_:_:_v_e_c:
 
        lockop_t op;
-            The  operation  to be performed, which must be set to
+            The operation to be performed, which must be  set  to
             one of the following values:
 
+
             DB_LOCK_GET
-                 Get a lock, as defined by the values of  _l_o_c_k_e_r,
-                 _o_b_j  and _m_o_d_e.  Upon return from _D_b_L_o_c_k_T_a_b_:_:_v_e_c,
-                 if the _l_o_c_k field is non-NULL,  a  reference  to
+                 Get  a lock, as defined by the values of _l_o_c_k_e_r,
+                 _o_b_j and _m_o_d_e.  Upon return from  _D_b_L_o_c_k_T_a_b_:_:_v_e_c,
+                 if  the  _l_o_c_k  field is non-NULL, a reference to
                  the acquired lock is stored there.  (This refer-
-                 ence is  invalidated  by  any  call  to  _D_b_L_o_c_k_-
+                 ence  is  invalidated  by  any  call  to _D_b_L_o_c_k_-
                  _T_a_b_:_:_v_e_c or _D_b_L_o_c_k_:_:_p_u_t that releases the lock.)
                  See _D_b_L_o_c_k(3).
 
+
             DB_LOCK_PUT
-                 The lock referenced by the contents of the  _l_o_c_k
+                 The  lock referenced by the contents of the _l_o_c_k
                  field is released.
+
 
             DB_LOCK_PUT_ALL
                  All locks held by the _l_o_c_k_e_r are released.  (Any
-                 locks acquired as a part of the current call  to
+                 locks  acquired as a part of the current call to
                  _D_b_L_o_c_k_T_a_b_:_:_v_e_c    that    appear    after    the
-                 DB_LOCK_PUT_ALL entry  are  not  considered  for
+                 DB_LOCK_PUT_ALL  entry  are  not  considered for
                  this operation).
+
 
             DB_LOCK_PUT_OBJ
                  All locks held by the _l_o_c_k_e_r, on the object _o_b_j,
-                 with  the  mode  specified  by  _l_o_c_k___m_o_d_e,   are
-                 released.   A  _l_o_c_k___m_o_d_e of DB_LOCK_NG indicates
+                 with   the  mode  specified  by  _l_o_c_k___m_o_d_e,  are
+                 released.  A _l_o_c_k___m_o_d_e of  DB_LOCK_NG  indicates
                  that all locks on the object should be released.
-                 Note  that  any  locks acquired as a part of the
+                 Note that any locks acquired as a  part  of  the
                  current call to _D_b_L_o_c_k_T_a_b_:_:_v_e_c that occur before
                  the DB_LOCK_PUT_OBJ will also be released; those
                  acquired afterwards will not be released.
 
        const Dbt obj;
-            An untyped byte string that specifies the  object  to
+            An  untyped  byte string that specifies the object to
             be locked or released.
 
        const lockmode_t mode;
-            The  lock  mode,  used as an index into object's con-
+            The lock mode, used as an index  into  object's  con-
             flict array.
 
        DB_LOCK lock;
@@ -269,33 +277,36 @@ DDEESSCCRRIIPPTTIIOONN
        The _n_l_i_s_t argument specifies the number of elements in the
        _l_i_s_t array.
 
-       If  any  of the requested locks cannot be acquired, or any
+       If any of the requested locks cannot be acquired,  or  any
        of the locks to be released cannot be released, the opera-
-       tions  before the failing operation are guaranteed to have
-       completed successfully, and _D_b_L_o_c_k_T_a_b_:_:_v_e_c returns a  non-
+       tions before the failing operation are guaranteed to  have
+       completed  successfully, and _D_b_L_o_c_k_T_a_b_:_:_v_e_c returns a non-
        zero value.  In addition, if _e_l_i_s_t_p is not NULL, it is set
-       to point to the DB_LOCKREQ entry that was being  processed
+       to  point to the DB_LOCKREQ entry that was being processed
        when the error occurred.
 
-       In  the case of an error, _D_b_L_o_c_k_T_a_b_:_:_v_e_c may return one of
+       In the case of an error, _D_b_L_o_c_k_T_a_b_:_:_v_e_c may return one  of
        the following values:
 
+
        DB_LOCK_DEADLOCK
-            The specified _l_o_c_k_e_r was  selected  as  a  victim  in
+            The  specified  _l_o_c_k_e_r  was  selected  as a victim in
             order to resolve a deadlock.
 
+
        DB_LOCK_NOTHELD
-            The  lock  cannot  be released, as it was not held by
+            The lock cannot be released, as it was  not  held  by
             the _l_o_c_k_e_r.
 
+
        DB_LOCK_NOTGRANTED
-            A lock was requested that could not  be  granted  and
-            the  _f_l_a_g  parameter  was  set to DB_LOCK_NOWAIT.  In
+            A  lock  was  requested that could not be granted and
+            the _f_l_a_g parameter was  set  to  DB_LOCK_NOWAIT.   In
             this case, if non-NULL, _e_l_i_s_t_p identifies the request
             that was granted.
 
-       Otherwise,  the  _D_b_L_o_c_k_T_a_b_:_:_v_e_c  method  throws a _D_b_E_x_c_e_p_-
-       _t_i_o_n(3) or returns the value of _e_r_r_n_o on failure and 0  on
+       Otherwise, the _D_b_L_o_c_k_T_a_b_:_:_v_e_c  method  throws  a  _D_b_E_x_c_e_p_-
+       _t_i_o_n(3)  or returns the value of _e_r_r_n_o on failure and 0 on
        success.
 
 
@@ -306,87 +317,89 @@ DDEESSCCRRIIPPTTIIOONN
        the
 
        _D_b_L_o_c_k_T_a_b_:_:_v_e_c method with the _l_o_c_k_e_r argument, _e_l_i_s_t_p and
-       _c_o_n_f_l_i_c_t  arguments,  and a single element _l_i_s_t array, for
-       which the _o_p field is DB_LOCK_GET, and the _o_b_j,  _l_o_c_k___m_o_d_e
-       and  _l_o_c_k  fields  are represented by the arguments of the
-       same name.  Note that the type  of  the  _o_b_j  argument  to
-       _D_b_L_o_c_k_T_a_b_:_:_g_e_t  is different from the _o_b_j element found in
-       the  DB_LOCKREQ  structure.   The  _D_b_L_o_c_k_T_a_b_:_:_g_e_t   method
+       _c_o_n_f_l_i_c_t arguments, and a single element _l_i_s_t  array,  for
+       which  the _o_p field is DB_LOCK_GET, and the _o_b_j, _l_o_c_k___m_o_d_e
+       and _l_o_c_k fields are represented by the  arguments  of  the
+       same  name.   Note  that  the  type of the _o_b_j argument to
+       _D_b_L_o_c_k_T_a_b_:_:_g_e_t is different from the _o_b_j element found  in
+       the   DB_LOCKREQ  structure.   The  _D_b_L_o_c_k_T_a_b_:_:_g_e_t  method
        returns success and failure as described for the
 
        _D_b_L_o_c_k_T_a_b_:_:_v_e_c method.
 
   _D_b_L_o_c_k_T_a_b_:_:_c_l_o_s_e
        The _D_b_L_o_c_k_T_a_b_:_:_c_l_o_s_e method disassociates the calling pro-
-       cess from the lock table.  The object should not  be  used
-       after  a  call  to close.  Note that _D_b_L_o_c_k_T_a_b_:_:_c_l_o_s_e does
-       not release any locks still held by the  closing  process.
+       cess  from  the lock table.  The object should not be used
+       after a call to close.  Note  that  _D_b_L_o_c_k_T_a_b_:_:_c_l_o_s_e  does
+       not  release  any locks still held by the closing process.
        (This provides functionality for long-lived locks.)
 
-       Processes  that  wish to have all their locks released can
+       Processes that wish to have all their locks  released  can
        do so by issuing the appropriate _D_b_L_o_c_k_T_a_b_:_:_v_e_c call.
 
-       In addition, if the _d_i_r argument  to  _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n  was
-       NULL  and  _d_b_e_n_v was not initialized using _D_b_E_n_v_:_:_a_p_p_i_n_i_t,
-       all files created for this shared region will be  removed,
+       In  addition,  if  the _d_i_r argument to _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n was
+       NULL and _d_b_e_n_v was not initialized  using  _D_b_E_n_v_:_:_a_p_p_i_n_i_t,
+       all  files created for this shared region will be removed,
        as if _D_b_L_o_c_k_T_a_b_:_:_u_n_l_i_n_k were called.
 
-       When  multiple threads are using the DbLockTab handle con-
-       currently, only a  single  thread  may  call  the  _D_b_L_o_c_k_-
+       When multiple threads are using the DbLockTab object  con-
+       currently,  only  a  single  thread  may  call the _D_b_L_o_c_k_-
        _T_a_b_:_:_c_l_o_s_e method.
 
-       The  _D_b_L_o_c_k_T_a_b_:_:_c_l_o_s_e  method  throws  a _D_b_E_x_c_e_p_t_i_o_n(3) or
+       The _D_b_L_o_c_k_T_a_b_:_:_c_l_o_s_e method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)  or
        returns the value of _e_r_r_n_o on failure and 0 on success.
 
 
   _D_b_L_o_c_k_T_a_b_:_:_u_n_l_i_n_k
        The _D_b_L_o_c_k_T_a_b_:_:_u_n_l_i_n_k method destroys the lock table iden-
-       tified  by  the  directory _d_i_r, removing all files used to
-       implement the lock  table.   (The  directory  _d_i_r  is  not
+       tified by the directory _d_i_r, removing all  files  used  to
+       implement  the  lock  table.   (The  directory  _d_i_r is not
        removed.)  If there are processes that have called _D_b_L_o_c_k_-
-       _T_a_b_:_:_o_p_e_n without calling  _D_b_L_o_c_k_T_a_b_:_:_c_l_o_s_e  (i.e.,  there
-       are  processes  currently  using  the lock table), _D_b_L_o_c_k_-
-       _T_a_b_:_:_u_n_l_i_n_k will fail without further action,  unless  the
-       force  flag  is  set, in which case _D_b_L_o_c_k_T_a_b_:_:_u_n_l_i_n_k will
-       attempt to remove the lock table files regardless  of  any
+       _T_a_b_:_:_o_p_e_n  without  calling  _D_b_L_o_c_k_T_a_b_:_:_c_l_o_s_e (i.e., there
+       are processes currently using  the  lock  table),  _D_b_L_o_c_k_-
+       _T_a_b_:_:_u_n_l_i_n_k  will  fail without further action, unless the
+       force flag is set, in which  case  _D_b_L_o_c_k_T_a_b_:_:_u_n_l_i_n_k  will
+       attempt  to  remove the lock table files regardless of any
        processes still using the lock table.
 
-       The  result  of  attempting to forcibly destroy the region
-       when a process has the region open is  unspecified.   Pro-
-       cesses  using a shared memory region maintain an open file
-       descriptor for it.  On UNIX systems,  the  region  removal
-       should  succeed and processes that have already joined the
-       region should  continue  to  run  in  the  region  without
-       change,  however  processes  attempting  to  join the lock
-       table will either fail or attempt to create a new  region.
-       On  other  systems,  e.g., WNT, where the _u_n_l_i_n_k(2) system
-       call will fail if any process has an open file  descriptor
+       The result of attempting to forcibly  destroy  the  region
+       when  a  process has the region open is unspecified.  Pro-
+       cesses using a shared memory region maintain an open  file
+       descriptor  for  it.   On UNIX systems, the region removal
+       should succeed and processes that have already joined  the
+       region  should  continue  to  run  in  the  region without
+       change, however processes  attempting  to  join  the  lock
+       table  will either fail or attempt to create a new region.
+       On other systems, e.g., WNT, where  the  _u_n_l_i_n_k(2)  system
+       call  will fail if any process has an open file descriptor
        for the file, the region removal will fail.
 
-       In  the  case  of catastrophic or system failure, database
-       recovery must  be  performed  (see  _d_b___r_e_c_o_v_e_r(1)  or  the
-       DB_RECOVER flags to _D_b_E_n_v_:_:_a_p_p_i_n_i_t(3)).  Alternatively, if
-       recovery is not required  because  no  database  state  is
-       maintained  across  failures, it is possible to clean up a
-       lock table by removing all of the files in  the  directory
-       specified  to  the  _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n  method, as lock table
-       files are never created in any directory  other  than  the
-       one  specified  to  _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n.   Note, however, that
-       this has the potential to  remove  files  created  by  the
-       other DB subsystems in this database environment.
+       In the case of catastrophic or  system  failure,  database
+       recovery  must  be  performed  (see  _d_b___r_e_c_o_v_e_r(1)  or the
+       DB_RECOVER     and     DB_RECOVER_FATAL      flags      to
+       _D_b_E_n_v_:_:_a_p_p_i_n_i_t(3)).   Alternatively,  if  recovery  is not
+       required because no database state  is  maintained  across
+       failures,  it  is  possible  to  clean  up a lock table by
+       removing all of the files in the  directory  specified  to
+       the  _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n method, as lock table files are never
+       created in any directory other than the one  specified  to
+       _D_b_L_o_c_k_T_a_b_:_:_o_p_e_n.   Note, however, that this has the poten-
+       tial to remove files created by the other DB subsystems in
+       this database environment.
 
        The  _D_b_L_o_c_k_T_a_b_:_:_u_n_l_i_n_k  method  throws a _D_b_E_x_c_e_p_t_i_o_n(3) or
        returns the value of _e_r_r_n_o on failure and 0 on success.
 
   _D_b_L_o_c_k_T_a_b_:_:_d_e_t_e_c_t
        The _D_b_L_o_c_k_T_a_b_:_:_d_e_t_e_c_t method runs  one  iteration  of  the
-       deadlock  detector  on the table represented by DbLockTab.
-       The deadlock detector traverses the  lock  table,  detects
-       deadlocks,   and  if  it  finds  one,  marks  one  of  the
-       participating transactions for abort and then returns.
+       deadlock detector on the current lock table.  The deadlock
+       detector traverses the lock table, detects deadlocks,  and
+       if  it  finds one, marks one of the participating transac-
+       tions for abort and then returns.
 
        The flags value is specified by  oorr'ing  together  one  or
        more of the following values:
+
 
 
        DB_LOCK_CONFLICT
@@ -446,11 +459,14 @@ SSTTAANNDDAARRDD LLOOCCKK MMOODDEESS
        _d_b___l_o_c_k_m_o_d_e___t, which is the type of the  lock  modes  used
        with the standard tables above:
 
+
               DB_LOCK_NG
                    not granted (always 0)
 
+
               DB_LOCK_READ
                    read (shared)
+
 
               DB_LOCK_WRITE
                    write (exclusive)
@@ -544,7 +560,6 @@ EERRRROORRSS
        [EBUSY]
             The  shared  memory  region  was in use and the force
             flag was not set.
-
 
        The _D_b_L_o_c_k_T_a_b_:_:_d_e_t_e_c_t method may fail and throw a _D_b_E_x_c_e_p_-
        _t_i_o_n(3)

@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -47,19 +47,16 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)hash.c	10.33 (Sleepycat) 11/2/97";
+static const char sccsid[] = "@(#)hash.c	10.42 (Sleepycat) 5/3/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #include <errno.h>
-#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #endif
 
 #include "shqueue.h"
@@ -71,20 +68,20 @@ static const char sccsid[] = "@(#)hash.c	10.33 (Sleepycat) 11/2/97";
 #include "log.h"
 
 static int  __ham_c_close __P((DBC *));
-static int  __ham_c_del __P((DBC *, int));
-static int  __ham_c_get __P((DBC *, DBT *, DBT *, int));
-static int  __ham_c_put __P((DBC *, DBT *, DBT *, int));
+static int  __ham_c_del __P((DBC *, u_int32_t));
+static int  __ham_c_get __P((DBC *, DBT *, DBT *, u_int32_t));
+static int  __ham_c_put __P((DBC *, DBT *, DBT *, u_int32_t));
 static int  __ham_c_init __P((DB *, DB_TXN *, DBC **));
 static int  __ham_cursor __P((DB *, DB_TXN *, DBC **));
-static int  __ham_delete __P((DB *, DB_TXN *, DBT *, int));
-static int  __ham_dup_return __P((HTAB *, HASH_CURSOR *, DBT *, int));
-static int  __ham_get __P((DB *, DB_TXN *, DBT *, DBT *, int));
-static void __ham_init_htab __P((HTAB *, u_int));
+static int  __ham_delete __P((DB *, DB_TXN *, DBT *, u_int32_t));
+static int  __ham_dup_return __P((HTAB *, HASH_CURSOR *, DBT *, u_int32_t));
+static int  __ham_get __P((DB *, DB_TXN *, DBT *, DBT *, u_int32_t));
+static void __ham_init_htab __P((HTAB *, u_int32_t, u_int32_t));
 static int  __ham_lookup __P((HTAB *,
 		HASH_CURSOR *, const DBT *, u_int32_t, db_lockmode_t));
 static int  __ham_overwrite __P((HTAB *, HASH_CURSOR *, DBT *));
-static int  __ham_put __P((DB *, DB_TXN *, DBT *, DBT *, int));
-static int  __ham_sync __P((DB *, int));
+static int  __ham_put __P((DB *, DB_TXN *, DBT *, DBT *, u_int32_t));
+static int  __ham_sync __P((DB *, u_int32_t));
 
 /************************** INTERFACE ROUTINES ***************************/
 /* OPEN/CLOSE */
@@ -175,9 +172,9 @@ __ham_open(dbp, dbinfo)
 			goto out;
 		}
 
-		hashp->hdr->ffactor =
-		    dbinfo != NULL && dbinfo->h_ffactor ? dbinfo->h_ffactor : 0;
-		__ham_init_htab(hashp, dbinfo != NULL ? dbinfo->h_nelem : 0);
+		__ham_init_htab(hashp,
+		    dbinfo != NULL ? dbinfo->h_nelem : 0,
+		    dbinfo != NULL ? dbinfo->h_ffactor : 0);
 		if (F_ISSET(dbp, DB_AM_DUP))
 			F_SET(hashp->hdr, DB_HASH_DUP);
 		if ((ret = __ham_dirty_page(hashp, (PAGE *)hashp->hdr)) != 0)
@@ -230,7 +227,7 @@ out:	(void)__ham_close(dbp);
 }
 
 /*
- * PUBLIC: int  __ham_close __P((DB *));
+ * PUBLIC: int __ham_close __P((DB *));
  */
 int
 __ham_close(dbp)
@@ -264,13 +261,14 @@ __ham_close(dbp)
  * Returns 0 on No Error
  */
 static void
-__ham_init_htab(hashp, nelem)
+__ham_init_htab(hashp, nelem, ffactor)
 	HTAB *hashp;
-	u_int nelem;
+	u_int32_t nelem, ffactor;
 {
 	int32_t l2, nbuckets;
 
-	hashp->hdr->nelem = 0;
+	memset(hashp->hdr, 0, sizeof(HASHHDR));
+	hashp->hdr->ffactor = ffactor;
 	hashp->hdr->pagesize = hashp->dbp->pgsize;
 	ZERO_LSN(hashp->hdr->lsn);
 	hashp->hdr->magic = DB_HASHMAGIC;
@@ -287,8 +285,6 @@ __ham_init_htab(hashp, nelem)
 
 	nbuckets = 1 << l2;
 
-	hashp->hdr->spares[l2] = 0;
-	hashp->hdr->spares[l2 + 1] = 0;
 	hashp->hdr->ovfl_point = l2;
 	hashp->hdr->last_freed = PGNO_INVALID;
 
@@ -310,7 +306,7 @@ __ham_init_htab(hashp, nelem)
 static int
 __ham_sync(dbp, flags)
 	DB *dbp;
-	int flags;
+	u_int32_t flags;
 {
 	int ret;
 
@@ -342,10 +338,9 @@ __ham_get(dbp, txn, key, data, flags)
 	DB_TXN *txn;
 	DBT *key;
 	DBT *data;
-	int flags;
+	u_int32_t flags;
 {
 	DB *ldbp;
-	DBC *cp;
 	HTAB *hashp;
 	HASH_CURSOR *hcp;
 	int ret, t_ret;
@@ -362,7 +357,6 @@ __ham_get(dbp, txn, key, data, flags)
 	hashp = (HTAB *)ldbp->internal;
 	SET_LOCKER(ldbp, txn);
 	GET_META(ldbp, hashp);
-	cp = TAILQ_FIRST(&ldbp->curs_queue);
 
 	hashp->hash_accesses++;
 	hcp = (HASH_CURSOR *)TAILQ_FIRST(&ldbp->curs_queue)->internal;
@@ -386,14 +380,14 @@ __ham_put(dbp, txn, key, data, flags)
 	DB_TXN *txn;
 	DBT *key;
 	DBT *data;
-	int flags;
+	u_int32_t flags;
 {
 	DB *ldbp;
-	HTAB *hashp;
-	HASH_CURSOR *hcp;
 	DBT tmp_val, *myval;
-	int ret, t_ret;
+	HASH_CURSOR *hcp;
+	HTAB *hashp;
 	u_int32_t nbytes;
+	int ret, t_ret;
 
 	DEBUG_LWRITE(dbp, txn, "ham_put", key, data, flags);
 	if ((ret = __db_putchk(dbp, key, data,
@@ -531,7 +525,7 @@ __ham_delete(dbp, txn, key, flags)
 	DB *dbp;
 	DB_TXN *txn;
 	DBT *key;
-	int flags;
+	u_int32_t flags;
 {
 	DB *ldbp;
 	HTAB *hashp;
@@ -539,7 +533,8 @@ __ham_delete(dbp, txn, key, flags)
 	int ret, t_ret;
 
 	DEBUG_LWRITE(dbp, txn, "ham_delete", key, NULL, flags);
-	if ((ret = __db_delchk(dbp, flags, F_ISSET(dbp, DB_AM_RDONLY))) != 0)
+	if ((ret =
+	    __db_delchk(dbp, key, flags, F_ISSET(dbp, DB_AM_RDONLY))) != 0)
 		return (ret);
 
 	ldbp = dbp;
@@ -639,12 +634,12 @@ __ham_c_iclose(dbp, dbc)
 static int
 __ham_c_del(cursor, flags)
 	DBC *cursor;
-	int flags;
+	u_int32_t flags;
 {
 	DB *ldbp;
-	HTAB *hashp;
 	HASH_CURSOR *hcp;
 	HASH_CURSOR save_curs;
+	HTAB *hashp;
 	db_pgno_t ppgno, chg_pgno;
 	int ret, t_ret;
 
@@ -731,7 +726,7 @@ __ham_c_del(cursor, flags)
 		} else						/* Case 1 */
 			F_SET(hcp, H_DELETED);
 		if (chg_pgno != PGNO_INVALID)
-			__ham_c_update(hashp, hcp, chg_pgno, 0, 0, 1);
+			__ham_c_update(hcp, chg_pgno, 0, 0, 1);
 	} else if (F_ISSET(hcp, H_ISDUP)) {			/* on page */
 		if (hcp->dup_off == 0 && DUP_SIZE(hcp->dup_len) ==
 		    LEN_HDATA(hcp->pagep, hashp->hdr->pagesize, hcp->bndx))
@@ -747,7 +742,7 @@ __ham_c_del(cursor, flags)
 			ret = __ham_replpair(hashp, hcp, &repldbt, 0);
 			hcp->dup_tlen -= DUP_SIZE(hcp->dup_len);
 			F_SET(hcp, H_DELETED);
-			__ham_c_update(hashp, hcp, hcp->pgno,
+			__ham_c_update(hcp, hcp->pgno,
 			    DUP_SIZE(hcp->dup_len), 0, 1);
 		}
 
@@ -756,7 +751,7 @@ __ham_c_del(cursor, flags)
 normal:		ret = __ham_del_pair(hashp, hcp, 1);
 
 out:	if ((t_ret = __ham_item_done(hashp, hcp, ret == 0)) != 0 && ret == 0)
-		t_ret = ret;
+		ret = t_ret;
 	if (ret != 0)
 		*hcp = save_curs;
 	RELEASE_META(hashp->dbp, hashp);
@@ -770,7 +765,7 @@ __ham_c_get(cursor, key, data, flags)
 	DBC *cursor;
 	DBT *key;
 	DBT *data;
-	int flags;
+	u_int32_t flags;
 {
 	DB *ldbp;
 	HTAB *hashp;
@@ -805,7 +800,7 @@ __ham_c_get(cursor, key, data, flags)
 			ret = __ham_item_prev(hashp, hcp, DB_LOCK_READ);
 			break;
 		}
-		/* FALL THROUGH */
+		/* FALLTHROUGH */
 	case DB_LAST:
 		ret = __ham_item_last(hashp, hcp, DB_LOCK_READ);
 		break;
@@ -893,7 +888,7 @@ __ham_c_get(cursor, key, data, flags)
 		}
 	}
 out1:	if ((t_ret = __ham_item_done(hashp, hcp, 0)) != 0 && ret == 0)
-		t_ret = ret;
+		ret = t_ret;
 out:	if (ret)
 		*hcp = save_curs;
 	RELEASE_META(hashp->dbp, hashp);
@@ -907,13 +902,13 @@ __ham_c_put(cursor, key, data, flags)
 	DBC *cursor;
 	DBT *key;
 	DBT *data;
-	int flags;
+	u_int32_t flags;
 {
 	DB *ldbp;
-	HTAB *hashp;
 	HASH_CURSOR *hcp, save_curs;
-	int ret, t_ret;
+	HTAB *hashp;
 	u_int32_t nbytes;
+	int ret, t_ret;
 
 	DEBUG_LWRITE(cursor->dbp, cursor->txn, "ham_c_put",
 	    flags == DB_KEYFIRST || flags == DB_KEYLAST ? key : NULL,
@@ -1009,9 +1004,9 @@ __ham_expand_table(hashp)
 		 * if the next doubling is going to be big (more than 8
 		 * pages), we have some extra pages around.
 		 */
-		if (hashp->hdr->max_bucket + 1 >= 8 && 
+		if (hashp->hdr->max_bucket + 1 >= 8 &&
 		    hashp->hdr->spares[hashp->hdr->ovfl_point] <
-		    hashp->hdr->spares[hashp->hdr->ovfl_point - 1] + 
+		    hashp->hdr->spares[hashp->hdr->ovfl_point - 1] +
 		    hashp->hdr->ovfl_point + 1)
 			__ham_init_ovflpages(hashp);
 	}
@@ -1087,14 +1082,14 @@ __ham_dup_return(hashp, hcp, val, flags)
 	HTAB *hashp;
 	HASH_CURSOR *hcp;
 	DBT *val;
-	int flags;
+	u_int32_t flags;
 {
 	PAGE *pp;
 	DBT *myval, tmp_val;
 	db_indx_t ndx;
 	db_pgno_t pgno;
 	u_int8_t *hk, type;
-	int indx, ret;
+	int ret;
 	db_indx_t len;
 
 	/* Check for duplicate and return the first one. */
@@ -1145,7 +1140,6 @@ __ham_dup_return(hashp, hcp, val, flags)
 			memcpy(&pgno, HOFFDUP_PGNO(P_ENTRY(hcp->pagep, ndx)),
 			    sizeof(db_pgno_t));
 			if (flags == DB_LAST || flags == DB_PREV) {
-				indx = (int)hcp->dndx;
 				if ((ret = __db_dend(hashp->dbp,
 				    pgno, &hcp->dpagep)) != 0)
 					return (ret);
@@ -1347,17 +1341,15 @@ __ham_init_dbt(dbt, size, bufp, sizep)
  * added (add == 1) or deleted (add == 0).
  * dup indicates if the addition occurred into a duplicate set.
  *
- * PUBLIC: void __ham_c_update __P((HTAB *,
- * PUBLIC:    HASH_CURSOR *, db_pgno_t, u_int32_t, int, int));
+ * PUBLIC: void __ham_c_update
+ * PUBLIC:    __P((HASH_CURSOR *, db_pgno_t, u_int32_t, int, int));
  */
 void
-__ham_c_update(hashp, hcp, chg_pgno, len, add, dup)
-	HTAB *hashp;
+__ham_c_update(hcp, chg_pgno, len, add, is_dup)
 	HASH_CURSOR *hcp;
 	db_pgno_t chg_pgno;
 	u_int32_t len;
-	int add;
-	int dup;
+	int add, is_dup;
 {
 	DBC *cp;
 	HTAB *hp;
@@ -1365,22 +1357,21 @@ __ham_c_update(hashp, hcp, chg_pgno, len, add, dup)
 	int page_deleted;
 
 	/*
-	 * Regular adds are always at the end of a given page,
-	 * so we never have to adjust anyone's cursor after
-	 * a regular add.
+	 * Regular adds are always at the end of a given page, so we never
+	 * have to adjust anyone's cursor after a regular add.
 	 */
-	if (!dup && add)
+	if (!is_dup && add)
 		return;
 
 	/*
 	 * Determine if a page was deleted.    If this is a regular update
-	 * (i.e., not dup) then the deleted page's number will be that in
+	 * (i.e., not is_dup) then the deleted page's number will be that in
 	 * chg_pgno, and the pgno in the cursor will be different.  If this
 	 * was an onpage-duplicate, then the same conditions apply.  If this
 	 * was an off-page duplicate, then we need to verify if hcp->dpgno
 	 * is the same (no delete) or different (delete) than chg_pgno.
 	 */
-	if (!dup || hcp->dpgno == PGNO_INVALID)
+	if (!is_dup || hcp->dpgno == PGNO_INVALID)
 		page_deleted =
 		    chg_pgno != PGNO_INVALID && chg_pgno != hcp->pgno;
 	else
@@ -1397,17 +1388,18 @@ __ham_c_update(hashp, hcp, chg_pgno, len, add, dup)
 
 		lcp = (HASH_CURSOR *)cp->internal;
 
-		if (!dup && lcp->pgno != chg_pgno)
+		if (!is_dup && lcp->pgno != chg_pgno)
 			continue;
 
-		if (dup && F_ISSET(hcp, H_DELETED) && lcp->pgno != chg_pgno)
-			continue;
-
-		if (dup && !F_ISSET(hcp, H_DELETED) && lcp->dpgno != chg_pgno)
-			continue;
+		if (is_dup) {
+			if (F_ISSET(hcp, H_DELETED) && lcp->pgno != chg_pgno)
+				continue;
+			if (!F_ISSET(hcp, H_DELETED) && lcp->dpgno != chg_pgno)
+				continue;
+		}
 
 		if (page_deleted) {
-			if (dup) {
+			if (is_dup) {
 				lcp->dpgno = hcp->dpgno;
 				lcp->dndx = hcp->dndx;
 			} else {
@@ -1419,11 +1411,11 @@ __ham_c_update(hashp, hcp, chg_pgno, len, add, dup)
 			continue;
 		}
 
-		if (!dup && lcp->bndx > hcp->bndx)
+		if (!is_dup && lcp->bndx > hcp->bndx)
 			lcp->bndx--;
-		else if (!dup && lcp->bndx == hcp->bndx)
+		else if (!is_dup && lcp->bndx == hcp->bndx)
 			F_SET(lcp, H_DELETED);
-		else if (dup && lcp->bndx == hcp->bndx) {
+		else if (is_dup && lcp->bndx == hcp->bndx) {
 			/* Assign dpgno in case there was page conversion. */
 			lcp->dpgno = hcp->dpgno;
 			if (add && lcp->dndx >= hcp->dndx )
@@ -1453,14 +1445,15 @@ __ham_c_update(hashp, hcp, chg_pgno, len, add, dup)
  * __ham_hdup --
  *	This function gets called when we create a duplicate handle for a
  *	threaded DB.  It should create the private part of the DB structure.
+ *
  * PUBLIC: int  __ham_hdup __P((DB *, DB *));
  */
 int
 __ham_hdup(orig, new)
 	DB *orig, *new;
 {
-	HTAB *hashp;
 	DBC *curs;
+	HTAB *hashp;
 	int ret;
 
 	if ((hashp = (HTAB *)__db_malloc(sizeof(HTAB))) == NULL)

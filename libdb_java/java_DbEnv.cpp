@@ -1,13 +1,13 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)java_DbEnv.cpp	10.1 (Sleepycat) 11/10/97";
+static const char sccsid[] = "@(#)java_DbEnv.cpp	10.4 (Sleepycat) 4/10/98";
 #endif /* not lint */
 
 #include <jni.h>
@@ -42,8 +42,18 @@ struct prefix_info
 static void java_errcall_callback(const char *prefix, char *message)
 {
     prefix_info *pi = (prefix_info *)prefix;
+
+    // Note: these error cases are "impossible", and would
+    // normally warrant an exception.  However, without
+    // a jnienv, we cannot throw an exception...
+    // We don't want to trap or exit, since the point of
+    // this facility is for the user to completely control
+    // error situations.
+    //
+    // TODO: find another way to indicate this error.
+    //
     if (!pi)
-        return;                 // TODO: These are really fatal asserts
+        return;                 // These are really fatal asserts
 
     if (!pi->dberrcall)
         return;                 // These are really fatal asserts
@@ -105,7 +115,6 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_appinit
     flags |= DB_THREAD;
 
     err = db_appinit(dbhomeDir.string,
-                     // TODO?
                      (char *const *)db_db_config.string_array,
                      dbenv, flags);
     if (verify_return(jnienv, err)) {
@@ -185,7 +194,7 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1lk_1conflicts
     int len = dbenv->lk_modes;
     jsize jlen = jnienv->GetArrayLength(array);
     if (jlen != len) {
-        report_exception(jnienv, array_length_msg);
+        report_exception(jnienv, array_length_msg, 0);
         return;
     }
 

@@ -1,20 +1,25 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)tcl_hsearch.c	10.2 (Sleepycat) 5/1/97";
+static const char sccsid[] = "@(#)tcl_hsearch.c	10.6 (Sleepycat) 4/27/98";
 #endif /* not lint */
 
+#ifndef NO_SYSTEM_INCLUDES
+#include <sys/types.h>
+
+#include <string.h>
+#endif
 #include <tcl.h>
 
-#define	DB_DBM_HSEARCH
-#include <db.h>
+#define	DB_DBM_HSEARCH	1
+#include "db_int.h"
 
 #include "dbtest.h"
 #include "test_ext.h"
@@ -24,10 +29,7 @@ static const char sccsid[] = "@(#)tcl_hsearch.c	10.2 (Sleepycat) 5/1/97";
  *	Implements hcreate for dbtest.  hcreate creates an in-memory
  * database compatible with the historical hsearch interface.
  */
-
-
 #define HCREATE_USAGE "hcreate nelem"
-
 int
 hcreate_cmd(notused, interp, argc, argv)
 	ClientData notused;
@@ -104,6 +106,8 @@ hdestroy_cmd(notused, interp, argc, argv)
 	int argc;
 	char *argv[];
 {
+	COMPQUIET(argv, NULL);
+
 	USAGE_GE(argc, 1, HDESTROY_USAGE, 0);
 	notused = NULL;
 

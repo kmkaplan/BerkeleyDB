@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)sysscript.tcl	10.2 (Sleepycat) 10/4/97
+#	@(#)sysscript.tcl	10.3 (Sleepycat) 4/10/98
 #
 # System integration test script.
 # This script runs a single process that tests the full functionality of

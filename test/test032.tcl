@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test032.tcl	10.4 (Sleepycat) 11/18/97
+#	@(#)test032.tcl	10.8 (Sleepycat) 4/26/98
 #
 # DB Test 32 {access method}
 # System integration DB test: verify that locking, recovery, checkpoint,
@@ -22,8 +22,14 @@
 proc test032 { method {nprocs 5} {nfiles 10} {cont 0} args } {
 source ./include.tcl
 
+	set omethod $method
 	if { $method != "all" } {
 		set method [convert_method $method]
+	}
+	set args [convert_args $method $args]
+	if { [is_rbtree $omethod] == 1 } {
+		puts "Test032 skipping for method $omethod"
+		return
 	}
 
 	puts "Test032: system integration test db $method $nprocs processes \
@@ -53,7 +59,7 @@ source ./include.tcl
 		if { [file exists $testdir] != 1 } {
 			exec $MKDIR $testdir
 		} elseif { [file isdirectory $testdir ] != 1 } {
-			error "$testdir is not a directory"
+			error "FAIL: $testdir is not a directory"
 		}
 
 		# Create the database and open the dictionary
@@ -75,11 +81,11 @@ source ./include.tcl
 				2 { set m DB_HASH }
 				}
 			}
-			set db [eval dbopen \
+			set otherargs [add_to_args $DB_DUP $otherargs]
+			set db [eval [concat dbopen \
 			    test032.$i.db $DB_CREATE 0644 $m \
-			    -flags $DB_DUP -dbenv $dbenv $otherargs]
-			error_check_bad db_open $db NULL
-			error_check_good db_open [is_substr $db db] 1
+			    -dbenv $dbenv $otherargs]]
+			error_check_good dbopen [is_valid_db $db] TRUE
 			error_check_good db_close [$db close] 0
 		}
 	}
@@ -152,7 +158,7 @@ source ./include.tcl
 	set stat [catch {exec ./db_recover -v -h $dir} result]
 	if { $stat == 1 && [is_substr $result \
 	    "db_recover: Recovering the log"] == 0 } {
-		error "Recovery error: $result."
+		error "FAIL: Recovery error: $result."
 	}
 
 	# Save everything away in case something breaks
@@ -168,8 +174,7 @@ source ./include.tcl
 	for { set f 0 } { $f < $nfiles } { incr f } {
 		set db($f) \
 		    [eval dbopen test032.$f.db 0 0 DB_UNKNOWN  -dbhome $dir]
-		error_check_bad $f:db_open $db($f) NULL
-		error_check_good $f:db_open [is_substr $db($f) db] 1
+		error_check_good $f:dbopen [is_valid_db $db($f)] TRUE
 
 		set cursors($f) [$db($f) cursor 0]
 		error_check_bad $f:cursor_open $cursors($f) NULL

@@ -1,15 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)dbtest.h	10.2 (Sleepycat) 7/4/97
+ *	@(#)dbtest.h	10.5 (Sleepycat) 4/10/98
  */
 
 extern int debug_on, debug_print, debug_test;
 
-void __db_loadme __P((void));
 void debug_check __P((void));
 int process_am_options __P((Tcl_Interp *, int, char **, DB_INFO **));
 int process_env_options __P((Tcl_Interp *, int, char **, DB_ENV **));
@@ -27,7 +26,8 @@ int process_env_options __P((Tcl_Interp *, int, char **, DB_ENV **));
 \t-maxlocks <maximum number of locks in lock table>\n\
 \t-maxsize <maximum log file size before changing files>\n\
 \t-maxtxns <maximum number of concurrent transactions>\n\
-\t-nmodes <number of lock modes>"
+\t-nmodes <number of lock modes>\n\
+\t-shmem <shared memory type>"
 
 #define DB_INFO_FLAGS \
 "\n\

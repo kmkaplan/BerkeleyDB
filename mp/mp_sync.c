@@ -1,13 +1,13 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)mp_sync.c	10.17 (Sleepycat) 11/26/97";
+static const char sccsid[] = "@(#)mp_sync.c	10.25 (Sleepycat) 4/26/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -15,7 +15,6 @@ static const char sccsid[] = "@(#)mp_sync.c	10.17 (Sleepycat) 11/26/97";
 
 #include <errno.h>
 #include <stdlib.h>
-#include <string.h>
 #endif
 
 #include "db_int.h"
@@ -25,6 +24,7 @@ static const char sccsid[] = "@(#)mp_sync.c	10.17 (Sleepycat) 11/26/97";
 #include "common_ext.h"
 
 static int __bhcmp __P((const void *, const void *));
+static int __memp_fsync __P((DB_MPOOLFILE *));
 
 /*
  * memp_sync --
@@ -39,7 +39,7 @@ memp_sync(dbmp, lsnp)
 	DB_ENV *dbenv;
 	MPOOL *mp;
 	MPOOLFILE *mfp;
-	int ar_cnt, cnt, nalloc, next, notused, ret, wrote;
+	int ar_cnt, cnt, nalloc, next, ret, wrote;
 
 	dbenv = dbmp->dbenv;
 
@@ -145,7 +145,8 @@ memp_sync(dbmp, lsnp)
 				bharray[ar_cnt++] = bhp;
 			}
 		} else
-			F_CLR(bhp, BH_WRITE);
+			if (F_ISSET(bhp, BH_WRITE))
+				F_CLR(bhp, BH_WRITE);
 
 	/* If there no buffers we can write immediately, we're done. */
 	if (ar_cnt == 0) {
@@ -180,32 +181,28 @@ memp_sync(dbmp, lsnp)
 
 		/* Write the buffer. */
 		mfp = R_ADDR(dbmp, bharray[next]->mf_offset);
-		ret =
-		    __memp_bhwrite(dbmp, mfp, bharray[next], &notused, &wrote);
+		ret = __memp_bhwrite(dbmp, mfp, bharray[next], NULL, &wrote);
 
 		/* Release the buffer. */
 		--bharray[next]->ref;
 
 		/* If there's an error, release the rest of the buffers. */
 		if (ret != 0 || !wrote) {
-			while (++next < ar_cnt)
-				--bharray[next]->ref;
-
-			if (ret != 0)
-				goto err;
-
 			/*
 			 * Any process syncing the shared memory buffer pool
 			 * had better be able to write to any underlying file.
 			 * Be understanding, but firm, on this point.
 			 */
-			if (!wrote) {
+			if (ret == 0) {
 				__db_err(dbenv, "%s: unable to flush page: %lu",
 				    __memp_fns(dbmp, mfp),
 				    (u_long)bharray[next]->pgno);
 				ret = EPERM;
-				goto err;
 			}
+
+			while (++next < ar_cnt)
+				--bharray[next]->ref;
+			goto err;
 		}
 	}
 	ret = mp->lsn_cnt ? DB_INCOMPLETE : 0;
@@ -239,10 +236,8 @@ int
 memp_fsync(dbmfp)
 	DB_MPOOLFILE *dbmfp;
 {
-	BH *bhp, **bharray;
 	DB_MPOOL *dbmp;
-	size_t mf_offset;
-	int ar_cnt, cnt, nalloc, next, pincnt, notused, ret, wrote;
+	int is_tmp;
 
 	dbmp = dbmfp->dbmp;
 
@@ -254,14 +249,62 @@ memp_fsync(dbmfp)
 	if (F_ISSET(dbmfp, MP_READONLY))
 		return (0);
 
-	ret = 0;
 	LOCKREGION(dbmp);
-	if (F_ISSET(dbmfp->mfp, MP_TEMP))
-		ret = 1;
+	is_tmp = F_ISSET(dbmfp->mfp, MP_TEMP);
 	UNLOCKREGION(dbmp);
-	if (ret)
+	if (is_tmp)
 		return (0);
 
+	return (__memp_fsync(dbmfp));
+}
+
+/*
+ * __mp_xxx_fd --
+ *	Return a file descriptor for DB 1.85 compatibility locking.
+ *
+ * PUBLIC: int __mp_xxx_fd __P((DB_MPOOLFILE *, int *));
+ */
+int
+__mp_xxx_fd(dbmfp, fdp)
+	DB_MPOOLFILE *dbmfp;
+	int *fdp;
+{
+	int ret;
+
+	/*
+	 * This is a truly spectacular layering violation, intended ONLY to
+	 * support compatibility for the DB 1.85 DB->fd call.
+	 *
+	 * Sync the database file to disk, creating the file as necessary.
+	 *
+	 * We skip the MP_READONLY and MP_TEMP tests done by memp_fsync(3).
+	 * The MP_READONLY test isn't interesting because we will either
+	 * already have a file descriptor (we opened the database file for
+	 * reading) or we aren't readonly (we created the database which
+	 * requires write privileges).  The MP_TEMP test isn't interesting
+	 * because we want to write to the backing file regardless so that
+	 * we get a file descriptor to return.
+	 */
+	ret = dbmfp->fd == -1 ? __memp_fsync(dbmfp) : 0;
+
+	return ((*fdp = dbmfp->fd) == -1 ? ENOENT : ret);
+}
+
+/*
+ * __memp_fsync --
+ *	Mpool file internal sync function.
+ */
+static int
+__memp_fsync(dbmfp)
+	DB_MPOOLFILE *dbmfp;
+{
+	BH *bhp, **bharray;
+	DB_MPOOL *dbmp;
+	size_t mf_offset;
+	int ar_cnt, cnt, nalloc, next, pincnt, ret, wrote;
+
+	ret = 0;
+	dbmp = dbmfp->dbmp;
 	mf_offset = R_OFFSET(dbmp, dbmfp->mfp);
 
 	/*
@@ -333,7 +376,7 @@ memp_fsync(dbmfp)
 		}
 
 		/* Write the buffer. */
-		ret = __memp_pgwrite(dbmfp, bharray[next], &notused, &wrote);
+		ret = __memp_pgwrite(dbmfp, bharray[next], NULL, &wrote);
 
 		/* Release the buffer. */
 		--bharray[next]->ref;
@@ -363,7 +406,6 @@ err:	UNLOCKREGION(dbmp);
 	if (ret == 0)
 		return (pincnt == 0 ? __db_fsync(dbmfp->fd) : DB_INCOMPLETE);
 	return (ret);
-
 }
 
 /*
@@ -379,7 +421,7 @@ memp_trickle(dbmp, pct, nwrotep)
 	MPOOL *mp;
 	MPOOLFILE *mfp;
 	u_long total;
-	int notused, ret, wrote;
+	int ret, wrote;
 
 	mp = dbmp->mp;
 	if (nwrotep != NULL)
@@ -423,8 +465,7 @@ loop:	total = mp->stat.st_page_clean + mp->stat.st_page_dirty;
 		if (F_ISSET(mfp, MP_TEMP))
 			continue;
 
-		if ((ret =
-		    __memp_bhwrite(dbmp, mfp, bhp, &notused, &wrote)) != 0)
+		if ((ret = __memp_bhwrite(dbmp, mfp, bhp, NULL, &wrote)) != 0)
 			goto err;
 
 		/*
@@ -458,8 +499,8 @@ __bhcmp(p1, p2)
 {
 	BH *bhp1, *bhp2;
 
-	bhp1 = *(BH **)p1;
-	bhp2 = *(BH **)p2;
+	bhp1 = *(BH * const *)p1;
+	bhp2 = *(BH * const *)p2;
 
 	/* Sort by file (shared memory pool offset). */
 	if (bhp1->mf_offset < bhp2->mf_offset)

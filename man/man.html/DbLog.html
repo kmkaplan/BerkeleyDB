@@ -2,16 +2,16 @@
 <HEAD>
 <TITLE>DbLog</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>DbLog</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        <B>#include</B> <B>&lt;db</B>_<B>cxx.h&gt;</B>
 
        <B>static</B> <B>int</B>
        <B>DbLog::open(const</B> <B>char</B> <B>*dir,</B>
-            <B>int</B> <B>flags,</B> <B>int</B> <B>mode,</B> <B>DbEnv</B> <B>*dbenv,</B> <B>DbLog</B> <B>**regionp);</B>
+            <B>u</B>_<B>int32</B>_<B>t</B> <B>flags,</B> <B>int</B> <B>mode,</B> <B>DbEnv</B> <B>*dbenv,</B> <B>DbLog</B> <B>**regionp);</B>
 
        <B>int</B>
        <B>DbLog::close();</B>
@@ -20,7 +20,7 @@
        <B>DbLog::flush(const</B> <B>DbLsn</B> <B>*lsn);</B>
 
        <B>int</B>
-       <B>DbLog::get(DbLsn</B> <B>*lsn,</B> <B>Dbt</B> <B>*data,</B> <B>int</B> <B>flags);</B>
+       <B>DbLog::get(DbLsn</B> <B>*lsn,</B> <B>Dbt</B> <B>*data,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>static</B> <B>int</B>
        <B>DbLog::compare(const</B> <B>DbLsn</B> <B>*lsn0,</B> <B>const</B> <B>DbLsn</B> <B>*lsn1);</B>
@@ -29,14 +29,14 @@
        <B>DbLog::file(const</B> <B>DbLsn</B> <B>*lsn,</B> <B>char</B> <B>*namep,</B> <B>size</B>_<B>t</B> <B>len);</B>
 
        <B>int</B>
-       <B>DbLog::put(DbLsn</B> <B>*lsn,</B> <B>const</B> <B>Dbt</B> <B>*data,</B> <B>int</B> <B>flags);</B>
+       <B>DbLog::put(DbLsn</B> <B>*lsn,</B> <B>const</B> <B>Dbt</B> <B>*data,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>static</B> <B>int</B>
        <B>DbLog::unlink(const</B> <B>char</B> <B>*dir,</B> <B>int</B> <B>force,</B> <B>DbEnv</B> <B>*);</B>
 
        <B>int</B>
        <B>DbLog::archive(char</B> <B>**list[],</B>
-            <B>int</B> <B>flags,</B> <B>void</B> <B>*(*db</B>_<B>malloc)(size</B>_<B>t));</B>
+            <B>u</B>_<B>int32</B>_<B>t</B> <B>flags,</B> <B>void</B> <B>*(*db</B>_<B>malloc)(size</B>_<B>t));</B>
 
        <B>int</B>
        <B>DbLog::db</B>_<B>register(const</B> <B>Db</B> <B>*dbp,</B>
@@ -168,28 +168,31 @@
 
             If lg_max is 0, a default value is used.
 
-       The  DbLog::open method throws a <B><A HREF="DbException.html">DbException(3)</A></B> or returns
+            See  the section "LOG FILE LIMITS" below, for further
+            information.
+
+       The DbLog::open method throws a <B><A HREF="DbException.html">DbException(3)</A></B> or  returns
        the value of errno on failure and 0 on success.
 
   DbLog::close
        The DbLog::close method closes the log associated with the
        DbLog object.
 
-       In  addition,  if the dir argument to DbLog::open was NULL
-       and dbenv was not initialized  using  DbEnv::appinit,  all
-       files  created  for this shared region will be removed, as
+       In addition, if the dir argument to DbLog::open  was  NULL
+       and  dbenv  was  not initialized using DbEnv::appinit, all
+       files created for this shared region will be  removed,  as
        if DbLog::unlink were called.
 
-       When  multiple  threads  are  using   the   DbLog   handle
-       concurrently,   only   a   single   thread  may  call  the
+       When   multiple   threads   are  using  the  DbLog  handle
+       concurrently,  only  a  single   thread   may   call   the
        DbLog::close method.
 
        The DbLog::close method throws a <B><A HREF="DbException.html">DbException(3)</A></B> or returns
        the value of errno on failure and 0 on success.
 
   DbLog::flush
-       The  DbLog::flush  method  guarantees that all log records
-       whose DbLsns are less than or equal to the  lsn  parameter
+       The DbLog::flush method guarantees that  all  log  records
+       whose  DbLsns  are less than or equal to the lsn parameter
        have been written to disk.  If lsn is NULL, all records in
        the log are flushed.
 
@@ -197,35 +200,34 @@
        the value of errno on failure and 0 on success.
 
   DbLog::get
-       The  DbLog::get  method  implements a cursor inside of the
-       log, retrieving records from the log according to the  lsn
+       The DbLog::get method implements a cursor  inside  of  the
+       log,  retrieving records from the log according to the lsn
        and flags parameters.
 
-       The  data  field  of  the data object is set to the record
+       The data field of the data object is  set  to  the  record
        retrieved and the size field indicates the number of bytes
-       in  the  record.   See  <B><A HREF="Dbt.html">Dbt(3)</A></B>  for a description of other
-       fields in the data  object.   <B>When</B>  <B>multiple</B>  <B>threads</B>  <B>are</B>
-       <B>using</B>  <B>the</B>  <B>returned</B> <B>DbLog</B> <B>handle</B> <B>concurrently,</B> <B>either</B> <B>the</B>
-       <B>DB</B>_<B>DBT</B>_<B>MALLOC</B> <B>or</B> <B>DB</B>_<B>DBT</B>_<B>USERMEM</B> <B>flags</B>  <B>must</B>  <B>be</B>  <B>specified</B>
+       in the record.  See <B><A HREF="Dbt.html">Dbt(3)</A></B>  for  a  description  of  other
+       fields  in  the  data  object.   <B>When</B> <B>multiple</B> <B>threads</B> <B>are</B>
+       <B>using</B> <B>the</B> <B>returned</B> <B>DbLog</B> <B>handle</B> <B>concurrently,</B>  <B>either</B>  <B>the</B>
+       <B>DB</B>_<B>DBT</B>_<B>MALLOC</B>  <B>or</B>  <B>DB</B>_<B>DBT</B>_<B>USERMEM</B>  <B>flags</B> <B>must</B> <B>be</B> <B>specified</B>
        <B>for</B> <B>any</B> <B>Dbt</B> <B>used</B> <B>for</B> <B>data</B> <B>retrieval.</B>
 
-       The  flags  parameter  must  be  set to exactly one of the
+       The flags parameter must be set  to  exactly  one  of  the
        following values:
 
        DB_CHECKPOINT
-            The last record written with the  DB_CHECKPOINT  flag
+            The  last  record written with the DB_CHECKPOINT flag
             specified to the DbLog::put method is returned in the
-            data argument.  The lsn argument is overwritten  with
-            the  DbLsn  of the record returned.  If no record has
-            been previously written with the  DB_CHECKPOINT  flag
+            data  argument.  The lsn argument is overwritten with
+            the DbLsn of the record returned.  If no  record  has
+            been  previously  written with the DB_CHECKPOINT flag
             specified, the first record in the log is returned.
-
             If the log is empty the DbLog::get method will return
             DB_NOTFOUND.
 
        DB_FIRST
-            The first record from any of the log files  found  in
-            the  log  directory is returned in the data argument.
+            The  first  record from any of the log files found in
+            the log directory is returned in the  data  argument.
             The lsn argument is overwritten with the DbLsn of the
             record returned.
 
@@ -233,98 +235,102 @@
             DB_NOTFOUND.
 
        DB_LAST
-            The last record in the log is returned  in  the  data
-            argument.   The  lsn argument is overwritten with the
+            The  last  record  in the log is returned in the data
+            argument.  The lsn argument is overwritten  with  the
             DbLsn of the record returned.
 
-            If the log  is  empty,  the  DbLog::get  method  will
+            If  the  log  is  empty,  the  DbLog::get method will
             return DB_NOTFOUND.
 
        DB_NEXT
-            The  current  log  position  is  advanced to the next
-            record in the log and that record is returned in  the
-            data  argument.  The lsn argument is overwritten with
-            the DbLsn of the record returned.
-
-            If the pointer has not been initialized via DB_FIRST,
-            DB_LAST, DB_SET, DB_NEXT, or DB_PREV, DbLog::get will
-            return the first record in the log.  If the last  log
-            record has already been returned or the log is empty,
-            the DbLog::get method will return DB_NOTFOUND.
-
-            If the log was opened with the  DB_THREAD  flag  set,
-            calls  to  DbLog::get  with the DB_NEXT flag set will
-            return EINVAL.
-
-       DB_PREV
-            The current log position is  moved  to  the  previous
+            The current log position  is  advanced  to  the  next
             record  in the log and that record is returned in the
             data argument.  The lsn argument is overwritten  with
             the DbLsn of the record returned.
 
             If the pointer has not been initialized via DB_FIRST,
             DB_LAST, DB_SET, DB_NEXT, or DB_PREV, DbLog::get will
-            return  the last record in the log.  If the first log
+            return  the first record in the log.  If the last log
             record has already been returned or the log is empty,
             the DbLog::get method will return DB_NOTFOUND.
 
             If  the  log  was opened with the DB_THREAD flag set,
-            calls to DbLog::get with the DB_PREV  flag  set  will
+            calls to DbLog::get with the DB_NEXT  flag  set  will
+            return EINVAL.
+
+       DB_PREV
+            The  current  log  position  is moved to the previous
+            record in the log and that record is returned in  the
+            data  argument.  The lsn argument is overwritten with
+            the DbLsn of the record returned.
+
+            If the pointer has not been initialized via DB_FIRST,
+            DB_LAST, DB_SET, DB_NEXT, or DB_PREV, DbLog::get will
+            return the last record in the log.  If the first  log
+            record has already been returned or the log is empty,
+            the DbLog::get method will return DB_NOTFOUND.
+
+            If the log was opened with the  DB_THREAD  flag  set,
+            calls  to  DbLog::get  with the DB_PREV flag set will
             return EINVAL.
 
        DB_CURRENT
-            Return  the  log  record  currently referenced by the
+            Return the log record  currently  referenced  by  the
             log.
 
-            If the log  pointer  has  not  been  initialized  via
+            If  the  log  pointer  has  not  been initialized via
             DB_FIRST, DB_LAST, DB_SET, DB_NEXT, or DB_PREV, or if
-            the log was  opened  with  the  DB_THREAD  flag  set,
+            the  log  was  opened  with  the  DB_THREAD flag set,
             DbLog::get will return EINVAL.
 
        DB_SET
-            Retrieve  the  record  specified by the lsn argument.
-            If the specified DbLsn is  invalid  (e.g.,  does  not
+            Retrieve the record specified by  the  lsn  argument.
+            If  the  specified  DbLsn  is invalid (e.g., does not
             appear in the log) DbLog::get will return EINVAL.
 
-       Otherwise,  the  DbLog::get method throws a <B><A HREF="DbException.html">DbException(3)</A></B>
+       Otherwise, the DbLog::get method throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>
        or returns the value of errno on failure and 0 on success.
 
   DbLog::compare
        The DbLog::compare method allows the caller to compare two
-       DbLsn's.  DbLog::compare returns 0 if the two DbLsn's  are
-       equal,  1  if lsn0 is greater than lsn1, and -1 if lsn0 is
+       DbLsn's.   DbLog::compare returns 0 if the two DbLsn's are
+       equal, 1 if lsn0 is greater than lsn1, and -1 if  lsn0  is
        less than lsn1.
 
   DbLog::file
-       The DbLog::file method maps DbLsn's to  file  names.   The
-       DbLog::file  method copies the name of the file containing
-       the  record  named  by  lsn  into  the   memory   location
-       referenced  by  namep.   (This mapping of DbLsn to file is
-       needed  for  database  administration.   For  example,   a
-       transaction  manager  typically records the earliest DbLsn
-       needed for restart, and  the  database  administrator  may
-       want  to  archive log files to tape when they contain only
+       The  DbLog::file  method  maps DbLsn's to file names.  The
+       DbLog::file method copies the name of the file  containing
+       the   record   named  by  lsn  into  the  memory  location
+       referenced by namep.  (This mapping of DbLsn  to  file  is
+       needed   for  database  administration.   For  example,  a
+       transaction manager typically records the  earliest  DbLsn
+       needed  for  restart,  and  the database administrator may
+       want to archive log files to tape when they  contain  only
        DbLsn's before the earliest one needed for restart.)
 
-       The len argument is the length  of  the  namep  buffer  in
-       bytes.   If  namep  is  too  short  to hold the file name,
+       The  len  argument  is  the  length of the namep buffer in
+       bytes.  If namep is too  short  to  hold  the  file  name,
        DbLog::file will return ENOMEM.  Note, as described above,
-       log  file  names  are  quite  short,  on  the  order of 10
+       log file names  are  quite  short,  on  the  order  of  10
        characters.
 
-       The DbLog::file method throws a <B><A HREF="DbException.html">DbException(3)</A></B> or  returns
+       The  DbLog::file method throws a <B><A HREF="DbException.html">DbException(3)</A></B> or returns
        the value of errno on failure and 0 on success.
 
   DbLog::put
-       The  DbLog::put  method  appends  records to the log.  The
-       DbLsn of the put record is returned in the lsn  parameter.
-       The  flags  parameter  may  be set to one of the following
+       The DbLog::put method appends records  to  the  log.   The
+       DbLsn  of the put record is returned in the lsn parameter.
+       The flags parameter may be set to  one  of  the  following
        values:
 
        DB_CHECKPOINT
-            The log should write a checkpoint  record,  recording
-            any  information necessary to make the log structures
+            The  log  should write a checkpoint record, recording
+            any information necessary to make the log  structures
             recoverable after a crash.
+
+       DB_CURLSN
+            The  DB_LSN  of the next record to be put is returned
+            in the lsn parameter.
 
        DB_FLUSH
             The log is  forced  to  disk  after  this  record  is
@@ -373,100 +379,101 @@
 
        In  the  case  of catastrophic or system failure, database
        recovery must  be  performed  (see  <B><A HREF="db_recover.html">db_recover(1)</A></B>  or  the
-       DB_RECOVER flags to <B><A HREF="DbEnv.html">DbEnv::appinit(3)</A></B>).  Alternatively, if
-       recovery is not required  because  no  database  state  is
-       maintained  across  failures, it is possible to clean up a
-       log region by removing all of the files in  the  directory
-       specified  to  the DbLog::open method, as log region files
-       are never created in any  directory  other  than  the  one
-       specified  to  DbLog::open.   Note, however, that this has
-       the potential to remove files  created  by  the  other  DB
-       subsystems in this database environment.
+       DB_RECOVER      and      DB_RECOVER_FATAL     flags     to
+       <B><A HREF="DbEnv.html">DbEnv::appinit(3)</A></B>).  Alternatively,  if  recovery  is  not
+       required  because  no  database state is maintained across
+       failures, it is possible to  clean  up  a  log  region  by
+       removing  all  of  the files in the directory specified to
+       the DbLog::open method, as  log  region  files  are  never
+       created  in  any directory other than the one specified to
+       DbLog::open.  Note, however, that this has  the  potential
+       to remove files created by the other DB subsystems in this
+       database environment.
 
-       The   DbLog::unlink  method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>  or
+       The  DbLog::unlink  method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>   or
        returns the value of errno on failure and 0 on success.
 
   DbLog::archive
-       The DbLog::archive method creates a NULL-terminated  array
+       The  DbLog::archive method creates a NULL-terminated array
        of log or database file names and copies a pointer to them
        into the user-specified memory location list.
 
        By default, DbLog::archive returns the names of all of the
-       log  files  that  are  no  longer  in use (e.g., no longer
+       log files that are no  longer  in  use  (e.g.,  no  longer
        involved in active transactions), and that may be archived
        for  catastrophic  recovery  and  then  removed  from  the
-       system.  If there were no file names to return, list  will
+       system.   If there were no file names to return, list will
        be set to NULL.
 
-       Arrays  of log file names are created in allocated memory.
-       If db_malloc is non-NULL, it is  called  to  allocate  the
+       Arrays of log file names are created in allocated  memory.
+       If  db_malloc  is  non-NULL,  it is called to allocate the
        memory, otherwise, the library function <B>malloc(3)</B> is used.
-       The function db_malloc must match the calling  conventions
-       of  the <B>malloc(3)</B> library routine.  Regardless, the caller
-       is responsible for deallocating the returned  memory.   To
-       deallocate  the returned memory, free each returned memory
-       pointer; pointers inside the memory  do  not  need  to  be
+       The  function db_malloc must match the calling conventions
+       of the <B>malloc(3)</B> library routine.  Regardless, the  caller
+       is  responsible  for deallocating the returned memory.  To
+       deallocate the returned memory, free each returned  memory
+       pointer;  pointers  inside  the  memory  do not need to be
        individually freed.
 
-       The  flags argument is specified by <B>or</B>'ing together one or
+       The flags argument is specified by <B>or</B>'ing together one  or
        more of the following values:
 
        DB_ARCH_ABS
-            All pathnames are  returned  as  absolute  pathnames,
+            All  pathnames  are  returned  as absolute pathnames,
             instead of relative to the database home directory.
 
        DB_ARCH_DATA
             Return the database files that need to be archived in
             order  to  recover  the  database  from  catastrophic
-            failure.   If any of the database files have not been
-            accessed during  the  lifetime  of  the  current  log
-            files,  DbLog::archive  will not include them in this
-            list.  It is also possible that  some  of  the  files
-            referenced  in  the  log have since been deleted from
+            failure.  If any of the database files have not  been
+            accessed  during  the  lifetime  of  the  current log
+            files, DbLog::archive will not include them  in  this
+            list.   It  is  also  possible that some of the files
+            referenced in the log have since  been  deleted  from
             the system.
 
        DB_ARCH_LOG
-            Return all the log file names regardless  of  whether
+            Return  all  the log file names regardless of whether
             or not they are in use.
 
-       The   DB_ARCH_DATA  and  DB_ARCH_LOG  flags  are  mutually
+       The  DB_ARCH_DATA  and  DB_ARCH_LOG  flags  are   mutually
        exclusive.
 
        The  DbLog::archive  method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>  or
        returns the value of errno on failure and 0 on success.
 
-       The  DbLog::archive  method  is based on the C log_archive
-       function, which is the underlying  function  used  by  the
+       The DbLog::archive method is based on  the  C  log_archive
+       function,  which  is  the  underlying function used by the
        <B><A HREF="db_archive.html">db_archive(1)</A></B>  utility.   See  the  source  code  for  the
-       db_archive utility for an example of using log_archive  in
+       db_archive  utility for an example of using log_archive in
        a UNIX environment.  See the <B><A HREF="db_archive.html">db_archive(1)</A></B> manual page for
        more information on database archival procedures.
 
   DbLog::db_register
-       The DbLog::db_register method registers a file  name  with
-       the  log  manager  and copies a file identification number
-       into the memory location referenced by  fidp.   This  file
+       The  DbLog::db_register  method registers a file name with
+       the log manager and copies a  file  identification  number
+       into  the  memory  location referenced by fidp.  This file
        identification number should be used in all subsequent log
-       messages that refer to operations on this file.   The  log
-       manager  records  all  file  name  to  file identification
-       number mappings at each  checkpoint  so  that  a  recovery
+       messages  that  refer to operations on this file.  The log
+       manager records  all  file  name  to  file  identification
+       number  mappings  at  each  checkpoint  so that a recovery
        process can identify the file to which a record in the log
        refers.
 
-       The DbLog::db_register method is  called  when  an  access
-       method  registers  the  open of a file.  The dbp parameter
-       should be a pointer  to  the  Db  object  which  is  being
+       The  DbLog::db_register  method  is  called when an access
+       method registers the open of a file.   The  dbp  parameter
+       should  be  a  pointer  to  the  Db  object which is being
        returned by the access method.
 
        The type parameter should be one of the Db types specified
        in Db::open (<B><A HREF="seeDb.html">seeDb(3)</A></B>), e.g., DB_HASH.
 
-       The DbLog::db_register method throws a  <B><A HREF="DbException.html">DbException(3)</A></B>  or
+       The  DbLog::db_register  method throws a <B><A HREF="DbException.html">DbException(3)</A></B> or
        returns the value of errno on failure and 0 on success.
 
   DbLog::db_unregister
-       The  DbLog::db_unregister  method  disassociates  the file
-       name to file identification number mapping  for  the  file
+       The DbLog::db_unregister  method  disassociates  the  file
+       name  to  file  identification number mapping for the file
        identification number specified by the fid parameter.  The
        file identification number may then be reused.
 
@@ -474,75 +481,117 @@
        returns the value of errno on failure and 0 on success.
 
   DbLog::stat
-       The  DbLog::stat  function creates a statistical structure
-       and copies a pointer to it into the user-specified  memory
+       The DbLog::stat function creates a  statistical  structure
+       and  copies a pointer to it into the user-specified memory
        location.
 
-       Statistical  structures  are  created in allocated memory.
-       If db_malloc is non-NULL, it is  called  to  allocate  the
+       Statistical structures are created  in  allocated  memory.
+       If  db_malloc  is  non-NULL,  it is called to allocate the
        memory, otherwise, the library function <B>malloc(3)</B> is used.
-       The function db_malloc must match the calling  conventions
-       of  the <B>malloc(3)</B> library routine.  Regardless, the caller
-       is responsible for deallocating the returned  memory.   To
-       deallocate  the returned memory, free each returned memory
-       pointer; pointers inside the memory  do  not  need  to  be
-       individually  freed.   The  log statistics are stored in a
-       structure of type DB_LOG_STAT (typedef'd in &lt;db.h&gt;).   The
+       The  function db_malloc must match the calling conventions
+       of the <B>malloc(3)</B> library routine.  Regardless, the  caller
+       is  responsible  for deallocating the returned memory.  To
+       deallocate the returned memory, free each returned  memory
+       pointer;  pointers  inside  the  memory  do not need to be
+       individually freed.  The log statistics are  stored  in  a
+       structure  of type DB_LOG_STAT (typedef'd in &lt;db.h&gt;).  The
        following DB_LOG_STAT fields will be filled in:
 
-       u_long st_magic;
-            The  magic  number  that  identifies  a file as a log
+       u_int32_t st_magic;
+            The magic number that identifies  a  file  as  a  log
             file.
-       u_long st_version;
+       u_int32_t st_version;
             The version of the log file type.
-       u_long st_mode;
+       u_int32_t st_mode;
             The mode of any created log files.
-       u_long st_lg_max;
-            The maximum size of any  individual  file  comprising
+       u_int32_t st_lg_max;
+            The  maximum  size  of any individual file comprising
             the log.
-       u_long st_written;
+       u_int32_t st_written;
             The total number of bytes written to this log.
-       u_long st_written_chkpt;
-            The   number   of   bytes   written  since  the  last
+       u_int32_t st_written_chkpt;
+            The  number  of  bytes   written   since   the   last
             checkpoint.
-       u_long st_region_wait;
+       u_int32_t st_region_wait;
             The number of times that a process was able to obtain
             the region lock without waiting.
-       u_long st_region_nowait;
+       u_int32_t st_region_nowait;
             The number of times that a process was forced to wait
             before obtaining the region lock.
 
 
 </PRE>
+<H2>LOG FILE LIMITS</H2><PRE>
+       Log file sizes impose a time limit on the length of time a
+       database may be  accessed  under  transaction  protection,
+       before  it needs to be dumped and reloaded (see <B><A HREF="db_dump.html">db_dump(3)</A></B>
+       and   <B><A HREF="db_load.html">db_load(3)</A></B>).    Unfortunately,   the   limits    are
+       potentially difficult to calculate.
+
+       The log file name consists of "log." followed by 5 digits,
+       resulting in a maximum of 99,999 log files.   Consider  an
+       application performing 600 transactions per second, for 15
+       hours a day,  logged  into  10Mb  log  files,  where  each
+       transaction  is  logging  approximately 100 bytes of data.
+       The calculation:
+
+              (10 * 2^20 * 99999) /
+                   (600 * 60 * 60 * 15 * 100) = 323.63
+
+       indicates that the system will run out of log  file  space
+       in  roughly  324 days.  If we increase the maximum size of
+       the  files  from  10Mb  to  100Mb,  the  same  calculation
+       indicates  that  the  application will run out of log file
+       space in roughly 9 years.
+
+       There is no way to  reset  the  log  file  name  space  in
+       Berkeley  DB.   If your application is reaching the end of
+       its log file name space, you should:
+
+       1.   Archive  your  databases  as  if   to   prepare   for
+            catastrophic  failure  (see  <B><A HREF="db_archive.html">db_archive(1)</A></B>  for  more
+            information).
+
+       2.   Dump and re-load <B>all</B> your databases  (see  <B><A HREF="db_dump.html">db_dump(1)</A></B>
+            and <B><A HREF="db_load.html">db_load(1)</A></B> for more information).
+
+       3.   Remove  all  of  the  log  files  from  the  database
+            environment (see <B><A HREF="db_archive.html">db_archive(1)</A></B> for more information).
+
+       4.   Restart your applications.
+
+
+</PRE>
 <H2>ENVIRONMENT VARIABLES</H2><PRE>
-       The following environment variables affect  the  execution
+       The  following  environment variables affect the execution
        of db_log:
 
        DB_HOME
-            If  the dbenv argument to DbLog::open was initialized
-            using db_appinit, the  environment  variable  DB_HOME
-            may  be used as the path of the database home for the
+            If the dbenv argument to DbLog::open was  initialized
+            using  db_appinit,  the  environment variable DB_HOME
+            may be used as the path of the database home for  the
             interpretation of the dir argument to DbLog::open, as
-            described     in     <B><A HREF="db_appinit.html">db_appinit(3)</A></B>.     Specifically,
-            DbLog::open is affected by the  configuration  string
+            described    in     <B><A HREF="db_appinit.html">db_appinit(3)</A></B>.      Specifically,
+            DbLog::open  is  affected by the configuration string
             value of DB_LOG_DIR.
 
        TMPDIR
-            If  the dbenv argument to DbLog::open was NULL or not
+            If the dbenv argument to DbLog::open was NULL or  not
             initialized   using   db_appinit,   the   environment
             variable TMPDIR may be used as the directory in which
-            to create the log, as described  in  the  DbLog::open
+            to  create  the  log, as described in the DbLog::open
             section above.
 
 
 </PRE>
 <H2>ERRORS</H2><PRE>
-       Methods  marked as returning errno will, by default, throw
+       Methods marked as returning errno will, by default,  throw
        an exception that encapsulates the error information.  The
        default error behavior can be changed, see <B><A HREF="DbException.html">DbException(3)</A></B>.
 
        The DbLog::open method may fail and throw a <B><A HREF="DbException.html">DbException(3)</A></B>
-       or  return  errno  for any of the errors specified for the
+
+       or return errno for any of the errors  specified  for  the
        following DB and library functions: <B><A HREF="DbLog.html">DbLog::close(3)</A></B>,
        <B><A HREF="DbLog.html">DbLog::unlink(3)</A></B>, <B>atoi(3)</B>, <B>close(2)</B>, <B><A HREF="db_appinit.html">db_version(3)</A></B>,
        <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>lseek(2)</B>, <B>malloc(3)</B>, <B>memcpy(3)</B>,
@@ -552,18 +601,18 @@
        <B>strerror(3)</B>, <B>strlen(3)</B>, <B>strncmp(3)</B>, <B>unlink(2)</B>, and
        <B>write(2)</B>.
 
-       In  addition,  the DbLog::open method may fail and throw a
-       <B><A HREF="DbException.html">DbException(3)</A></B>  or  return   errno   for   the   following
+       In addition, the DbLog::open method may fail and  throw  a
+       <B><A HREF="DbException.html">DbException(3)</A></B>   or   return   errno   for  the  following
        conditions:
 
        [EAGAIN]
-            The  shared memory region was locked and (repeatedly)
+            The shared memory region was locked and  (repeatedly)
             unavailable.
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-            The DB_THREAD flag was specified  and  spinlocks  are
+            The  DB_THREAD  flag  was specified and spinlocks are
             not implemented for this architecture.
 
             The specified file size was too large.
@@ -571,22 +620,22 @@
        The   DbLog::close   method   may   fail   and   throw   a
        <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or return errno for any of the errors  specified  for  the
+       or  return  errno  for any of the errors specified for the
        following DB and library functions: <B>close(2)</B>, <B>fcntl(2)</B>,
        <B>fflush(3)</B>, <B>munmap(2)</B>, and <B>strerror(3)</B>.
 
        The   DbLog::flush   method   may   fail   and   throw   a
        <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or  return  errno  for any of the errors specified for the
+       or return errno for any of the errors  specified  for  the
        following DB and library functions: <B>close(2)</B>, <B>fcntl(2)</B>,
        <B>fflush(3)</B>, <B>fsync(2)</B>, <B>lseek(2)</B>, <B>malloc(3)</B>, <B>memcpy(3)</B>,
        <B>memset(3)</B>, <B>open(2)</B>, <B>sigfillset(3)</B>, <B>sigprocmask(2)</B>,
        <B>stat(2)</B>, <B>strcpy(3)</B>, <B>strdup(3)</B>, <B>strerror(3)</B>, <B>strlen(3)</B>,
        <B>unlink(2)</B>, and <B>write(2)</B>.
 
-       In addition, the DbLog::flush method may fail and throw  a
-       <B><A HREF="DbException.html">DbException(3)</A></B>   or   return   errno   for  the  following
+       In  addition, the DbLog::flush method may fail and throw a
+       <B><A HREF="DbException.html">DbException(3)</A></B>  or  return   errno   for   the   following
        conditions:
 
        [EINVAL]
@@ -594,7 +643,7 @@
 
        The DbLog::get method may fail and throw a <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or return errno for any of the errors  specified  for  the
+       or  return  errno  for any of the errors specified for the
        following DB and library functions: <B>atoi(3)</B>, <B>close(2)</B>,
        <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>lseek(2)</B>, <B>malloc(3)</B>, <B>memcpy(3)</B>,
        <B>memset(3)</B>, <B>open(2)</B>, <B>opendir(3)</B>, <B>read(2)</B>, <B>readdir(3)</B>,
@@ -602,8 +651,8 @@
        <B>strchr(3)</B>, <B>strcpy(3)</B>, <B>strdup(3)</B>, <B>strerror(3)</B>, <B>strlen(3)</B>,
        <B>strncmp(3)</B>, and <B>unlink(2)</B>.
 
-       In addition, the DbLog::get method may fail  and  throw  a
-       <B><A HREF="DbException.html">DbException(3)</A></B>   or   return   errno   for  the  following
+       In  addition,  the  DbLog::get method may fail and throw a
+       <B><A HREF="DbException.html">DbException(3)</A></B>  or  return   errno   for   the   following
        conditions:
 
        [EINVAL]
@@ -614,43 +663,43 @@
 
        The DbLog::file method may fail and throw a <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or return errno for any of the errors  specified  for  the
+       or  return  errno  for any of the errors specified for the
        following DB and library functions: <B>close(2)</B>, <B>fcntl(2)</B>,
        <B>fflush(3)</B>, <B>malloc(3)</B>, <B>memcpy(3)</B>, <B>memset(3)</B>, <B>open(2)</B>,
        <B>sigfillset(3)</B>, <B>sigprocmask(2)</B>, <B>stat(2)</B>, <B>strcpy(3)</B>,
        <B>strdup(3)</B>, <B>strerror(3)</B>, <B>strlen(3)</B>, and <B>unlink(2)</B>.
 
-       In addition, the DbLog::file method may fail and  throw  a
-       <B><A HREF="DbException.html">DbException(3)</A></B>   or   return   errno   for  the  following
+       In  addition,  the DbLog::file method may fail and throw a
+       <B><A HREF="DbException.html">DbException(3)</A></B>  or  return   errno   for   the   following
        conditions:
 
        [ENOMEM]
-            The supplied buffer was too small  to  hold  the  log
+            The  supplied  buffer  was  too small to hold the log
             file name.
 
        The DbLog::put method may fail and throw a <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or  return  errno  for any of the errors specified for the
+       or return errno for any of the errors  specified  for  the
        following DB and library functions: <B>close(2)</B>, <B>fcntl(2)</B>,
        <B>fflush(3)</B>, <B>fsync(2)</B>, <B>lseek(2)</B>, <B>malloc(3)</B>, <B>memcpy(3)</B>,
        <B>memset(3)</B>, <B>open(2)</B>, <B>sigfillset(3)</B>, <B>sigprocmask(2)</B>,
        <B>stat(2)</B>, <B>strcpy(3)</B>, <B>strdup(3)</B>, <B>strerror(3)</B>, <B>strlen(3)</B>,
        <B>time(3)</B>, <B>unlink(2)</B>, and <B>write(2)</B>.
 
-       In addition, the DbLog::put method may fail  and  throw  a
-       <B><A HREF="DbException.html">DbException(3)</A></B>   or   return   errno   for  the  following
+       In  addition,  the  DbLog::put method may fail and throw a
+       <B><A HREF="DbException.html">DbException(3)</A></B>  or  return   errno   for   the   following
        conditions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-            The record to be logged is larger  than  the  maximum
+            The  record  to  be logged is larger than the maximum
             log record.
 
-       The   DbLog::unlink   method   may   fail   and   throw  a
+       The  DbLog::unlink   method   may   fail   and   throw   a
        <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or return errno for any of the errors  specified  for  the
+       or  return  errno  for any of the errors specified for the
        following DB and library functions: <B>close(2)</B>, <B>fcntl(2)</B>,
        <B>fflush(3)</B>, <B>malloc(3)</B>, <B>memcpy(3)</B>, <B>memset(3)</B>, <B>mmap(2)</B>,
        <B>munmap(2)</B>, <B>open(2)</B>, <B>sigfillset(3)</B>, <B>sigprocmask(2)</B>,
@@ -658,17 +707,17 @@
        <B>unlink(2)</B>.
 
        In addition, the DbLog::unlink method may fail and throw a
-       <B><A HREF="DbException.html">DbException(3)</A></B>  or  return   errno   for   the   following
+       <B><A HREF="DbException.html">DbException(3)</A></B>   or   return   errno   for  the  following
        conditions:
 
        [EBUSY]
-            The  shared  memory  region  was in use and the force
+            The shared memory region was in  use  and  the  force
             flag was not set.
 
-       The  DbLog::archive  method   may   fail   and   throw   a
+       The   DbLog::archive   method   may   fail   and  throw  a
        <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or  return  errno  for any of the errors specified for the
+       or return errno for any of the errors  specified  for  the
        following DB and library functions: <B><A HREF="DbLog.html">DbLog::compare(3)</A></B>,
        <B><A HREF="DbLog.html">DbLog::get(3)</A></B>, <B>close(2)</B>, <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>getcwd(3)</B>,
        <B>malloc(3)</B>, <B>memcpy(3)</B>, <B>memset(3)</B>, <B>open(2)</B>, <B>qsort(3)</B>,
@@ -676,8 +725,8 @@
        <B>strchr(3)</B>, <B>strcmp(3)</B>, <B>strcpy(3)</B>, <B>strdup(3)</B>, <B>strerror(3)</B>,
        <B>strlen(3)</B>, and <B>unlink(2)</B>.
 
-       In  addition, the DbLog::archive method may fail and throw
-       a  <B><A HREF="DbException.html">DbException(3)</A></B>  or  return  errno  for  the   following
+       In addition, the DbLog::archive method may fail and  throw
+       a   <B><A HREF="DbException.html">DbException(3)</A></B>  or  return  errno  for  the  following
        conditions:
 
        [EINVAL]
@@ -685,34 +734,35 @@
 
             The log was corrupted.
 
-       The   DbLog::db_register  method  may  fail  and  throw  a
+       The  DbLog::db_register  method  may  fail  and  throw   a
        <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or return errno for any of the errors  specified  for  the
+       or  return  errno  for any of the errors specified for the
        following DB and library functions: <B>close(2)</B>, <B>fcntl(2)</B>,
        <B>fflush(3)</B>, <B>fsync(2)</B>, <B>lseek(2)</B>, <B>malloc(3)</B>, <B>memcmp(3)</B>,
        <B>memcpy(3)</B>, <B>memset(3)</B>, <B>open(2)</B>, <B>realloc(3)</B>, <B>sigfillset(3)</B>,
        <B>sigprocmask(2)</B>, <B>stat(2)</B>, <B>strcpy(3)</B>, <B>strdup(3)</B>,
-       <B>strerror(3)</B>,  <B>strlen(3)</B>, <B>time(3)</B>, <B>unlink(2)</B>, and <B>write(2)</B>.
+       <B>strerror(3)</B>, <B>strlen(3)</B>, <B>time(3)</B>, <B>unlink(2)</B>, and  <B>write(2)</B>.
 
-       In addition, the DbLog::db_register method  may  fail  and
-       throw  a  <B><A HREF="DbException.html">DbException(3)</A></B> or return errno for the following
+       In  addition,  the  DbLog::db_register method may fail and
+       throw a <B><A HREF="DbException.html">DbException(3)</A></B> or return errno for  the  following
        conditions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-       The DbLog::db_unregister  method  may  fail  and  throw  a
+       The  DbLog::db_unregister  method  may  fail  and  throw a
        <B><A HREF="DbException.html">DbException(3)</A></B>
-       or  return  errno  for any of the errors specified for the
+
+       or return errno for any of the errors  specified  for  the
        following DB and library functions: <B>close(2)</B>, <B>fcntl(2)</B>,
        <B>fflush(3)</B>, <B>fsync(2)</B>, <B>lseek(2)</B>, <B>malloc(3)</B>, <B>memcpy(3)</B>,
        <B>memset(3)</B>, <B>open(2)</B>, <B>sigfillset(3)</B>, <B>sigprocmask(2)</B>,
        <B>stat(2)</B>, <B>strcpy(3)</B>, <B>strdup(3)</B>, <B>strerror(3)</B>, <B>strlen(3)</B>,
        <B>time(3)</B>, <B>unlink(2)</B>, and <B>write(2)</B>.
 
-       In addition, the DbLog::db_unregister method may fail  and
-       throw  a  <B><A HREF="DbException.html">DbException(3)</A></B> or return errno for the following
+       In  addition, the DbLog::db_unregister method may fail and
+       throw a <B><A HREF="DbException.html">DbException(3)</A></B> or return errno for  the  following
        conditions:
 
        [EINVAL]
@@ -721,8 +771,8 @@
 
 </PRE>
 <H2>BUGS</H2><PRE>
-       The log files are not  machine  architecture  independent.
-       Specifically,  their  metadata  are  not stored in a fixed
+       The  log  files  are not machine architecture independent.
+       Specifically, their metadata are not  stored  in  a  fixed
        byte order.
 
 
@@ -736,7 +786,7 @@
        <B><A HREF="DbTxnMgr.html">DbTxnMgr(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

@@ -33,10 +33,10 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbTxnMgr_close
 
 /*
  * Class:     com_sleepycat_db_DbTxnMgr
- * Method:    stat
- * Signature: ()Lcom/sleepycat/db/DbTxnStat;
+ * Method:    finalize
+ * Signature: ()V
  */
-JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbTxnMgr_stat
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbTxnMgr_finalize
   (JNIEnv *, jobject);
 
 /*
@@ -49,19 +49,19 @@ JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbTxnMgr_open
 
 /*
  * Class:     com_sleepycat_db_DbTxnMgr
+ * Method:    stat
+ * Signature: ()Lcom/sleepycat/db/DbTxnStat;
+ */
+JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbTxnMgr_stat
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbTxnMgr
  * Method:    unlink
  * Signature: (Ljava/lang/String;ILcom/sleepycat/db/DbEnv;)V
  */
 JNIEXPORT void JNICALL Java_com_sleepycat_db_DbTxnMgr_unlink
   (JNIEnv *, jclass, jstring, jint, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbTxnMgr
- * Method:    finalize
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbTxnMgr_finalize
-  (JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }

@@ -42,11 +42,11 @@ DDEESSCCRRIIPPTTIIOONN
        applied  to  the access methods described in _D_b(3) through
        method call parameters.
 
-       The model intended for transactional use (and that is used
-       by the access methods) is that write-ahead logging is pro-
-       vided by _D_b_L_o_g(3) to record both before-  and  after-image
-       logging.   Locking follows a two-phase protocol (i.e., all
-       locks are released at transaction commit).
+       The model intended for transactional use (and the one that
+       is used by the access methods) is write-ahead logging pro-
+       vided by _D_b_L_o_g(3) to record both before- and after-images.
+       Locking follows a two-phase protocol, with all locks being
+       released at transaction commit.
 
   _D_b_T_x_n_:_:_p_r_e_p_a_r_e
        The _D_b_T_x_n_:_:_p_r_e_p_a_r_e method initiates the beginning of a two
@@ -123,9 +123,10 @@ TTRRAANNSSAACCTTIIOONNSS
        databases are opened, the application can  group  sets  of
        operations  into  transactions,  by surrounding the opera-
        tions with the appropriate _D_b_T_x_n_M_g_r_:_:_b_e_g_i_n,  _D_b_T_x_n_:_:_c_o_m_m_i_t
-       and  _D_b_T_x_n_:_:_a_b_o_r_t  calls.   Note,  it  is not necessary to
-       transaction protect read-only transactions,  unless  those
-       transactions require repeatable reads.
+       and  _D_b_T_x_n_:_:_a_b_o_r_t calls.  Databases accessed by a transac-
+       tion must not be closed during the transaction.  Note,  it
+       is not necessary to transaction protect read-only transac-
+       tions, unless those transactions require repeatable reads.
 
        The Db access methods will make the appropriate calls into
        the lock, log and memory pool subsystems in order to guar-
@@ -197,6 +198,28 @@ TTRRAANNSSAACCTTIIOONNSS
        _D_b_T_x_n_:_:_p_r_e_p_a_r_e call requires that the transaction  log  be
        flushed to disk.
 
+TTRRAANNSSAACCTTIIOONN IIDD LLIIMMIITTSS
+       The transaction ID space in Berkeley DB is 2^31, or 2 bil-
+       lion entries.  It is possible that some  environments  may
+       need to be aware of this limitation.  Consider an applica-
+       tion performing 600 transactions a second for 15  hours  a
+       day.   The transaction ID space will run out in roughly 66
+       days:
+
+              2^31 / (600 * 15 * 60 * 60) = 66
+
+       Doing only 100 transactions a second exhausts the transac-
+       tion ID space in roughly one year.
+
+       The  transaction  ID  space is reset each time recovery is
+       run.  If you reach the end of your transaction  ID  space,
+       shut down your applications and restart them after running
+       recovery (see _d_b___r_e_c_o_v_e_r(1) for  more  information).   The
+       most    recently   allocated   transaction   ID   is   the
+       _s_t___l_a_s_t___t_x_n_i_d value in the transaction statistics informa-
+       tion, and is displayed by the _d_b___s_t_a_t(1) utility.
+
+
 EERRRROORRSS
        Methods  marked as returning _e_r_r_n_o will, by default, throw
        an exception that encapsulates the error information.  The
@@ -220,6 +243,7 @@ EERRRROORRSS
        In addition, the _D_b_T_x_n_:_:_c_o_m_m_i_t method may fail and throw a
        _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for  the  following  condi-
        tions:
+
        [EINVAL]
             The transaction was aborted.
 

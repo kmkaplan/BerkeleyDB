@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test024.tcl	8.3 (Sleepycat) 10/4/97
+#	@(#)test024.tcl	8.6 (Sleepycat) 4/26/98
 #
 # DB Test 24 {method nentries}
 # Test the Btree and Record number get-by-number functionality.
@@ -49,6 +49,7 @@ proc test024 { method {nentries 10000} args} {
 	# Create the database
 	set db [eval [concat dbopen \
 	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 
 	set flags 0
 	set txn 0
@@ -60,12 +61,10 @@ proc test024 { method {nentries 10000} args} {
 		} else {
 			set key $k
 		}
-		$db put $txn $key $k $flags
+		set ret [$db put $txn $key $k $flags]
+		error_check_good put $ret 0
 		set ret [$db get $txn $key $flags]
-		if { [string compare $ret $k] != 0 } {
-			puts "Test024: put key-data $key $k got $ret"
-			return
-		}
+		error_check_good get $ret $k
 	}
 
 	# Now we will get each key from the DB and compare the results
@@ -101,6 +100,7 @@ proc test024 { method {nentries 10000} args} {
 	# Now, reopen the file and run the last test again.
 	puts "\tTest024.d: close, open, and dump file"
 	set db [ dbopen $testfile $DB_RDONLY 0 DB_UNKNOWN ]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	set oid [open $t2 w]
 	for { set k 1 } { $k <= $count } { incr k } {
 		set ret [$db getn $txn $k $flags]
@@ -116,6 +116,7 @@ proc test024 { method {nentries 10000} args} {
 	# Now, reopen the file and run the last test again in reverse direction.
 	puts "\tTest024.e: close, open, and dump file in reverse direction"
 	set db [ dbopen $testfile $DB_RDONLY 0 DB_UNKNOWN ]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	# Put sorted keys in file
 	set rsorted ""
 	foreach k $sorted_keys {
@@ -142,6 +143,7 @@ proc test024 { method {nentries 10000} args} {
 	# Now try deleting elements and making sure they work
 	puts "\tTest024.f: delete test"
 	set db [ dbopen $testfile 0 0 DB_UNKNOWN ]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	while { $count > 0 } {
 		set kndx [random_int 1 $count]
 		set kval [lindex $keys [expr $kndx - 1]]

@@ -7,32 +7,32 @@ SSYYNNOOPPSSIISS
        ##iinncclluuddee <<ddbb..hh>>
 
        iinntt
-       ddbb__ooppeenn((ccoonnsstt cchhaarr **ffiillee,, DDBBTTYYPPEE ttyyppee,,
-            iinntt ffllaaggss,, iinntt mmooddee,, DDBB__EENNVV **ddbbeennvv,, DDBB__IINNFFOO **ddbbiinnffoo,, DDBB ****ddbbpppp));;
+       ddbb__ooppeenn((ccoonnsstt cchhaarr **ffiillee,, DDBBTTYYPPEE ttyyppee,, uu__iinntt3322__tt ffllaaggss,,
+            iinntt mmooddee,, DDBB__EENNVV **ddbbeennvv,, DDBB__IINNFFOO **ddbbiinnffoo,, DDBB ****ddbbpppp));;
 
        iinntt
-       DDBB-->>cclloossee((DDBB **ddbb,, iinntt ffllaaggss));;
+       DDBB-->>cclloossee((DDBB **ddbb,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
        DDBB-->>ccuurrssoorr((DDBB **ddbb,, DDBB__TTXXNN **ttxxnniidd,, DDBBCC ****ccuurrssoorrpp));;
 
        iinntt
-       DDBB-->>ddeell((DDBB **ddbb,, DDBB__TTXXNN **ttxxnniidd,, DDBBTT **kkeeyy,, iinntt ffllaaggss));;
+       DDBB-->>ddeell((DDBB **ddbb,, DDBB__TTXXNN **ttxxnniidd,, DDBBTT **kkeeyy,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
        DDBB-->>ffdd((DDBB **ddbb,, iinntt **ffddpp));;
 
        iinntt
-       DDBB-->>ggeett((DDBB **ddbb,, DDBB__TTXXNN **ttxxnniidd,, DDBBTT **kkeeyy,, DDBBTT **ddaattaa,, iinntt ffllaaggss));;
+       DDBB-->>ggeett((DDBB **ddbb,, DDBB__TTXXNN **ttxxnniidd,, DDBBTT **kkeeyy,, DDBBTT **ddaattaa,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
-       DDBB-->>ppuutt((DDBB **ddbb,, DDBB__TTXXNN **ttxxnniidd,, DDBBTT **kkeeyy,, DDBBTT **ddaattaa,, iinntt ffllaaggss));;
+       DDBB-->>ppuutt((DDBB **ddbb,, DDBB__TTXXNN **ttxxnniidd,, DDBBTT **kkeeyy,, DDBBTT **ddaattaa,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
-       DDBB-->>ssyynncc((DDBB **ddbb,, iinntt ffllaaggss));;
+       DDBB-->>ssyynncc((DDBB **ddbb,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
-       DDBB-->>ssttaatt((DDBB **ddbb,, vvooiidd **sspp,, vvooiidd **((**ddbb__mmaalllloocc))((ssiizzee__tt)),, iinntt ffllaaggss));;
+       DDBB-->>ssttaatt((DDBB **ddbb,, vvooiidd **sspp,, vvooiidd **((**ddbb__mmaalllloocc))((ssiizzee__tt)),, uu__iinntt3322__tt ffllaaggss));;
 
 DDEESSCCRRIIPPTTIIOONN
        The  DB  library  is  a family of groups of functions that
@@ -128,15 +128,19 @@ DDBB__EENNVV
        The access methods make calls to the other  subsystems  in
        the  DB  library  based  on the _d_b_e_n_v argument to _d_b___o_p_e_n,
        which is a pointer to a structure of  type  DB_ENV  (type-
-       def'd  in  <db.h>).  It is expected that applications will
-       use a single DB_ENV structure as the argument  to  all  of
-       the subsystems in the DB package.  In order to ensure com-
-       patibility with future releases of DB, all fields  of  the
-       DB_ENV  structure  that  are  not explicitly set should be
-       initialized to 0 before the first time  the  structure  is
-       used.   Do  this  by  declaring  the structure external or
-       static, or by calling the C library  routine  _b_z_e_r_o(3)  or
-       _m_e_m_s_e_t(3).
+       def'd in <db.h>).  Applications will normally use the same
+       DB_ENV structure (initialized  by  _d_b___a_p_p_i_n_i_t(3)),  as  an
+       argument to all of the subsystems in the DB package.
+
+       References  to  the DB_ENV structure are maintained by DB,
+       so it may not be discarded until the last close  function,
+       corresponding  to  an  open  function  for which it was an
+       argument, has returned.  In order to ensure  compatibility
+       with  future  releases  of  DB,  all  fields of the DB_ENV
+       structure that are not explicitly set should  be  initial-
+       ized to 0 before the first time the structure is used.  Do
+       this by declaring the structure external or static, or  by
+       calling the C library routine _b_z_e_r_o(3) or _m_e_m_s_e_t(3).
 
        The  fields  of  the  DB_ENV structure used by _d_b___o_p_e_n are
        described below.  If _d_b_e_n_v is NULL or any  of  its  fields
@@ -166,6 +170,7 @@ DDBB__EENNVV
             only locking is being performed, _d_b___o_p_e_n will acquire
             a  locker ID from _l_o_c_k___i_d(3), and will use it for all
             locks required for this instance of _d_b___o_p_e_n.
+
        DB_MPOOL *mp_info;
             If the cache for the  file  being  opened  should  be
             maintained in a shared buffer pool, the _m_p___i_n_f_o field
@@ -215,12 +220,11 @@ DDBB__IINNFFOO
        for  the DB_INFO fields if _d_b_i_n_f_o is NULL or any fields of
        the DB_INFO structure are set to 0.  The following DB_INFO
        fields may be initialized before calling _d_b___o_p_e_n:
-
        size_t db_cachesize;
             A suggested maximum size of the memory pool cache, in
             bytes.  If _d_b___c_a_c_h_e_s_i_z_e is 0, an appropriate  default
-            is  used.   If  the  _m_p___i_n_f_o field is also specified,
-            this field is ignored.
+            is  used.  It is an error to specify both the _m_p___i_n_f_o
+            field and a non-zero _d_b___c_a_c_h_e_s_i_z_e.
 
             NNoottee,, tthhee mmiinniimmuumm nnuummbbeerr ooff ppaaggeess iinn tthhee ccaacchhee sshhoouulldd
             bbee  nnoo lleessss tthhaann 1100,, aanndd tthhee aacccceessss mmeetthhooddss wwiillll ffaaiill
@@ -264,17 +268,17 @@ DDBB__IINNFFOO
             calling application.  See _d_b___d_b_t(3) for more informa-
             tion.
 
-            On  systems  where  separate heaps are maintained for
-            applications  and  libraries  (notably  Windows  NT),
-            specifying  the  DB_DBT_MALLOC flag will fail because
-            the DB library will allocate memory from a  different
-            heap  than  the  application will use to free it.  To
-            avoid this problem, the _d_b___m_a_l_l_o_c field should be set
-            to point to the application's allocation routine.  If
-            _d_b___m_a_l_l_o_c is non-NULL, it will be  used  to  allocate
-            the  memory  returned  when the DB_DBT_MALLOC flag is
-            set.  The _d_b___m_a_l_l_o_c function must match  the  calling
-            conventions of the _m_a_l_l_o_c(3) library routine.
+            On  systems  where there may be multiple library ver-
+            sions of malloc (notably Windows NT), specifying  the
+            DB_DBT_MALLOC  flag  will fail because the DB library
+            will allocate memory from a different heap  than  the
+            application will use to free it.  To avoid this prob-
+            lem, the _d_b___m_a_l_l_o_c field should be set  to  point  to
+            the  application's  allocation routine.  If _d_b___m_a_l_l_o_c
+            is non-NULL, it will be used to allocate  the  memory
+            returned  when  the  DB_DBT_MALLOC  flag is set.  The
+            _d_b___m_a_l_l_o_c function must match the calling conventions
+            of the _m_a_l_l_o_c(3) library routine.
 
 BBTTRREEEE
        The btree data structure is a sorted, balanced tree struc-
@@ -306,11 +310,17 @@ BBTTRREEEE
             considered to be respectively less than, equal to, or
             greater  than the second key argument.  The same com-
             parison function must be used on a given  tree  every
-            time  it  is opened.  If _b_t___c_o_m_p_a_r_e is NULL, the keys
-            are compared lexically, with shorter  keys  collating
-            before longer keys.
+            time it is opened.
 
-       int bt_minkey;
+            The  _d_a_t_a  and  _s_i_z_e  fields  of the DBT are the only
+            fields that may be used for the purposes of this com-
+            parison.
+
+            If  _b_t___c_o_m_p_a_r_e  is  NULL, the keys are compared lexi-
+            cally, with  shorter  keys  collating  before  longer
+            keys.
+
+       u_int32_t bt_minkey;
             The minimum number of keys that will be stored on any
             single page.  This value is used to  determine  which
             keys  will be stored on overflow pages, i.e. if a key
@@ -328,6 +338,9 @@ BBTTRREEEE
             first key argument.  If the keys are equal,  the  key
             length should be returned.
 
+            The  _d_a_t_a  and  _s_i_z_e  fields  of the DBT are the only
+            fields that may be used for the purposes of this com-
+            parison.
 
             This is used to compress the keys stored on the btree
             internal pages.   The  usefulness  of  this  is  data
@@ -338,7 +351,7 @@ BBTTRREEEE
             used.  If _b_t___p_r_e_f_i_x is NULL and a comparison function
             is specified, no prefix comparison is done.
 
-       unsigned long flags;
+       u_int32_t flags;
             The following additional flags may  be  specified  by
             oorr'ing together one or more of the following values:
 
@@ -389,7 +402,7 @@ HHAASSHH
        ized in the DB_INFO structure before calling _d_b___o_p_e_n, when
        using the hash access method:
 
-       unsigned int h_ffactor;
+       u_int32_t h_ffactor;
             The  desired density within the hash table.  It is an
             approximation of the number of keys allowed to  accu-
             mulate  in  any one bucket, determining when the hash
@@ -412,14 +425,14 @@ HHAASSHH
             is  the  same  as the one with which the database was
             created, and will fail if it detects that it is  not.
 
-       unsigned int h_nelem;
+       u_int32_t h_nelem;
             An  estimate of the final size of the hash table.  If
             not set or set  too  low,  hash  tables  will  expand
             gracefully  as  keys  are  entered, although a slight
             performance degradation may be noticed.  The  default
             value is 1.
 
-       unsigned long flags;
+       u_int32_t flags;
             The  following  additional  flags may be specified by
             oorr'ing together one or more of the following values:
 
@@ -477,6 +490,7 @@ RREECCNNOO
             access and modification to databases  that  are  nor-
             mally stored as flat text files.
 
+
             If  the  _r_e___s_o_u_r_c_e field is non-NULL, it specifies an
             underlying flat text database file that  is  read  to
             initialize  a  transient record number index.  In the
@@ -491,7 +505,6 @@ RREECCNNOO
             _c_l_o_s_e or _s_y_n_c functions are  called),  the  in-memory
             copy  of  the  database  will  be written back to the
             _r_e___s_o_u_r_c_e file.
-
 
             By default, the backing source file is  read  lazily,
             i.e.,  records  are not read from the file until they
@@ -528,7 +541,7 @@ RREECCNNOO
             ated  on the fly by software tools, or modified using
             a different mechanism, e.g., a text editor.
 
-       unsigned long flags;
+       u_int32_t flags;
             The following additional flags may  be  specified  by
             oorr'ing together one or more of the following values:
 
@@ -547,6 +560,7 @@ RREECCNNOO
                  that  are  greater  than  _r_e___l_e_n bytes long will
                  cause the call to fail immediately and return an
                  error.
+
             DB_PAD
                  The _r_e___p_a_d field is set.
 
@@ -614,7 +628,7 @@ DDBB OOPPEERRAATTIIOONNSS
             type of the database after a return from _d_b___o_p_e_n with
             the _t_y_p_e argument set to DB_UNKNOWN.
 
-       int (*close)(DB *db, int flags);
+       int (*close)(DB *db, u_int32_t flags);
             A pointer to a function to flush any cached  informa-
             tion  to  disk,  close  any open cursors (see _d_b___c_u_r_-
             _s_o_r(3)), free any allocated resources, and close  any
@@ -655,6 +669,7 @@ DDBB OOPPEERRAATTIIOONNSS
 
             The _c_l_o_s_e function returns  the  value  of  _e_r_r_n_o  on
             failure and 0 on success.
+
        int (*cursor)(DB *db, DB_TXN *txnid, DBC **cursorp);
             A pointer to a function to create a cursor and copy a
             pointer to it into the memory referenced by  _c_u_r_s_o_r_p.
@@ -678,37 +693,38 @@ DDBB OOPPEERRAATTIIOONNSS
             The _c_u_r_s_o_r function returns the  value  of  _e_r_r_n_o  on
             failure and 0 on success.
 
-       int (*del)(DB *db, DB_TXN *txnid, DBT *key, int flags);
+       int (*del)(DB *db, DB_TXN *txnid, DBT *key, u_int32_t
+            flags);
             A pointer to a function to remove key/data pairs from
-            the database.  The key/data pair associated with  the
+            the  database.  The key/data pair associated with the
             specified _k_e_y is discarded from the database.  In the
             presence of duplicate key values, all records associ-
             ated with the designated key will be discarded.
 
-            If  the file is being accessed under transaction pro-
-            tection, the _t_x_n_i_d  parameter  is  a  transaction  ID
+            If the file is being accessed under transaction  pro-
+            tection,  the  _t_x_n_i_d  parameter  is  a transaction ID
             returned from _t_x_n___b_e_g_i_n, otherwise, NULL.
 
-            The  _f_l_a_g_s parameter is currently unused, and must be
+            The _f_l_a_g_s parameter is currently unused, and must  be
             set to 0.
 
-            The _d_e_l function returns the value of _e_r_r_n_o on  fail-
-            ure,  0  on success, and DB_NOTFOUND if the specified
+            The  _d_e_l function returns the value of _e_r_r_n_o on fail-
+            ure, 0 on success, and DB_NOTFOUND if  the  specified
             _k_e_y did not exist in the file.
 
        int (*fd)(DB *db, int *fdp);
             A pointer to a function that copies a file descriptor
-            representative  of  the  underlying database into the
-            memory referenced by _f_d_p.  A file  descriptor  refer-
-            encing  the  same  file  will be returned to all pro-
+            representative of the underlying  database  into  the
+            memory  referenced  by _f_d_p.  A file descriptor refer-
+            encing the same file will be  returned  to  all  pro-
             cesses that call _d_b___o_p_e_n with the same _f_i_l_e argument.
-            This  file  descriptor may be safely used as an argu-
-            ment to the _f_c_n_t_l(2) and _f_l_o_c_k(2) locking  functions.
-            The  file  descriptor  is  not necessarily associated
-            with any of the underlying files used by  the  access
+            This file descriptor may be safely used as  an  argu-
+            ment  to the _f_c_n_t_l(2) and _f_l_o_c_k(2) locking functions.
+            The file descriptor  is  not  necessarily  associated
+            with  any  of the underlying files used by the access
             method.
 
-            The  _f_d  function only supports a coarse-grained form
+            The _f_d function only supports a  coarse-grained  form
             of locking.  Applications should use the lock manager
             where possible.
 
@@ -716,132 +732,130 @@ DDBB OOPPEERRAATTIIOONNSS
             and 0 on success.
 
        int (*get)(DB *db, DB_TXN *txnid,
-                 DBT *key, DBT *data, int flags);
-            A pointer to a function  that  is  an  interface  for
-            keyed  retrieval  from the database.  The address and
-            length of the data associated with the specified  _k_e_y
+                 DBT *key, DBT *data, u_int32_t flags);
+            A  pointer  to  a  function  that is an interface for
+            keyed retrieval from the database.  The  address  and
+            length  of the data associated with the specified _k_e_y
             are returned in the structure referenced by _d_a_t_a.
 
-            In  the  presence  of  duplicate key values, _g_e_t will
-            return the first data item for  the  designated  key.
-            Duplicates  are  sorted  by insert order except where
-            this order has been overridden by cursor  operations.
-            RReettrriieevvaall  ooff  dduupplliiccaatteess  rreeqquuiirreess tthhee uussee ooff ccuurrssoorr
+            In the presence of duplicate  key  values,  _g_e_t  will
+            return  the  first  data item for the designated key.
+            Duplicates are sorted by insert  order  except  where
+            this  order has been overridden by cursor operations.
+            RReettrriieevvaall ooff dduupplliiccaatteess rreeqquuiirreess tthhee  uussee  ooff  ccuurrssoorr
             ooppeerraattiioonnss..  See _d_b___c_u_r_s_o_r(3) for details.
 
-            If the file is being accessed under transaction  pro-
-            tection,  the  _t_x_n_i_d  parameter  is  a transaction ID
+            If  the file is being accessed under transaction pro-
+            tection, the _t_x_n_i_d  parameter  is  a  transaction  ID
             returned from _t_x_n___b_e_g_i_n, otherwise, NULL.
 
             The _f_l_a_g_s parameter must be set to 0 or the following
             value:
 
             DB_SET_RECNO
-                 Retrieve  the  specified  numbered key/data pair
-                 from a database.  Upon return, both the _k_e_y  and
-                 _d_a_t_a  items  will  have been filled in, not just
-                 the data item as is done for all other  uses  of
+                 Retrieve the specified  numbered  key/data  pair
+                 from  a database.  Upon return, both the _k_e_y and
+                 _d_a_t_a items will have been filled  in,  not  just
+                 the  data  item as is done for all other uses of
                  the _g_e_t function.
 
-                 The  _d_a_t_a  field  of the specified _k_e_y must be a
+                 The _d_a_t_a field of the specified _k_e_y  must  be  a
                  pointer  to  a  memory  location  from  which  a
-                 _d_b___r_e_c_n_o___t   may   be   read,  as  described  in
+                 _d_b___r_e_c_n_o___t  may  be  read,   as   described   in
                  _d_b___d_b_t(3).  This memory location will be read to
                  determine the record to be retrieved.
 
                  For DB_SET_RECNO to be specified, the underlying
-                 database must be of type btree and it must  have
-                 been   created  with  the  DB_RECNUM  flag  (see
+                 database  must be of type btree and it must have
+                 been  created  with  the  DB_RECNUM  flag   (see
                  _d_b___o_p_e_n(3)).
 
             If the database is a recno database and the requested
-            key  exists,  but was never explicitly created by the
-            application or was later deleted,  the  _g_e_t  function
+            key exists, but was never explicitly created  by  the
+            application  or  was  later deleted, the _g_e_t function
             returns DB_KEYEMPTY.  Otherwise, if the requested key
-            isn't in  the  database,  the  _g_e_t  function  returns
+            isn't  in  the  database,  the  _g_e_t  function returns
             DB_NOTFOUND.  Otherwise, the _g_e_t function returns the
             value of _e_r_r_n_o on failure and 0 on success.
 
-
        int (*put)(DB *db, DB_TXN *txnid,
-                 DBT *key, DBT *data, int flags);
-            A pointer to a function to store  key/data  pairs  in
-            the  database.   If the database supports duplicates,
-            the _p_u_t function adds the new data value at  the  end
+                 DBT *key, DBT *data, u_int32_t flags);
+            A  pointer  to  a function to store key/data pairs in
+            the database.  If the database  supports  duplicates,
+            the  _p_u_t  function adds the new data value at the end
             of the duplicate set.
 
-            If  the file is being accessed under transaction pro-
-            tection, the _t_x_n_i_d  parameter  is  a  transaction  ID
+            If the file is being accessed under transaction  pro-
+            tection,  the  _t_x_n_i_d  parameter  is  a transaction ID
             returned from _t_x_n___b_e_g_i_n, otherwise, NULL.
 
-            The  flags  value is specified by oorr'ing together one
+            The flags value is specified by oorr'ing  together  one
             or more of the following values:
 
             DB_APPEND
-                 Append the key/data  pair  to  the  end  of  the
-                 database.   For  DB_APPEND  to be specified, the
-                 underlying database must be of type recno.   The
-                 record   number   allocated  to  the  record  is
+                 Append  the  key/data  pair  to  the  end of the
+                 database.  For DB_APPEND to  be  specified,  the
+                 underlying  database must be of type recno.  The
+                 record  number  allocated  to  the   record   is
                  returned in the specified _k_e_y.
 
             DB_NOOVERWRITE
                  Enter the new key/data pair only if the key does
                  not already appear in the database.
 
-            The  default behavior of the _p_u_t function is to enter
+            The default behavior of the _p_u_t function is to  enter
             the  new  key/data  pair,  replacing  any  previously
-            existing  key if duplicates are disallowed, or to add
+            existing key if duplicates are disallowed, or to  add
             a duplicate entry if duplicates are allowed.  Even if
-            the  designated database allows duplicates, a call to
+            the designated database allows duplicates, a call  to
             _p_u_t with the DB_NOOVERWRITE flag set will fail if the
             key already exists in the database.
 
-            The  _p_u_t function returns the value of _e_r_r_n_o on fail-
-            ure, 0 on success, and DB_KEYEXIST if the  DB_NOOVER-
-            WRITE  _f_l_a_g was set and the key already exists in the
+            The _p_u_t function returns the value of _e_r_r_n_o on  fail-
+            ure,  0 on success, and DB_KEYEXIST if the DB_NOOVER-
+            WRITE _f_l_a_g was set and the key already exists in  the
             file.
 
-       int (*sync)(DB *db, int flags);
-            A pointer to a function to flush any cached  informa-
+       int (*sync)(DB *db, u_int32_t flags);
+            A  pointer to a function to flush any cached informa-
             tion to disk.  If the database is in memory only, the
-            _s_y_n_c function has no effect and will always  succeed.
+            _s_y_n_c  function has no effect and will always succeed.
 
-            The  _f_l_a_g_s parameter is currently unused, and must be
+            The _f_l_a_g_s parameter is currently unused, and must  be
             set to 0.
 
-            See the _c_l_o_s_e function description above for  a  dis-
+            See  the  _c_l_o_s_e function description above for a dis-
             cussion of DB and cached data.
 
             The _s_y_n_c function returns the value of _e_r_r_n_o on fail-
             ure and 0 on success.
 
        int (*stat)(DB *db, void *sp,
-                 void *(*db_malloc)(size_t), int flags);
-
-            A pointer to  a  function  to  create  a  statistical
-            structure  and  copy a pointer to it into user-speci-
-            fied memory locations.  Specifically, if _s_p  is  non-
-            NULL,  a  pointer  to the statistics for the database
+                 void *(*db_malloc)(size_t), u_int32_t flags);
+            A  pointer  to  a  function  to  create a statistical
+            structure and copy a pointer to it  into  user-speci-
+            fied  memory  locations.  Specifically, if _s_p is non-
+            NULL, a pointer to the statistics  for  the  database
             are copied into the memory location it references.
 
-            Statistical structures are created in allocated  mem-
+            Statistical  structures are created in allocated mem-
             ory.  If _d_b___m_a_l_l_o_c is non-NULL, it is called to allo-
             cate the memory, otherwise, the library function _m_a_l_-
-            _l_o_c(3)  is  used.   The function _d_b___m_a_l_l_o_c must match
+            _l_o_c(3) is used.  The function  _d_b___m_a_l_l_o_c  must  match
             the calling conventions of the _m_a_l_l_o_c(3) library rou-
-            tine.   Regardless,  the  caller  is  responsible for
-            deallocating the returned memory.  To deallocate  the
-            returned  memory,  free each returned memory pointer;
+            tine.  Regardless,  the  caller  is  responsible  for
+            deallocating  the returned memory.  To deallocate the
+            returned memory, free each returned  memory  pointer;
             pointers inside the memory do not need to be individ-
             ually freed.
 
-            IInn  tthhee  pprreesseennccee  ooff  mmuullttiippllee  tthhrreeaaddss oorr pprroocceesssseess
-            aacccceessssiinngg aann aaccttiivvee ddaattaabbaassee,, tthhee  rreettuurrnneedd  iinnffoorrmmaa--
+            IInn tthhee pprreesseennccee  ooff  mmuullttiippllee  tthhrreeaaddss  oorr  pprroocceesssseess
+            aacccceessssiinngg  aann  aaccttiivvee ddaattaabbaassee,, tthhee rreettuurrnneedd iinnffoorrmmaa--
             ttiioonn mmaayy bbee oouutt--ooff--ddaattee..
 
-            TThhiiss  ffuunnccttiioonn  mmaayy  aacccceessss  aallll  ooff tthhee ppaaggeess iinn tthhee
-            ddaattaabbaassee,, aanndd tthheerreeffoorree mmaayy iinnccuurr  aa  sseevveerree  ppeerrffoorr--
-            mmaannccee  ppeennaallttyy  aanndd  hhaavvee oobbvviioouuss nneeggaattiivvee eeffffeeccttss oonn
+            TThhiiss ffuunnccttiioonn mmaayy aacccceessss aallll  ooff  tthhee  ppaaggeess  iinn  tthhee
+            ddaattaabbaassee,,  aanndd  tthheerreeffoorree  mmaayy iinnccuurr aa sseevveerree ppeerrffoorr--
+            mmaannccee ppeennaallttyy aanndd hhaavvee oobbvviioouuss  nneeggaattiivvee  eeffffeeccttss  oonn
             tthhee uunnddeerrllyyiinngg bbuuffffeerr ppooooll..
 
 
@@ -850,49 +864,48 @@ DDBB OOPPEERRAATTIIOONNSS
 
 
             DB_RECORDCOUNT
-                 Fill  in  the  _b_t___n_r_e_c_s  field of the statistics
+                 Fill in the _b_t___n_r_e_c_s  field  of  the  statistics
                  structure, but do not collect any other informa-
-                 tion.   This flag makes it reasonable for appli-
-                 cations  to  request  a  record  count  from   a
+                 tion.  This flag makes it reasonable for  appli-
+                 cations   to  request  a  record  count  from  a
                  database   without   incurring   a   performance
-                 penalty.   It  is  only  available   for   recno
+                 penalty.    It   is  only  available  for  recno
                  databases, or btree databases where the underly-
-                 ing database  was  created  with  the  DB_RECNUM
+                 ing  database  was  created  with  the DB_RECNUM
                  flag.
 
             The _s_t_a_t function returns the value of _e_r_r_n_o on fail-
             ure and 0 on success.
 
             In the case of a btree or recno database, the statis-
-            tics  are stored in a structure of type DB_BTREE_STAT
-            (typedef'd in <db.h>).  The following fields will  be
+            tics are stored in a structure of type  DB_BTREE_STAT
+            (typedef'd  in <db.h>).  The following fields will be
             filled in:
 
             u_int32_t bt_magic;
                  Magic number that identifies the file as a btree
                  file.
-
             u_int32_t bt_version;
                  The version of the btree file type.
             u_int32_t bt_flags;
-                 Permanent  database  flags,  including   DB_DUP,
+                 Permanent   database  flags,  including  DB_DUP,
                  DB_FIXEDLEN, DB_RECNUM and DB_RENUMBER.
             u_int32_t bt_minkey;
-                 The  _b_t___m_i_n_k_e_y value specified to _d_b___o_p_e_n(3), if
+                 The _b_t___m_i_n_k_e_y value specified to _d_b___o_p_e_n(3),  if
                  any.
             u_int32_t bt_re_len;
-                 The _r_e___l_e_n value  specified  to  _d_b___o_p_e_n(3),  if
+                 The  _r_e___l_e_n  value  specified  to _d_b___o_p_e_n(3), if
                  any.
             u_int32_t bt_re_pad;
-                 The  _r_e___p_a_d  value  specified  to _d_b___o_p_e_n(3), if
+                 The _r_e___p_a_d value  specified  to  _d_b___o_p_e_n(3),  if
                  any.
             u_int32_t bt_pagesize;
                  Underlying tree page size.
             u_int32_t bt_levels;
                  Number of levels in the tree.
             u_int32_t bt_nrecs;
-                 Number of data items in the  tree  (since  there
-                 may  be multiple data items per key, this number
+                 Number  of  data  items in the tree (since there
+                 may be multiple data items per key, this  number
                  may not be the same as the number of keys).
             u_int32_t bt_int_pg;
                  Number of tree internal pages.
@@ -918,68 +931,68 @@ DDBB OOPPEERRAATTIIOONNSS
             u_int32_t bt_pfxsaved;
                  Number of bytes saved by prefix compression.
             u_int32_t bt_split;
-                 Total  number of tree page splits (includes fast
+                 Total number of tree page splits (includes  fast
                  and root splits).
             u_int32_t bt_rootsplit;
                  Number of root page splits.
             u_int32_t bt_fastsplit;
-                 Number of fast splits.   When  sorted  keys  are
-                 added  to the database, the DB btree implementa-
-                 tion will split left or right  to  increase  the
-                 page-fill  factor.   This number is a measure of
-                 how often it was possible to make such a  split.
+                 Number  of  fast  splits.   When sorted keys are
+                 added to the database, the DB btree  implementa-
+                 tion  will  split  left or right to increase the
+                 page-fill factor.  This number is a  measure  of
+                 how  often it was possible to make such a split.
             u_int32_t bt_added;
                  Number of keys added.
             u_int32_t bt_deleted;
                  Number of keys deleted.
             u_int32_t bt_get;
-                 Number  of  keys  retrieved.   (Note, this value
-                 will not reflect any  keys  retrieved  when  the
+                 Number of keys  retrieved.   (Note,  this  value
+                 will  not  reflect  any  keys retrieved when the
                  database was open for read-only access, as there
-                 is no permanent location to store  the  informa-
+                 is  no  permanent location to store the informa-
                  tion in this case.)
             u_int32_t bt_cache_hit;
-                 Number  of  hits in tree fast-insert code.  When
-                 sorted keys are added to the  database,  the  DB
-                 btree  implementation  will  check the last page
-                 where an insert occurred  before  doing  a  full
-                 lookup.   This  number is a measure of how often
+                 Number of hits in tree fast-insert  code.   When
+                 sorted  keys  are  added to the database, the DB
+                 btree implementation will check  the  last  page
+                 where  an  insert  occurred  before doing a full
+                 lookup.  This number is a measure of  how  often
                  the lookup was successful.
             u_int32_t bt_cache_miss;
-                 Number of misses in tree fast-insert code.   See
-                 the  description of bt_cache_hit; this number is
+                 Number  of misses in tree fast-insert code.  See
+                 the description of bt_cache_hit; this number  is
                  a measure of how often the lookup failed.
 
 EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
-       The following environment variables affect  the  execution
+       The  following  environment variables affect the execution
        of _d_b___o_p_e_n:
 
        DB_HOME
-            If  the  _d_b_e_n_v  argument  to  _d_b___o_p_e_n was initialized
-            using _d_b___a_p_p_i_n_i_t, the  environment  variable  DB_HOME
-            may  be used as the path of the database home for the
-            interpretation of the _d_i_r  argument  to  _d_b___o_p_e_n,  as
+            If the _d_b_e_n_v  argument  to  _d_b___o_p_e_n  was  initialized
+            using  _d_b___a_p_p_i_n_i_t,  the  environment variable DB_HOME
+            may be used as the path of the database home for  the
+            interpretation  of  the  _d_i_r  argument to _d_b___o_p_e_n, as
             described in _d_b___a_p_p_i_n_i_t(3).  Specifically, _d_b___o_p_e_n is
-            affected  by  the  configuration  string   value   of
+            affected   by   the  configuration  string  value  of
             DB_DATA_DIR.
 
 EEXXAAMMPPLLEESS
-       Applications  that  create  short-lived databases that are
-       discarded or recreated  when  the  system  fails  and  are
+       Applications that create short-lived  databases  that  are
+       discarded  or  recreated  when  the  system  fails and are
        unconcerned with concurrent access and loss of data due to
-       catastrophic failure, may wish to use  the  _d_b___o_p_e_n  func-
-       tionality  without  other  parts  of the DB library.  Such
-       applications will only be concerned  with  the  DB  access
-       methods.   The  DB access methods will use the memory pool
-       subsystem, but the application is unlikely to be aware  of
-       this.    See   the  files  _e_x_a_m_p_l_e_/_e_x___a_c_c_e_s_s_._c  and  _e_x_a_m_-
-       _p_l_e_/_e_x___b_t_r_e_c_._c in the DB source distribution  for  C  lan-
+       catastrophic  failure,  may  wish to use the _d_b___o_p_e_n func-
+       tionality without other parts of  the  DB  library.   Such
+       applications  will  only  be  concerned with the DB access
+       methods.  The DB access methods will use the  memory  pool
+       subsystem,  but the application is unlikely to be aware of
+       this.   See  the  files  _e_x_a_m_p_l_e_/_e_x___a_c_c_e_s_s_._c   and   _e_x_a_m_-
+       _p_l_e_/_e_x___b_t_r_e_c_._c  in  the  DB source distribution for C lan-
        guage code examples of how such applications might use the
        DB library.
 
 EERRRROORRSS
-       The _d_b___o_p_e_n function may fail and return _e_r_r_n_o for any  of
-       the  errors  specified  for  the  following DB and library
+       The  _d_b___o_p_e_n function may fail and return _e_r_r_n_o for any of
+       the errors specified for  the  following  DB  and  library
        functions: DB->sync(3), calloc(3), close(2), fcntl(2),
        fflush(3), lock_get(3), lock_id(3), lock_put(3),
        lock_vec(3), log_put(3), log_register(3), log_unregis-
@@ -991,39 +1004,39 @@ EERRRROORRSS
        cpy(3), strdup(3), strerror(3), strlen(3), time(3), and
        unlink(2).
 
-       In  addition,  the  _d_b___o_p_e_n  function  may fail and return
+       In addition, the _d_b___o_p_e_n  function  may  fail  and  return
        _e_r_r_n_o for the following conditions:
 
        [EAGAIN]
             A lock was unavailable.
 
        [EINVAL]
-            An invalid flag  value  or  parameter  was  specified
-            (e.g.,  unknown  database type, page size, hash func-
-            tion, recno pad byte, byte order) or a flag value  or
-            parameter  that is incompatible with the current _f_i_l_e
+            An  invalid  flag  value  or  parameter was specified
+            (e.g., unknown database type, page size,  hash  func-
+            tion,  recno pad byte, byte order) or a flag value or
+            parameter that is incompatible with the current  _f_i_l_e
             specification.
 
-            The DB_THREAD flag was specified  and  spinlocks  are
+            The  DB_THREAD  flag  was specified and spinlocks are
             not implemented for this architecture.
 
-            There  is  a  mismatch  between the version number of
+            There is a mismatch between  the  version  number  of
             _f_i_l_e and the software.
 
             A  _r_e___s_o_u_r_c_e  file  was  specified  with  either  the
-            DB_THREAD  flag  or  a  non-NULL _t_x___i_n_f_o field in the
+            DB_THREAD flag or a non-NULL  _t_x___i_n_f_o  field  in  the
             DB_ENV argument to db_open.
 
        [ENOENT]
             A non-existent _r_e___s_o_u_r_c_e file was specified.
 
        [EPERM]
-            Database corruption  was  detected.   All  subsequent
-            database  calls  (other  than  _D_B_-_>_c_l_o_s_e) will return
+            Database  corruption  was  detected.   All subsequent
+            database calls (other  than  _D_B_-_>_c_l_o_s_e)  will  return
             EPERM.
 
-       The _D_B_-_>_c_l_o_s_e function may fail and return _e_r_r_n_o  for  any
-       of  the  errors specified for the following DB and library
+       The  _D_B_-_>_c_l_o_s_e  function may fail and return _e_r_r_n_o for any
+       of the errors specified for the following DB  and  library
        functions: DB->sync(3), calloc(3), close(2), fflush(3),
        lock_get(3), lock_put(3), lock_vec(3), log_put(3),
        log_unregister(3), malloc(3), memcpy(3), memmove(3),
@@ -1031,34 +1044,12 @@ EERRRROORRSS
        memp_fset(3), memp_fsync(3), memset(3), munmap(2), real-
        loc(3), and strerror(3).
 
-       The  _D_B_-_>_c_u_r_s_o_r function may fail and return _e_r_r_n_o for any
-       of the errors specified for the following DB  and  library
+       The _D_B_-_>_c_u_r_s_o_r function may fail and return _e_r_r_n_o for  any
+       of  the  errors specified for the following DB and library
        functions: calloc(3).
 
-       In  addition,  the _D_B_-_>_c_u_r_s_o_r function may fail and return
+       In addition, the _D_B_-_>_c_u_r_s_o_r function may fail  and  return
        _e_r_r_n_o for the following conditions:
-
-       [EINVAL]
-            An invalid flag value or parameter was specified.
-
-       [EPERM]
-            Database corruption  was  detected.   All  subsequent
-            database  calls  (other  than  _D_B_-_>_c_l_o_s_e) will return
-            EPERM.
-
-       The _D_B_-_>_d_e_l function may fail and return _e_r_r_n_o for any  of
-       the  errors  specified  for  the  following DB and library
-       functions: calloc(3), fcntl(2), fflush(3), lock_get(3),
-       lock_id(3), lock_put(3), lock_vec(3), log_put(3), mal-
-       loc(3), memcmp(3), memcpy(3), memmove(3), memp_fget(3),
-       memp_fput(3), memp_fset(3), memset(3), realloc(3), and
-       strerror(3).
-
-       In addition, the _D_B_-_>_d_e_l  function  may  fail  and  return
-       _e_r_r_n_o for the following conditions:
-
-       [EAGAIN]
-            A lock was unavailable.
 
        [EINVAL]
             An invalid flag value or parameter was specified.
@@ -1068,47 +1059,7 @@ EERRRROORRSS
             database calls (other  than  _D_B_-_>_c_l_o_s_e)  will  return
             EPERM.
 
-       In addition, the _D_B_-_>_f_d function may fail and return _e_r_r_n_o
-       for the following conditions:
-
-       [ENOENT]
-            The _D_B_-_>_f_d  function  was  called  for  an  in-memory
-            database, or no underlying file has yet been created.
-
-       [EPERM]
-            Database corruption  was  detected.   All  subsequent
-            database  calls  (other  than  _D_B_-_>_c_l_o_s_e) will return
-            EPERM.
-
-       The _D_B_-_>_g_e_t function may fail and return _e_r_r_n_o for any  of
-       the  errors  specified  for  the  following DB and library
-       functions: DBcursor->c_get(3), calloc(3), fcntl(2),
-       fflush(3), lock_get(3), lock_id(3), lock_put(3),
-       lock_vec(3), log_put(3), malloc(3), memcmp(3), memcpy(3),
-       memmove(3), memp_fget(3), memp_fput(3), memp_fset(3), mem-
-       set(3), realloc(3), and strerror(3).
-
-       In addition, the _D_B_-_>_g_e_t  function  may  fail  and  return
-       _e_r_r_n_o for the following conditions:
-
-       [EAGAIN]
-            A lock was unavailable.
-
-       [EINVAL]
-            An invalid flag value or parameter was specified.
-
-            The  DB_THREAD  flag  was specified to the _d_b___o_p_e_n(3)
-            function   and   neither   the    DB_DBT_MALLOC    or
-            DB_DBT_USERMEM flags were set in the DBT.
-
-            A record number of 0 was specified.
-
-       [EPERM]
-            Database  corruption  was  detected.   All subsequent
-            database calls (other  than  _D_B_-_>_c_l_o_s_e)  will  return
-            EPERM.
-
-       The  _D_B_-_>_p_u_t function may fail and return _e_r_r_n_o for any of
+       The  _D_B_-_>_d_e_l function may fail and return _e_r_r_n_o for any of
        the errors specified for  the  following  DB  and  library
        functions: calloc(3), fcntl(2), fflush(3), lock_get(3),
        lock_id(3), lock_put(3), lock_vec(3), log_put(3), mal-
@@ -1116,7 +1067,69 @@ EERRRROORRSS
        memp_fput(3), memp_fset(3), memset(3), realloc(3), and
        strerror(3).
 
-       In  addition,  the  _D_B_-_>_p_u_t  function  may fail and return
+       In  addition,  the  _D_B_-_>_d_e_l  function  may fail and return
+       _e_r_r_n_o for the following conditions:
+
+       [EAGAIN]
+            A lock was unavailable.
+
+       [EINVAL]
+            An invalid flag value or parameter was specified.
+
+       [EPERM]
+            Database corruption  was  detected.   All  subsequent
+            database  calls  (other  than  _D_B_-_>_c_l_o_s_e) will return
+            EPERM.
+
+       In addition, the _D_B_-_>_f_d function may fail and return _e_r_r_n_o
+       for the following conditions:
+
+       [ENOENT]
+            The  _D_B_-_>_f_d  function  was  called  for  an in-memory
+            database, or no underlying file has yet been created.
+
+       [EPERM]
+            Database  corruption  was  detected.   All subsequent
+            database calls (other  than  _D_B_-_>_c_l_o_s_e)  will  return
+            EPERM.
+
+       The  _D_B_-_>_g_e_t function may fail and return _e_r_r_n_o for any of
+       the errors specified for  the  following  DB  and  library
+       functions: DBcursor->c_get(3), calloc(3), fcntl(2),
+       fflush(3), lock_get(3), lock_id(3), lock_put(3),
+       lock_vec(3), log_put(3), malloc(3), memcmp(3), memcpy(3),
+       memmove(3), memp_fget(3), memp_fput(3), memp_fset(3), mem-
+       set(3), realloc(3), and strerror(3).
+
+       In  addition,  the  _D_B_-_>_g_e_t  function  may fail and return
+       _e_r_r_n_o for the following conditions:
+
+       [EAGAIN]
+            A lock was unavailable.
+
+       [EINVAL]
+            An invalid flag value or parameter was specified.
+
+            The DB_THREAD flag was specified  to  the  _d_b___o_p_e_n(3)
+            function    and    neither   the   DB_DBT_MALLOC   or
+            DB_DBT_USERMEM flags were set in the DBT.
+
+            A record number of 0 was specified.
+
+       [EPERM]
+            Database corruption  was  detected.   All  subsequent
+            database  calls  (other  than  _D_B_-_>_c_l_o_s_e) will return
+            EPERM.
+
+       The _D_B_-_>_p_u_t function may fail and return _e_r_r_n_o for any  of
+       the  errors  specified  for  the  following DB and library
+       functions: calloc(3), fcntl(2), fflush(3), lock_get(3),
+       lock_id(3), lock_put(3), lock_vec(3), log_put(3), mal-
+       loc(3), memcmp(3), memcpy(3), memmove(3), memp_fget(3),
+       memp_fput(3), memp_fset(3), memset(3), realloc(3), and
+       strerror(3).
+
+       In addition, the _D_B_-_>_p_u_t  function  may  fail  and  return
        _e_r_r_n_o for the following conditions:
 
        [EACCES]
@@ -1136,22 +1149,21 @@ EERRRROORRSS
             An attempt was made to do a partial put.
 
        [EPERM]
-            Database  corruption  was  detected.   All subsequent
-            database calls (other  than  _D_B_-_>_c_l_o_s_e)  will  return
+            Database corruption  was  detected.   All  subsequent
+            database  calls  (other  than  _D_B_-_>_c_l_o_s_e) will return
             EPERM.
 
        [ENOSPC]
             A btree exceeded the maximum btree depth (255).
 
-
        The _D_B_-_>_s_t_a_t function may fail and return _e_r_r_n_o for any of
-       the errors specified for  the  following  DB  and  library
+       the  errors  specified  for  the  following DB and library
        functions: calloc(3), fcntl(2), fflush(3), lock_get(3),
        lock_id(3), lock_put(3), lock_vec(3), malloc(3), mem-
        cpy(3), memp_fget(3), memp_fput(3), and memset(3).
 
        The _D_B_-_>_s_y_n_c function may fail and return _e_r_r_n_o for any of
-       the errors specified for  the  following  DB  and  library
+       the  errors  specified  for  the  following DB and library
        functions: DB->get(3), DB->sync(3), calloc(3), close(2),
        fcntl(2), fflush(3), lock_get(3), lock_id(3), lock_put(3),
        lock_vec(3), log_put(3), malloc(3), memcpy(3), memmove(3),
@@ -1159,35 +1171,35 @@ EERRRROORRSS
        memset(3), munmap(2), open(2), realloc(3), strerror(3),
        unlink(2), and write(2).
 
-       In addition, the _D_B_-_>_s_y_n_c function  may  fail  and  return
+       In  addition,  the  _D_B_-_>_s_y_n_c  function may fail and return
        _e_r_r_n_o for the following conditions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
        [EPERM]
-            Database  corruption  was  detected.   All subsequent
-            database calls (other  than  _D_B_-_>_c_l_o_s_e)  will  return
+            Database corruption  was  detected.   All  subsequent
+            database  calls  (other  than  _D_B_-_>_c_l_o_s_e) will return
             EPERM.
 
 SSEEEE AALLSSOO
-       _T_h_e  _U_b_i_q_u_i_t_o_u_s  _B_-_t_r_e_e,  Douglas Comer, ACM Comput. Surv.
+       _T_h_e _U_b_i_q_u_i_t_o_u_s _B_-_t_r_e_e, Douglas Comer,  ACM  Comput.  Surv.
        11, 2 (June 1979), 121-138.
 
-       _P_r_e_f_i_x _B_-_t_r_e_e_s, Bayer and Unterauer, ACM  Transactions  on
+       _P_r_e_f_i_x  _B_-_t_r_e_e_s,  Bayer and Unterauer, ACM Transactions on
        Database Systems, Vol. 2, 1 (March 1977), 11-26.
 
-       _T_h_e  _A_r_t  _o_f  _C_o_m_p_u_t_e_r  _P_r_o_g_r_a_m_m_i_n_g  _V_o_l_.  _3_:  _S_o_r_t_i_n_g _a_n_d
+       _T_h_e _A_r_t  _o_f  _C_o_m_p_u_t_e_r  _P_r_o_g_r_a_m_m_i_n_g  _V_o_l_.  _3_:  _S_o_r_t_i_n_g  _a_n_d
        _S_e_a_r_c_h_i_n_g, D.E. Knuth, 1968, pp 471-480.
 
        _D_y_n_a_m_i_c _H_a_s_h _T_a_b_l_e_s, Per-Ake Larson, Communications of the
        ACM, April 1988.
 
-       _A  _N_e_w  _H_a_s_h  _P_a_c_k_a_g_e _f_o_r _U_N_I_X, Margo Seltzer, USENIX Pro-
+       _A _N_e_w _H_a_s_h _P_a_c_k_a_g_e _f_o_r _U_N_I_X, Margo  Seltzer,  USENIX  Pro-
        ceedings, Winter 1991.
 
        _D_o_c_u_m_e_n_t  _P_r_o_c_e_s_s_i_n_g  _i_n  _a  _R_e_l_a_t_i_o_n_a_l  _D_a_t_a_b_a_s_e  _S_y_s_t_e_m,
-       Michael   Stonebraker,   Heidi  Stettner,  Joseph  Kalash,
+       Michael  Stonebraker,  Heidi  Stettner,   Joseph   Kalash,
        Antonin  Guttman,  Nadene  Lynn,  Memorandum  No.  UCB/ERL
        M82/32, May 1982.
 

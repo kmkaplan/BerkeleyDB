@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)DbBtreeStat.java	10.1 (Sleepycat) 11/10/97
+ *	@(#)DbBtreeStat.java	10.2 (Sleepycat) 4/10/98
  */
 
 package com.sleepycat.db;

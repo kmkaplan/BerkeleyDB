@@ -87,7 +87,7 @@ CC++++
        as the primary reference,  and  C++  interfaces  following
        parenthetically, e.g., _d_b___o_p_e_n (_D_b_:_:_o_p_e_n).
 
-JJaavvaa
+JJAAVVAA
        The  Java classes provide a layer around the C API that is
        almost identical to the C++ layer.  The classes and  meth-
        ods are, for the most part identical to the C++ layer.  Db

@@ -1,35 +1,28 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)db_dup.c	10.10 (Sleepycat) 10/25/97";
+static const char sccsid[] = "@(#)db_dup.c	10.16 (Sleepycat) 4/26/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #include <errno.h>
-#include <fcntl.h>
-#include <stddef.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #endif
 
 #include "db_int.h"
 #include "db_page.h"
-#include "db_swap.h"
 #include "btree.h"
 #include "db_am.h"
-#include "common_ext.h"
 
 static int __db_addpage __P((DB *,
     PAGE **, db_indx_t *, int (*)(DB *, u_int32_t, PAGE **)));
@@ -209,9 +202,8 @@ __db_dsplit(dbp, hp, indxp, size, newfunc)
 	PAGE *h, *np, *tp;
 	BKEYDATA *bk;
 	DBT page_dbt;
-	db_indx_t indx, nindex, oindex, sum;
-	db_indx_t halfbytes, i, lastsum;
-	int did_indx, ret, s;
+	db_indx_t halfbytes, i, indx, lastsum, nindex, oindex, s, sum;
+	int did_indx, ret;
 
 	h = *hp;
 	indx = *indxp;
@@ -219,7 +211,7 @@ __db_dsplit(dbp, hp, indxp, size, newfunc)
 	/* Create a temporary page to do compaction onto. */
 	if ((tp = (PAGE *)__db_malloc(dbp->pgsize)) == NULL)
 		return (ENOMEM);
-#ifdef DEBUG
+#ifdef DIAGNOSTIC
 	memset(tp, 0xff, dbp->pgsize);
 #endif
 	/* Create new page for the split. */
@@ -369,14 +361,13 @@ __db_dsplit(dbp, hp, indxp, size, newfunc)
  * __db_ditem --
  *	Remove an item from a page.
  *
- * PUBLIC:  int __db_ditem __P((DB *, PAGE *, int, u_int32_t));
+ * PUBLIC:  int __db_ditem __P((DB *, PAGE *, u_int32_t, u_int32_t));
  */
 int
 __db_ditem(dbp, pagep, indx, nbytes)
 	DB *dbp;
 	PAGE *pagep;
-	int indx;
-	u_int32_t nbytes;
+	u_int32_t indx, nbytes;
 {
 	DBT ldbt;
 	db_indx_t cnt, offset;

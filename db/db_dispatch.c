@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -43,14 +43,13 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)db_dispatch.c	10.7 (Sleepycat) 11/23/97";
+static const char sccsid[] = "@(#)db_dispatch.c	10.14 (Sleepycat) 5/3/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
 #include <errno.h>
-#include <fcntl.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -61,6 +60,8 @@ static const char sccsid[] = "@(#)db_dispatch.c	10.7 (Sleepycat) 11/23/97";
 #include "db_dispatch.h"
 #include "db_am.h"
 #include "common_ext.h"
+#include "log_auto.h"
+#include "txn_auto.h"
 
 /*
  * Data structures to manage the DB dispatch table.  The dispatch table
@@ -113,7 +114,8 @@ __db_dispatch(logp, db, lsnp, redo, info)
 		 * seen it, then we call the appropriate recovery routine
 		 * in "abort mode".
 		 */
-		if (__db_txnlist_find(info, txnid) == DB_NOTFOUND)
+		if (rectype == DB_log_register || rectype == DB_txn_ckp ||
+		    __db_txnlist_find(info, txnid) == DB_NOTFOUND)
 			return ((dispatch_table[rectype])(logp,
 			    db, lsnp, TXN_UNDO, info));
 		break;
@@ -122,7 +124,8 @@ __db_dispatch(logp, db, lsnp, redo, info)
 		 * In the forward pass, if we haven't seen the transaction,
 		 * do nothing, else recovery it.
 		 */
-		if (__db_txnlist_find(info, txnid) != DB_NOTFOUND)
+		if (rectype == DB_log_register || rectype == DB_txn_ckp ||
+		    __db_txnlist_find(info, txnid) != DB_NOTFOUND)
 			return ((dispatch_table[rectype])(logp,
 			    db, lsnp, TXN_REDO, info));
 		break;
@@ -185,14 +188,14 @@ int
 __db_txnlist_init(retp)
 	void *retp;
 {
-	__db_txnhead *headp;
+	DB_TXNHEAD *headp;
 
-	if ((headp = (struct __db_txnhead *)
-	    __db_malloc(sizeof(struct __db_txnhead))) == NULL)
+	if ((headp = (DB_TXNHEAD *)__db_malloc(sizeof(DB_TXNHEAD))) == NULL)
 		return (ENOMEM);
 
 	LIST_INIT(&headp->head);
 	headp->maxid = 0;
+	headp->generation = 1;
 
 	*(void **)retp = headp;
 	return (0);
@@ -209,25 +212,26 @@ __db_txnlist_add(listp, txnid)
 	void *listp;
 	u_int32_t txnid;
 {
-	__db_txnhead *hp;
-	__db_txnlist *elp;
+	DB_TXNHEAD *hp;
+	DB_TXNLIST *elp;
 
-	if ((elp = (__db_txnlist *)__db_malloc(sizeof(__db_txnlist))) == NULL)
+	if ((elp = (DB_TXNLIST *)__db_malloc(sizeof(DB_TXNLIST))) == NULL)
 		return (ENOMEM);
 
 	elp->txnid = txnid;
-	hp = (struct __db_txnhead *)listp;
+	hp = (DB_TXNHEAD *)listp;
 	LIST_INSERT_HEAD(&hp->head, elp, links);
 	if (txnid > hp->maxid)
 		hp->maxid = txnid;
+	elp->generation = hp->generation;
 
 	return (0);
 }
 
 /*
  * __db_txnlist_find --
- *	Checks to see if txnid is in the txnid list, returns 1 if found,
- *	0 if not found.
+ *	Checks to see if a txnid with the current generation is in the
+ *	txnid list.
  *
  * PUBLIC: int __db_txnlist_find __P((void *, u_int32_t));
  */
@@ -236,42 +240,18 @@ __db_txnlist_find(listp, txnid)
 	void *listp;
 	u_int32_t txnid;
 {
-	__db_txnhead *hp;
-	__db_txnlist *p;
+	DB_TXNHEAD *hp;
+	DB_TXNLIST *p;
 
-	if ((hp = (struct __db_txnhead *)listp) == NULL)
+	if ((hp = (DB_TXNHEAD *)listp) == NULL)
 		return (DB_NOTFOUND);
-
-	if (hp->maxid < txnid) {
-		hp->maxid = txnid;
-		return (DB_NOTFOUND);
-	}
 
 	for (p = hp->head.lh_first; p != NULL; p = p->links.le_next)
-		if (p->txnid == txnid)
+		if (p->txnid == txnid && hp->generation == p->generation)
 			return (0);
 
 	return (DB_NOTFOUND);
 }
-
-#ifdef DEBUG
-/*
- * __db_txnlist_print --
- *	Print out the transaction list.
- */
-void
-__db_txnlist_print(listp)
-	void *listp;
-{
-	__db_txnhead *hp;
-	__db_txnlist *p;
-
-	hp = (struct __db_txnhead *)listp;
-	printf("Maxid: %lu\n", (u_long)hp->maxid);
-	for (p = hp->head.lh_first; p != NULL; p = p->links.le_next)
-		printf("TXNID: %lu\n", (u_long)p->txnid);
-}
-#endif
 
 /*
  * __db_txnlist_end --
@@ -283,13 +263,61 @@ void
 __db_txnlist_end(listp)
 	void *listp;
 {
-	__db_txnhead *hp;
-	__db_txnlist *p;
+	DB_TXNHEAD *hp;
+	DB_TXNLIST *p;
 
-	hp = (struct __db_txnhead *)listp;
+	hp = (DB_TXNHEAD *)listp;
 	while ((p = LIST_FIRST(&hp->head)) != LIST_END(&hp->head)) {
 		LIST_REMOVE(p, links);
 		__db_free(p);
 	}
 	__db_free(listp);
 }
+
+/*
+ * __db_txnlist_gen --
+ *	Change the current generation number.
+ *
+ * PUBLIC: void __db_txnlist_gen __P((void *, int));
+ */
+void
+__db_txnlist_gen(listp, incr)
+	void *listp;
+	int incr;
+{
+	DB_TXNHEAD *hp;
+
+	/*
+	 * During recovery generation numbers keep track of how many "restart"
+	 * checkpoints we've seen.  Restart checkpoints occur whenever we take
+	 * a checkpoint and there are no outstanding transactions.  When that
+	 * happens, we can reset transaction IDs back to 1.  It always happens
+	 * at recovery and it prevents us from exhausting the transaction IDs
+	 * name space.
+	 */
+	hp = (DB_TXNHEAD *)listp;
+	hp->generation += incr;
+}
+
+#ifdef DEBUG
+/*
+ * __db_txnlist_print --
+ *	Print out the transaction list.
+ *
+ * PUBLIC: void __db_txnlist_print __P((void *));
+ */
+void
+__db_txnlist_print(listp)
+	void *listp;
+{
+	DB_TXNHEAD *hp;
+	DB_TXNLIST *p;
+
+	hp = (DB_TXNHEAD *)listp;
+	printf("Maxid: %lu Generation: %lu\n", (u_long)hp->maxid,
+	    (u_long)hp->generation);
+	for (p = hp->head.lh_first; p != NULL; p = p->links.le_next)
+		printf("TXNID: %lu(%lu)\n", (u_long)p->txnid,
+		(u_long)p->generation);
+}
+#endif

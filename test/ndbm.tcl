@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)ndbm.tcl	10.2 (Sleepycat) 10/4/97
+#	@(#)ndbm.tcl	10.4 (Sleepycat) 4/10/98
 #
 # Historic NDBM interface test.
 # Use the first 1000 entries from the dictionary.
@@ -29,6 +29,8 @@ proc ndbm { { nentries 1000 } } {
 	set db [ndbm_open $testfile $flags 0644]
 	error_check_good ndbm_open [is_substr $db ndbm] 1
 	set did [open $dict]
+
+	error_check_good rdonly_false [$db rdonly] 0
 
 	set flags 0
 	set txn 0
@@ -66,13 +68,21 @@ proc ndbm { { nentries 1000 } } {
 	error_check_good NDBM:diff($t3,$t2) \
 	    [catch { exec $DIFF $t3 $t2 } res] 0
 
-	puts "\tNDBM.c: close, open, and dump file"
+	puts "\tNDBM.c: pagf/dirf test"
+	set fd [$db pagfno]
+	error_check_bad pagf $fd -1
+	set fd [$db dirfno]
+	error_check_bad dirf $fd -1
+
+	puts "\tNDBM.d: close, open, and dump file"
 
 	# Now, reopen the file and run the last test again.
 	error_check_good ndbm_close [$db close] 0
-	set db [ndbm_open $testfile 0 0]
+	set db [ndbm_open $testfile $DB_RDONLY 0]
 	error_check_good ndbm_open2 [is_substr $db ndbm] 1
 	set oid [open $t1 w]
+
+	error_check_good rdonly_true [$db rdonly] 1
 
 	for { set key [$db firstkey] } { $key != -1 } {
 	    set key [$db nextkey] } {
@@ -89,7 +99,7 @@ proc ndbm { { nentries 1000 } } {
 	    [catch { exec $DIFF $t2 $t3 } res] 0
 
 	# Now, reopen the file and delete each entry
-	puts "\tNDBM.d: sequential scan and delete"
+	puts "\tNDBM.e: sequential scan and delete"
 
 	error_check_good ndbm_close [$db close] 0
 	set db [ndbm_open $testfile 0 0]

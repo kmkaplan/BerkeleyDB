@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)mpool.tcl	10.3 (Sleepycat) 10/4/97
+#	@(#)mpool.tcl	10.13 (Sleepycat) 5/4/98
 #
 # Options are:
 # -cachesize <bytes>
@@ -15,6 +15,7 @@
 proc memp_usage {} {
 	puts "memp -cachesize <bytes> -nfiles <files> -iterations <iterations>"
 	puts "\t-pagesize <page size in bytes> -dir <memp directory>"
+	puts "\t-shmem {anon named}"
 	return
 }
 proc mpool { args } {
@@ -28,6 +29,7 @@ proc mpool { args } {
 	set npages 100
 	set procs 4
 	set seeds ""
+	set envopts ""
 	set dostat 0
 	for { set i 0 } { $i < [llength $args] } {incr i} {
 		switch -regexp -- [lindex $args $i] {
@@ -39,6 +41,7 @@ proc mpool { args } {
 			-pa.* { incr i; set pagesize [lindex $args $i] }
 			-pr.* { incr i; set procs [lindex $args $i] }
 			-se.* { incr i; set seeds [lindex $args $i] }
+			-sh.* { incr i; set envopts "-shmem [lindex $args $i]" }
 			-st.* { set dostat 1 }
 			default {
 				memp_usage
@@ -55,25 +58,44 @@ proc mpool { args } {
 	# Clean out old directory
 	cleanup $testdir
 
-	# Open the memp (figure out how to handle DBINFO)
+	# Open the memp with regioninit specified
+	set cmd {memp "" 0644 $DB_CREATE -cachesize $cachesize}
+	set cmd [concat $cmd $envopts]
+	set ri_cmd [concat $cmd "-rinit 1"]
+	set mp [eval $ri_cmd]
+	if { [string compare $mp EINVAL] == 0 } {
+		puts "$envopts not supported; test skipped"
+		return
+	}
+	error_check_good memp_close [$mp close] 0
+	error_check_good memp_unlink:$testdir [memp_unlink $testdir 1] 0
 
-	set mp [ memp "" 0644 $DB_CREATE -cachesize $cachesize ]
-	memp001 $mp $testdir $nfiles $iterations [lindex $pagesize 0] $dostat
+	# Now open without region init
+
+	set mp [ eval $cmd]
+	if { [string compare $mp EINVAL] == 0 } {
+		puts "$envopts not supported"
+		return
+	}
+	error_check_good memp_open [is_valid_widget $mp mp] TRUE
+	memp001 $mp $testdir $nfiles $iterations [lindex $pagesize 0] $dostat $envopts
 	error_check_good memp_close [$mp close] 0
 	error_check_good memp_unlink:$testdir [memp_unlink $testdir 1] 0
-	set mp [ memp "" 0644 $DB_CREATE -cachesize $cachesize ]
-	error_check_good memp [is_substr $mp mp] 1
+	set mp [ eval $cmd]
+	error_check_good memp_open [is_valid_widget $mp mp] TRUE
 	error_check_good memp_close [$mp close] 0
-	memp002 $testdir $procs $pagesize $iterations $npages $seeds $dostat
+	memp002 $testdir \
+	    $procs $pagesize $iterations $npages $seeds $dostat $envopts
 	error_check_good memp_unlink:$testdir [memp_unlink $testdir 1] 0
-	memp003 $iterations
+	memp003 $envopts $iterations
 	error_check_good memp_unlink:$testdir [memp_unlink $testdir 1] 0
+	error_check_good lock_unlink:$testdir [lock_unlink $testdir 1] 0
 }
 
-proc memp001 {mp dir n iter psize dostat} {
+proc memp001 {mp dir n iter psize dostat envopts} {
 	source ./include.tcl
 
-	puts "Memp001: random update $iter iterations on $n files."
+	puts "Memp001: {$envopts} random update $iter iterations on $n files."
 	# Open N memp files
 	for {set i 1} {$i <= $n} {incr i} {
 		set fname "data_file.$i"
@@ -128,8 +150,17 @@ proc file_create { fname nblocks blocksize } {
 		puts -nonewline $fid $i
 	}
 	seek $fid [expr $nblocks * $blocksize - 1]
-	puts $fid ""
+
+	# We don't end the file with a newline, because some platforms (like
+	# Windows) emit CR/NL.  There does not appear to be a BINARY open flag
+	# that prevents this.
+	puts -nonewline $fid "Z"
 	close $fid
+
+	# Make sure it worked
+	if { [file size $fname] != $nblocks * $blocksize } {
+		error "FAIL: file_create could not create correct file size"
+	}
 }
 
 
@@ -151,10 +182,14 @@ global DB_MPOOL_DIRTY
 	$p put $DB_MPOOL_DIRTY
 }
 
-proc memp002 { dir procs psizes iterations npages seeds dostat } {
+proc memp002 { dir procs psizes iterations npages seeds dostat envopts } {
 	source ./include.tcl
 
-	puts "Memp002: Multiprocess mpool tester"
+	puts "Memp002: {$envopts} Multiprocess mpool tester"
+	if { [string compare [lindex $envopts 1] anon] == 0 } {
+		puts "Multiple processes not supported for unnamed anonymous memory."
+		return
+	}
 	set iter [expr $iterations / $procs]
 
 	# Clean up old stuff and create new.
@@ -162,7 +197,8 @@ proc memp002 { dir procs psizes iterations npages seeds dostat } {
 	for { set i 0 } { $i < [llength $psizes] } { incr i } {
 		exec $RM -rf $dir/file$i
 	}
-	set lp [lock_open "" $DB_CREATE 0644]
+	set lp [lock_open "" $DB_CREATE 0644 $envopts]
+	error_check_good lock_open [is_valid_widget $lp lockmgr] TRUE
 	$lp close
 
 	set pidlist {}
@@ -172,27 +208,34 @@ proc memp002 { dir procs psizes iterations npages seeds dostat } {
 		} else {
 			set seed -1
 		}
+
 		puts "./dbtest ../test/mpoolscript.tcl $dir $i $procs \
-		    $iter \"$psizes\" $npages 3 $seed  > $i.mpoolout &"
+		    $iter \"$psizes\" $npages 3 $seed $envopts > \
+		    $dir/$i.mpoolout &"
 		set p [exec ./dbtest ../test/mpoolscript.tcl $dir $i $procs \
-		    $iter $psizes $npages 3 $seed  > $i.mpoolout & ]
+		    $iter $psizes $npages 3 $seed $envopts  > \
+		    $dir/$i.mpoolout & ]
 		lappend pidlist $p
 	}
 	puts "Memp002: $procs independent processes now running"
 	watch_procs $pidlist
 	# Remove output logs
 	for { set i 0 } { $i < $procs } {incr i} {
-		exec $RM $i.mpoolout
+		exec $RM $dir/$i.mpoolout
 	}
 	lock_unlink $dir 1
 }
 
 # Test reader-only/writer process combinations; we use the access methods
 # for testing.
-proc memp003 { {nentries 10000} } {
+proc memp003 { envopts {nentries 10000} } {
 global alphabet
 	source ./include.tcl
-	puts "Memp003: Reader/Writer tests"
+	puts "Memp003: {$envopts} Reader/Writer tests"
+	if { [string compare [lindex $envopts 1] anon] == 0 } {
+		puts "{$envopts} Multiple processes not supported for unnamed anonymous memory."
+		return
+	}
 
 	cleanup $testdir
 	set env_flags [expr $DB_CREATE | $DB_INIT_LOCK | $DB_INIT_MPOOL]
@@ -201,8 +244,10 @@ global alphabet
 	set t1 $testdir/t1
 
 	# Create an environment that the two processes can share
-	set dbenv [dbenv -dbflags $env_flags \
-	    -dbhome $testdir -cachesize [expr $psize * 10]]
+	set cmd {dbenv -dbflags $env_flags -dbhome $testdir -cachesize \
+	    [expr $psize * 10]}
+	set cmd [concat $cmd $envopts]
+	set dbenv [eval $cmd]
 
 	# First open and create the file.
 
@@ -256,7 +301,7 @@ global alphabet
 	# Now open remote process where we will open the file RW
 	set f1 [open |./dbtest r+]
 	puts $f1 "set dbenv \[dbenv -dbflags $env_flags -dbhome $testdir\
-	    -cachesize [expr $psize * 10]\]"
+	    -cachesize [expr $psize * 10] $envopts \]"
 	puts $f1 "puts \$dbenv"
 	puts $f1 "flush stdout"
 	flush $f1
@@ -331,5 +376,17 @@ global alphabet
 	set r [gets $f1 result]
 	error_check_bad gets $r -1
 	error_check_good remote_get $result 0
+
+	# Close the environment both remotely and locally.
+	puts $f1 "set ret \[reset_env \$dbenv\]"
+	puts $f1 "puts \[string length \$ret\]"
+	puts $f1 "flush stdout"
+	flush $f1
+
+	set r [gets $f1 result]
+	error_check_bad gets$f1 $r -1
+	error_check_good remote_reset_env $result 0
 	close $f1
+
+	reset_env $dbenv
 }

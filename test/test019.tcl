@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test019.tcl	10.3 (Sleepycat) 10/4/97
+#	@(#)test019.tcl	10.5 (Sleepycat) 4/10/98
 #
 # Test019 { access_method nentries }
 # Test the partial get functionality.
@@ -22,6 +22,7 @@ proc test019 { method {nentries 10000} args } {
 
 	set db [eval [concat dbopen \
 	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	set did [open $dict]
 	srand [pid]
 

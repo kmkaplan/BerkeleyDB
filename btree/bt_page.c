@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -47,7 +47,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)bt_page.c	10.5 (Sleepycat) 8/18/97";
+static const char sccsid[] = "@(#)bt_page.c	10.11 (Sleepycat) 4/24/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -75,17 +75,17 @@ __bam_new(dbp, type, pagepp)
 	PAGE **pagepp;
 {
 	BTMETA *meta;
-	DB_LOCK mlock;
+	DB_LOCK metalock;
 	PAGE *h;
 	db_pgno_t pgno;
 	int ret;
 
 	meta = NULL;
 	h = NULL;
-	mlock = LOCK_INVALID;
+	metalock = LOCK_INVALID;
 
 	pgno = PGNO_METADATA;
-	if ((ret = __bam_lget(dbp, 0, pgno, DB_LOCK_WRITE, &mlock)) != 0)
+	if ((ret = __bam_lget(dbp, 0, pgno, DB_LOCK_WRITE, &metalock)) != 0)
 		goto err;
 	if ((ret = __bam_pget(dbp, (PAGE **)&meta, &pgno, 0)) != 0)
 		goto err;
@@ -112,7 +112,7 @@ __bam_new(dbp, type, pagepp)
 	}
 
 	(void)memp_fput(dbp->mpf, (PAGE *)meta, DB_MPOOL_DIRTY);
-	(void)__BT_TLPUT(dbp, mlock);
+	(void)__BT_TLPUT(dbp, metalock);
 
 	P_INIT(h, dbp->pgsize, h->pgno, PGNO_INVALID, PGNO_INVALID, 0, type);
 	*pagepp = h;
@@ -122,8 +122,8 @@ err:	if (h != NULL)
 		(void)memp_fput(dbp->mpf, h, 0);
 	if (meta != NULL)
 		(void)memp_fput(dbp->mpf, meta, 0);
-	if (mlock != LOCK_INVALID)
-		(void)__BT_TLPUT(dbp, mlock);
+	if (metalock != LOCK_INVALID)
+		(void)__BT_TLPUT(dbp, metalock);
 	return (ret);
 }
 
@@ -140,9 +140,10 @@ __bam_free(dbp, h)
 {
 	BTMETA *meta;
 	DBT ldbt;
-	DB_LOCK mlock;
+	DB_LOCK metalock;
 	db_pgno_t pgno;
-	int is_dirty, ret, t_ret;
+	u_int32_t dirty_flag;
+	int ret, t_ret;
 
 	/*
 	 * Retrieve the metadata page and insert the page at the head of
@@ -150,12 +151,12 @@ __bam_free(dbp, h)
 	 * fail, then we need to put the page with which we were called
 	 * back because our caller assumes we take care of it.
 	 */
-	is_dirty = 0;
+	dirty_flag = 0;
 	pgno = PGNO_METADATA;
-	if ((ret = __bam_lget(dbp, 0, pgno, DB_LOCK_WRITE, &mlock)) != 0)
+	if ((ret = __bam_lget(dbp, 0, pgno, DB_LOCK_WRITE, &metalock)) != 0)
 		goto err;
 	if ((ret = __bam_pget(dbp, (PAGE **)&meta, &pgno, 0)) != 0) {
-		(void)__BT_TLPUT(dbp, mlock);
+		(void)__BT_TLPUT(dbp, metalock);
 		goto err;
 	}
 
@@ -168,7 +169,7 @@ __bam_free(dbp, h)
 		    dbp->txn, &meta->lsn, 0, dbp->log_fileid, h->pgno,
 		    &meta->lsn, &ldbt, meta->free)) != 0) {
 			(void)memp_fput(dbp->mpf, (PAGE *)meta, 0);
-			(void)__BT_TLPUT(dbp, mlock);
+			(void)__BT_TLPUT(dbp, metalock);
 			return (ret);
 		}
 		LSN(h) = LSN(meta);
@@ -178,7 +179,7 @@ __bam_free(dbp, h)
 	 * The page should have nothing interesting on it, re-initialize it,
 	 * leaving only the page number and the LSN.
 	 */
-#ifdef DEBUG
+#ifdef DIAGNOSTIC
 	{ db_pgno_t __pgno; DB_LSN __lsn;
 		__pgno = h->pgno;
 		__lsn = h->lsn;
@@ -194,12 +195,12 @@ __bam_free(dbp, h)
 
 	/* Discard the metadata page. */
 	ret = memp_fput(dbp->mpf, (PAGE *)meta, DB_MPOOL_DIRTY);
-	if ((t_ret = __BT_TLPUT(dbp, mlock)) != 0)
+	if ((t_ret = __BT_TLPUT(dbp, metalock)) != 0)
 		ret = t_ret;
 
 	/* Discard the caller's page reference. */
-	is_dirty = DB_MPOOL_DIRTY;
-err:	if ((t_ret = memp_fput(dbp->mpf, h, is_dirty)) != 0 && ret == 0)
+	dirty_flag = DB_MPOOL_DIRTY;
+err:	if ((t_ret = memp_fput(dbp->mpf, h, dirty_flag)) != 0 && ret == 0)
 		ret = t_ret;
 
 	/*
@@ -213,6 +214,8 @@ err:	if ((t_ret = memp_fput(dbp->mpf, h, is_dirty)) != 0 && ret == 0)
 /*
  * __bam_lt --
  *	Print out the list of currently held locks.
+ *
+ * PUBLIC: int __bam_lt __P((DB *));
  */
 int
 __bam_lt(dbp)
@@ -246,8 +249,10 @@ __bam_lget(dbp, do_couple, pgno, mode, lockp)
 	u_int32_t locker;
 	int ret;
 
-	if (!F_ISSET(dbp, DB_AM_LOCKING))
+	if (!F_ISSET(dbp, DB_AM_LOCKING)) {
+		*lockp = LOCK_INVALID;
 		return (0);
+	}
 
 	locker = dbp->txn == NULL ? dbp->locker : dbp->txn->txnid;
 	dbp->lock.pgno = pgno;
@@ -298,15 +303,15 @@ __bam_lput(dbp, lock)
  * __bam_pget --
  *	The standard page get call.
  *
- * PUBLIC: int __bam_pget __P((DB *, PAGE **, db_pgno_t *, int));
+ * PUBLIC: int __bam_pget __P((DB *, PAGE **, db_pgno_t *, u_int32_t));
  */
 int
-__bam_pget(dbp, hp, pgnop, mflags)
+__bam_pget(dbp, hp, pgnop, mpool_flags)
 	DB *dbp;
 	PAGE **hp;
 	db_pgno_t *pgnop;
-	int mflags;
+	u_int32_t mpool_flags;
 {
 	return (memp_fget((dbp)->mpf,
-	    pgnop, mflags, hp) == 0 ? 0 : __db_pgerr(dbp, *pgnop));
+	    pgnop, mpool_flags, hp) == 0 ? 0 : __db_pgerr(dbp, *pgnop));
 }

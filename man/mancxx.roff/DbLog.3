@@ -2,18 +2,18 @@
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)DbLog.sox	10.7 (Sleepycat) 11/24/97
+.\"	@(#)DbLog.sox	10.14 (Sleepycat) 5/4/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)macros.so	10.36 (Sleepycat) 11/28/97
+.\"	@(#)macros.so	10.45 (Sleepycat) 5/4/98
 .\"
 .\" We don't want hyphenation for any HTML documents.
 .ie '\*[HTML]'YES'\{\
@@ -54,19 +54,18 @@
 \}
 ..
 .\" Scoped name for Java.
-.\" Produces a.b, for Java, otherwise just b.
-.\" This macro is used for constants that must
-.\" be scoped in Java, but are global otherwise.
+.\" Produces Db.b, for Java, otherwise just b.  This macro is used for
+.\" constants that must be scoped in Java, but are global otherwise.
 .\" This macro takes two arguments:
 .\"	+ the class
 .\"	+ the name within the class or following the prefix
 .de Sj
 .ie '\*[TYPE]'JAVA'\{\
 .TP 5
-\\$1.\\$2\}
+Db.\\$1\}
 .el\{\
 .TP 5
-\\$2\}
+\\$1\}
 ..
 .\" The general information text macro.
 .de Gn
@@ -210,7 +209,9 @@ The default error behavior can be changed, see
 .IR DbLog (3),
 .IR DbLsn (3),
 .IR DbMpool (3),
+.if !'\*[TYPE]'JAVA'\{\
 .IR DbMpoolFile (3),
+\}
 .IR Dbt (3),
 .IR DbTxn (3),
 .IR DbTxnMgr (3)
@@ -360,8 +361,15 @@ based on the
 argument to
 .IR \\$1 ,
 which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
-It is expected that applications will use a single DB_ENV structure as the
-argument to all of the subsystems in the DB package.
+Applications will normally use the same DB_ENV structure (initialized
+by
+.IR db_appinit (3)),
+as an argument to all of the subsystems in the DB package.
+.PP
+References to the DB_ENV structure are maintained by DB,
+so it may not be discarded until the last close function,
+corresponding to an open function for which it was an argument,
+has returned.
 In order to ensure compatibility with future releases of DB, all fields of
 the DB_ENV structure that are not explicitly set should be initialized to 0
 before the first time the structure is used.
@@ -432,7 +440,7 @@ appropriate set method, before calling
 ..
 .\" The DB_ENV common fields macros.
 .de Se
-.ie '\*[TYPE]'JAVA'\{\
+.if '\*[TYPE]'JAVA'\{\
 .TP 5
 DbErrcall db_errcall;
 .ns
@@ -444,7 +452,6 @@ int db_verbose;
 The error fields of the DbEnv behave as described for
 .IR DbEnv (3).
 \}
-.el\{\
 .ie '\*[TYPE]'CXX'\{\
 .TP 5
 void *(*db_errcall)(char *db_errpfx, char *buffer);
@@ -476,7 +483,7 @@ const char *db_errpfx;
 int db_verbose;
 The error fields of the DB_ENV behave as described for
 .IR db_appinit (3).
-\}
+.sp
 \}
 ..
 .\" The open flags.
@@ -490,7 +497,7 @@ don't already exist.
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
-.Sj Db DB_CREATE
+.Sj DB_CREATE
 Create any underlying files, as necessary.
 If the files do not already exist and the DB_CREATE flag is not specified,
 the call will fail.
@@ -501,12 +508,17 @@ the call will fail.
 .\"	+ the object it returns.
 .de Ft
 .TP 5
-.Sj Db DB_THREAD
+.Sj DB_THREAD
 Cause the \\$2 handle returned by the
 .I \\$1
 .Al function method
 to be useable by multiple threads within a single address space,
 i.e., to be ``free-threaded''.
+.if '\*[TYPE]'JAVA'\{\
+Threading is assumed in the Java API,
+so no special flags are required,
+and DB functions will always behave as if the DB_THREAD flag was specified.
+\}
 ..
 .\" The mode macro.
 .\" This macro takes one argument:
@@ -736,7 +748,7 @@ the region removal will fail.
 In the case of catastrophic or system failure,
 database recovery must be performed (see
 .IR db_recover (1)
-or the DB_RECOVER flags to
+or the DB_RECOVER and DB_RECOVER_FATAL flags to
 .IR \\*(Va (3)).
 Alternatively, if recovery is not required because no database state is
 maintained across failures,
@@ -847,7 +859,14 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH DbLog 3 "November 24, 1997"
+.\" Stat field macro.
+.de Sf
+.ie '\*[TYPE]'CXX'\{\
+u_int32_t \\$1;\}
+.el\{\
+int get_\\$1();\}
+..
+.TH DbLog 3 "May 4, 1998"
 .UC 7
 .SH NAME
 DbLog \- log management class
@@ -860,7 +879,7 @@ DbLog \- log management class
 static int
 DbLog::open(const char *dir,
 .ti +5
-int flags, int mode, DbEnv *dbenv, DbLog **regionp);
+u_int32_t flags, int mode, DbEnv *dbenv, DbLog **regionp);
 
 int
 DbLog::close();
@@ -869,7 +888,7 @@ int
 DbLog::flush(const DbLsn *lsn);
 
 int
-DbLog::get(DbLsn *lsn, Dbt *data, int flags);
+DbLog::get(DbLsn *lsn, Dbt *data, u_int32_t flags);
 
 static int
 DbLog::compare(const DbLsn *lsn0, const DbLsn *lsn1);
@@ -878,7 +897,7 @@ int
 DbLog::file(const DbLsn *lsn, char *namep, size_t len);
 
 int
-DbLog::put(DbLsn *lsn, const Dbt *data, int flags);
+DbLog::put(DbLsn *lsn, const Dbt *data, u_int32_t flags);
 
 static int
 DbLog::unlink(const char *dir, int force, DbEnv *);
@@ -886,7 +905,7 @@ DbLog::unlink(const char *dir, int force, DbEnv *);
 int
 DbLog::archive(char **list[],
 .ti +5
-int flags, void *(*db_malloc)(size_t));
+u_int32_t flags, void *(*db_malloc)(size_t));
 
 int
 DbLog::db_register(const Db *dbp,
@@ -925,6 +944,10 @@ public void get(DbLsn lsn, Dbt data, int flags)
 throws DbException;
 
 public void put(DbLsn lsn, Dbt data, int flags)
+.ti +5
+throws DbException;
+
+public DbLogStat stat()
 .ti +5
 throws DbException;
 
@@ -1001,6 +1024,8 @@ may not be larger than the maximum unsigned 4-byte value.
 If
 .I lg_max
 is 0, a default value is used.
+.sp
+See the section "LOG FILE LIMITS" below, for further information.
 .PP
 .Rt DbLog::open
 .PP
@@ -1061,7 +1086,7 @@ The
 .I flags
 parameter must be set to exactly one of the following values:
 .TP 5
-.Sj Db DB_CHECKPOINT
+.Sj DB_CHECKPOINT
 The last record written with the DB_CHECKPOINT flag specified to the
 .I DbLog::put
 method is returned in the
@@ -1078,7 +1103,7 @@ If the log is empty the
 .I DbLog::get
 method will return DB_NOTFOUND.
 .TP 5
-.Sj Db DB_FIRST
+.Sj DB_FIRST
 The first record from any of the log files found in the log directory
 is returned in the
 .I data
@@ -1091,7 +1116,7 @@ If the log is empty the
 .I DbLog::get
 method will return DB_NOTFOUND.
 .TP 5
-.Sj Db DB_LAST
+.Sj DB_LAST
 The last record in the log is returned in the
 .I data
 argument.
@@ -1104,7 +1129,7 @@ the
 .I DbLog::get
 method will return DB_NOTFOUND.
 .TP 5
-.Sj Db DB_NEXT
+.Sj DB_NEXT
 The current log position is advanced to the next record in the log and that
 record is returned in the
 .I data
@@ -1127,7 +1152,7 @@ calls to
 .I DbLog::get
 with the DB_NEXT flag set will return EINVAL.
 .TP 5
-.Sj Db DB_PREV
+.Sj DB_PREV
 The current log position is moved to the previous record in the log and that
 record is returned in the
 .I data
@@ -1150,14 +1175,14 @@ calls to
 .I DbLog::get
 with the DB_PREV flag set will return EINVAL.
 .TP 5
-.Sj Db DB_CURRENT
+.Sj DB_CURRENT
 Return the log record currently referenced by the log.
 .IP
 If the log pointer has not been initialized via DB_FIRST, DB_LAST, DB_SET,
 DB_NEXT, or DB_PREV, or if the log was opened with the DB_THREAD flag set,
 .I DbLog::get
 will return EINVAL.
-.Sj Db DB_SET
+.Sj DB_SET
 Retrieve the record specified by the
 .I lsn
 argument.
@@ -1236,11 +1261,16 @@ The
 .I flags
 parameter may be set to one of the following values:
 .TP 5
-.Sj Db DB_CHECKPOINT
+.Sj DB_CHECKPOINT
 The log should write a checkpoint record, recording any information
 necessary to make the log structures recoverable after a crash.
 .TP 5
-.Sj Db DB_FLUSH
+.Sj DB_CURLSN
+The DB_LSN of the next record to be put is returned in the
+.I lsn
+parameter.
+.TP 5
+.Sj DB_FLUSH
 The log is forced to disk after this record is written, guaranteeing
 that all records with DbLsns less than or equal to the one being put
 are on disk
@@ -1301,11 +1331,11 @@ argument is specified by
 .BR or 'ing
 together one or more of the following values:
 .TP 5
-.Sj Db DB_ARCH_ABS
+.Sj DB_ARCH_ABS
 All pathnames are returned as absolute pathnames,
 instead of relative to the database home directory.
 .TP 5
-.Sj Db DB_ARCH_DATA
+.Sj DB_ARCH_DATA
 Return the database files that need to be archived in order to recover
 the database from catastrophic failure.
 If any of the database files have not been accessed during the lifetime of
@@ -1315,7 +1345,7 @@ will not include them in this list.
 It is also possible that some of the files referenced in the log have
 since been deleted from the system.
 .TP 5
-.Sj Db DB_ARCH_LOG
+.Sj DB_ARCH_LOG
 Return all the log file names regardless of whether or not they are in
 use.
 .PP
@@ -1377,45 +1407,152 @@ parameter.
 The file identification number may then be reused.
 .PP
 .Rt DbLog::db_unregister
-.if '\*[TYPE]'CXX'\{\
 .PP
 .Fn DbLog::stat
 The
 .I DbLog::stat
-function creates a statistical structure and copies a pointer to it into
+function creates a statistical structure and
+.ie '\*[TYPE]'CXX'\{\
+copies a pointer to it into
 the user-specified memory location.
+\}
+.el\{\
+returns it to the caller.
+\}
 .PP
 .Ma "Statistical structures"
-The log statistics are stored in a structure of type
+The log statistics are stored in a
+.ie '\*[TYPE]'CXX'\{\
+structure of type
 DB_LOG_STAT (typedef'd in <db.h>).
 The following DB_LOG_STAT fields will be filled in:
+\}
+.el\{\
+DbLogStat object.  Data fields in DbLogStat can be accessed
+via
+.I get
+methods.
+\}
 .TP 5
-u_long st_magic;
+.Sf st_magic
 The magic number that identifies a file as a log file.
 .Nt
-u_long st_version;
+.Sf st_version
 The version of the log file type.
 .Nt
-u_long st_mode;
+.Sf st_mode
 The mode of any created log files.
 .Nt
-u_long st_lg_max;
+.Sf st_lg_max
 The maximum size of any individual file comprising the log.
 .Nt
-u_long st_written;
+.Sf st_written
 The total number of bytes written to this log.
 .Nt
-u_long st_written_chkpt;
+.Sf st_written_chkpt
 The number of bytes written since the last checkpoint.
 .Nt
-u_long st_region_wait;
+.Sf st_region_wait
 The number of times that a process was able to obtain
 the region lock without waiting.
 .Nt
-u_long st_region_nowait;
+.Sf st_region_nowait
 The number of times that a process was forced to wait before
 obtaining the region lock.
-\}
+.\"
+.\" See the file LICENSE for redistribution information.
+.\"
+.\" Copyright (c) 1998
+.\"	Sleepycat Software.  All rights reserved.
+.\"
+.\"	@(#)limits.so	8.1 (Sleepycat) 5/3/98
+.\"
+.de Ll
+.SH "LOG FILE LIMITS
+Log file sizes impose a time limit on the length of time a database
+may be accessed under transaction protection, before it needs to be
+dumped and reloaded (see
+.IR db_dump(3)
+and
+.IR db_load(3)).
+Unfortunately, the limits are potentially difficult to calculate.
+.PP
+The log file name consists of "log." followed by 5 digits, resulting
+in a maximum of 99,999 log files.
+Consider an application performing 600 transactions per second, for
+15 hours a day, logged into 10Mb log files, where each transaction
+is logging approximately 100 bytes of data.  The calculation:
+.PP
+.nf
+.RS
+(10 * 2^20 * 99999) /
+.ti +5
+(600 * 60 * 60 * 15 * 100) = 323.63
+.RE
+.fi
+.PP
+indicates that the system will run out of log file space in
+roughly 324 days.
+If we increase the maximum size of the files from 10Mb to 100Mb,
+the same calculation indicates that the application will run out
+of log file space in roughly 9 years.
+.PP
+There is no way to reset the log file name space in Berkeley DB.
+If your application is reaching the end of its log file name space,
+you should:
+.TP 5
+1.
+Archive your databases as if to prepare for catastrophic failure (see
+.IR db_archive (1)
+for more information).
+.TP 5
+2.
+Dump and re-load
+.B all
+your databases (see
+.IR db_dump (1)
+and
+.IR db_load (1)
+for more information).
+.TP 5
+3.
+Remove all of the log files from the database environment (see
+.IR db_archive (1)
+for more information).
+.TP 5
+4.
+Restart your applications.
+..
+.de Tl
+.SH "TRANSACTION ID LIMITS
+The transaction ID space in Berkeley DB is 2^31, or 2 billion entries.
+It is possible that some environments may need to be aware of this
+limitation.
+Consider an application performing 600 transactions a second for 15
+hours a day.
+The transaction ID space will run out in roughly 66 days:
+.PP
+.nf
+.RS
+2^31 / (600 * 15 * 60 * 60) = 66
+.RE
+.fi
+.PP
+Doing only 100 transactions a second exhausts the transaction ID space
+in roughly one year.
+.PP
+The transaction ID space is reset each time recovery is run.
+If you reach the end of your transaction ID space,
+shut down your applications and restart them after running recovery (see
+.IR db_recover (1)
+for more information).
+The most recently allocated transaction ID is the
+.I st_last_txnid
+value in the transaction statistics information, and is displayed by the
+.IR db_stat (1)
+utility.
+..
+.Ll
 .SH "ENVIRONMENT VARIABLES"
 The following environment variables affect the execution of
 .IR db_log :

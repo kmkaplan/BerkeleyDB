@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)ex_tpcb.c	10.21 (Sleepycat) 11/25/97
+ *	@(#)ex_tpcb.c	10.24 (Sleepycat) 4/10/98
  */
 
 #include "config.h"
@@ -30,10 +30,10 @@
 typedef enum { ACCOUNT, BRANCH, TELLER } FTYPE;
 
 DB_ENV	 *db_init(char *, int, int, int);
-void	  hpopulate(DB *, unsigned int, u_int32_t, u_int32_t, u_int32_t);
+void	  hpopulate(DB *, u_int, u_int32_t, u_int32_t, u_int32_t);
 void	  invarg(int, char *);
 int	  main __P((int, char *[]));
-void	  populate(DB *, u_int32_t, u_int32_t, unsigned int, char *);
+void	  populate(DB *, u_int32_t, u_int32_t, u_int, char *);
 u_int32_t random_id(FTYPE, u_int32_t, u_int32_t, u_int32_t);
 u_int32_t random_int(u_int32_t, u_int32_t);
 void	  tp_populate(DB_ENV *, int, int, int, int);
@@ -65,20 +65,20 @@ const char
  * configuration, define VALID_SCALING.
  */
 #ifdef VALID_SCALING
-#define	ACCOUNTS 1000000
-#define	BRANCHES 10
-#define	TELLERS 100
-#define HISTORY	25920000
+#define	ACCOUNTS	 1000000
+#define	BRANCHES	      10
+#define	TELLERS		     100
+#define HISTORY		25920000
 #else
-#define	ACCOUNTS 100000
-#define	BRANCHES 10
-#define	TELLERS 100
-#define HISTORY	259200
+#define	ACCOUNTS	  100000
+#define	BRANCHES	      10
+#define	TELLERS		     100
+#define HISTORY		  259200
 #endif
 
-#define HISTORY_LEN 100
-#define	RECLEN 100
-#define	BEGID	1000000
+#define HISTORY_LEN	    100
+#define	RECLEN		    100
+#define	BEGID		1000000
 
 typedef struct _defrec {
 	u_int32_t	id;
@@ -136,7 +136,7 @@ main(argc, argv)
 	DB_ENV *dbenv;
 	u_long seed;
 	int accounts, branches, tellers, history;
-	int ch, iflag, mpool, ntxns, ret, txn_no_sync;
+	int ch, iflag, mpool, ntxns, txn_no_sync;
 	char *home, *endarg;
 
 	home = NULL;
@@ -207,22 +207,26 @@ main(argc, argv)
 	history = history == 0 ? HISTORY : history;
 
 	if (verbose)
-		printf("%ld Accounts %ld Branches %ld Tellers %ld History\n",
+		printf("%ld Accounts, %ld Branches, %ld Tellers, %ld History\n",
 		    (long)accounts, (long)branches,
 		    (long)tellers, (long)history);
-	if (iflag && ntxns != 0) {
-		fprintf(stderr,
-		    "%s: specify only one of -i and -n\n", progname);
+
+	if (iflag) {
+		if (ntxns != 0)
+			usage();
+		tp_populate(dbenv, accounts, branches, history, tellers);
+	} else {
+		if (ntxns == 0)
+			usage();
+		tp_run(dbenv, ntxns, accounts, branches, tellers);
+	}
+
+	if ((errno = db_appexit(dbenv)) != 0) {
+		fprintf(stderr, "%s: %s\n", progname, strerror(errno));
 		exit (1);
 	}
-	if (iflag)
-		tp_populate(dbenv, accounts, branches, history, tellers);
-	if (ntxns != 0)
-		tp_run(dbenv, ntxns, accounts, branches, tellers);
 
-	ret = db_appexit(dbenv);
-	free(dbenv);
-	return (ret);
+	return (0);
 }
 
 /*
@@ -237,7 +241,7 @@ db_init(home, mp_size, initializing, flags)
 	int flags;
 {
 	DB_ENV *dbenv;
-	u_int lflags;
+	u_int32_t local_flags;
 
 	/* Rely on calloc to initialize the structure. */
 	if ((dbenv = (DB_ENV *)calloc(sizeof(DB_ENV), 1)) == NULL) {
@@ -250,12 +254,12 @@ db_init(home, mp_size, initializing, flags)
 	}
 
 	dbenv->db_errfile = stderr;
-	dbenv->db_errpfx = "tpcb";
+	dbenv->db_errpfx = progname;
 	dbenv->mp_size = mp_size == 0 ? 4 * 1024 * 1024 : (size_t)mp_size;
 
-	lflags = flags | DB_CREATE | (initializing ? DB_INIT_MPOOL :
+	local_flags = flags | DB_CREATE | (initializing ? DB_INIT_MPOOL :
 	    DB_INIT_TXN | DB_INIT_LOCK | DB_INIT_LOG | DB_INIT_MPOOL);
-	if ((errno = db_appinit(home, NULL, dbenv, lflags)) != 0) {
+	if ((errno = db_appinit(home, NULL, dbenv, local_flags)) != 0) {
 		fprintf(stderr, "%s: db_appinit: ", progname);
 		if (errno < 0)
 			fprintf(stderr, "returned %ld\n", (long)errno);
@@ -280,10 +284,13 @@ invarg(arg, str)
 void
 usage()
 {
+	char *a1, *a2;
+
+	a1 = "[-v] [-a accounts] [-b branches] [-h home]\n";
+	a2 = "          [-m mpool_size] [-S seed] [-s history] [-t tellers]";
+	(void)fprintf(stderr, "usage: %s -i %s %s\n", progname, a1, a2);
 	(void)fprintf(stderr,
-	    "usage: %s %s %s\n", progname,
-	    "[-iv] [-a accounts] [-b branches] [-h home] [-m mpool_size]",
-	    "[-n transactions ] [-S seed] [-s history] [-t tellers]");
+	    "       %s -n transactions %s %s\n", progname, a1, a2);
 	exit(1);
 }
 
@@ -307,7 +314,7 @@ tp_populate(env, num_a, num_b, num_h, num_t)
 
 	memset(&dbi, 0, sizeof(dbi));
 
-	dbi.h_nelem = (unsigned int)num_a;
+	dbi.h_nelem = (u_int)num_a;
 	if ((errno = db_open("account",
 	    DB_HASH, DB_CREATE | DB_TRUNCATE, 0644, env, &dbi, &dbp)) != 0) {
 		fprintf(stderr, "%s: Account file open failed: ", progname);
@@ -340,7 +347,7 @@ tp_populate(env, num_a, num_b, num_h, num_t)
 	 * small pages and only 1 key per page.  This is the poor-man's way
 	 * of getting key locking instead of page locking.
 	 */
-	dbi.h_nelem = (unsigned int)num_b;
+	dbi.h_nelem = (u_int)num_b;
 	dbi.h_ffactor = 1;
 	dbi.db_pagesize = 512;
 	if ((errno = db_open("branch",
@@ -374,7 +381,7 @@ tp_populate(env, num_a, num_b, num_h, num_t)
 	 * In the case of tellers, we also want small pages, but we'll let
 	 * the fill factor dynamically adjust itself.
 	 */
-	dbi.h_nelem = (unsigned int)num_t;
+	dbi.h_nelem = (u_int)num_t;
 	dbi.h_ffactor = 0;
 	dbi.db_pagesize = 512;
 	if ((errno = db_open("teller",
@@ -466,12 +473,15 @@ hpopulate(dbp, nrecs, anum, bnum, tnum)
 {
 	DBT kdbt, ddbt;
 	histrec hrec;
+	db_recno_t key;
 	u_int32_t i;
 
 	memset(&kdbt, 0, sizeof(kdbt));
 	memset(&ddbt, 0, sizeof(ddbt));
 	ddbt.data = &hrec;
 	ddbt.size = sizeof(hrec);
+	kdbt.data = &key;
+	kdbt.size = sizeof(key);
 	memset(&hrec.pad[0], 1, sizeof(hrec.pad));
 	hrec.amount = 10;
 
@@ -647,13 +657,13 @@ tp_txn(txmgr, adb, bdb, tdb, hdb, anum, bnum, tnum)
 	DBC *acurs, *bcurs, *tcurs;
 	DBT d_dbt, d_histdbt, k_dbt, k_histdbt;
 	DB_TXN *t;
-
+	db_recno_t key;
 	defrec rec;
 	histrec hrec;
 	int account, branch, teller;
 
-	acurs = bcurs = tcurs = NULL;
 	t = NULL;
+	acurs = bcurs = tcurs = NULL;
 
 	/*
 	 * XXX We could move a lot of this into the driver to make this
@@ -662,13 +672,17 @@ tp_txn(txmgr, adb, bdb, tdb, hdb, anum, bnum, tnum)
 	account = random_id(ACCOUNT, anum, bnum, tnum);
 	branch = random_id(BRANCH, anum, bnum, tnum);
 	teller = random_id(TELLER, anum, bnum, tnum);
-	memset(&d_dbt, 0, sizeof(d_dbt));
-	memset(&d_histdbt, 0, sizeof(d_histdbt));
-	memset(&k_dbt, 0, sizeof(k_dbt));
-	memset(&k_histdbt, 0, sizeof(k_histdbt));
 
+	memset(&d_histdbt, 0, sizeof(d_histdbt));
+
+	memset(&k_histdbt, 0, sizeof(k_histdbt));
+	k_histdbt.data = &key;
+	k_histdbt.size = sizeof(key);
+
+	memset(&k_dbt, 0, sizeof(k_dbt));
 	k_dbt.size = sizeof(int);
 
+	memset(&d_dbt, 0, sizeof(d_dbt));
 	d_dbt.flags = DB_DBT_USERMEM;
 	d_dbt.data = &rec;
 	d_dbt.ulen = sizeof(rec);

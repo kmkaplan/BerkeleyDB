@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test011.tcl	10.3 (Sleepycat) 10/4/97
+#	@(#)test011.tcl	10.7 (Sleepycat) 4/26/98
 #
 # DB Test 11 {access method}
 # Use the first 10,000 entries from the dictionary.
@@ -16,9 +16,14 @@
 proc test011 { method {nentries 10000} {ndups 5} {tnum 11} args } {
 global dlist
 	set dlist ""
+	set omethod $method
 	set do_renumber [is_rrecno $method]
 	set args [convert_args $method $args]
 	set method [convert_method $method]
+	if { [is_rbtree $omethod] == 1 } {
+		puts "Test011 skipping for method $omethod"
+		return
+	}
 	if { [string compare $method DB_RECNO] == 0 } {
 		test011_recno $do_renumber $nentries $tnum $args
 		return
@@ -40,8 +45,10 @@ global dlist
 	set t2 $testdir/t2
 	set t3 $testdir/t3
 	cleanup $testdir
-	set db [eval [concat dbopen $testfile [expr $DB_CREATE | $DB_TRUNCATE] \
-	    0644 $method -flags $DB_DUP $args]]
+	set args [add_to_args $DB_DUP $args]
+	set db [eval [concat dbopen $testfile \
+	    [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	set did [open $dict]
 
 	set flags 0
@@ -62,7 +69,8 @@ global dlist
 	while { [gets $did str] != -1 && $count < $nentries } {
 		for { set i 1 } { $i <= $ndups } { incr i 2 } {
 			set datastr $i:$str
-			$db put $txn $str $datastr $flags
+			set ret [$db put $txn $str $datastr $flags]
+			error_check_good put $ret 0
 		}
 
 		# Now retrieve all the keys matching this key
@@ -106,6 +114,7 @@ global dlist
 
 	error_check_good db_close [$db close] 0
 	set db [dbopen $testfile 0 0 $method]
+	error_check_good dbopen [is_valid_db $db] TRUE
 
 	puts "\tTest0$tnum.c: traverse entire file checking duplicates after close."
 	dup_check $db $txn $t1 $dlist
@@ -176,6 +185,7 @@ global dlist
 	cleanup $testdir
 	set db [eval [concat dbopen $testfile [expr $DB_CREATE | $DB_TRUNCATE] \
 	    0644 DB_RECNO $largs]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	set did [open $dict]
 
 	set flags 0
@@ -286,9 +296,5 @@ global dlist
 
 proc test011_check { key data } {
 global dlist
-	if { $data != [lindex $dlist $key] } {
-		puts -nonewline "Test011_recno: key $key expected data:"
-		puts "[lindex $dlist $key]"
-		error "Got $data"
-	}
+	error_check_good "get key $key" $data [lindex $dlist $key]
 }

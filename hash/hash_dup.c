@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -42,7 +42,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)hash_dup.c	10.8 (Sleepycat) 10/14/97";
+static const char sccsid[] = "@(#)hash_dup.c	10.13 (Sleepycat) 4/26/98";
 #endif /* not lint */
 
 /*
@@ -62,14 +62,11 @@ static const char sccsid[] = "@(#)hash_dup.c	10.8 (Sleepycat) 10/14/97";
 #include <sys/types.h>
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #endif
 
 #include "db_int.h"
 #include "db_page.h"
-#include "db_swap.h"
 #include "hash.h"
 
 static int __ham_check_move __P((HTAB *, HASH_CURSOR *, int32_t));
@@ -89,14 +86,14 @@ static int __ham_make_dup __P((const DBT *, DBT *d, void **, u_int32_t *));
  * Case 4: The element is large enough to push the duplicate set onto a
  *	   separate page.
  *
- * PUBLIC: int __ham_add_dup __P((HTAB *, HASH_CURSOR *, DBT *, int));
+ * PUBLIC: int __ham_add_dup __P((HTAB *, HASH_CURSOR *, DBT *, u_int32_t));
  */
 int
 __ham_add_dup(hashp, hcp, nval, flags)
 	HTAB *hashp;
 	HASH_CURSOR *hcp;
 	DBT *nval;
-	int flags;
+	u_int32_t flags;
 {
 	DBT pval, tmp_val;
 	u_int32_t del_len, new_size;
@@ -182,7 +179,7 @@ __ham_add_dup(hashp, hcp, nval, flags)
 		ret = __ham_replpair(hashp, hcp, &tmp_val, 0);
 		if (ret == 0)
 			ret = __ham_dirty_page(hashp, hcp->pagep);
-		__ham_c_update(hashp, hcp, hcp->pgno, tmp_val.size, 1, 1);
+		__ham_c_update(hcp, hcp->pgno, tmp_val.size, 1, 1);
 		return (ret);
 	}
 
@@ -227,7 +224,7 @@ __ham_add_dup(hashp, hcp, nval, flags)
 	ret = __db_dput(hashp->dbp,
 	    nval, &hcp->dpagep, &hcp->dndx, __ham_overflow_page);
 	hcp->pgno = PGNO(hcp->pagep);
-	__ham_c_update(hashp, hcp, hcp->pgno, nval->size, 1, 1);
+	__ham_c_update(hcp, hcp->pgno, nval->size, 1, 1);
 	return (ret);
 }
 
@@ -325,9 +322,9 @@ __ham_dup_convert(hashp, hcp)
 }
 
 static int
-__ham_make_dup(notdup, dup, bufp, sizep)
+__ham_make_dup(notdup, duplicate, bufp, sizep)
 	const DBT *notdup;
-	DBT *dup;
+	DBT *duplicate;
 	void **bufp;
 	u_int32_t *sizep;
 {
@@ -337,22 +334,22 @@ __ham_make_dup(notdup, dup, bufp, sizep)
 
 	item_size = (db_indx_t)notdup->size;
 	tsize = DUP_SIZE(item_size);
-	if ((ret = __ham_init_dbt(dup, tsize, bufp, sizep)) != 0)
+	if ((ret = __ham_init_dbt(duplicate, tsize, bufp, sizep)) != 0)
 		return (ret);
 
-	dup->dlen = 0;
-	dup->flags = notdup->flags;
-	F_SET(dup, DB_DBT_PARTIAL);
+	duplicate->dlen = 0;
+	duplicate->flags = notdup->flags;
+	F_SET(duplicate, DB_DBT_PARTIAL);
 
-	p = dup->data;
+	p = duplicate->data;
 	memcpy(p, &item_size, sizeof(db_indx_t));
 	p += sizeof(db_indx_t);
 	memcpy(p, notdup->data, notdup->size);
 	p += notdup->size;
 	memcpy(p, &item_size, sizeof(db_indx_t));
 
-	dup->doff = 0;
-	dup->dlen = notdup->size;
+	duplicate->doff = 0;
+	duplicate->dlen = notdup->size;
 
 	return (0);
 }
@@ -367,9 +364,9 @@ __ham_check_move(hashp, hcp, add_len)
 	DB_LSN new_lsn;
 	PAGE *next_pagep;
 	db_pgno_t next_pgno;
-	int rectype, ret;
-	u_int32_t new_datalen, old_len;
+	u_int32_t new_datalen, old_len, rectype;
 	u_int8_t *hk;
+	int ret;
 
 	/*
 	 * Check if we can do whatever we need to on this page.  If not,
@@ -419,7 +416,8 @@ __ham_check_move(hashp, hcp, add_len)
 		    (ret = __ham_put_page(hashp->dbp, next_pagep, 0)) != 0)
 			return (ret);
 
-		if ((ret = __ham_get_page(hashp->dbp, next_pgno, &next_pagep)) != 0)
+		if ((ret =
+		    __ham_get_page(hashp->dbp, next_pgno, &next_pagep)) != 0)
 			return (ret);
 
 		if (P_FREESPACE(next_pagep) >= new_datalen)

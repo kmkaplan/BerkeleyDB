@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)tcl_mpool.c	10.9 (Sleepycat) 9/28/97";
+static const char sccsid[] = "@(#)tcl_mpool.c	10.15 (Sleepycat) 5/4/98";
 #endif /* not lint */
 
 /*
@@ -64,13 +64,13 @@ memp_cmd(notused, interp, argc, argv)
 	int argc;
 	char *argv[];
 {
-	DB_MPOOL *mp;
-	DB_ENV *env;
-	mp_data *md;
-	unsigned long flags;
-	int iflags, mode, ret;
-	char mpname[50];
 	static int mp_number = 0;
+	DB_ENV *env;
+	DB_MPOOL *mp;
+	mp_data *md;
+	u_int32_t flags;
+	int mode, tclint;
+	char mpname[50];
 
 	notused = NULL;
 	debug_check();
@@ -78,20 +78,25 @@ memp_cmd(notused, interp, argc, argv)
 	/* Check number of arguments. */
 	USAGE_GE(argc, 4, MPOOL_USAGE, DO_ENV);
 
-
-	if ((Tcl_GetInt(interp, argv[2], &mode) != TCL_OK) ||
-	    (Tcl_GetInt(interp, argv[3], &iflags) != TCL_OK))
+	if (Tcl_GetInt(interp, argv[2], &mode) != TCL_OK)
 		return (TCL_ERROR);
+	if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK)
+		return (TCL_ERROR);
+	flags = (u_int32_t)tclint;
 
 	/* Call memp_open. */
-	flags = iflags;
-	if (process_env_options(interp, argc, argv, &env)) {
-		Tcl_SetResult(interp, "NULL", TCL_STATIC);
+	if (process_env_options(interp, argc, argv, &env) != TCL_OK) {
+		/*
+		 * Special case an EINVAL return which we want to pass
+		 * back to the caller.
+		 */
+		if (strcmp(interp->result, "EINVAL") != 0)
+			Tcl_SetResult(interp, "NULL", TCL_STATIC);
 		return (TCL_OK);
 	}
 	if (F_ISSET(env, DB_ENV_STANDALONE))
 		mp = env->mp_info;
-	else if ((ret = memp_open(argv[1], flags, mode, env, &mp)) != 0) {
+	else if (memp_open(argv[1], flags, mode, env, &mp) != 0) {
 		Tcl_SetResult(interp, "NULL", TCL_STATIC);
 		return (TCL_OK);
 	} else
@@ -136,21 +141,19 @@ mempunlink_cmd(notused, interp, argc, argv)
 	int argc;
 	char *argv[];
 {
-	DB_ENV *env;
-	int flags, ret;
+	u_int32_t flags;
+	int ret, tclint;
 
 	notused = NULL;
 	debug_check();
 
 	USAGE_GE(argc, 3, MPOOLUNLINK_USAGE, 0);
 
-	if (Tcl_GetInt(interp, argv[2], &flags) != TCL_OK)
+	if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK)
 		return (TCL_ERROR);
+	flags = (u_int32_t)tclint;
 
-	if (process_env_options(interp, argc, argv, &env)) {
-		return (TCL_ERROR);
-	}
-	if ((ret = memp_unlink(argv[1], flags, env)) != 0) {
+	if ((ret = memp_unlink(argv[1], flags, NULL)) != 0) {
 		Tcl_SetResult(interp, "memp_unlink: ", TCL_STATIC);
 		errno = ret;
 		Tcl_AppendResult(interp, Tcl_PosixError(interp), 0);
@@ -176,12 +179,14 @@ mpwidget_cmd(cd_mp, interp, argc, argv)
 	int argc;
 	char *argv[];
 {
+	static int mpf_id = 0;
+	DB_ENV *env;
 	DB_MPOOL *mp;
 	DB_MPOOLFILE *mpf;
-	DB_ENV *env;
 	mpfinfo *mfi;
-	static int mpf_id = 0;
-	int flags, mode, psize, ret;
+	size_t pagesize;
+	u_int32_t flags;
+	int mode, ret, tclint;
 	char mpfname[128];
 
 	debug_check();
@@ -208,13 +213,17 @@ mpwidget_cmd(cd_mp, interp, argc, argv)
 	} else if (strcmp(argv[1], "open") == 0) {
 		USAGE(argc, 6, MPFOPEN_USAGE, 0);
 
-		if ((Tcl_GetInt(interp, argv[3], &psize) != TCL_OK) ||
-		    (Tcl_GetInt(interp, argv[4], &flags) != TCL_OK) ||
-		    (Tcl_GetInt(interp, argv[5], &mode) != TCL_OK))
+		if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK)
+			return (TCL_ERROR);
+		pagesize = (size_t)tclint;
+		if (Tcl_GetInt(interp, argv[4], &tclint) != TCL_OK)
+			return (TCL_ERROR);
+		flags = (u_int32_t)tclint;
+		if (Tcl_GetInt(interp, argv[5], &mode) != TCL_OK)
 			return (TCL_ERROR);
 
-		if ((ret = memp_fopen(mp, argv[2],
-		    0, flags, mode, psize, -1, NULL, NULL, &mpf)) != 0) {
+		if ((ret = memp_fopen(mp,
+		    argv[2], flags, mode, pagesize, NULL, &mpf)) != 0) {
 			errno = ret;
 			Tcl_SetResult(interp,
 			    Tcl_PosixError(interp), TCL_STATIC);
@@ -228,7 +237,7 @@ mpwidget_cmd(cd_mp, interp, argc, argv)
 			return (TCL_ERROR);
 		}
 		mfi->mpf = mpf;
-		mfi->pgsize = psize;
+		mfi->pgsize = pagesize;
 
 		mpf_id++;
 		Tcl_CreateCommand(interp, mpfname, mpf_cmd, (int *)mfi, NULL);
@@ -258,13 +267,13 @@ mpf_cmd(cd_mfi, interp, argc, argv)
 	int argc;
 	char *argv[];
 {
+	static int pg_id = 0;
 	DB_MPOOLFILE *mpf;
+	db_pgno_t pgno;
 	pginfo *pinfo;
 	void *paddr;
-	unsigned long uflags;
-	static int pg_id = 0;
-	int flags, ret;
-	db_pgno_t pgno;
+	u_int32_t flags;
+	int ret, tclint;
 	char pgname[128];
 
 	debug_check();
@@ -285,11 +294,12 @@ mpf_cmd(cd_mfi, interp, argc, argv)
 		return (ret);
 	} else if (strcmp(argv[1], "get") == 0) {
 		USAGE(argc, 4, MPFGET_USAGE, 0);
-		if ((Tcl_GetInt(interp, argv[2], (int *)&pgno) != TCL_OK) ||
-		    (Tcl_GetInt(interp, argv[3], &flags) != TCL_OK))
+		if (Tcl_GetInt(interp, argv[2], (int *)&pgno) != TCL_OK)
 			return (TCL_ERROR);
-		uflags = (unsigned long)flags;
-		ret = memp_fget(mpf, &pgno, uflags, &paddr);
+		if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK)
+			return (TCL_ERROR);
+		flags = (u_int32_t)tclint;
+		ret = memp_fget(mpf, &pgno, flags, &paddr);
 		if (ret != 0 ||
 		    (pinfo = (pginfo *)malloc(sizeof(pginfo))) == NULL) {
 			Tcl_SetResult(interp, "mpf_cmd: ", TCL_STATIC);
@@ -346,21 +356,20 @@ pgwidget_cmd(cd_page, interp, argc, argv)
 	char *argv[];
 {
 	pginfo *pinfo;
-	unsigned long uflags;
-	size_t len;
-	int flags, i, *ip, ret;
-	char intbuf[50];
-	char *p;
+	size_t i, len;
+	u_int32_t flags;
+	int *ip, ret, tclint;
+	char *p, intbuf[50];
 
 	debug_check();
 
 	pinfo = (pginfo *)cd_page;
 	if (strcmp(argv[1], "put") == 0) {
 		USAGE(argc, 3, PAGEPUT_USAGE, 0);
-		if (Tcl_GetInt(interp, argv[2], &flags) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK)
 			return (TCL_ERROR);
-		uflags = (unsigned long)flags;
-		if ((ret = memp_fput(pinfo->mpf, pinfo->addr, uflags)) != 0) {
+		flags = (u_int32_t)tclint;
+		if ((ret = memp_fput(pinfo->mpf, pinfo->addr, flags)) != 0) {
 			Tcl_SetResult(interp, "page put: ", TCL_STATIC);
 			errno = ret;
 			Tcl_AppendResult(interp, Tcl_PosixError(interp), 0);
@@ -373,8 +382,8 @@ pgwidget_cmd(cd_page, interp, argc, argv)
 	} else if (strcmp(argv[1], "init") == 0) {
 		USAGE(argc, 3, PAGEINIT_USAGE, 0);
 		len = strlen(argv[2]);
-		for (p = (char *)pinfo->addr, i = 0; i < (int)pinfo->pgsize;
-		    i += len, p += len) {
+		for (p = (char *)pinfo->addr,
+		    i = 0; i < pinfo->pgsize; i += len, p += len) {
 			if (i + len > pinfo->pgsize)
 				len = pinfo->pgsize - i;
 			memcpy(p, argv[2], len);
@@ -388,14 +397,13 @@ pgwidget_cmd(cd_page, interp, argc, argv)
 		/* Special case, 0'd pages. */
 		ret = 0;
 		if (strcmp(argv[2], "nul") == 0) {
-			for (ip = (int *)pinfo->addr, i = 0;
-			    i < (int)pinfo->pgsize; i += sizeof(int), ip++)
+			for (ip = (int *)pinfo->addr,
+			    i = 0; i < pinfo->pgsize; i += sizeof(int), ip++)
 				if ((ret = (*ip != 0)) != 0)
 					break;
 		} else {
-			for (p = (char *)pinfo->addr, i = 0;
-			    i < (int)pinfo->pgsize;
-			    i += len, p += len) {
+			for (p = (char *)pinfo->addr,
+			    i = 0; i < pinfo->pgsize; i += len, p += len) {
 				if (i + len > pinfo->pgsize)
 					len = pinfo->pgsize - i;
 				if ((ret = memcmp(p, argv[2], len)) != 0)

@@ -2,19 +2,19 @@
 <HEAD>
 <TITLE>DbEnv</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>DbEnv</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        <B>#include</B> <B>&lt;db</B>_<B>cxx.h&gt;</B>
 
-       <B>DbEnv::DbEnv(const</B> <B>char</B> <B>*db</B>_<B>home,</B> <B>char</B> <B>*const</B> <B>*db</B>_<B>config,</B> <B>int</B> <B>flags);</B>
+       <B>DbEnv::DbEnv(const</B> <B>char</B> <B>*db</B>_<B>home,</B> <B>char</B> <B>*const</B> <B>*db</B>_<B>config,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
        <B>DbEnv::DbEnv();</B>
        <B>DbEnv::~DbEnv();</B>
 
        <B>int</B> <B>DbEnv::appinit(const</B> <B>char</B> <B>*db</B>_<B>home,</B>
-            <B>char</B> <B>*const</B> <B>*db</B>_<B>config,</B> <B>int</B> <B>flags);</B>
+            <B>char</B> <B>*const</B> <B>*db</B>_<B>config,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B> <B>DbEnv::get</B>_<B>lorder()</B> <B>const;</B>
        <B>void</B> <B>DbEnv::set</B>_<B>lorder(int);</B>
@@ -44,29 +44,19 @@
        <B>char</B> <B>DbEnv::**get</B>_<B>data</B>_<B>dir()</B> <B>const;</B>
        <B>void</B> <B>DbEnv::set</B>_<B>data</B>_<B>dir(char</B> <B>**);</B>
 
-       <B>int</B> <B>DbEnv::get</B>_<B>data</B>_<B>cnt()</B> <B>const;</B>
-       <B>void</B> <B>DbEnv::set</B>_<B>data</B>_<B>cnt(int);</B>
-
-       <B>int</B> <B>DbEnv::get</B>_<B>data</B>_<B>next()</B> <B>const;</B>
-       <B>void</B> <B>DbEnv::set</B>_<B>data</B>_<B>next(int);</B>
-
        <B>DbLockTab</B> <B>DbEnv::*get</B>_<B>lk</B>_<B>info()</B> <B>const;</B>
 
        <B>u</B>_<B>int8</B>_<B>t</B> <B>DbEnv::*get</B>_<B>lk</B>_<B>conflicts()</B> <B>const;</B>
        <B>void</B> <B>DbEnv::set</B>_<B>lk</B>_<B>conflicts(u</B>_<B>int8</B>_<B>t</B> <B>*);</B>
 
-       <B>int</B> <B>DbEnv::get</B>_<B>lk</B>_<B>modes()</B> <B>const;</B>
-       <B>void</B> <B>DbEnv::set</B>_<B>lk</B>_<B>modes(int);</B>
+       <B>u</B>_<B>int32</B>_<B>t</B> <B>DbEnv::get</B>_<B>lk</B>_<B>modes()</B> <B>const;</B>
+       <B>void</B> <B>DbEnv::set</B>_<B>lk</B>_<B>modes(u</B>_<B>int32</B>_<B>t);</B>
 
-       <B>unsigned</B> <B>int</B> <B>DbEnv::get</B>_<B>lk</B>_<B>max()</B> <B>const;</B>
-       <B>void</B> <B>DbEnv::set</B>_<B>lk</B>_<B>max(unsigned</B> <B>int);</B>
+       <B>u</B>_<B>int32</B>_<B>t</B> <B>DbEnv::get</B>_<B>lk</B>_<B>max()</B> <B>const;</B>
+       <B>void</B> <B>DbEnv::set</B>_<B>lk</B>_<B>max(u</B>_<B>int32</B>_<B>t);</B>
 
        <B>u</B>_<B>int32</B>_<B>t</B> <B>DbEnv::get</B>_<B>lk</B>_<B>detect()</B> <B>const;</B>
        <B>void</B> <B>DbEnv::set</B>_<B>lk</B>_<B>detect(u</B>_<B>int32</B>_<B>t);</B>
-
-       <B>typedef</B> <B>int</B> <B>(*db</B>_<B>yield</B>_<B>fcn)</B> <B>(void);</B>
-       <B>db</B>_<B>yield</B>_<B>fcn</B> <B>DbEnv::get</B>_<B>yield()</B> <B>const;</B>
-       <B>void</B> <B>DbEnv::set</B>_<B>yield(db</B>_<B>yield</B>_<B>fcn);</B>
 
        <B>DbLog</B> <B>DbEnv::*get</B>_<B>lg</B>_<B>info()</B> <B>const;</B>
 
@@ -83,8 +73,8 @@
 
        <B>DbTxnMgr</B> <B>DbEnv::*get</B>_<B>tx</B>_<B>info()</B> <B>const;</B>
 
-       <B>unsigned</B> <B>int</B> <B>DbEnv::get</B>_<B>tx</B>_<B>max()</B> <B>const;</B>
-       <B>void</B> <B>DbEnv::set</B>_<B>tx</B>_<B>max(unsigned</B> <B>int);</B>
+       <B>u</B>_<B>int32</B>_<B>t</B> <B>DbEnv::get</B>_<B>tx</B>_<B>max()</B> <B>const;</B>
+       <B>void</B> <B>DbEnv::set</B>_<B>tx</B>_<B>max(u</B>_<B>int32</B>_<B>t);</B>
 
        <B>typedef</B> <B>int</B> <B>(*tx</B>_<B>recover</B>_<B>fcn)(DB</B>_<B>LOG</B> <B>*,</B> <B>DBT</B> <B>*,</B> <B>DB</B>_<B>LSN</B> <B>*,</B> <B>int,</B> <B>void</B> <B>*);</B>
        <B>tx</B>_<B>recover</B>_<B>fcn</B> <B>DbEnv::get</B>_<B>tx</B>_<B>recover()</B> <B>const;</B>
@@ -127,7 +117,6 @@
        constructor.  The various set_ methods can then be used to
        initialize   the   DbEnv,   and   finally,   a   call   to
        DbEnv::appinit should be made to initialize DB.
-
        Once the DB environment has been initialized by a call  to
        DbEnv::appinit,  no  set  methods  other  than  set_errpfx
        should be called.
@@ -192,18 +181,28 @@
        DB_RECOVER
             Run   normal  recovery  on  this  environment  before
             opening it for normal use.  If this flag is set,  the
-            DB_CREATE,  DB_INIT_TXN,  and  DB_INIT_LOG flags must
-            also be set since the regions  will  be  removed  and
-            recreated.   For further information, consult the man
-            page for <B><A HREF="db_recover.html">db_recover(1)</A></B>.
+            DB_CREATE  flag  must  also  be set since the regions
+            will be removed and recreated.
+
+            The DbEnv::appinit function returns  successfully  if
+            DB_RECOVER is specified and no log files exist, so it
+            is necessary to ensure all necessary  log  files  are
+            present   before   running   recovery.   For  further
+            information, consult the man page  for  <B><A HREF="db_archive.html">db_archive(1)</A></B>
+            and <B><A HREF="db_recover.html">db_recover(1)</A></B>.
 
        DB_RECOVER_FATAL
-            Run catastrophic recovery on this environment  before
-            opening  it for normal use.  If this flag is set, the
-            DB_CREATE, DB_INIT_TXN, and  DB_INIT_LOG  flags  must
-            also  be  set  since  the regions will be removed and
-            recreated.  For further information, consult the  man
-            page for <B><A HREF="db_recover.html">db_recover(1)</A></B>.
+            Run  catastrophic recovery on this environment before
+            opening it for normal use.  If this flag is set,  the
+            DB_CREATE  flag  must  also  be set since the regions
+            will be removed and recreated.
+
+            The DbEnv::appinit function returns  successfully  if
+            DB_RECOVER is specified and no log files exist, so it
+            is necessary to ensure all necessary  log  files  are
+            present   before   running   recovery.   For  further
+            information, consult the man page  for  <B><A HREF="db_archive.html">db_archive(1)</A></B>
+            and <B><A HREF="db_recover.html">db_recover(1)</A></B>.
 
        DB_THREAD
             Ensure that handles returned by the Db subsystems are
@@ -295,29 +294,6 @@
             Include informational and debugging messages as  well
             as  error  messages  in the db_errcall and db_errfile
             output.
-
-       int (*db_yield)(void);
-            The Db library makes a system call to pause for  some
-            number  of  microseconds  whenever it is necessary to
-            wait on a lock.  This may not be optimal,  especially
-            in  a  thread-only  environment where it will be more
-            efficient  to  explicitly  yield  the  processor   to
-            another  thread.   If  db_yield returns 0, indicating
-            success, the lock will be  re-tried,  otherwise,  the
-            default  descheduling  method will be called and then
-            the lock will be  re-tried.   Note,  it  is  probably
-            incorrect  to supply a thread db_yield method if more
-            than  a  single  process  is  operating  in  the   Db
-            environment.    This  is  because  most  thread-yield
-            functions will not allow other processes to run,  and
-            the  lock  may  be  held  by  another process, not by
-            another thread.
-
-            <B>Solaris</B>  <B>architecture</B>  <B>note:</B>  Because  of   bugs   in
-            versions  of  Solaris before version 5.6, Db uses the
-            <B>sema_wait(3T)</B> call instead  of  the  <B>sema_trywait(3T)</B>
-            call.  For this reason, setting the db_yield field of
-            the DbEnv object will have no effect on Solaris.
 
        Each  of  the  open  functions  that  appinit   may   call
        (DbLockTab::open,     DbLog::open,    DbMpool::open    and
@@ -667,20 +643,23 @@
             The DB_THREAD flag was specified  and  spinlocks  are
             not implemented for this architecture.
 
-            The  DB_HOME or TMPDIR environment variables were set
+            The   DB_RECOVER   or   DB_RECOVER_FATAL   flag   was
+            specified, and no log files were found.
+
+            The DB_HOME or TMPDIR environment variables were  set
             but empty.
 
             An incorrectly formatted ``NAME VALUE'' entry or line
             was found.
 
        [ENOSPC]
-            HP-UX  only:  a previously created Db environment for
+            HP-UX only: a previously created Db  environment  for
             this process still exists.
 
-       The  DbEnv::appexit  method   may   fail   and   throw   a
+       The   DbEnv::appexit   method   may   fail   and  throw  a
        <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or  return  errno  for any of the errors specified for the
+       or return errno for any of the errors  specified  for  the
        following DB and library functions: <B><A HREF="DbLockTab.html">DbLockTab::close(3)</A></B>,
        <B><A HREF="DbLog.html">DbLog::close(3)</A></B>, <B><A HREF="DbMpool.html">DbMpool::close(3)</A></B>, and
        <B><A HREF="DbTxnMgr.html">DbTxnMgr::close(3)</A></B>.
@@ -689,15 +668,18 @@
 </PRE>
 <H2>BUGS</H2><PRE>
        Due to the constraints of the PA-RISC memory architecture,
-       HP-UX  does  not  allow  a  process to map a file into its
-       address space multiple times.  For this  reason,  each  DB
+       HP-UX does not allow a process to  map  a  file  into  its
+       address  space  multiple  times.  For this reason, each DB
        environment may be opened only once by a process on HP-UX,
-       i.e., calls to appinit  will  fail  if  the  specified  Db
-       environment  has been opened and not subsequently  closed.
+       i.e.,  calls  to  appinit  will  fail  if the specified Db
+       environment has been opened and not subsequently   closed.
 
-       Because of bugs in versions of Solaris before version 5.6,
-       setting  the  db_yield field of the DbEnv object will have
-       no effect on Solaris.
+       On Windows/95, files that are opened by multiple processes
+       do not share data correctly.  To tell Berkeley DB  to  use
+       the  paging  file to share memory among processes, use the
+       DB_REGION_NAME  flag   of   the   db_value_set   function.
+       Obviously,  you  do  not  need to do this if only a single
+       process will be accessing database files.
 
 
 </PRE>
@@ -710,7 +692,7 @@
        <B><A HREF="DbTxnMgr.html">DbTxnMgr(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)TpcbExample.cpp	10.6 (Sleepycat) 11/10/97
+ *	@(#)TpcbExample.cpp	10.8 (Sleepycat) 4/10/98
  */
 
 #include "config.h"
@@ -221,7 +221,7 @@ main(int argc, char *argv[])
     // raise an exception.
     //
     TpcbExample app;
-    int flags = DB_CREATE | DB_INIT_MPOOL;
+    u_int32_t flags = DB_CREATE | DB_INIT_MPOOL;
 
     app.set_error_stream(&cerr);
     app.set_errpfx("TpcbExample");

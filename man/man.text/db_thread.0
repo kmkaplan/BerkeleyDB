@@ -27,27 +27,33 @@ DDEESSCCRRIIPPTTIIOONN
        i.e.,  threads may use handles concurrently, by specifying
        the DB_THREAD flag to _d_b___a_p_p_i_n_i_t(3) (or, in the  C++  API,
        _D_b_E_n_v_:_:_a_p_p_i_n_i_t(3)) and the other subsystem open functions.
-       However, in the Java API, threading is assumed, so no spe-
-       cial flags are required.
+       Threading is assumed in the Java API, so no special  flags
+       are  required,  and  DB functions will always behave as if
+       the DB_THREAD flag was specified.
 
-       DB  supports  multi-threaded  applications with the caveat
+       DB supports multi-threaded applications  with  the  caveat
        that it loads and calls functions that are commonly avail-
-       able  in  C  language environments and which may not them-
-       selves be thread-safe.  Other than this usage, DB  has  no
-       static  data  and maintains no local context between calls
-       to DB functions.  To ensure that applications  can  safely
+       able in C language environments and which  may  not  them-
+       selves  be  thread-safe.  Other than this usage, DB has no
+       static data and maintains no local context  between  calls
+       to  DB  functions.  To ensure that applications can safely
        use threads in the context of DB, porters to new operating
-       systems and/or C libraries must confirm  that  the  system
+       systems  and/or  C  libraries must confirm that the system
        and C library functions used by the DB library are thread-
        safe.
 
-       There are some additional caveats about using  threads  to
+       There  are  some additional caveats about using threads to
        access the DB library:
 
-       +o The  DB_THREAD flag must be specified for all subsystems
+       +o The DB_THREAD flag must be specified for all  subsystems
          either explicitly or via the _d_b___a_p_p_i_n_i_t (_D_b_E_n_v_:_:_a_p_p_i_n_i_t)
-         function.  Setting the DB_THREAD flag inconsistently may
-         result in database corruption.
+         function in the C and C++ APIs.  Threading is assumed in
+         the  Java  API, so no special flags are required, and DB
+         functions will always behave as if  the  DB_THREAD  flag
+         was specified.
+
+         Setting  the DB_THREAD flag inconsistently may result in
+         database corruption.
 
        +o Only a single thread may call the close function  for  a
          returned  database  or subsystem handle.  See _d_b___o_p_e_n(3)
@@ -106,7 +112,6 @@ CCOOMMPPIILLIINNGG TTHHRREEAADDEEDD AAPPPPLLIICCAATTII
 
        On IRIX, if you are compiling a threaded application,  you
        must compile with the -D_SGI_MP_SOURCE flag:
-
             cc -D_SGI_MP_SOURCE ...
 
        On OSF/1, if you are compiling a threaded application, you

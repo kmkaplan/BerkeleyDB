@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
@@ -9,14 +9,13 @@
 
 #ifndef lint
 static const char copyright[] =
-"@(#) Copyright (c) 1997\n\
+"@(#) Copyright (c) 1996, 1997, 1998\n\
 	Sleepycat Software Inc.  All rights reserved.\n";
-static const char sccsid[] = "@(#)db_load.c	10.14 (Sleepycat) 10/19/97";
+static const char sccsid[] = "@(#)db_load.c	10.18 (Sleepycat) 4/18/98";
 #endif
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #include <errno.h>
 #include <limits.h>
@@ -51,11 +50,11 @@ main(argc, argv)
 	extern int optind;
 	DB *dbp;
 	DBT key, data;
-	DBTYPE argtype, headertype;
+	DBTYPE argtype, dbtype;
 	DB_ENV *dbenv;
 	DB_INFO dbinfo;
 	db_recno_t recno;
-	int ch, pflag;
+	int ch, no_header, pflag;
 	char **clist, **clp, *home;
 
 	/* Allocate enough room for configuration arguments. */
@@ -63,8 +62,9 @@ main(argc, argv)
 		err(1, NULL);
 
 	home = NULL;
-	argtype = DB_UNKNOWN;
-	while ((ch = getopt(argc, argv, "c:f:h:t:")) != EOF)
+	no_header = 0;
+	argtype = dbtype = DB_UNKNOWN;
+	while ((ch = getopt(argc, argv, "c:f:h:Tt:")) != EOF)
 		switch (ch) {
 		case 'c':
 			*clp++ = optarg;
@@ -76,6 +76,9 @@ main(argc, argv)
 		case 'h':
 			home = optarg;
 			break;
+		case 'T':
+			no_header = pflag = 1;
+			break;
 		case 't':
 			if (strcmp(optarg, "btree") == 0) {
 				argtype = DB_BTREE;
@@ -83,6 +86,10 @@ main(argc, argv)
 			}
 			if (strcmp(optarg, "hash") == 0) {
 				argtype = DB_HASH;
+				break;
+			}
+			if (strcmp(optarg, "recno") == 0) {
+				argtype = DB_RECNO;
 				break;
 			}
 			usage();
@@ -101,23 +108,32 @@ main(argc, argv)
 	dbenv = db_init(home);
 	memset(&dbinfo, 0, sizeof(DB_INFO));
 
-	/* Read the header. */
-	rheader(&headertype, &pflag, &dbinfo);
+	/*
+	 * Read the header.  If there isn't any header, we're expecting flat
+	 * text, set the pflag appropriately.
+	 */
+	if (no_header)
+		dbtype = argtype;
+	else {
+		rheader(&dbtype, &pflag, &dbinfo);
+		if (argtype != DB_UNKNOWN) {
+			/* Conversion to/from recno is prohibited. */
+			if ((dbtype == DB_RECNO && argtype != DB_RECNO) ||
+			    (argtype == DB_RECNO && dbtype != DB_RECNO))
+				errx(1,
+			    "databases of type recno may not be converted");
+			dbtype = argtype;
+		}
+	}
+	if (dbtype == DB_UNKNOWN)
+		errx(1, "no database type specified");
 
 	/* Apply command-line configuration changes. */
 	configure(&dbinfo, clist);
 
-	/* Conversion to/from recno is prohibited. */
-	if (argtype != DB_UNKNOWN) {
-		if (headertype == DB_RECNO)
-			errx(1, "databases of type recno may not be converted");
-		headertype = argtype;
-	}
-
 	/* Open the DB file. */
-	if ((errno = db_open(argv[0], headertype, DB_CREATE | DB_TRUNCATE,
-	    S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH,
-	    dbenv, &dbinfo, &dbp)) != 0)
+	if ((errno = db_open(argv[0], dbtype, DB_CREATE | DB_TRUNCATE,
+	    __db_omode("rwrwrw"), dbenv, &dbinfo, &dbp)) != 0)
 		err(1, "%s", argv[0]);
 
 	/* Initialize the key/data pair. */
@@ -133,7 +149,7 @@ main(argc, argv)
 	}
 
 	/* Get each key/data pair and add them to the database. */
-	if (headertype == DB_RECNO) {
+	if (dbtype == DB_RECNO) {
 		key.data = &recno;
 		key.size = sizeof(recno);
 		for (recno = 1;; ++recno) {
@@ -273,8 +289,11 @@ rheader(dbtypep, pflagp, dbinfop)
 	*pflagp = 0;
 
 	for (lineno = 1;; ++lineno) {
+		/* If we don't see the expected information, it's an error. */
 		if (fscanf(stdin, "%[^=]=%s\n", name, value) != 2)
 			errx(1, "line %lu: unexpected format", lineno);
+
+		/* Check for the end of the header lines. */
 		if (strcmp(name, "HEADER") == 0)
 			break;
 
@@ -455,6 +474,6 @@ void
 usage()
 {
 	(void)fprintf(stderr,
-"usage: db_load [-c name=value] [-f file] [-h home] [-t btree | hash] db_file\n");
+"usage: db_load [-T]\n\t[-c name=value] [-f file] [-h home] [-t btree | hash] db_file\n");
 	exit(1);
 }

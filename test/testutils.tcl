@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)testutils.tcl	10.7 (Sleepycat) 11/2/97
+#	@(#)testutils.tcl	10.12 (Sleepycat) 4/26/98
 #
 # Test system utilities
 
@@ -13,8 +13,10 @@ proc open_and_dump_file {
 	source ./include.tcl
 	if { $dbenv == "NULL" } {
 		set db [ dbopen $dbname $DB_RDONLY 0 DB_UNKNOWN ]
+		error_check_good dbopen [is_valid_db $db] TRUE
 	} else {
 		set db [ dbopen $dbname $DB_RDONLY 0 DB_UNKNOWN -dbenv $dbenv]
+		error_check_good dbopen [is_valid_db $db] TRUE
 	}
 	$dump_func $db $txn $outfile $checkfunc $beg $cont
 	error_check_good db_close [$db close] 0
@@ -185,7 +187,7 @@ source ./include.tcl
 			if { [string compare $key $lastkey] != 0 && \
 			    $id != [lindex $dlist 0] } {
 				set e [lindex $dlist 0]
-				error "\tKey $key, expected dup id $e, got $id"
+				error "FAIL: \tKey $key, expected dup id $e, got $id"
 			}
 			error_check_good dupget $d $key
 			error_check_good dupget $id $did
@@ -586,7 +588,7 @@ global nkeys
 global check_array
 
 	if { [lsearch $l_keys $key] == -1 } {
-		error "Key |$key| not in list of valid keys"
+		error "FAIL: Key |$key| not in list of valid keys"
 	}
 
 	set d $a_keys($key)
@@ -610,13 +612,13 @@ global check_array
 		# Find this data's index
 		set ndx [lsearch $d $data]
 		if { $ndx == -1 } {
-			error "Data |$data| not found for key $key.  Found |$d|"
+			error "FAIL: Data |$data| not found for key $key.  Found |$d|"
 		}
 
 		# Set the bit in the check array
 		set check_array($key) [lreplace $check_array($key) $ndx $ndx 1]
 	} elseif { [string compare $d $data] != 0 } {
-		error "Invalid data |$data| for key |$key|. Expected |$d|."
+		error "FAIL: Invalid data |$data| for key |$key|. Expected |$d|."
 	} else {
 		set check_array($key) 1
 	}
@@ -675,7 +677,11 @@ proc esetup { dir } {
 
 proc cleanup { dir } {
 source ./include.tcl
-	# Create the database and environment.
+	# Remove the database and environment.
+	txn_unlink $dir 1
+	memp_unlink $dir 1
+	log_unlink $dir 1
+	lock_unlink $dir 1
 	set ret [catch { glob $dir/* } result]
 	if { $ret == 0 } {
 		eval exec $RM -rf $result
@@ -736,6 +742,7 @@ global recd_op
 	set nolock_env [$env simpledup]
 	set tmgr [txn "" 0 0 -dbenv $env]
 	set db [dbopen $dbfile 0 0 DB_UNKNOWN -dbenv $env]
+	error_check_good dbopen [is_valid_db $db] TRUE
 
 	# Dump out file contents for initial case
 	open_and_dump_file $dbfile $env 0 $init_file nop \
@@ -814,7 +821,7 @@ global recd_op
 	set stat [catch {exec ./db_recover -h $dir -c} result]
 	if { $stat == 1 &&
 	    [is_substr $result "db_recover: Recovering the log"] == 0 } {
-		error "Recovery error: $result."
+		error "FAIL: Recovery error: $result."
 	}
 	puts "complete"
 
@@ -852,7 +859,7 @@ global recd_op
 	set stat [catch {exec ./db_recover -h $dir -c} result]
 	if { $stat == 1 &&
 	    [is_substr $result "db_recover: Recovering the log"] == 0 } {
-		error "Recovery error: $result."
+		error "FAIL: Recovery error: $result."
 	}
 	puts "complete"
 
@@ -1094,4 +1101,28 @@ proc reverse { s } {
 	}
 
 	return $res
+}
+
+proc is_valid_widget { w expected } {
+	# First N characters must match "expected"
+	set l [string length $expected]
+	incr l -1
+	if { [string compare [string range $w 0 $l] $expected] != 0 } {
+		puts "case 1"
+		return $w
+	}
+
+	# Remaining characters must be digits
+	incr l 1
+	for { set i $l } { $i < [string length $w] } { incr i} {
+		set c [string index $w $i]
+		if { $c < "0" || $c > "9" } {
+			return $w
+		}
+	}
+
+	return TRUE
+}
+proc is_valid_db { db } {
+	return [is_valid_widget $db db]
 }

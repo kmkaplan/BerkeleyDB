@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)ex_mpool.c	10.16 (Sleepycat) 11/10/97
+ *	@(#)ex_mpool.c	10.19 (Sleepycat) 5/1/98
  */
 
 #include "config.h"
@@ -83,7 +83,7 @@ main(argc, argv)
 	memset(&dbenv, 0, sizeof(dbenv));
 	dbenv.db_errfile = stderr;
 	dbenv.db_errpfx = progname;
-	dbenv.mp_size = cachesize;
+	dbenv.mp_size = (size_t)cachesize;	/* XXX: Possible overflow. */
 
 	/* Get the pages. */
 	run(&dbenv, hits, pagesize, npages);
@@ -155,8 +155,8 @@ run(dbenv, hits, pagesize, npages)
 		exit (1);
 	}
 	/* Open the file in the pool. */
-	if ((errno = memp_fopen(dbmp,
-	    MPOOL, 0, 0, 0, pagesize, 0, NULL, NULL, &dbmfp)) != 0) {
+	if ((errno =
+	    memp_fopen(dbmp, MPOOL, 0, 0, pagesize, NULL, &dbmfp)) != 0) {
 		fprintf(stderr,
 		    "%s: %s: %s\n", progname, MPOOL, strerror(errno));
 		exit (1);

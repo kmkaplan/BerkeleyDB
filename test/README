@@ -1,4 +1,4 @@
-# @(#)README	10.13 (Sleepycat) 11/22/97
+# @(#)README	10.14 (Sleepycat) 4/22/98
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 DB Test Suite
@@ -239,7 +239,7 @@ test027:	Call test026 with parameters to force off-page duplicates.
 
 test028:	Test put operations after deleting through a cursor.
 
-test029:	Get/Put/Delete operation flags (not yet completed).
+test029:	Record renumbering for recno and btree.
 
 test030:	Random tester.  Runs a number of random add/delete/retrieve
 		operations.  Tests both successful conditions and error
@@ -251,6 +251,8 @@ test031:	Multi-process random test.  Tests multiple processes running
 
 test032:	System integration tests.  Requires proper functioning of
 		the checkpoint daemon, recovery, transactions, etc.
+
+test033:	Get/Put/Delete operation flags (not yet completed).
 
 parmtest:	run access method tests with a combination of parameters.
 

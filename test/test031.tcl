@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test031.tcl	10.5 (Sleepycat) 10/4/97
+#	@(#)test031.tcl	10.8 (Sleepycat) 4/26/98
 #
 # DB Test 31 {access method}
 # Multiprocess DB test; verify that locking is basically working.
@@ -49,7 +49,7 @@ source ./include.tcl
 	if { [file exists $testdir] != 1 } {
 		exec $MKDIR $testdir
 	} elseif { [file isdirectory $testdir ] != 1 } {
-		error "$testdir is not a directory"
+		error "FAIL: $testdir is not a directory"
 	}
 
 	# Create the database and open the dictionary
@@ -60,6 +60,7 @@ source ./include.tcl
 	cleanup $testdir
 	set db [eval [concat dbopen \
 	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	set did [open $dict]
 
 	set flags 0

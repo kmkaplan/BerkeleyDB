@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)recd004.tcl	8.1 (Sleepycat) 11/2/97
+#	@(#)recd004.tcl	8.2 (Sleepycat) 4/10/98
 #
 # Recovery Test #2.  Verify that we work correctly when big keys
 # get elevated.

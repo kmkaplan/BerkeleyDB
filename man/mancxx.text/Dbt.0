@@ -127,6 +127,7 @@ KKEEYY//DDAATTAA PPAAIIRRSS
             _s_e_t___f_l_a_g_s.   The  flags  value is specified by oorr'ing
             together one or more of the following values:
 
+
             DB_DBT_MALLOC
                  Ignored except when retrieving information  from
                  a  database,  e.g.,  a _D_b_:_:_g_e_t or _D_b_c_:_:_g_e_t call.
@@ -138,6 +139,7 @@ KKEEYY//DDAATTAA PPAAIIRRSS
                  the  responsibility  of the calling application.
                  It is an error to specify both DB_DBT_MALLOC and
                  DB_DBT_USERMEM.
+
 
             DB_DBT_USERMEM
                  Ignored  except when retrieving information from
@@ -152,6 +154,7 @@ KKEEYY//DDAATTAA PPAAIIRRSS
                  the requested item, and the  _e_r_r_n_o  variable  is
                  set  to  ENOMEM.  It is an error to specify both
                  DB_DBT_MALLOC and DB_DBT_USERMEM.
+
 
             DB_DBT_PARTIAL
                  Ignored except when specified for a data parame-

@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -47,11 +47,11 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)dbm.c	10.7 (Sleepycat) 11/25/97";
+static const char sccsid[] = "@(#)dbm.c	10.15 (Sleepycat) 4/18/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
-#include <sys/param.h>
+#include <sys/types.h>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -59,17 +59,11 @@ static const char sccsid[] = "@(#)dbm.c	10.7 (Sleepycat) 11/25/97";
 #include <string.h>
 #endif
 
-#define	DB_DBM_HSEARCH
+#define	DB_DBM_HSEARCH	1
 #include "db_int.h"
 
 #include "db_page.h"
 #include "hash.h"
-
-/* Provide prototypes here since there are none in db.h. */
-int dbm_clearerr __P((DBM *));
-int dbm_dirfno __P((DBM *));
-int dbm_error __P((DBM *));
-int dbm_pagfno __P((DBM *));
 
 /*
  *
@@ -82,13 +76,13 @@ static DBM *__cur_db;
 static void __db_no_open __P((void));
 
 int
-dbminit(file)
+__db_dbm_init(file)
 	char *file;
 {
 	if (__cur_db != NULL)
 		(void)dbm_close(__cur_db);
 	if ((__cur_db =
-	    dbm_open(file, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR)) != NULL)
+	    dbm_open(file, O_CREAT | O_RDWR, __db_omode("rw----"))) != NULL)
 		return (0);
 	if ((__cur_db = dbm_open(file, O_RDONLY, 0)) != NULL)
 		return (0);
@@ -96,7 +90,7 @@ dbminit(file)
 }
 
 datum
-fetch(key)
+__db_dbm_fetch(key)
 	datum key;
 {
 	datum item;
@@ -110,7 +104,7 @@ fetch(key)
 }
 
 datum
-firstkey()
+__db_dbm_firstkey()
 {
 	datum item;
 
@@ -123,10 +117,12 @@ firstkey()
 }
 
 datum
-nextkey(key)
+__db_dbm_nextkey(key)
 	datum key;
 {
 	datum item;
+
+	COMPQUIET(key.dsize, 0);
 
 	if (__cur_db == NULL) {
 		__db_no_open();
@@ -137,7 +133,7 @@ nextkey(key)
 }
 
 int
-delete(key)
+__db_dbm_delete(key)
 	datum key;
 {
 	int ret;
@@ -153,7 +149,7 @@ delete(key)
 }
 
 int
-store(key, dat)
+__db_dbm_store(key, dat)
 	datum key, dat;
 {
 	int ret;
@@ -185,7 +181,7 @@ __db_no_open()
  *	 NULL on failure
  */
 DBM *
-dbm_open(file, oflags, mode)
+__db_ndbm_open(file, oflags, mode)
 	const char *file;
 	int oflags, mode;
 {
@@ -221,7 +217,7 @@ dbm_open(file, oflags, mode)
  *	Nothing.
  */
 void
-dbm_close(db)
+__db_ndbm_close(db)
 	DBM *db;
 {
 	(void)db->close(db, 0);
@@ -233,25 +229,25 @@ dbm_close(db)
  *	NULL on failure
  */
 datum
-dbm_fetch(db, key)
+__db_ndbm_fetch(db, key)
 	DBM *db;
 	datum key;
 {
 	DBT _key, _data;
 	datum data;
-	int status;
+	int ret;
 
 	memset(&_key, 0, sizeof(DBT));
 	memset(&_data, 0, sizeof(DBT));
 	_key.size = key.dsize;
 	_key.data = key.dptr;
-	status = db->get((DB *)db, NULL, &_key, &_data, 0);
-	if (status) {
-		data.dptr = NULL;
-		data.dsize = 0;
-	} else {
+	if ((ret = db->get((DB *)db, NULL, &_key, &_data, 0)) == 0) {
 		data.dptr = _data.data;
 		data.dsize = _data.size;
+	} else {
+		data.dptr = NULL;
+		data.dsize = 0;
+		errno = ret == DB_NOTFOUND ? ENOENT : ret;
 	}
 	return (data);
 }
@@ -262,12 +258,12 @@ dbm_fetch(db, key)
  *	NULL on failure
  */
 datum
-dbm_firstkey(db)
+__db_ndbm_firstkey(db)
 	DBM *db;
 {
 	DBT _key, _data;
 	datum key;
-	int status;
+	int ret;
 
 	DBC *cp;
 
@@ -279,13 +275,13 @@ dbm_firstkey(db)
 
 	memset(&_key, 0, sizeof(DBT));
 	memset(&_data, 0, sizeof(DBT));
-	status = (cp->c_get)(cp, &_key, &_data, DB_FIRST);
-	if (status) {
-		key.dptr = NULL;
-		key.dsize = 0;
-	} else {
+	if ((ret = (cp->c_get)(cp, &_key, &_data, DB_FIRST)) == 0) {
 		key.dptr = _key.data;
 		key.dsize = _key.size;
+	} else {
+		key.dptr = NULL;
+		key.dsize = 0;
+		errno = ret == DB_NOTFOUND ? ENOENT : ret;
 	}
 	return (key);
 }
@@ -296,13 +292,13 @@ dbm_firstkey(db)
  *	NULL on failure
  */
 datum
-dbm_nextkey(db)
+__db_ndbm_nextkey(db)
 	DBM *db;
 {
 	DBC *cp;
 	DBT _key, _data;
 	datum key;
-	int status;
+	int ret;
 
 	if ((cp = TAILQ_FIRST(&db->curs_queue)) == NULL)
 		if ((errno = db->cursor(db, NULL, &cp)) != 0) {
@@ -312,13 +308,13 @@ dbm_nextkey(db)
 
 	memset(&_key, 0, sizeof(DBT));
 	memset(&_data, 0, sizeof(DBT));
-	status = (cp->c_get)(cp, &_key, &_data, DB_NEXT);
-	if (status) {
-		key.dptr = NULL;
-		key.dsize = 0;
-	} else {
+	if ((ret = (cp->c_get)(cp, &_key, &_data, DB_NEXT)) == 0) {
 		key.dptr = _key.data;
 		key.dsize = _key.size;
+	} else {
+		key.dptr = NULL;
+		key.dsize = 0;
+		errno = ret == DB_NOTFOUND ? ENOENT : ret;
 	}
 	return (key);
 }
@@ -329,7 +325,7 @@ dbm_nextkey(db)
  *	<0 failure
  */
 int
-dbm_delete(db, key)
+__db_ndbm_delete(db, key)
 	DBM *db;
 	datum key;
 {
@@ -339,14 +335,10 @@ dbm_delete(db, key)
 	memset(&_key, 0, sizeof(DBT));
 	_key.data = key.dptr;
 	_key.size = key.dsize;
-	ret = (((DB *)db)->del)((DB *)db, NULL, &_key, 0);
-	if (ret < 0)
-		errno = ENOENT;
-	else if (ret > 0) {
-		errno = ret;
-		ret = -1;
-	}
-	return (ret);
+	if ((ret = (((DB *)db)->del)((DB *)db, NULL, &_key, 0)) == 0)
+		return (0);
+	errno = ret == DB_NOTFOUND ? ENOENT : ret;
+	return (-1);
 }
 
 /*
@@ -356,12 +348,13 @@ dbm_delete(db, key)
  *	 1 if DBM_INSERT and entry exists
  */
 int
-dbm_store(db, key, data, flags)
+__db_ndbm_store(db, key, data, flags)
 	DBM *db;
 	datum key, data;
 	int flags;
 {
 	DBT _key, _data;
+	int ret;
 
 	memset(&_key, 0, sizeof(DBT));
 	memset(&_data, 0, sizeof(DBT));
@@ -369,12 +362,17 @@ dbm_store(db, key, data, flags)
 	_key.size = key.dsize;
 	_data.data = data.dptr;
 	_data.size = data.dsize;
-	return (db->put((DB *)db,
-	    NULL, &_key, &_data, (flags == DBM_INSERT) ? DB_NOOVERWRITE : 0));
+	if ((ret = db->put((DB *)db, NULL,
+	    &_key, &_data, flags == DBM_INSERT ? DB_NOOVERWRITE : 0)) == 0)
+		return (0);
+	if (ret == DB_KEYEXIST)
+		return (1);
+	errno = ret;
+	return (-1);
 }
 
 int
-dbm_error(db)
+__db_ndbm_error(db)
 	DBM *db;
 {
 	HTAB *hp;
@@ -384,7 +382,7 @@ dbm_error(db)
 }
 
 int
-dbm_clearerr(db)
+__db_ndbm_clearerr(db)
 	DBM *db;
 {
 	HTAB *hp;
@@ -395,13 +393,25 @@ dbm_clearerr(db)
 }
 
 /*
+ * Returns:
+ *	1 if read-only
+ *	0 if not read-only
+ */
+int
+__db_ndbm_rdonly(db)
+	DBM *db;
+{
+	return (F_ISSET((DB *)db, DB_AM_RDONLY) ? 1 : 0);
+}
+
+/*
  * XXX
  * We only have a single file descriptor that we can return, not two.  Return
  * the same one for both files.  Hopefully, the user is using it for locking
  * and picked one to use at random.
  */
 int
-dbm_dirfno(db)
+__db_ndbm_dirfno(db)
 	DBM *db;
 {
 	int fd;
@@ -411,7 +421,7 @@ dbm_dirfno(db)
 }
 
 int
-dbm_pagfno(db)
+__db_ndbm_pagfno(db)
 	DBM *db;
 {
 	int fd;

@@ -2,22 +2,22 @@
 <HEAD>
 <TITLE>DbTxnMgr</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>DbTxnMgr</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        <B>#include</B> <B>&lt;db</B>_<B>cxx.h&gt;</B>
 
        <B>static</B> <B>int</B>
        <B>DbTxnMgr::open(const</B> <B>char</B> <B>*dir,</B>
-            <B>int</B> <B>flags,</B> <B>int</B> <B>mode,</B> <B>DbEnv</B> <B>*dbenv,</B> <B>DbTxnMgr</B> <B>**regionp);</B>
+            <B>u</B>_<B>int32</B>_<B>t</B> <B>flags,</B> <B>int</B> <B>mode,</B> <B>DbEnv</B> <B>*dbenv,</B> <B>DbTxnMgr</B> <B>**regionp);</B>
 
        <B>int</B>
        <B>DbTxnMgr::begin(DbTxn</B> <B>*pid,</B> <B>DbTxn</B> <B>**tid);</B>
 
        <B>int</B>
-       <B>DbTxnMgr::checkpoint(int</B> <B>kbyte,</B> <B>int</B> <B>min)</B> <B>const;</B>
+       <B>DbTxnMgr::checkpoint(u</B>_<B>int32</B>_<B>t</B> <B>kbyte,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>min)</B> <B>const;</B>
 
        <B>int</B>
        <B>DbTxnMgr::close();</B>
@@ -160,7 +160,7 @@
             lk_info   is   NULL,  no  locking  is  done  in  this
             transaction environment.
 
-       unsigned int tx_max;
+       u_int32_t tx_max;
             The maximum number of simultaneous transactions  that
             are supported.  This bounds the size of backing files
             and is used to derive limits for the size of the lock
@@ -280,16 +280,16 @@
 
        In  the  case  of catastrophic or system failure, database
        recovery must  be  performed  (see  <B><A HREF="db_recover.html">db_recover(1)</A></B>  or  the
-       DB_RECOVER flags to <B><A HREF="DbEnv.html">DbEnv::appinit(3)</A></B>).  Alternatively, if
-       recovery is not required  because  no  database  state  is
-       maintained  across  failures, it is possible to clean up a
-       transaction region by removing all of  the  files  in  the
-       directory  specified  to  the  DbTxnMgr::open  method,  as
-       transaction  region  files  are  never  created   in   any
-       directory  other than the one specified to DbTxnMgr::open.
-       Note, however, that this has the potential to remove files
-       created  by  the  other  DB  subsystems  in  this database
-       environment.
+       DB_RECOVER      and      DB_RECOVER_FATAL     flags     to
+       <B><A HREF="DbEnv.html">DbEnv::appinit(3)</A></B>).  Alternatively,  if  recovery  is  not
+       required  because  no  database state is maintained across
+       failures, it is possible to clean up a transaction  region
+       by removing all of the files in the directory specified to
+       the DbTxnMgr::open method, as transaction region files are
+       never   created  in  any  directory  other  than  the  one
+       specified to DbTxnMgr::open.  Note, however, that this has
+       the  potential  to  remove  files  created by the other DB
+       subsystems in this database environment.
 
        The DbTxnMgr::unlink method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>  or
        returns the value of errno on failure and 0 on success.
@@ -359,6 +359,12 @@
             The number of transactions that have begun.
        u_int32_t st_ncommits;
             The number of transactions that have committed.
+       u_int32_t ;
+            The  number  of  times  that  a thread of control was
+            forced to wait before obtaining the region lock.
+       u_int32_t ;
+            The number of times that a thread of control was able
+            to obtain the region lock without waiting.
 
        DB_TXN_ACTIVE *st_txnarray;
             A  pointer  to  an  array of st_nactive DB_TXN_ACTIVE
@@ -370,6 +376,7 @@
             u_int32_t txnid;
                  The    transaction    ID    as    returned    by
                  <B><A HREF="DbTxnMgr.html">DbTxnMgr::begin(3)</A></B>.
+
             DbLsn lsn;
                  The LSN of the transaction-begin record.
 
@@ -439,6 +446,7 @@
        In addition, the DbTxnMgr::begin method may fail and throw
        a  <B><A HREF="DbException.html">DbException(3)</A></B>  or  return  errno  for  the   following
        conditions:
+
        [ENOSPC]
             The  maximum  number  of  concurrent transactions has
             been reached.
@@ -497,6 +505,7 @@
 </PRE>
 <H2>BUGS</H2><PRE>
        Nested transactions are not yet implemented.
+
        <B><A HREF="db_archive.html">db_archive(1)</A></B>, <B><A HREF="db_checkpoint.html">db_checkpoint(1)</A></B>, <B><A HREF="db_deadlock.html">db_deadlock(1)</A></B>, <B><A HREF="db_dump.html">db_dump(1)</A></B>,
        <B><A HREF="db_load.html">db_load(1)</A></B>, <B><A HREF="db_recover.html">db_recover(1)</A></B>, <B><A HREF="db_stat.html">db_stat(1)</A></B>, <B><A HREF="db_intro.html">db_intro(3)</A></B>,
        <B><A HREF="db_internal.html">db_internal(3)</A></B>, <B><A HREF="db_thread.html">db_thread(3)</A></B>, <B><A HREF="Db.html">Db(3)</A></B>, <B><A HREF="Dbc.html">Dbc(3)</A></B>, <B><A HREF="DbEnv.html">DbEnv(3)</A></B>,
@@ -505,7 +514,7 @@
        <B><A HREF="DbTxnMgr.html">DbTxnMgr(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

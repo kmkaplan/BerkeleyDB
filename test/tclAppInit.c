@@ -1,22 +1,19 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)tclAppInit.c	10.4 (Sleepycat) 8/27/97";
+static const char sccsid[] = "@(#)tclAppInit.c	10.7 (Sleepycat) 4/27/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
 #endif
 #include <tcl.h>
 
@@ -37,6 +34,10 @@ const char
 #ifndef _WIN32
 extern int matherr();
 int *tclDummyMathPtr = (int *)matherr;
+#endif
+
+#ifdef _WIN32
+extern void setup_terminate();
 #endif
 
 /*
@@ -114,7 +115,12 @@ Tcl_AppInit(interp)
 #if ((TCL_MAJOR_VERSION > 7) || \
     ((TCL_MAJOR_VERSION == 7) && (TCL_MINOR_VERSION >= 4)))
 int
+#ifdef _WIN32
+// Must let C++ have main in order to trap errors.
+main2(argc, argv)
+#else
 main(argc, argv)
+#endif
 	int argc;
 	char *argv[];
 {

@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test014.tcl	10.3 (Sleepycat) 8/22/97
+#	@(#)test014.tcl	10.6 (Sleepycat) 4/26/98
 #
 # DB Test 14 {access method}
 # Partial put test, small data, replacing with same size.
@@ -38,6 +38,7 @@ proc test014_body { method chars increase {nentries 10000} args } {
 	cleanup $testdir
 	set db [eval [concat dbopen $testfile [expr $DB_CREATE | $DB_TRUNCATE] \
 	    0644 $method $args] ]
+	error_check_good dbopen [is_valid_db $db] TRUE
 
 	set flags 0
 	set txn 0
@@ -112,9 +113,6 @@ proc test014_body { method chars increase {nentries 10000} args } {
 proc test014.check { key data } {
 global dvals
 	error_check_good key"$key"_exists [info exists dvals($key)] 1
-	if { [string compare $dvals($key) $data] != 0 } {
-		error "Test014: mismatch: expected key $key |$dvals($keys)|\
-		    \tGot |$data|"
-	}
+	error_check_good "data mismatch for key $key" $data $dvals($key)
 }
 

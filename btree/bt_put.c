@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -47,7 +47,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)bt_put.c	10.35 (Sleepycat) 11/22/97";
+static const char sccsid[] = "@(#)bt_put.c	10.43 (Sleepycat) 4/26/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -55,7 +55,6 @@ static const char sccsid[] = "@(#)bt_put.c	10.35 (Sleepycat) 11/22/97";
 
 #include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #endif
 
@@ -69,28 +68,28 @@ static int __bam_lookup __P((DB *, DBT *, int *));
 static int __bam_ndup __P((DB *, PAGE *, u_int32_t));
 static int __bam_ovput __P((DB *, PAGE *, u_int32_t, DBT *));
 static int __bam_partial __P((DB *, DBT *, PAGE *, u_int32_t, u_int32_t));
-static u_int32_t
-	   __bam_partsize __P((DB *, DBT *, PAGE *, u_int32_t));
+static u_int32_t __bam_partsize __P((DBT *, PAGE *, u_int32_t));
 
 /*
  * __bam_put --
  *	Add a new key/data pair or replace an existing pair (btree).
  *
- * PUBLIC: int __bam_put __P((DB *, DB_TXN *, DBT *, DBT *, int));
+ * PUBLIC: int __bam_put __P((DB *, DB_TXN *, DBT *, DBT *, u_int32_t));
  */
 int
 __bam_put(argdbp, txn, key, data, flags)
 	DB *argdbp;
 	DB_TXN *txn;
 	DBT *key, *data;
-	int flags;
+	u_int32_t flags;
 {
 	BTREE *t;
 	CURSOR c;
 	DB *dbp;
 	PAGE *h;
 	db_indx_t indx;
-	int exact, iflags, isdeleted, newkey, replace, ret, stack;
+	u_int32_t iitem_flags, insert_flags;
+	int exact, isdeleted, newkey, ret, stack;
 
 	DEBUG_LWRITE(argdbp, txn, "bam_put", key, data, flags);
 
@@ -122,14 +121,13 @@ retry:	/*
 	 * been marked for deletion, we do a replace, otherwise, it has to be
 	 * a set of duplicates, and we simply append a new one to the set.
 	 */
-	isdeleted = replace = 0;
+	isdeleted = 0;
 	if (exact) {
 		if ((ret = __bam_isdeleted(dbp, h, indx, &isdeleted)) != 0)
 			goto err;
-		if (isdeleted) {
-			replace = 1;
+		if (isdeleted)
 			__bam_ca_replace(dbp, h->pgno, indx, REPLACE_SETUP);
-		} else
+		else
 			if (flags == DB_NOOVERWRITE) {
 				ret = DB_KEYEXIST;
 				goto err;
@@ -180,42 +178,38 @@ retry:	/*
 				t->bt_csp->page = h = c.page;
 				indx = c.dindx;
 			}
-			iflags = DB_AFTER;
+			insert_flags = DB_AFTER;
 		} else
-			iflags = DB_CURRENT;
+			insert_flags = DB_CURRENT;
 	} else
-		iflags = DB_BEFORE;
+		insert_flags = DB_BEFORE;
 
 	/*
 	 * The pages we're using may be modified by __bam_iitem(), so make
 	 * sure we reset the stack.
 	 */
-	ret = __bam_iitem(dbp,
-	    &h, &indx, key, data, iflags, newkey ? BI_NEWKEY : 0);
+	iitem_flags = 0;
+	if (newkey)
+		iitem_flags |= BI_NEWKEY;
+	if (isdeleted)
+		iitem_flags |= BI_DOINCR;
+	ret = __bam_iitem(dbp, &h, &indx, key, data, insert_flags, iitem_flags);
 	t->bt_csp->page = h;
 	t->bt_csp->indx = indx;
 
 	switch (ret) {
 	case 0:
-		/*
-		 * Done.  Clean up the cursor, and, if we're doing record
-		 * numbers, adjust the internal page counts.
-		 */
-		if (replace)
+		/* Done.  Clean up the cursor. */
+		if (isdeleted)
 			__bam_ca_replace(dbp, h->pgno, indx, REPLACE_SUCCESS);
-
-		if (!replace && F_ISSET(dbp, DB_BT_RECNUM))
-			ret = __bam_adjust(dbp, t, 1);
 		break;
 	case DB_NEEDSPLIT:
 		/*
 		 * We have to split the page.  Back out the cursor setup,
 		 * discard the stack of pages, and do the split.
 		 */
-		if (replace) {
-			replace = 0;
+		if (isdeleted)
 			__bam_ca_replace(dbp, h->pgno, indx, REPLACE_FAILED);
-		}
 
 		(void)__bam_stkrel(dbp);
 		stack = 0;
@@ -226,7 +220,7 @@ retry:	/*
 		goto retry;
 		/* NOTREACHED */
 	default:
-		if (replace)
+		if (isdeleted)
 			__bam_ca_replace(dbp, h->pgno, indx, REPLACE_FAILED);
 		break;
 	}
@@ -394,7 +388,8 @@ __bam_lookup(dbp, key, exactp)
 				for (indx = 0;
 				    indx < (db_indx_t)(NUM_ENT(h) - P_INDX) &&
 				    h->inp[indx] == h->inp[indx + P_INDX];
-				    indx += P_INDX);
+				    indx += P_INDX)
+					;
 				e.indx = indx;
 			}
 			goto fast;
@@ -428,7 +423,7 @@ slow:	return (__bam_search(dbp, key, S_INSERT, 1, NULL, exactp));
  *	Insert an item into the tree.
  *
  * PUBLIC: int __bam_iitem __P((DB *,
- * PUBLIC:    PAGE **, db_indx_t *, DBT *, DBT *, int, int));
+ * PUBLIC:    PAGE **, db_indx_t *, DBT *, DBT *, u_int32_t, u_int32_t));
  */
 int
 __bam_iitem(dbp, hp, indxp, key, data, op, flags)
@@ -436,7 +431,7 @@ __bam_iitem(dbp, hp, indxp, key, data, op, flags)
 	PAGE **hp;
 	db_indx_t *indxp;
 	DBT *key, *data;
-	int op, flags;
+	u_int32_t op, flags;
 {
 	BTREE *t;
 	BKEYDATA *bk;
@@ -446,11 +441,11 @@ __bam_iitem(dbp, hp, indxp, key, data, op, flags)
 	u_int32_t data_size, have_bytes, need_bytes, needed;
 	int bigkey, bigdata, dupadjust, replace, ret;
 
+	COMPQUIET(bk, NULL);
+
 	t = dbp->internal;
 	h = *hp;
 	indx = *indxp;
-
-	bk = NULL;			/* XXX: Shut the compiler up. */
 	dupadjust = replace = 0;
 
 	/*
@@ -472,7 +467,10 @@ __bam_iitem(dbp, hp, indxp, key, data, op, flags)
 			return (ret);
 
 		/* Put the new/replacement item onto the page. */
-		return (__db_dput(dbp, data, hp, indxp, __bam_new));
+		if ((ret = __db_dput(dbp, data, hp, indxp, __bam_new)) != 0)
+			return (ret);
+
+		goto done;
 	}
 
 	/* Handle fixed-length records: build the real record. */
@@ -490,7 +488,7 @@ __bam_iitem(dbp, hp, indxp, key, data, op, flags)
 	 */
 	bigkey = LF_ISSET(BI_NEWKEY) && key->size > t->bt_ovflsize;
 	data_size = F_ISSET(data, DB_DBT_PARTIAL) ?
-	    __bam_partsize(dbp, data, h, indx) : data->size;
+	    __bam_partsize(data, h, indx) : data->size;
 	bigdata = data_size > t->bt_ovflsize;
 
 	needed = 0;
@@ -569,7 +567,7 @@ __bam_iitem(dbp, hp, indxp, key, data, op, flags)
 		case DB_BEFORE:		/* 2. Insert a new key/data pair. */
 			break;
 		default:
-			abort();
+			return (EINVAL);
 		}
 
 		/* Add the key. */
@@ -626,7 +624,7 @@ __bam_iitem(dbp, hp, indxp, key, data, op, flags)
 			/*
 			 * 5. Delete/re-add the data item.
 			 *
-			 * If we're dealing with offpage items, we have to 
+			 * If we're dealing with offpage items, we have to
 			 * delete and then re-add the item.
 			 */
 			if (bigdata || B_TYPE(bk->type) != B_KEYDATA) {
@@ -639,7 +637,7 @@ __bam_iitem(dbp, hp, indxp, key, data, op, flags)
 			replace = 1;
 			break;
 		default:
-			abort();
+			return (EINVAL);
 		}
 	}
 
@@ -667,9 +665,8 @@ __bam_iitem(dbp, hp, indxp, key, data, op, flags)
 			return (ret);
 	}
 
-	++t->lstat.bt_added;
-
-	ret = memp_fset(dbp->mpf, h, DB_MPOOL_DIRTY);
+	if ((ret = memp_fset(dbp->mpf, h, DB_MPOOL_DIRTY)) != 0)
+		return (ret);
 
 	/*
 	 * If the page is at least 50% full, and we added a duplicate, see if
@@ -682,8 +679,24 @@ __bam_iitem(dbp, hp, indxp, key, data, op, flags)
 			return (ret);
 	}
 
+	/*
+	 * If we've changed the record count, update the tree.  Record counts
+	 * need to be updated in recno databases and in btree databases where
+	 * we are supporting records.  In both cases, adjust the count if the
+	 * operation wasn't performed on the current record or when the caller
+	 * overrides and wants the adjustment made regardless.
+	 */
+done:	if (LF_ISSET(BI_DOINCR) ||
+	    (op != DB_CURRENT &&
+	    (F_ISSET(dbp, DB_BT_RECNUM) || dbp->type == DB_RECNO)))
+		if ((ret = __bam_adjust(dbp, t, 1)) != 0)
+			return (ret);
+
+	/* If we've modified a recno file, set the flag */
 	if (t->bt_recno != NULL)
 		F_SET(t->bt_recno, RECNO_MODIFIED);
+
+	++t->lstat.bt_added;
 
 	return (ret);
 }
@@ -693,8 +706,7 @@ __bam_iitem(dbp, hp, indxp, key, data, op, flags)
  *	Figure out how much space a partial data item is in total.
  */
 static u_int32_t
-__bam_partsize(dbp, data, h, indx)
-	DB *dbp;
+__bam_partsize(data, h, indx)
 	DBT *data;
 	PAGE *h;
 	u_int32_t indx;
@@ -1038,10 +1050,11 @@ __bam_partial(dbp, dbt, h, indx, nbytes)
 	BOVERFLOW *bo;
 	DBT copy;
 	u_int32_t len, tlen;
-	int ret;
 	u_int8_t *p;
+	int ret;
 
-	bo = NULL;			/* XXX: Shut the compiler up. */
+	COMPQUIET(bo, NULL);
+
 	t = dbp->internal;
 
 	/* We use the record data return memory, it's only a short-term use. */
@@ -1066,59 +1079,62 @@ __bam_partial(dbp, dbt, h, indx, nbytes)
 		bk->len = 0;
 	}
 
-	/* We use nul bytes for extending the record, get it over with. */
+	/*
+	 * We use nul bytes for any part of the record that isn't specified,
+	 * get it over with.
+	 */
 	memset(t->bt_rdata.data, 0, nbytes);
 
-	tlen = 0;
 	if (B_TYPE(bk->type) == B_OVERFLOW) {
-		/* Take up to doff bytes from the record. */
+		/*
+		 * In the case of an overflow record, we shift things around
+		 * in the current record rather than allocate a separate copy.
+		 */
 		memset(&copy, 0, sizeof(copy));
 		if ((ret = __db_goff(dbp, &copy, bo->tlen,
 		    bo->pgno, &t->bt_rdata.data, &t->bt_rdata.ulen)) != 0)
 			return (ret);
-		tlen += dbt->doff;
+
+		/* Skip any leading data from the original record. */
+		tlen = dbt->doff;
+		p = (u_int8_t *)t->bt_rdata.data + dbt->doff;
 
 		/*
-		 * If the original record was larger than the offset:
-		 *	If dlen > size, shift the remaining data down.
-		 *	If dlen < size, shift the remaining data up.
+		 * Copy in any trailing data from the original record.
+		 *
+		 * If the original record was larger than the original offset
+		 * plus the bytes being deleted, there is trailing data in the
+		 * original record we need to preserve.  If we aren't deleting
+		 * the same number of bytes as we're inserting, copy it up or
+		 * down, into place.
+		 *
 		 * Use memmove(), the regions may overlap.
 		 */
-		p = t->bt_rdata.data;
-		if (bo->tlen > dbt->doff)
-			if (dbt->dlen > dbt->size) {
-				tlen += len = bo->tlen -
-				    dbt->doff - (dbt->dlen - dbt->size);
-				memmove(p + dbt->doff + dbt->size,
-				    p + dbt->doff + dbt->dlen, len);
-			} else if (dbt->dlen < dbt->size) {
-				tlen += len = bo->tlen -
-				    dbt->doff - (dbt->size - dbt->dlen);
-				memmove(p + dbt->doff + dbt->dlen,
-				    p + dbt->doff + dbt->size, len);
-			} else
-				tlen += bo->tlen - dbt->doff;
+		if (bo->tlen > dbt->doff + dbt->dlen) {
+			len = bo->tlen - (dbt->doff + dbt->dlen);
+			if (dbt->dlen != dbt->size)
+				memmove(p + dbt->size, p + dbt->dlen, len);
+			tlen += len;
+		}
 
-		/* Copy in the user's data. */
-		memcpy((u_int8_t *)t->bt_rdata.data + dbt->doff,
-		    dbt->data, dbt->size);
+		/* Copy in the application provided data. */
+		memcpy(p, dbt->data, dbt->size);
 		tlen += dbt->size;
 	} else {
-		/* Take up to doff bytes from the record. */
+		/* Copy in any leading data from the original record. */
 		memcpy(t->bt_rdata.data,
 		    bk->data, dbt->doff > bk->len ? bk->len : dbt->doff);
-		tlen += dbt->doff;
+		tlen = dbt->doff;
+		p = (u_int8_t *)t->bt_rdata.data + dbt->doff;
 
-		/* Copy in the user's data. */
-		memcpy((u_int8_t *)t->bt_rdata.data +
-		    dbt->doff, dbt->data, dbt->size);
+		/* Copy in the application provided data. */
+		memcpy(p, dbt->data, dbt->size);
 		tlen += dbt->size;
 
-		/* Copy in any remaining data. */
+		/* Copy in any trailing data from the original record. */
 		len = dbt->doff + dbt->dlen;
 		if (bk->len > len) {
-			memcpy((u_int8_t *)t->bt_rdata.data + dbt->doff +
-			    dbt->size, bk->data + len, bk->len - len);
+			memcpy(p + dbt->size, bk->data + len, bk->len - len);
 			tlen += bk->len - len;
 		}
 	}

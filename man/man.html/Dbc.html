@@ -2,9 +2,9 @@
 <HEAD>
 <TITLE>Dbc</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>Dbc</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        <B>#include</B> <B>&lt;db</B>_<B>cxx.h&gt;</B>
@@ -13,13 +13,13 @@
        <B>Dbc::close(void);</B>
 
        <B>int</B>
-       <B>Dbc::del(int</B> <B>flags);</B>
+       <B>Dbc::del(u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
-       <B>Dbc::get(Dbt</B> <B>*key,</B> <B>Dbt</B> <B>*data,</B> <B>int</B> <B>flags);</B>
+       <B>Dbc::get(Dbt</B> <B>*key,</B> <B>Dbt</B> <B>*data,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
-       <B>Dbc::put(Dbt</B> <B>*key,</B> <B>Dbt</B> <B>*data,</B> <B>int</B> <B>flags);</B>
+       <B>Dbc::put(Dbt</B> <B>*key,</B> <B>Dbt</B> <B>*data,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
 
 </PRE>
@@ -73,7 +73,7 @@
             returns  the  value  of  errno  on  failure  and 0 on
             success.
 
-       int Dbc::del(int flags);
+       int Dbc::del(u_int32_t flags);
             A method that deletes  the  key/data  pair  currently
             referenced by the cursor.
 
@@ -89,7 +89,7 @@
             and DB_KEYEMPTY  if  the  element  has  already  been
             deleted.
 
-       int Dbc::get(Dbt *key, Dbt *data, int flags);
+       int Dbc::get(Dbt *key, Dbt *data, u_int32_t flags);
             A  method  that  retrieves  key/data  pairs  from the
             database.  The address and  length  of  the  key  are
             returned  in the object referenced by key (except for
@@ -195,42 +195,43 @@
                  the data item, and, in the  case  of  the  btree
                  access method, the returned key/data pair is the
                  smallest  key  greater  than  or  equal  to  the
-                 specified  key,  permitting  partial key matches
-                 and range searches.
+                 specified  key  (as determined by the comparison
+                 function), permitting partial  key  matches  and
+                 range searches.
 
             DB_SET_RECNO
-                 Move the cursor to the specific numbered  record
+                 Move  the cursor to the specific numbered record
                  of  the  database,  and  return  the  associated
-                 key/data pair.  The data field of the  specified
-                 key  must be a pointer to a memory location from
-                 which a db_recno_t may be read, as described  in
-                 <B><A HREF="Dbt.html">Dbt(3)</A></B>.   This  memory  location will be read to
+                 key/data  pair.  The data field of the specified
+                 key must be a pointer to a memory location  from
+                 which  a db_recno_t may be read, as described in
+                 <B><A HREF="Dbt.html">Dbt(3)</A></B>.  This memory location will  be  read  to
                  determine the record to be retrieved.
 
                  For DB_SET_RECNO to be specified, the underlying
-                 database  must be of type btree and it must have
-                 been  created  with  the  DB_RECNUM  flag   (see
+                 database must be of type btree and it must  have
+                 been   created  with  the  DB_RECNUM  flag  (see
                  Db::open in <B><A HREF="Db.html">Db(3)</A></B>).
 
             DB_GET_RECNO
-                 Return  the  record  number  associated with the
-                 cursor.  The record number will be  returned  in
-                 the  data  Dbt  as described in <B><A HREF="Dbt.html">Dbt(3)</A></B>.  The key
+                 Return the record  number  associated  with  the
+                 cursor.   The  record number will be returned in
+                 the data Dbt as described in  <B><A HREF="Dbt.html">Dbt(3)</A></B>.   The  key
                  parameter is ignored.
 
                  For DB_GET_RECNO to be specified, the underlying
-                 database  must be of type btree and it must have
-                 been  created  with  the  DB_RECNUM  flag   (see
+                 database must be of type btree and it must  have
+                 been   created  with  the  DB_RECNUM  flag  (see
                  Db::open in <B><A HREF="Db.html">Db(3)</A></B>).
 
-            Otherwise,    the    Dbc::get    method    throws   a
-            <B><A HREF="DbException.html">DbException(3)</A></B> or  returns  the  value  of  errno  on
+            Otherwise,   the    Dbc::get    method    throws    a
+            <B><A HREF="DbException.html">DbException(3)</A></B>  or  returns  the  value  of  errno on
             failure and 0 on success.
 
-            If  Dbc::get  fails  for any reason, the state of the
+            If Dbc::get fails for any reason, the  state  of  the
             cursor will be unchanged.
 
-       int Dbc::put(Dbt *key, Dbt *data, int flags);
+       int Dbc::put(Dbt *key, Dbt *data, u_int32_t flags);
               A  method  that  stores  key/data  pairs  into  the
             database.
 
@@ -239,23 +240,23 @@
 
             DB_AFTER
                  In  the  case  of  the  btree  and  hash  access
-                 methods,  insert the data element as a duplicate
-                 element of the key  referenced  by  the  cursor.
-                 The  new  element  appears immediately after the
-                 current cursor position.   It  is  an  error  to
+                 methods, insert the data element as a  duplicate
+                 element  of  the  key  referenced by the cursor.
+                 The new element appears  immediately  after  the
+                 current  cursor  position.   It  is  an error to
                  specify DB_AFTER if the underlying btree or hash
-                 database was not created with the  DB_DUP  flag.
+                 database  was  not created with the DB_DUP flag.
                  The key parameter is ignored.
 
                  In the case of the recno access method, it is an
-                 error to  specify  DB_AFTER  if  the  underlying
-                 recno   database   was   not  created  with  the
-                 DB_RENUMBER flag.  If the DB_RENUMBER  flag  was
-                 specified,  a  new  key  is created, all records
-                 after  the  inserted  item   are   automatically
-                 renumbered,  and  the  key  of the new record is
-                 returned  in  the  object  referenced   by   the
-                 parameter  key.   The  initial  value of the key
+                 error  to  specify  DB_AFTER  if  the underlying
+                 recno  database  was  not   created   with   the
+                 DB_RENUMBER  flag.   If the DB_RENUMBER flag was
+                 specified, a new key  is  created,  all  records
+                 after   the   inserted  item  are  automatically
+                 renumbered, and the key of  the  new  record  is
+                 returned   in   the  object  referenced  by  the
+                 parameter key.  The initial  value  of  the  key
                  parameter is ignored.  See Db::open in <B><A HREF="Db.html">Db(3)</A></B> for
                  more information.
 
@@ -264,22 +265,22 @@
 
             DB_BEFORE
                  In  the  case  of  the  btree  and  hash  access
-                 methods,  insert the data element as a duplicate
-                 element of the key  referenced  by  the  cursor.
-                 The  new  element appears immediately before the
-                 current cursor position.   It  is  an  error  to
-                 specify  DB_BEFORE  if  the  underlying btree or
-                 hash database was not created  with  the  DB_DUP
+                 methods, insert the data element as a  duplicate
+                 element  of  the  key  referenced by the cursor.
+                 The new element appears immediately  before  the
+                 current  cursor  position.   It  is  an error to
+                 specify DB_BEFORE if  the  underlying  btree  or
+                 hash  database  was  not created with the DB_DUP
                  flag.  The key parameter is ignored.
 
                  In the case of the recno access method, it is an
-                 error to specify  DB_BEFORE  if  the  underlying
-                 recno   database   was   not  created  with  the
-                 DB_RENUMBER flag.  If the DB_RENUMBER  flag  was
-                 specified,  a  new  key  is created, the current
-                 record   and   all   records   after   it    are
+                 error  to  specify  DB_BEFORE  if the underlying
+                 recno  database  was  not   created   with   the
+                 DB_RENUMBER  flag.   If the DB_RENUMBER flag was
+                 specified, a new key  is  created,  the  current
+                 record    and   all   records   after   it   are
                  automatically renumbered, and the key of the new
-                 record is returned in the object  referenced  by
+                 record  is  returned in the object referenced by
                  the parameter key.  The initial value of the key
                  parameter is ignored.  See Db::open in <B><A HREF="Db.html">Db(3)</A></B> for
                  more information.
@@ -288,7 +289,7 @@
                  Dbc::put method will return EINVAL.
 
             DB_CURRENT
-                 Overwrite  the  data  of   the   key/data   pair
+                 Overwrite   the   data   of  the  key/data  pair
                  referenced by the cursor with the specified data
                  item.
 
@@ -300,7 +301,7 @@
             DB_KEYFIRST
                  In  the  case  of  the  btree  and  hash  access
                  methods, insert the specified key/data pair into
-                 the  database.  If the key already exists in the
+                 the database.  If the key already exists in  the
                  database, the inserted data item is added as the
                  first of the data items for that key.
 
@@ -308,70 +309,69 @@
                  recno access method.
 
             DB_KEYLAST
-                 Insert the  specified  key/data  pair  into  the
-                 database.   If  the  key  already  exists in the
+                 Insert  the  specified  key/data  pair  into the
+                 database.  If the  key  already  exists  in  the
                  database, the inserted data item is added as the
                  last of the data items for that key.
 
-                 The  DB_KEYLAST flag may not be specified to the
+                 The DB_KEYLAST flag may not be specified to  the
                  recno access method.
 
-            If the cursor record has been deleted,  the  Dbc::put
+            If  the  cursor record has been deleted, the Dbc::put
             method will return DB_KEYEMPTY.
-
-            Otherwise,    the    Dbc::put    method    throws   a
-            <B><A HREF="DbException.html">DbException(3)</A></B> or  returns  the  value  of  errno  on
+            Otherwise,   the    Dbc::put    method    throws    a
+            <B><A HREF="DbException.html">DbException(3)</A></B>  or  returns  the  value  of  errno on
             failure and 0 on success.
 
-            If  Dbc::put  fails  for any reason, the state of the
-            cursor will be unchanged.  If Dbc::put  succeeds  and
-            an  item is inserted into the database, the cursor is
-            always positioned to  reference  the  newly  inserted
+            If Dbc::put fails for any reason, the  state  of  the
+            cursor  will  be unchanged.  If Dbc::put succeeds and
+            an item is inserted into the database, the cursor  is
+            always  positioned  to  reference  the newly inserted
             item.
 
 
 </PRE>
 <H2>CURSOR STABILITY</H2><PRE>
-       In  the  absence  of locking, no guarantees are made about
-       the  stability  of  cursors  in  different  processes   or
-       threads.   However,  the  btree  and  recno access methods
-       guarantee that cursor operations, interspersed with  other
-       cursor  or  non-cursor  operations  in  the same thread of
-       control (i.e., thread or  single-threaded  process),  will
-       always  return  keys  in  order  and will return each non-
-       deleted key/data pair  exactly  once.   Because  the  hash
-       access  method uses a dynamic hashing algorithm, it cannot
+       In the absence of locking, no guarantees  are  made  about
+       the   stability  of  cursors  in  different  processes  or
+       threads.  However, the  btree  and  recno  access  methods
+       guarantee  that cursor operations, interspersed with other
+       cursor or non-cursor operations  in  the  same  thread  of
+       control  (i.e.,  thread  or single-threaded process), will
+       always return keys in order  and  will  return  each  non-
+       deleted  key/data  pair  exactly  once.   Because the hash
+       access method uses a dynamic hashing algorithm, it  cannot
        guarantee any form of stability in the presence of inserts
        and deletes unless locking is performed.
 
-       If  locking was specified when the Db file was opened, but
+       If locking was specified when the Db file was opened,  but
        transactions are not in effect, the access methods provide
-       repeatable  reads  with respect to the cursor.  That is, a
-       DB_CURRENT call on the cursor is guaranteed to return  the
-       same  record  as  was  returned  on  the  last call to the
+       repeatable reads with respect to the cursor.  That  is,  a
+       DB_CURRENT  call on the cursor is guaranteed to return the
+       same record as was  returned  on  the  last  call  to  the
        cursor.
 
-       In the presence of transactions, the access  method  calls
-       between  DbTxnMgr::begin and DbTxn::abort or DbTxn::commit
-       provide degree 3 consistency.  For all access  methods,  a
-       cursor  scan  of the database performed within the context
-       of a transaction is guaranteed  to  return  each  key/data
-       pair  once  and  only  once, except in the following case.
-       If, while performing a cursor scan using the  hash  access
-       method,  the transaction performing the scan inserts a new
-       pair into the database,  it  is  possible  that  duplicate
+       In  the  presence of transactions, the access method calls
+       between DbTxnMgr::begin and DbTxn::abort or  DbTxn::commit
+       provide  degree  3 consistency.  For all access methods, a
+       cursor scan of the database performed within  the  context
+       of  a  transaction  is  guaranteed to return each key/data
+       pair once and only once, except  in  the  following  case.
+       If,  while  performing a cursor scan using the hash access
+       method, the transaction performing the scan inserts a  new
+       pair  into  the  database,  it  is possible that duplicate
        key/data pairs will be returned.
 
 
 </PRE>
 <H2>ERRORS</H2><PRE>
-       Methods  marked as returning errno will, by default, throw
+       Methods marked as returning errno will, by default,  throw
        an exception that encapsulates the error information.  The
        default error behavior can be changed, see <B><A HREF="DbException.html">DbException(3)</A></B>.
 
        The Dbc::close method may fail and throw a <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or return errno for any of the errors  specified  for  the
+       or  return  errno  for any of the errors specified for the
        following DB and library functions: <B><A HREF="DbLock.html">DbLock::get(3)</A></B>,
        <B><A HREF="DbLock.html">DbLock::put(3)</A></B>, <B><A HREF="DbLockTab.html">DbLockTab::id(3)</A></B>, <B><A HREF="DbLockTab.html">DbLockTab::vec(3)</A></B>,
        <B><A HREF="DbLog.html">DbLog::put(3)</A></B>, <B><A HREF="DbMpoolFile.html">DbMpoolFile::get(3)</A></B>, <B><A HREF="DbMpoolFile.html">DbMpoolFile::put(3)</A></B>,
@@ -379,21 +379,21 @@
        <B>malloc(3)</B>, <B>memcpy(3)</B>, <B>memmove(3)</B>, <B>memset(3)</B>, <B>realloc(3)</B>,
        and <B>strerror(3)</B>.
 
-       In addition, the Dbc::close method may fail  and  throw  a
-       <B><A HREF="DbException.html">DbException(3)</A></B>   or   return   errno   for  the  following
+       In  addition,  the  Dbc::close method may fail and throw a
+       <B><A HREF="DbException.html">DbException(3)</A></B>  or  return   errno   for   the   following
        conditions:
 
        [EAGAIN]
             A lock was unavailable.
 
        [EPERM]
-            Database corruption  was  detected.   All  subsequent
-            database  calls  (other  than  Db::close) will return
+            Database  corruption  was  detected.   All subsequent
+            database calls (other  than  Db::close)  will  return
             EPERM.
 
        The Dbc::del method may fail and throw a <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or return errno for any of the errors  specified  for  the
+       or  return  errno  for any of the errors specified for the
        following DB and library functions: <B><A HREF="Db.html">Db::del(3)</A></B>,
        <B><A HREF="DbLock.html">DbLock::get(3)</A></B>, <B><A HREF="DbLock.html">DbLock::put(3)</A></B>, <B><A HREF="DbLockTab.html">DbLockTab::id(3)</A></B>,
        <B><A HREF="DbLockTab.html">DbLockTab::vec(3)</A></B>, <B><A HREF="DbLog.html">DbLog::put(3)</A></B>, <B><A HREF="DbMpoolFile.html">DbMpoolFile::get(3)</A></B>,
@@ -401,8 +401,8 @@
        <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>malloc(3)</B>, <B>memcpy(3)</B>, <B>memmove(3)</B>,
        <B>memset(3)</B>, <B>realloc(3)</B>, and <B>strerror(3)</B>.
 
-       In addition, the Dbc::del method  may  fail  and  throw  a
-       <B><A HREF="DbException.html">DbException(3)</A></B>   or   return   errno   for  the  following
+       In  addition,  the  Dbc::del  method  may fail and throw a
+       <B><A HREF="DbException.html">DbException(3)</A></B>  or  return   errno   for   the   following
        conditions:
 
        [EAGAIN]
@@ -412,13 +412,13 @@
             An invalid flag value or parameter was specified.
 
        [EPERM]
-            Database corruption  was  detected.   All  subsequent
-            database  calls  (other  than  Db::close) will return
+            Database  corruption  was  detected.   All subsequent
+            database calls (other  than  Db::close)  will  return
             EPERM.
 
        The Dbc::get method may fail and throw a <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or return errno for any of the errors  specified  for  the
+       or  return  errno  for any of the errors specified for the
        following DB and library functions: <B><A HREF="Db.html">Db::get(3)</A></B>,
        <B><A HREF="DbLock.html">DbLock::get(3)</A></B>, <B><A HREF="DbLock.html">DbLock::put(3)</A></B>, <B><A HREF="DbLockTab.html">DbLockTab::id(3)</A></B>,
        <B><A HREF="DbLockTab.html">DbLockTab::vec(3)</A></B>, <B><A HREF="DbLog.html">DbLog::put(3)</A></B>, <B><A HREF="DbMpoolFile.html">DbMpoolFile::get(3)</A></B>,
@@ -426,8 +426,8 @@
        <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>malloc(3)</B>, <B>memcmp(3)</B>, <B>memcpy(3)</B>,
        <B>memmove(3)</B>, <B>memset(3)</B>, <B>realloc(3)</B>, and <B>strerror(3)</B>.
 
-       In addition, the Dbc::get method  may  fail  and  throw  a
-       <B><A HREF="DbException.html">DbException(3)</A></B>   or   return   errno   for  the  following
+       In  addition,  the  Dbc::get  method  may fail and throw a
+       <B><A HREF="DbException.html">DbException(3)</A></B>  or  return   errno   for   the   following
        conditions:
 
        [EAGAIN]
@@ -436,19 +436,19 @@
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-            The DB_THREAD flag  was  specified  to  the  Db::open
+            The  DB_THREAD  flag  was  specified  to the Db::open
             method   described   in   <B><A HREF="Db.html">Db(3)</A></B>   and   neither   the
             DB_DBT_MALLOC or DB_DBT_USERMEM flags were set in the
             Dbt.
 
        [EPERM]
-            Database  corruption  was  detected.   All subsequent
-            database calls (other  than  Db::close)  will  return
+            Database corruption  was  detected.   All  subsequent
+            database  calls  (other  than  Db::close) will return
             EPERM.
 
        The Dbc::put method may fail and throw a <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or  return  errno  for any of the errors specified for the
+       or return errno for any of the errors  specified  for  the
        following DB and library functions: <B><A HREF="DbLock.html">DbLock::get(3)</A></B>,
        <B><A HREF="DbLock.html">DbLock::put(3)</A></B>, <B><A HREF="DbLockTab.html">DbLockTab::id(3)</A></B>, <B><A HREF="DbLockTab.html">DbLockTab::vec(3)</A></B>,
        <B><A HREF="DbLog.html">DbLog::put(3)</A></B>, <B><A HREF="DbMpoolFile.html">DbMpoolFile::get(3)</A></B>, <B><A HREF="DbMpoolFile.html">DbMpoolFile::put(3)</A></B>,
@@ -456,8 +456,8 @@
        <B>malloc(3)</B>, <B>memcmp(3)</B>, <B>memcpy(3)</B>, <B>memmove(3)</B>, <B>memset(3)</B>,
        <B>realloc(3)</B>, and <B>strerror(3)</B>.
 
-       In  addition,  the  Dbc::put  method  may fail and throw a
-       <B><A HREF="DbException.html">DbException(3)</A></B>  or  return   errno   for   the   following
+       In addition, the Dbc::put method  may  fail  and  throw  a
+       <B><A HREF="DbException.html">DbException(3)</A></B>   or   return   errno   for  the  following
        conditions:
 
        [EACCES]
@@ -470,8 +470,8 @@
             An invalid flag value or parameter was specified.
 
        [EPERM]
-            Database  corruption  was  detected.   All subsequent
-            database calls (other  than  Db::close)  will  return
+            Database corruption  was  detected.   All  subsequent
+            database  calls  (other  than  Db::close) will return
             EPERM.
 
 
@@ -485,7 +485,7 @@
        <B><A HREF="DbTxnMgr.html">DbTxnMgr(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

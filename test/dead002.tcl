@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)dead002.tcl	8.2 (Sleepycat) 10/4/97
+#	@(#)dead002.tcl	8.3 (Sleepycat) 4/10/98
 #
 # Deadlock Test 2.
 # Identical to Test 1 except that instead of running a standalone deadlock

@@ -1,4 +1,4 @@
-# @(#)README	10.2 (Sleepycat) 11/13/97
+# @(#)README	10.7 (Sleepycat) 5/2/98
 
                         Notes for Java users of DB
 
@@ -112,14 +112,31 @@ we'll add it to the collection.
 BUILDING LIBDB_JAVA:
 
 Before building libdb_java, make sure you have a shared library version
-of DB (see above).  You may then issue the appropriate make command in
-the libdb_java directory:
-							
+of DB (see above).
+
 On UNIX:
+
+NB: The libdb_java/Makefile.unix Makefile is written to expect that the
+system compiler is named "gcc" and is the GNU C compiler.  In addition,
+it uses compiler-specific options when building.  If you are using a
+different compiler than gcc, you'll need to modify Makefile.unix to work
+with it.
+
+First, edit the line at the beginning of libdb_java/Makefile.unix:
+
+	JAVAINSDIR=	/usr/java1.1/
+
+Change JAVAINSDIR to be the top level directory of your java JDK tree.
+This is the level above the bin and include directories.  Then issue a
+make command in the libdb_java directory:
+
 	% cd db-VERSION/libdb_java
 	% make -f Makefile.unix
 
 On Win/:
+
+Issue the nmake command in the libdb_java directory:
+
 	C:\db_distribution\libdb_java> nmake /f Makefile.win32
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -188,21 +205,18 @@ as the caller to DbEnv.set_errcall.  Make sure that thread remains running
 until your application exits or DbEnv.appexit() is called.
 
 The DB package requires that you explicitly call close on each individual
-Db, Dbc that you obtained or any DbLocktab, DbLog, DbMpool, DbTxnMgr that
-you explicitly opened.  Your database activity may not be synchronized to
-disk unless you do so.
+Db, Dbc that you obtained or any DbLocktab or DbTxnMgr that you explicitly
+opened.  Your database activity may not be synchronized to disk unless you
+do so.
 
-The classes DbMpool and DbMpoolFile have not been fully implemented.
-These classes were intended to give programmers direct access to the MPOOL
-subsystem, which is used by DB internally to manage large pools of memory
-backed by disk.  Although there are placeholder classes and some methods
-defined, not all have been implemented due to some difficulties in
-efficiently and portably translating some concepts from C to Java.  We
-are guessing that direct use of DbMpools is not something that Java
-programmers will want to do.
+The DbMpool class has a small subset of the corresponding DB/C++
+functionality.  This has been provided to allow you to perform certain
+administrative actions on underlying MPOOL's opened as a consequence
+of DbEnv.appinit().  Direct access to other MPOOL functionality is
+not appropriate for the Java environment.
 
 The Java runtime DOES NOT automatically close Db* objects on finalization,
-whether they be Db, Dbc, DbMpool, etc.  There are a couple reasons for
+whether they be Db, Dbc, DbTxn, etc.  There are a couple reasons for
 this.  One is that finalization is generally run only when GC occurs and
 there is no guarantee that this occurs at all (even on exit).  Allowing
 specific DB actions to occur in ways that cannot be replicated seems

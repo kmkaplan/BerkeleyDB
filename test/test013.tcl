@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test013.tcl	10.3 (Sleepycat) 8/22/97
+#	@(#)test013.tcl	10.6 (Sleepycat) 4/26/98
 #
 # DB Test 13 {access method}
 # Partial put and put flag testing 1.
@@ -29,6 +29,7 @@ proc test013 { method {nentries 10000} args } {
 	cleanup $testdir
 	set db [eval [concat dbopen $testfile [expr $DB_CREATE | $DB_TRUNCATE] \
 	    0644 $method $args] ]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	set did [open $dict]
 
 	set flags 0
@@ -151,18 +152,14 @@ proc test013 { method {nentries 10000} args } {
 
 # Check function for test013; keys and data are identical
 proc test013.check { key data } {
-	if { [string compare [string toupper $key] $data] != 0 } {
-		error "Test013: key/data mismatch: \
-		    |[string toupper $key]| |$data|"
-	}
+	error_check_good "key/data mismatch for $key" $data \
+	    [string toupper $key]
 }
 
 proc test013_recno.check { key data } {
 	global dict
 	global kvals
 	error_check_good key"$key"_exists [info exists kvals($key)] 1
-	if { [string compare [string toupper $kvals($key)] $data] != 0 } {
-		error "Test013: data mismatch: \
-		    Key $key |[string toupper $kvals($key)]| |$data|"
-	}
+	error_check_good "data mismatch for $key" $data \
+	    [string toupper $kvals($key)]
 }

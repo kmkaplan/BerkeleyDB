@@ -1,16 +1,14 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test003.tcl	10.4 (Sleepycat) 8/22/97
-#
-# DB Test 3 {access method}
-# Take the objects and executable in the current (build) directory and
-# enter their name as key with their contents as data.
-# After all are entered, retrieve all; compare output
-# to original. Close file, reopen, do retrieve and re-verify.
+#	@(#)test003.tcl	10.8 (Sleepycat) 4/28/98
 
+# DB Test 3 {access method}
+# Take the source files and dbtest executable and enter their names as the
+# key with their contents as data.  After all are entered, retrieve all;
+# compare output to original. Close file, reopen, do retrieve and re-verify.
 proc test003 { method args} {
 	global names
 	set args [convert_args $method $args]
@@ -31,7 +29,7 @@ proc test003 { method args} {
 	cleanup $testdir
 	set db [eval [concat dbopen \
 	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
-
+	error_check_good dbopen [is_valid_db $db] TRUE
 	set flags 0
 	set txn 0
 	if { [string compare $method DB_RECNO] == 0 } {
@@ -41,7 +39,7 @@ proc test003 { method args} {
 	}
 
 	# Here is the loop where we put and get each key/data pair
-	set file_list [glob ./*.o ./dbtest ]
+	set file_list [glob ../*/*.c ./dbtest ./dbtest.exe]
 
 	puts "\tTest003.a: put/get loop"
 	set count 0
@@ -55,8 +53,8 @@ proc test003 { method args} {
 		$db putbin $txn $key ./$f $flags
 		set ret [$db getbin $t4 $txn $key $flags]
 
-		error_check_good Test003:cmp(./$f,$t4) \
-		    [catch { exec $CMP ./$f $t4 } res] 0
+		error_check_good Test003:diff(./$f,$t4) \
+		    [catch { exec $DIFF ./$f $t4 } res] 0
 
 		incr count
 	}
@@ -120,7 +118,7 @@ proc test003.check { binfile tmpfile } {
 	source ./include.tcl
 
 	error_check_good Test003:datamismatch(./$binfile,$tmpfile) \
-	    [catch { exec $CMP ./$binfile $tmpfile } res] 0
+	    [catch { exec $DIFF ./$binfile $tmpfile } res] 0
 }
 proc test003_recno.check { binfile tmpfile } {
 	global names
@@ -129,5 +127,5 @@ proc test003_recno.check { binfile tmpfile } {
 	set fname $names($binfile)
 	error_check_good key"$binfile"_exists [info exists names($binfile)] 1
 	error_check_good Test003:datamismatch(./$fname,$tmpfile) \
-	    [catch { exec $CMP ./$fname $tmpfile } res] 0
+	    [catch { exec $DIFF ./$fname $tmpfile } res] 0
 }

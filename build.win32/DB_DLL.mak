@@ -127,6 +127,7 @@ CLEAN :
 	-@erase "$(INTDIR)\mp_sync.obj"
 	-@erase "$(INTDIR)\mutex.obj"
 	-@erase "$(INTDIR)\os_abs.obj"
+	-@erase "$(INTDIR)\os_alloc.obj"
 	-@erase "$(INTDIR)\os_config.obj"
 	-@erase "$(INTDIR)\os_dir.obj"
 	-@erase "$(INTDIR)\os_fid.obj"
@@ -251,6 +252,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\mp_sync.obj" \
 	"$(INTDIR)\mutex.obj" \
 	"$(INTDIR)\os_abs.obj" \
+	"$(INTDIR)\os_alloc.obj" \
 	"$(INTDIR)\os_config.obj" \
 	"$(INTDIR)\os_dir.obj" \
 	"$(INTDIR)\os_fid.obj" \
@@ -367,6 +369,7 @@ CLEAN :
 	-@erase "$(INTDIR)\mp_sync.obj"
 	-@erase "$(INTDIR)\mutex.obj"
 	-@erase "$(INTDIR)\os_abs.obj"
+	-@erase "$(INTDIR)\os_alloc.obj"
 	-@erase "$(INTDIR)\os_config.obj"
 	-@erase "$(INTDIR)\os_dir.obj"
 	-@erase "$(INTDIR)\os_fid.obj"
@@ -495,6 +498,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\mp_sync.obj" \
 	"$(INTDIR)\mutex.obj" \
 	"$(INTDIR)\os_abs.obj" \
+	"$(INTDIR)\os_alloc.obj" \
 	"$(INTDIR)\os_config.obj" \
 	"$(INTDIR)\os_dir.obj" \
 	"$(INTDIR)\os_fid.obj" \
@@ -3051,6 +3055,28 @@ DEP_CPP_OS_SP=\
 	
 
 "$(INTDIR)\os_spin.obj" : $(SOURCE) $(DEP_CPP_OS_SP) "$(INTDIR)"
+   $(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+# End Source File
+################################################################################
+# Begin Source File
+
+SOURCE=\db\os\os_alloc.c
+DEP_CPP_OS_AL=\
+	".\../include\mutex_ext.h"\
+	".\../include\os_ext.h"\
+	".\../include\os_func.h"\
+	".\../include\queue.h"\
+	".\../include\shqueue.h"\
+	".\config.h"\
+	".\db.h"\
+	".\db_int.h"\
+	{$(INCLUDE)}"\sys\stat.h"\
+	{$(INCLUDE)}"\sys\types.h"\
+	
+
+"$(INTDIR)\os_alloc.obj" : $(SOURCE) $(DEP_CPP_OS_AL) "$(INTDIR)"
    $(CPP) $(CPP_PROJ) $(SOURCE)
 
 

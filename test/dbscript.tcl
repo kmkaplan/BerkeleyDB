@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)dbscript.tcl	8.11 (Sleepycat) 10/4/97
+#	@(#)dbscript.tcl	8.12 (Sleepycat) 4/10/98
 #
 # Random db tester.
 # Usage: dbscript file numops min_del max_add key_avg data_avgdups

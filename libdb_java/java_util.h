@@ -1,11 +1,12 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)java_util.h	10.1 (Sleepycat) 11/10/97
+ *	@(#)java_util.h	10.6 (Sleepycat) 5/2/98
  */
+
 #ifndef _JAVA_UTIL_H_
 #define _JAVA_UTIL_H_
 
@@ -40,7 +41,6 @@
 
 #define DB_PACKAGE_NAME "com/sleepycat/db/"
 
-
 /* Union to convert longs to pointers (see {get,set}_private_info).
  */
 typedef union {
@@ -50,37 +50,58 @@ typedef union {
 
 /****************************************************************
  *
- * Utility functions and definitions used by "glue" functions.
+ * DBT_info and LockedDBT classes
  *
+ * A DBT_info is created whenever a Dbt (java) object is created,
+ * and a pointer to it is stored in its private info storage.
+ * It is subclassed from DBT, because we must retain some extra
+ * information in it while it is in use.  In particular, when
+ * a java array is associated with it, we need to keep a Globally
+ * Locked reference to it so it is not GC'd.  This reference is
+ * released when the Dbt is GC'd.
+ *
+ * In contrast, a LockedDBT class is only in existence during a
+ * single native call to the DB API.  Its constructor's job is
+ * to temporarily convert any java array found in the DBT_info
+ * to actual bytes in memory that remain locked in place.  These
+ * bytes are used during the call to the underlying DB C layer,
+ * and are released and/or copied back by the destructor.
+ * Thus, a LockedDBT must be declared as a stack object to
+ * function properly.
  */
 
+/*
+ *
+ * Declaration of class DBT_info
+ *
+ * See description above.
+ */
 class DBT_info : public DBT
 {
 public:
-    DBT_info()
-    :   array_(0)
-    ,   dbowned_(0)
-    ,   offset_(0)
-    {
-        memset((DBT*)this, 0, sizeof(DBT));
-    }
-    jbyteArray array_;
-    int dbowned_;
-    int offset_;
+    DBT_info();
+    ~DBT_info();
+    void release(JNIEnv *jnienv);
 
-    // TODO: delete global ref when this is destroyed, (and destroy it!)
+    jbyteArray array_;
+    int offset_;
 };
 
-// Given a java Dbt object, this gets a DBT*, and sets the
-// data part to the byte array in the java object (which is
-// locked in memory).  When the LockedDBT object is destroyed, the
-// byte array is released.
-//
+/*
+ *
+ * Declaration of class LockedDBT
+ *
+ * See description above.
+ */
 class LockedDBT
 {
 public:
-    LockedDBT(JNIEnv *jnienv, jobject obj);
+    // After the constructor returns, if has_error() is false,
+    // then dbt must be initialized.
+    //
+    LockedDBT(JNIEnv *jnienv, jobject obj, int is_retrieve_op);
     ~LockedDBT();
+    int has_error()     { return has_error_; }
 
 public:
     DBT_info *dbt;
@@ -89,12 +110,19 @@ public:
 private:
     JNIEnv *env_;
     jobject obj_;
+    jbyte *java_data_;
+    int has_error_;
+    int is_retrieve_op_;
 };
 
-// Given a java jstring object, this gets an encapsulated
-// const char *.  When the LockedString object is destroyed, the
-// char * array is released.
-//
+/****************************************************************
+ *
+ * Declaration of class LockedString
+ *
+ * Given a java jstring object, this gets an encapsulated
+ * const char *.  When the LockedString object is destroyed, the
+ * char * array is released.
+ */
 class LockedString
 {
 public:
@@ -108,11 +136,15 @@ private:
     jstring jstr_;
 };
 
-// Given a java jobjectArray object (that must be a String[]),
-// we extract the individual strings and build a const char **
-// When the LockedStringArray object is destroyed, the individual
-// strings are released.
-//
+/****************************************************************
+ *
+ * Declaration of class LockedStringArray
+ *
+ * Given a java jobjectArray object (that must be a String[]),
+ * we extract the individual strings and build a const char **
+ * When the LockedStringArray object is destroyed, the individual
+ * strings are released.
+ */
 class LockedStringArray
 {
 public:
@@ -126,8 +158,20 @@ private:
     jobjectArray arr_;
 };
 
+/****************************************************************
+ *
+ * Utility functions and definitions used by "glue" functions.
+ *
+ */
+
 #define NOT_IMPLEMENTED(str) \
-	report_exception(jnienv, str /*concatenate*/ ": not implemented")
+	report_exception(jnienv, str /*concatenate*/ ": not implemented", 0)
+
+/* Use our own malloc for any objects allocated via DB_DBT_MALLOC,
+ * since we must free them in the same library address space.
+ */
+extern "C"
+void * java_db_malloc(size_t size);
 
 /* Get the private data from a Db* object as a (64 bit) java long.
  */
@@ -168,7 +212,7 @@ void set_object_field(JNIEnv *jnienv, jclass class_of_this,
 
 /* Report an exception back to the java side.
  */
-void report_exception(JNIEnv *jnienv, const char *text);
+void report_exception(JNIEnv *jnienv, const char *text, int err);
 
 /* If the object is null, report an exception and return false (0),
  * otherwise return true (1).
@@ -209,11 +253,11 @@ DB_INFO        *get_DB_INFO       (JNIEnv *jnienv, jobject obj);
 DB_LOCK         get_DB_LOCK       (JNIEnv *jnienv, jobject obj); // not a ptr
 DB_LOCKTAB     *get_DB_LOCKTAB    (JNIEnv *jnienv, jobject obj);
 DB_LOG         *get_DB_LOG        (JNIEnv *jnienv, jobject obj);
+DB_LOG_STAT    *get_DB_LOG_STAT   (JNIEnv *jnienv, jobject obj);
 DB_LSN         *get_DB_LSN        (JNIEnv *jnienv, jobject obj);
 DB_MPOOL       *get_DB_MPOOL      (JNIEnv *jnienv, jobject obj);
 DB_MPOOL_FSTAT *get_DB_MPOOL_FSTAT(JNIEnv *jnienv, jobject obj);
 DB_MPOOL_STAT  *get_DB_MPOOL_STAT (JNIEnv *jnienv, jobject obj);
-DB_MPOOLFILE   *get_DB_MPOOLFILE  (JNIEnv *jnienv, jobject obj);
 DB_TXN         *get_DB_TXN        (JNIEnv *jnienv, jobject obj);
 DB_TXNMGR      *get_DB_TXNMGR     (JNIEnv *jnienv, jobject obj);
 DB_TXN_STAT    *get_DB_TXN_STAT   (JNIEnv *jnienv, jobject obj);
@@ -225,6 +269,7 @@ jobject get_DbBtreeStat  (JNIEnv *jnienv, DB_BTREE_STAT *dbobj);
 jobject get_Dbc          (JNIEnv *jnienv, DBC *dbobj);
 jobject get_DbLockTab    (JNIEnv *jnienv, DB_LOCKTAB *dbobj);
 jobject get_DbLog        (JNIEnv *jnienv, DB_LOG *dbobj);
+jobject get_DbLogStat    (JNIEnv *jnienv, DB_LOG_STAT *dbobj);
 jobject get_DbLsn        (JNIEnv *jnienv, DB_LSN dbobj);
 jobject get_DbMpool      (JNIEnv *jnienv, DB_MPOOL *dbobj);
 jobject get_DbMpoolStat  (JNIEnv *jnienv, DB_MPOOL_STAT *dbobj);
@@ -243,11 +288,11 @@ const char * const name_DB_INFO        = "DbInfo";
 const char * const name_DB_LOCK        = "DbLock";
 const char * const name_DB_LOCKTAB     = "DbLockTab";
 const char * const name_DB_LOG         = "DbLog";
+const char * const name_DB_LOG_STAT    = "DbLogStat";
 const char * const name_DB_LSN         = "DbLsn";
 const char * const name_DB_MPOOL       = "DbMpool";
 const char * const name_DB_MPOOL_FSTAT = "DbMpoolFStat";
 const char * const name_DB_MPOOL_STAT  = "DbMpoolStat";
-const char * const name_DB_MPOOLFILE   = "DbMpoolFile";
 const char * const name_DBT            = "Dbt";
 const char * const name_DB_TXN         = "DbTxn";
 const char * const name_DB_TXNMGR      = "DbTxnMgr";
@@ -326,6 +371,11 @@ extern "C" JNIEXPORT void JNICALL                                           \
 // constructor args.  But our use of new/delete is also quite
 // limited in this library.
 //
+#undef NEW
+#undef NEW_ARRAY
+#undef DELETE
+#undef DELETE_ARRAY
+
 #ifdef unix
 //
 // currently NEW zeros (to prevent common bugs), NEW_ARRAY does not,

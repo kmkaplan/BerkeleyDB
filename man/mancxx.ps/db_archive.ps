@@ -1,6 +1,6 @@
 %!PS-Adobe-3.0
 %%Creator: groff version 1.10
-%%CreationDate: Fri Nov 28 16:33:25 1997
+%%CreationDate: Mon May  4 20:56:53 1998
 %%DocumentNeededResources: font Times-Bold
 %%+ font Times-Roman
 %%+ font Times-Italic
@@ -312,9 +312,12 @@ H .566(hat the snapshot of an acti).4 F .866 -.15(ve d)-.25 H .566
 108 693.6 R -.25(va)-.25 G 2.812(la).25 G .312(nd when archi)-2.812 F
 -.25(va)-.25 G 2.812(li).25 G 2.812(sc)-2.812 G(ompleted.)-2.812 E 2.19
 -.8(To c)108 705.6 T .59(reate a snapshot as of a speci\214c time, you must stop reading and writing your databases for the entire)
-.8 F(time of the archi)108 717.6 Q -.25(va)-.25 G
-(l, in which case the log \214les do not need to be archi).25 E -.15(ve)
--.25 G(d.).15 E(1)535 768 Q EP
+.8 F 1.555(time of the archi)108 717.6 R -.25(va)-.25 G 1.555
+(l, force a checkpoint \(see).25 F F3(db_c)4.056 E(hec)-.15 E(kpoint)-.2
+E F1 1.556(\(1\)\), and then archi).68 F 1.856 -.15(ve t)-.25 H 1.556
+(he \214les listed by the).15 F F3(db_ar)108 729.6 Q -.15(ch)-.37 G(ive)
+.15 E F1(command')2.5 E(s)-.55 E F2<ad73>2.5 E F1(and)2.5 E F2<ad6c>2.5
+E F1(options.)2.5 E(1)535 768 Q EP
 %%Page: 2 2
 %%BeginPageSetup
 BP
@@ -322,25 +325,25 @@ BP
 /F0 10/Times-Roman@0 SF 315.52(DB_ARCHIVE\(1\) DB_ARCHIVE\(1\))72 48 R
 .606(Once these steps are completed, your database can be reco)108 84 R
 -.15(ve)-.15 G .606(red from catastrophic f).15 F .606
-(ailure to its state as of)-.1 F .147(the time the archi)108 96 R -.25
-(va)-.25 G 2.647(lw).25 G .147(as done.)-2.747 F 1.747 -.8(To u)5.147 H
-.146(pdate your snapshot so that reco).8 F -.15(ve)-.15 G .146
-(ry from catastrophic f).15 F .146(ailure is possi-)-.1 F
+(ailure to its state as of)-.1 F .146(the time the archi)108 96 R -.25
+(va)-.25 G 2.646(lw).25 G .146(as done.)-2.746 F 1.746 -.8(To u)5.146 H
+.147(pdate your snapshot so that reco).8 F -.15(ve)-.15 G .147
+(ry from catastrophic f).15 F .147(ailure is possi-)-.1 F
 (ble up to a ne)108 108 Q 2.5(wp)-.25 G
 (oint in time, repeat step #2, cop)-2.5 E(ying all e)-.1 E
 (xisting log \214les to a backup de)-.15 E(vice.)-.25 E .357(Each time that a complete snapshot is made, i.e. all database and log \214les are copied to backup media, you)
 108 124.8 R(may discard all pre)108 136.8 Q(vious snapshots and sa)-.25
-E -.15(ve)-.2 G 2.5(dl).15 G(og \214les.)-2.5 E .237
+E -.15(ve)-.2 G 2.5(dl).15 G(og \214les.)-2.5 E .236
 (The time to restore from catastrophic f)108 153.6 R .236
-(ailure is a function of the number of log records that ha)-.1 F .536
--.15(ve b)-.2 H .236(een writ-).15 F 2.087(ten since the snapshot w)108
+(ailure is a function of the number of log records that ha)-.1 F .537
+-.15(ve b)-.2 H .237(een writ-).15 F 2.088(ten since the snapshot w)108
 165.6 R 2.087(as originally created.)-.1 F 2.087
 (Perhaps more importantly)7.087 F 4.587(,t)-.65 G 2.087
 (he more separate pieces of)-4.587 F .608
 (backup media you use, the more lik)108 177.6 R .608
 (ely that you will ha)-.1 F .908 -.15(ve a p)-.2 H .608
-(roblem reading from one of them.).15 F -.15(Fo)5.607 G 3.107(rt).15 G
-(hese)-3.107 E(reasons, it is often best to mak)108 189.6 Q 2.5(es)-.1 G
+(roblem reading from one of them.).15 F -.15(Fo)5.608 G 3.108(rt).15 G
+(hese)-3.108 E(reasons, it is often best to mak)108 189.6 Q 2.5(es)-.1 G
 (napshots on a re)-2.5 E(gular basis.)-.15 E/F1 10/Times-Bold@0 SF -.25
 (Fo)108 206.4 S 2.758(ra).25 G -.18(rc)-2.758 G(hi).18 E -.1(va)-.1 G
 2.758(ls).1 G .258(afety r)-2.758 F .258(emember to ensur)-.18 F 2.758
@@ -354,15 +357,15 @@ E -.15(ve)-.2 G 2.5(dl).15 G(og \214les.)-2.5 E .237
 (wing steps should be tak)-.25 E(en:)-.1 E 15(1. Restore)108 252 R
 (the copies of the database \214les from the backup media.)2.5 E 15
 (2. Restore)108 268.8 R .248
-(the copies of the log \214les from the backup media,)2.748 F F1 .248
-(in the order in which they wer)2.748 F 2.747(ew)-.18 G(ritten)-2.747 E
-F0(.)A(\(It')133 280.8 Q 3.115(sp)-.55 G .616(ossible that the same log \214le appears on multiple backups, and you only w)
--3.115 F .616(ant the most recent)-.1 F -.15(ve)133 292.8 S
+(the copies of the log \214les from the backup media,)2.747 F F1 .248
+(in the order in which they wer)2.748 F 2.748(ew)-.18 G(ritten)-2.748 E
+F0(.)A(\(It')133 280.8 Q 3.116(sp)-.55 G .616(ossible that the same log \214le appears on multiple backups, and you only w)
+-3.116 F .615(ant the most recent)-.1 F -.15(ve)133 292.8 S
 (rsion of that log \214le!\)).15 E 15(3. Run)108 309.6 R/F2 10
 /Times-Italic@0 SF(db_r)2.5 E(eco)-.37 E(ver)-.1 E F0(\255c to reco)2.5
 E -.15(ve)-.15 G 2.5(rt).15 G(he database.)-2.5 E 1.344
 (It is possible to recreate the database in a location dif)108 326.4 R
-1.343(ferent than the original, by specifying appropriate)-.25 F
+1.344(ferent than the original, by specifying appropriate)-.25 F
 (pathnames to the \255h option of the)108 338.4 Q F2(db_r)2.5 E(eco)-.37
 E(ver)-.1 E F0(utility)2.5 E(.)-.65 E 1.6 -.8(To r)108 355.2 T(emo).8 E
 .3 -.15(ve l)-.15 H(og \214les, the follo).15 E
@@ -372,29 +375,29 @@ E(ver)-.1 E F0(utility)2.5 E(.)-.65 E 1.6 -.8(To r)108 355.2 T(emo).8 E
 (described abo)133 384 Q -.15(ve)-.15 G 5(.T).15 G
 (his is because log \214les are necessary for reco)-5 E -.15(ve)-.15 G
 (ry from catastrophic f).15 E(ailure.)-.1 E 15(2. Run)108 400.8 R F2
-(db_ar)4.568 E -.15(ch)-.37 G(ive).15 E F0 4.567(,w).18 G 2.067(ithout options, to identify all of the log \214les that are no longer in use \(e.g.,)
+(db_ar)4.567 E -.15(ch)-.37 G(ive).15 E F0 4.567(,w).18 G 2.067(ithout options, to identify all of the log \214les that are no longer in use \(e.g.,)
 -4.567 F(in)133 412.8 Q -.2(vo)-.4 G(lv).2 E(ed in an acti)-.15 E .3
 -.15(ve t)-.25 H(ransaction\).).15 E 15(3. Remo)108 429.6 R .3 -.15
 (ve t)-.15 H(hose log \214les from the system.).15 E/F3 9/Times-Bold@0
 SF(ENVIR)72 446.4 Q(ONMENT V)-.27 E(ARIABLES)-1.215 E F0(The follo)108
 458.4 Q(wing en)-.25 E(vironment v)-.4 E(ariables af)-.25 E(fect the e)
 -.25 E -.15(xe)-.15 G(cution of).15 E F2(db_ar)2.5 E -.15(ch)-.37 G(ive)
-.15 E F0(:).18 E(DB_HOME)108 475.2 Q .221(If the)133 487.2 R F1<ad68>
-2.721 E F0 .221(option is not speci\214ed and the en)2.721 F .222
-(vironment v)-.4 F(ariable)-.25 E F2(DB_HOME)2.722 E F0 .222
-(is set, it is used as the path)2.722 F
+.15 E F0(:).18 E(DB_HOME)108 475.2 Q .222(If the)133 487.2 R F1<ad68>
+2.722 E F0 .222(option is not speci\214ed and the en)2.722 F .222
+(vironment v)-.4 F(ariable)-.25 E F2(DB_HOME)2.722 E F0 .221
+(is set, it is used as the path)2.721 F
 (of the database home, as described in)133 499.2 Q F2(db_appinit)2.5 E
-F0(\(3\).).68 E F3(SEE ALSO)72 516 Q F0 .486(The DB library is a f)108
-528 R .485(amily of groups of functions that pro)-.1 F .485
-(vides a modular programming interf)-.15 F .485(ace to trans-)-.1 F .523
+F0(\(3\).).68 E F3(SEE ALSO)72 516 Q F0 .485(The DB library is a f)108
+528 R .485(amily of groups of functions that pro)-.1 F .486
+(vides a modular programming interf)-.15 F .486(ace to trans-)-.1 F .523
 (actions and record-oriented \214le access.)108 540 R .523
 (The library includes support for transactions, locking, logging and)
-5.523 F .507(\214le page caching, as well as v)108 552 R .507
-(arious inde)-.25 F -.15(xe)-.15 G 3.007(da).15 G .506(ccess methods.)
--3.007 F(Man)5.506 E 3.006(yo)-.15 G 3.006(ft)-3.006 G .506
-(he functional groups \(e.g., the \214le)-3.006 F .168(page caching functions\) are useful independent of the other DB functions, although some functional groups)
-108 564 R .122(are e)108 576 R .121(xplicitly based on other functional groups \(e.g., transactions and logging\).)
--.15 F -.15(Fo)5.121 G 2.621(rag).15 G .121(eneral description of)-2.621
+5.523 F .506(\214le page caching, as well as v)108 552 R .506
+(arious inde)-.25 F -.15(xe)-.15 G 3.006(da).15 G .506(ccess methods.)
+-3.006 F(Man)5.507 E 3.007(yo)-.15 G 3.007(ft)-3.007 G .507
+(he functional groups \(e.g., the \214le)-3.007 F .168(page caching functions\) are useful independent of the other DB functions, although some functional groups)
+108 564 R .121(are e)108 576 R .121(xplicitly based on other functional groups \(e.g., transactions and logging\).)
+-.15 F -.15(Fo)5.122 G 2.622(rag).15 G .122(eneral description of)-2.622
 F(the DB package, see)108 588 Q F2(db_intr)2.5 E(o)-.45 E F0(\(3\).).18
 E F2(db_ar)108 604.8 Q -.15(ch)-.37 G(ive).15 E F0(\(1\),).18 E F2(db_c)
 2.5 E(hec)-.15 E(kpoint)-.2 E F0(\(1\),).68 E F2(db_deadloc)2.5 E(k)-.2
@@ -406,8 +409,7 @@ E F0(\(1\),).67 E F2(db_dump)2.5 E F0(\(1\),).19 E F2(db_load)2.5 E F0
 E F0(\(3\),).51 E F2(db_loc)2.5 E(k)-.2 E F0(\(3\),).67 E F2(db_lo)2.5 E
 (g)-.1 E F0(\(3\),).22 E F2(db_mpool)2.5 E F0(\(3\),).51 E F2(db_open)
 108 628.8 Q F0(\(3\),).24 E F2(db_thr)2.5 E(ead)-.37 E F0(\(3\),).77 E
-F2(db_txn)2.5 E F0(\(3\)).24 E(September 18, 1997)265.865 768 Q(2)
-188.865 E EP
+F2(db_txn)2.5 E F0(\(3\)).24 E(May 3, 1998)280.585 768 Q(2)203.585 E EP
 %%Trailer
 end
 %%EOF
