@@ -8,13 +8,13 @@ SSYYNNOOPPSSIISS
 
        ssttaattiicc iinntt
        DDbb::::ooppeenn((ccoonnsstt cchhaarr **ffnnaammee,, DDBBTTYYPPEE ttyyppee,,
-            iinntt ffllaaggss,, iinntt mmooddee,, DDbbEEnnvv **ddbbeennvv,, DDbbIInnffoo **ddbbiinnffoo,, DDbb ****ddbbpppp));;
+            uu__iinntt3322__tt ffllaaggss,, iinntt mmooddee,, DDbbEEnnvv **ddbbeennvv,, DDbbIInnffoo **ddbbiinnffoo,, DDbb ****ddbbpppp));;
 
        DDBBTTYYPPEE
        DDbb::::ggeett__ttyyppee((vvooiidd)) ccoonnsstt;;
 
        iinntt
-       DDbb::::cclloossee((iinntt ffllaaggss));;
+       DDbb::::cclloossee((uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
        DDbb::::ccuurrssoorr((DDbbTTxxnn **ttxxnniidd,, DDbbcc ****ccuurrssoorrpp));;
@@ -26,16 +26,16 @@ SSYYNNOOPPSSIISS
        DDbb::::ffdd((iinntt **ffddpp));;
 
        iinntt
-       DDbb::::ggeett((DDbbTTxxnn **ttxxnniidd,, DDbbtt **kkeeyy,, DDbbtt **ddaattaa,, iinntt ffllaaggss));;
+       DDbb::::ggeett((DDbbTTxxnn **ttxxnniidd,, DDbbtt **kkeeyy,, DDbbtt **ddaattaa,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
-       DDbb::::ppuutt((DDbbTTxxnn **ttxxnniidd,, DDbbtt **kkeeyy,, DDbbtt **ddaattaa,, iinntt ffllaaggss));;
+       DDbb::::ppuutt((DDbbTTxxnn **ttxxnniidd,, DDbbtt **kkeeyy,, DDbbtt **ddaattaa,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
-       DDbb::::ssttaatt((vvooiidd **sspp,, vvooiidd **((**ddbb__mmaalllloocc))((ssiizzee__tt)),, iinntt ffllaaggss));;
+       DDbb::::ssttaatt((vvooiidd **sspp,, vvooiidd **((**ddbb__mmaalllloocc))((ssiizzee__tt)),, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
-       DDbb::::ssyynncc((iinntt ffllaaggss));;
+       DDbb::::ssyynncc((uu__iinntt3322__tt ffllaaggss));;
 
 DDEESSCCRRIIPPTTIIOONN
        The DB library is a family of classes that provides a mod-
@@ -149,7 +149,7 @@ DDbb OOPPEERRAATTIIOONNSS
             with the _t_y_p_e argument set to DB_UNKNOWN.
 
 
-       int Db::close(int flags);
+       int Db::close(u_int32_t flags);
             A  method  to  flush  any cached information to disk,
             close any open cursors (see _D_b_c(3)), free  any  allo-
             cated  resources,  and  close  any  underlying files.
@@ -159,6 +159,7 @@ DDbb OOPPEERRAATTIIOONNSS
 
             The _f_l_a_g_s parameter must be set to 0 or the following
             value:
+
 
             DB_NOSYNC
                  Do not flush cached information to disk.
@@ -212,15 +213,15 @@ DDbb OOPPEERRAATTIIOONNSS
             the value of _e_r_r_n_o on failure and 0 on success.
 
 
-       int Db::del(DbTxn *txnid, Dbt *key, int flags);
+       int Db::del(DbTxn *txnid, Dbt *key, u_int32_t flags);
             A  method to remove key/data pairs from the database.
             The key/data pair associated with the  specified  _k_e_y
             is  discarded  from the database.  In the presence of
             duplicate key values, all records associated with the
             designated key will be discarded.
 
-            If  the file is being accessed under transaction pro-
-            tection, the _t_x_n_i_d  parameter  is  a  transaction  ID
+            If  the  file  is  being  accessed  under transaction
+            protection, the _t_x_n_i_d parameter is a  transaction  ID
             returned from _t_x_n___b_e_g_i_n, otherwise, NULL.
 
             The  _f_l_a_g_s parameter is currently unused, and must be
@@ -250,7 +251,8 @@ DDbb OOPPEERRAATTIIOONNSS
             value of _e_r_r_n_o on failure and 0 on success.
 
 
-       int Db::get(DbTxn *txnid, Dbt *key, Dbt *data, int flags);
+       int Db::get(DbTxn *txnid, Dbt *key, Dbt *data, u_int32_t
+            flags);
             A  method  that  is  an interface for keyed retrieval
             from the database.  The address  and  length  of  the
             data  associated  with the specified _k_e_y are returned
@@ -269,6 +271,7 @@ DDbb OOPPEERRAATTIIOONNSS
 
             The _f_l_a_g_s parameter must be set to 0 or the following
             value:
+
 
             DB_GET_RECNO
                  Retrieve  a  specific  numbered  record  from  a
@@ -294,7 +297,8 @@ DDbb OOPPEERRAATTIIOONNSS
             0 on success.
 
 
-       int Db::put(DbTxn *txnid, Dbt *key, Dbt *data, int flags);
+       int Db::put(DbTxn *txnid, Dbt *key, Dbt *data, u_int32_t
+            flags);
             A method to store key/data pairs in the database.  If
             the database supports duplicates, the _p_u_t method adds
             the new data value at the end of the duplicate set.
@@ -333,7 +337,7 @@ DDbb OOPPEERRAATTIIOONNSS
             the key already exists in the file.
 
 
-       int Db::sync(int flags);
+       int Db::sync(u_int32_t flags);
             A method to flush any cached information to disk.  If
             the  database  is in memory only, the _s_y_n_c method has
             no effect and will always succeed.
@@ -349,7 +353,7 @@ DDbb OOPPEERRAATTIIOONNSS
 
 
        int Db::stat(void *sp,
-                 void *(*db_malloc)(size_t), int flags);
+                 void *(*db_malloc)(size_t), u_int32_t flags);
             A method to create a statistical structure and copy a
             pointer to it into user-specified  memory  locations.
             Specifically,  if  _s_p  is  non-NULL, a pointer to the
@@ -379,8 +383,6 @@ DDbb OOPPEERRAATTIIOONNSS
 
             The _f_l_a_g_s parameter must be set to 0 or the following
             value:
-
-
             DB_RECORDCOUNT
                  In the case of a btree or recno  database,  fill
                  in  the  _b_t___n_r_e_c_s  field, but do not collect any
@@ -436,7 +438,6 @@ DDbb OOPPEERRAATTIIOONNSS
             u_int32_t bt_freed;
                  Number of pages made available for reuse because
                  they were emptied.
-
             u_int32_t bt_int_pgfree;
                  Number of bytes free in tree internal pages.
             u_int32_t bt_leaf_pgfree;
@@ -544,6 +545,7 @@ EERRRROORRSS
             The DB_THREAD flag was specified  and  spinlocks  are
             not implemented for this architecture.
 
+
             There  is  a  mismatch  between the version number of
             _f_i_l_e and the software.
 
@@ -598,9 +600,9 @@ EERRRROORRSS
        loc(3), memcmp(3), memcpy(3), memmove(3), memset(3), real-
        loc(3), and strerror(3).
 
-       In  addition,  the  _D_b_:_:_d_e_l  method  may  fail and throw a
-       _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for  the  following  condi-
-       tions:
+
+       In addition, the _D_b_:_:_d_e_l method may fail and throw a _D_b_E_x_-
+       _c_e_p_t_i_o_n(3) or return _e_r_r_n_o for the following conditions:
 
        [EAGAIN]
             A lock was unavailable.
@@ -609,25 +611,25 @@ EERRRROORRSS
             An invalid flag value or parameter was specified.
 
        [EPERM]
-            Database  corruption  was  detected.   All subsequent
-            database calls (other  than  _D_b_:_:_c_l_o_s_e)  will  return
-            EPERM.
-
-       In  addition, the _D_b_:_:_f_d method may fail and throw a _D_b_E_x_-
-       _c_e_p_t_i_o_n(3) or return _e_r_r_n_o for the following conditions:
-
-       [ENOENT]
-            The  _D_b_:_:_f_d  method  was  called  for  an   in-memory
-            database, or no underlying file has yet been created.
-
-       [EPERM]
             Database corruption  was  detected.   All  subsequent
             database  calls  (other  than  _D_b_:_:_c_l_o_s_e) will return
             EPERM.
 
+       In addition, the _D_b_:_:_f_d method may fail and throw a  _D_b_E_x_-
+       _c_e_p_t_i_o_n(3) or return _e_r_r_n_o for the following conditions:
+
+       [ENOENT]
+            The   _D_b_:_:_f_d  method  was  called  for  an  in-memory
+            database, or no underlying file has yet been created.
+
+       [EPERM]
+            Database  corruption  was  detected.   All subsequent
+            database calls (other  than  _D_b_:_:_c_l_o_s_e)  will  return
+            EPERM.
+
        The _D_b_:_:_g_e_t method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
 
-       or return _e_r_r_n_o for any of the errors  specified  for  the
+       or  return  _e_r_r_n_o  for any of the errors specified for the
        following DB and library functions: DbLock::get(3),
        DbLock::put(3), DbLockTab::id(3), DbLockTab::vec(3),
        DbLog::put(3), DbMpoolFile::get(3), DbMpoolFile::put(3),
@@ -644,20 +646,20 @@ EERRRROORRSS
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-            The  DB_THREAD  flag was specified to the _D_b_:_:_o_p_e_n(3)
-            method and neither the DB_DBT_MALLOC or  DB_DBT_USER-
+            The DB_THREAD flag was specified to  the  _D_b_:_:_o_p_e_n(3)
+            method  and neither the DB_DBT_MALLOC or DB_DBT_USER-
             MEM flags were set in the Dbt.
 
             A record number of 0 was specified.
 
        [EPERM]
-            Database  corruption  was  detected.   All subsequent
-            database calls (other  than  _D_b_:_:_c_l_o_s_e)  will  return
+            Database corruption  was  detected.   All  subsequent
+            database  calls  (other  than  _D_b_:_:_c_l_o_s_e) will return
             EPERM.
 
        The _D_b_:_:_p_u_t method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
 
-       or  return  _e_r_r_n_o  for any of the errors specified for the
+       or return _e_r_r_n_o for any of the errors  specified  for  the
        following DB and library functions: DbLock::get(3),
        DbLock::put(3), DbLockTab::id(3), DbLockTab::vec(3),
        DbLog::put(3), DbMpoolFile::get(3), DbMpoolFile::put(3),
@@ -685,8 +687,8 @@ EERRRROORRSS
             An attempt was made to do a partial put.
 
        [EPERM]
-            Database  corruption  was  detected.   All subsequent
-            database calls (other  than  _D_b_:_:_c_l_o_s_e)  will  return
+            Database corruption  was  detected.   All  subsequent
+            database  calls  (other  than  _D_b_:_:_c_l_o_s_e) will return
             EPERM.
 
        [ENOSPC]
@@ -694,15 +696,15 @@ EERRRROORRSS
 
        The _D_b_:_:_s_t_a_t method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
 
-       or  return  _e_r_r_n_o  for any of the errors specified for the
+       or return _e_r_r_n_o for any of the errors  specified  for  the
        following DB and library functions: DbLock::get(3),
        DbLock::put(3), DbLockTab::id(3), DbLockTab::vec(3), DbM-
        poolFile::get(3), DbMpoolFile::put(3), calloc(3),
-       fcntl(2),  fflush(3), malloc(3), memcpy(3), and memset(3).
+       fcntl(2), fflush(3), malloc(3), memcpy(3), and  memset(3).
 
        The _D_b_:_:_s_y_n_c method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
 
-       or return _e_r_r_n_o for any of the errors  specified  for  the
+       or  return  _e_r_r_n_o  for any of the errors specified for the
        following DB and library functions: Db::get(3),
        Db::sync(3), DbLock::get(3), DbLock::put(3), DbLock-
        Tab::id(3), DbLockTab::vec(3), DbLog::put(3), DbM-
@@ -713,36 +715,36 @@ EERRRROORRSS
        move(3), memset(3), munmap(2), open(2), realloc(3), str-
        error(3), unlink(2), and write(2).
 
-       In addition, the _D_b_:_:_s_y_n_c method  may  fail  and  throw  a
-       _D_b_E_x_c_e_p_t_i_o_n(3)  or  return  _e_r_r_n_o for the following condi-
+       In  addition,  the  _D_b_:_:_s_y_n_c  method  may fail and throw a
+       _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for  the  following  condi-
        tions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
        [EPERM]
-            Database corruption  was  detected.   All  subsequent
-            database  calls  (other  than  _D_b_:_:_c_l_o_s_e) will return
+            Database  corruption  was  detected.   All subsequent
+            database calls (other  than  _D_b_:_:_c_l_o_s_e)  will  return
             EPERM.
 
 SSEEEE AALLSSOO
-       _T_h_e _U_b_i_q_u_i_t_o_u_s _B_-_t_r_e_e, Douglas Comer,  ACM  Comput.  Surv.
+       _T_h_e  _U_b_i_q_u_i_t_o_u_s  _B_-_t_r_e_e,  Douglas Comer, ACM Comput. Surv.
        11, 2 (June 1979), 121-138.
 
-       _P_r_e_f_i_x  _B_-_t_r_e_e_s,  Bayer and Unterauer, ACM Transactions on
+       _P_r_e_f_i_x _B_-_t_r_e_e_s, Bayer and Unterauer, ACM  Transactions  on
        Database Systems, Vol. 2, 1 (March 1977), 11-26.
 
-       _T_h_e _A_r_t  _o_f  _C_o_m_p_u_t_e_r  _P_r_o_g_r_a_m_m_i_n_g  _V_o_l_.  _3_:  _S_o_r_t_i_n_g  _a_n_d
+       _T_h_e  _A_r_t  _o_f  _C_o_m_p_u_t_e_r  _P_r_o_g_r_a_m_m_i_n_g  _V_o_l_.  _3_:  _S_o_r_t_i_n_g _a_n_d
        _S_e_a_r_c_h_i_n_g, D.E. Knuth, 1968, pp 471-480.
 
        _D_y_n_a_m_i_c _H_a_s_h _T_a_b_l_e_s, Per-Ake Larson, Communications of the
        ACM, April 1988.
 
-       _A _N_e_w _H_a_s_h _P_a_c_k_a_g_e _f_o_r _U_N_I_X, Margo  Seltzer,  USENIX  Pro-
+       _A  _N_e_w  _H_a_s_h  _P_a_c_k_a_g_e _f_o_r _U_N_I_X, Margo Seltzer, USENIX Pro-
        ceedings, Winter 1991.
 
        _D_o_c_u_m_e_n_t  _P_r_o_c_e_s_s_i_n_g  _i_n  _a  _R_e_l_a_t_i_o_n_a_l  _D_a_t_a_b_a_s_e  _S_y_s_t_e_m,
-       Michael  Stonebraker,  Heidi  Stettner,   Joseph   Kalash,
+       Michael   Stonebraker,   Heidi  Stettner,  Joseph  Kalash,
        Antonin  Guttman,  Nadene  Lynn,  Memorandum  No.  UCB/ERL
        M82/32, May 1982.
 

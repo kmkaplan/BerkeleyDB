@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)mutex.tcl	10.2 (Sleepycat) 10/4/97
+#	@(#)mutex.tcl	10.5 (Sleepycat) 4/20/98
 #
 # Exercise mutex functionality.
 # Options are:
@@ -72,11 +72,11 @@ proc mutex001 { dir nlocks } {
 	mutex_cleanup $testdir/$dir
 
 	# Test open w/out create; should fail
-	set m [ mutex_init db $nlocks 0 0 ]
+	set m [ mutex_init $dir $nlocks 0 0 ]
 	error_check_good mutex_init $m NULL
 
 	# Now open for real
-	set m [ mutex_init db $nlocks $DB_CREATE 0644 ]
+	set m [ mutex_init $dir $nlocks $DB_CREATE 0644 ]
 	error_check_bad mutex_init $m NULL
 	error_check_good mutex_init [is_substr $m mutex] 1
 
@@ -196,16 +196,16 @@ proc mutex003 { dir iter nmutex procs mdegree wait seeds } {
 			set s [lindex $seeds $i]
 		}
 		puts "exec ./dbtest ../test/mutexscript.tcl $testdir/$dir \
-		    $iter $nmutex $wait $mdegree $s > $i.mutexout &"
+		    $iter $nmutex $wait $mdegree $s > $testdir/$i.mutexout &"
 		set p [exec ./dbtest ../test/mutexscript.tcl $testdir/$dir \
-		    $iter $nmutex $wait $mdegree $s > $i.mutexout &]
+		    $iter $nmutex $wait $mdegree $s > $testdir/$i.mutexout &]
 		lappend proclist $p
 	}
 	puts "Mutex003: $procs independent processes now running"
 	watch_procs $proclist
 	# Remove output files
 	for { set i 0 } {$i < $procs} {incr i} {
-		exec $RM -f $i.mutexout
+		exec $RM -f $testdir/$i.mutexout
 	}
 }
 

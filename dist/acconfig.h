@@ -4,6 +4,9 @@
 /* Define if you want a debugging version. */
 #undef DEBUG
 
+/* Define if you want a version with run-time diagnostic checking. */
+#undef DIAGNOSTIC
+
 /* Define if you have sigfillset (and sigprocmask). */
 #undef HAVE_SIGFILLSET
 
@@ -18,6 +21,9 @@
 
 /* Define if you want to use mc68020/gcc assembly spinlocks. */
 #undef HAVE_ASSEM_MC68020_GCC
+
+/* Define if you want to use parisc/gcc assembly spinlocks. */
+#undef HAVE_ASSEM_PARISC_GCC
 
 /* Define if you want to use sco/cc assembly spinlocks. */
 #undef HAVE_ASSEM_SCO_CC
@@ -40,11 +46,14 @@
 /* Define if you have the SGI abilock_t spinlocks. */
 #undef HAVE_FUNC_SGI
 
+/* Define if you have the ReliantUNIX spinlock_t spinlocks. */
+#undef HAVE_FUNC_RELIANT
+
 /* Define if you have the Solaris mutex_t spinlocks. */
 #undef HAVE_FUNC_SOLARIS
 
-/* Define if you have to initialize the entire mmap file. */
-#undef MMAP_INIT_NEEDED
+/* Define if you have to initialize the entire shared region. */
+#undef REGION_INIT_NEEDED
 
 /* Define if your sprintf returns a pointer, not a length. */
 #undef SPRINTF_RET_CHARPNT

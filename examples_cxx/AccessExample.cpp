@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)AccessExample.cpp	10.5 (Sleepycat) 11/10/97
+ *	@(#)AccessExample.cpp	10.6 (Sleepycat) 4/10/98
  */
 
 #include "config.h"

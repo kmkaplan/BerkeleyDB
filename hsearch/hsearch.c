@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -47,41 +47,40 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)hsearch.c	10.3 (Sleepycat) 11/4/97";
+static const char sccsid[] = "@(#)hsearch.c	10.9 (Sleepycat) 4/18/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #include <errno.h>
 #include <string.h>
 #endif
 
-#define	DB_DBM_HSEARCH
+#define	DB_DBM_HSEARCH	1
 #include "db_int.h"
 
 static DB	*dbp;
 static ENTRY	 retval;
 
 int
-hcreate(nel)
-	u_int nel;
+__db_hcreate(nel)
+	size_t nel;
 {
 	DB_INFO dbinfo;
 
 	memset(&dbinfo, 0, sizeof(dbinfo));
 	dbinfo.db_pagesize = 512;
 	dbinfo.h_ffactor = 16;
-	dbinfo.h_nelem = nel;
+	dbinfo.h_nelem = (u_int32_t)nel;	/* XXX: Possible overflow. */
 
 	errno = db_open(NULL,
-	    DB_HASH, DB_CREATE, S_IRUSR | S_IWUSR, NULL, &dbinfo, &dbp);
+	    DB_HASH, DB_CREATE, __db_omode("rw----"), NULL, &dbinfo, &dbp);
 	return (errno == 0 ? 1 : 0);
 }
 
 ENTRY *
-hsearch(item, action)
+__db_hsearch(item, action)
 	ENTRY item;
 	ACTION action;
 {
@@ -134,7 +133,7 @@ hsearch(item, action)
 }
 
 void
-hdestroy()
+__db_hdestroy()
 {
 	if (dbp != NULL) {
 		(void)dbp->close(dbp, 0);

@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)mutexscript.tcl	10.1 (Sleepycat) 4/12/97
+#	@(#)mutexscript.tcl	10.2 (Sleepycat) 4/10/98
 #
 # Random mutex tester.
 # Usage: mutexscript dir numiters mlocks sleepint degree seed

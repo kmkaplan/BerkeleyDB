@@ -36,7 +36,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name DB_Static
+    Project_Dep_Name DB_DLL
     End Project Dependency
 }}}
 
@@ -69,7 +69,13 @@ Package=<4>
     Project_Dep_Name db_load
     End Project Dependency
     Begin Project Dependency
+    Project_Dep_Name db_printlog
+    End Project Dependency
+    Begin Project Dependency
     Project_Dep_Name db_recover
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name db_stat
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name DB_Static
@@ -117,7 +123,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name DB_Static
+    Project_Dep_Name DB_DLL
     End Project Dependency
 }}}
 
@@ -132,7 +138,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name DB_Static
+    Project_Dep_Name DB_DLL
     End Project Dependency
 }}}
 
@@ -146,6 +152,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name DB_DLL
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -158,6 +167,24 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name DB_DLL
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "db_printlog"=.\db_printlog.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name DB_DLL
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -170,6 +197,24 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name DB_DLL
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "db_stat"=.\db_stat.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name DB_DLL
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -182,6 +227,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name DB_Static
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -195,7 +243,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name DB_Static
+    Project_Dep_Name DB_DLL
     End Project Dependency
 }}}
 
@@ -210,7 +258,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name DB_Static
+    Project_Dep_Name DB_DLL
     End Project Dependency
 }}}
 
@@ -225,7 +273,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name DB_Static
+    Project_Dep_Name DB_DLL
     End Project Dependency
 }}}
 
@@ -240,7 +288,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name DB_Static
+    Project_Dep_Name DB_DLL
     End Project Dependency
 }}}
 
@@ -255,7 +303,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name DB_Static
+    Project_Dep_Name DB_DLL
     End Project Dependency
 }}}
 

@@ -25,6 +25,14 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_Dbc_del
 
 /*
  * Class:     com_sleepycat_db_Dbc
+ * Method:    finalize
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_sleepycat_db_Dbc_finalize
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_Dbc
  * Method:    get
  * Signature: (Lcom/sleepycat/db/Dbt;Lcom/sleepycat/db/Dbt;I)I
  */
@@ -38,14 +46,6 @@ JNIEXPORT jint JNICALL Java_com_sleepycat_db_Dbc_get
  */
 JNIEXPORT void JNICALL Java_com_sleepycat_db_Dbc_put
   (JNIEnv *, jobject, jobject, jobject, jint);
-
-/*
- * Class:     com_sleepycat_db_Dbc
- * Method:    finalize
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_Dbc_finalize
-  (JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }

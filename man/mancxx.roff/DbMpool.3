@@ -2,18 +2,18 @@
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)DbMpool.sox	10.11 (Sleepycat) 11/25/97
+.\"	@(#)DbMpool.sox	10.21 (Sleepycat) 5/4/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)macros.so	10.36 (Sleepycat) 11/28/97
+.\"	@(#)macros.so	10.45 (Sleepycat) 5/4/98
 .\"
 .\" We don't want hyphenation for any HTML documents.
 .ie '\*[HTML]'YES'\{\
@@ -54,19 +54,18 @@
 \}
 ..
 .\" Scoped name for Java.
-.\" Produces a.b, for Java, otherwise just b.
-.\" This macro is used for constants that must
-.\" be scoped in Java, but are global otherwise.
+.\" Produces Db.b, for Java, otherwise just b.  This macro is used for
+.\" constants that must be scoped in Java, but are global otherwise.
 .\" This macro takes two arguments:
 .\"	+ the class
 .\"	+ the name within the class or following the prefix
 .de Sj
 .ie '\*[TYPE]'JAVA'\{\
 .TP 5
-\\$1.\\$2\}
+Db.\\$1\}
 .el\{\
 .TP 5
-\\$2\}
+\\$1\}
 ..
 .\" The general information text macro.
 .de Gn
@@ -210,7 +209,9 @@ The default error behavior can be changed, see
 .IR DbLog (3),
 .IR DbLsn (3),
 .IR DbMpool (3),
+.if !'\*[TYPE]'JAVA'\{\
 .IR DbMpoolFile (3),
+\}
 .IR Dbt (3),
 .IR DbTxn (3),
 .IR DbTxnMgr (3)
@@ -360,8 +361,15 @@ based on the
 argument to
 .IR \\$1 ,
 which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
-It is expected that applications will use a single DB_ENV structure as the
-argument to all of the subsystems in the DB package.
+Applications will normally use the same DB_ENV structure (initialized
+by
+.IR db_appinit (3)),
+as an argument to all of the subsystems in the DB package.
+.PP
+References to the DB_ENV structure are maintained by DB,
+so it may not be discarded until the last close function,
+corresponding to an open function for which it was an argument,
+has returned.
 In order to ensure compatibility with future releases of DB, all fields of
 the DB_ENV structure that are not explicitly set should be initialized to 0
 before the first time the structure is used.
@@ -432,7 +440,7 @@ appropriate set method, before calling
 ..
 .\" The DB_ENV common fields macros.
 .de Se
-.ie '\*[TYPE]'JAVA'\{\
+.if '\*[TYPE]'JAVA'\{\
 .TP 5
 DbErrcall db_errcall;
 .ns
@@ -444,7 +452,6 @@ int db_verbose;
 The error fields of the DbEnv behave as described for
 .IR DbEnv (3).
 \}
-.el\{\
 .ie '\*[TYPE]'CXX'\{\
 .TP 5
 void *(*db_errcall)(char *db_errpfx, char *buffer);
@@ -476,7 +483,7 @@ const char *db_errpfx;
 int db_verbose;
 The error fields of the DB_ENV behave as described for
 .IR db_appinit (3).
-\}
+.sp
 \}
 ..
 .\" The open flags.
@@ -490,7 +497,7 @@ don't already exist.
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
-.Sj Db DB_CREATE
+.Sj DB_CREATE
 Create any underlying files, as necessary.
 If the files do not already exist and the DB_CREATE flag is not specified,
 the call will fail.
@@ -501,12 +508,17 @@ the call will fail.
 .\"	+ the object it returns.
 .de Ft
 .TP 5
-.Sj Db DB_THREAD
+.Sj DB_THREAD
 Cause the \\$2 handle returned by the
 .I \\$1
 .Al function method
 to be useable by multiple threads within a single address space,
 i.e., to be ``free-threaded''.
+.if '\*[TYPE]'JAVA'\{\
+Threading is assumed in the Java API,
+so no special flags are required,
+and DB functions will always behave as if the DB_THREAD flag was specified.
+\}
 ..
 .\" The mode macro.
 .\" This macro takes one argument:
@@ -736,7 +748,7 @@ the region removal will fail.
 In the case of catastrophic or system failure,
 database recovery must be performed (see
 .IR db_recover (1)
-or the DB_RECOVER flags to
+or the DB_RECOVER and DB_RECOVER_FATAL flags to
 .IR \\*(Va (3)).
 Alternatively, if recovery is not required because no database state is
 maintained across failures,
@@ -847,14 +859,14 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.\" Stat field macro
+.\" Stat field macro.
 .de Sf
 .ie '\*[TYPE]'CXX'\{\
-unsigned long \\$1;\}
+u_int32_t \\$1;\}
 .el\{\
-long get_\\$1();\}
+int get_\\$1();\}
 ..
-.TH DbMpool 3 "November 25, 1997"
+.TH DbMpool 3 "May 4, 1998"
 .UC 7
 .SH NAME
 DbMpool \- shared memory buffer pool
@@ -867,7 +879,7 @@ DbMpool \- shared memory buffer pool
 static int
 DbMpool::open(char *dir,
 .ti +5
-int flags, int mode, DbEnv *dbenv, DbMpool **regionp);
+u_int32_t flags, int mode, DbEnv *dbenv, DbMpool **regionp);
 
 int
 DbMpool::close();
@@ -896,24 +908,6 @@ DB_MPOOL_FSTAT *(*fsp)[], void *(*db_malloc)(size_t));
 .el\{\
 import com.sleepycat.db.*;
 
-public static DbMpool open(String dir, int flags,
-.ti +5
-int mode, DbEnv dbenv)
-.ti +5
-throws DbException;
-
-public void close()
-.ti +5
-throws DbException;
-
-public static void unlink(String dir, int force, DbEnv dbenv)
-.ti +5
-throws DbException;
-
-public void sync(DbLsn lsn)
-.ti +5
-throws DbException;
-
 public DbMpoolStat stat()
 .ti +5
 throws DbException;
@@ -921,6 +915,11 @@ throws DbException;
 public DbMpoolFStat[] fstat()
 .ti +5
 throws DbException;
+
+public int trickle(int pct)
+.ti +5
+throws DbException;
+
 \}
 .ft R
 .fi
@@ -931,14 +930,28 @@ This manual page describes the specific details of the memory pool interface.
 .PP
 The
 .IR DbMpool (3)
+.ie '\*[TYPE]'CXX'\{\
 and
 .IR DbMpoolFile (3)
-classes are the library interface intended to provide general-purpose,
+classes are
+\}
+.el\{\
+class is
+\}
+the library interface intended to provide general-purpose,
 page-oriented buffer management of one or more files.
-While designed to work with the other Db functions, these functions are
+While designed to work with the other Db classes, this class is
 also useful for more general purposes.
 The memory pools (DbMpool's) are referred to in this document as
 simply ``pools''.
+.if '\*[TYPE]'JAVA'\{\
+The DbMpool class has a small subset of the corresponding DB/C++
+functionality.  This class has been provided to allow certain
+administrative actions on underlying Mpool's opened as a consequence
+of DbEnv.appinit().  Direct access to other Mpool functionality is
+not appropriate for the Java environment.
+\}
+.if '\*[TYPE]'CXX'\{\
 Pools may be shared between processes.
 Pools are usually filled by pages from one or more files (DbMpoolFile's).
 Pages in the pool are replaced in LRU (least-recently-used) order,
@@ -953,10 +966,10 @@ method.
 .Co "memory pool" DbMpool
 .PP
 .Fm
-.Sj Db DB_MPOOL_PRIVATE
+.Sj DB_MPOOL_PRIVATE
 Create a private MPOOL that is not shared with any other process (although
 it may be shared with other threads).
-.Sj Db DB_NOMMAP
+.Sj DB_NOMMAP
 Always copy files in this memory pool into the local cache instead of mapping
 them into process memory (see the description of the
 .I mp_mmapsize
@@ -969,14 +982,8 @@ The memory pool subsystem is configured
 .En "DbMpool::open" "DbMpool::closed"
 .TP 5
 .Se
-.ie '\*[TYPE]'CXX'\{\
 .TP 5
 size_t mp_mmapsize;
-\}
-.el\{\
-.TP 5
-long mp_mmapsize;
-\}
 Files that are opened read-only in the pool (and that satisfy a few other
 criteria) are, by default,
 mapped into the process address space instead of being copied into the local
@@ -991,18 +998,12 @@ it can result in immense process sizes.
 If
 .I mp_mmapsize
 is non-zero,
-it specifies the maximum file size for a file to be mapped into the process
-address space.
+it specifies the maximum file size, in bytes,
+for a file to be mapped into the process address space.
 By default,
 it is set to 10Mb.
-.ie '\*[TYPE]'CXX'\{\
 .TP 5
 size_t mp_size;
-\}
-.el\{\
-.TP 5
-long mp_size;
-\}
 The suggested size of the pool, in bytes.
 This should be the size of the normal working data set of the application,
 with some small amount of additional memory for unusual situations.
@@ -1022,11 +1023,12 @@ method closes the pool indicated by the DbMpool object,
 as returned by
 .IR DbMpool::open .
 This method does not imply a call to
-.I DbMpoolFile::sync
-(or to
-.IR DbMpoolFile::close )
-i.e. no pages are written to the source file as as a result of calling
-.IR DbMpool::close .
+.IR DbMpoolFile::sync ,
+but does imply a call to
+.I DbMpoolFile::close
+for any remaining open DbMpoolFile objects returned to this process by
+calls to
+.IR DbMpoolFile::open .
 .PP
 .Cc DbMpool
 .PP
@@ -1039,7 +1041,101 @@ method.
 .PP
 .Un "memory pool" DbMpool
 .PP
+.Fn DbMpool::db_register
+The
+.I DbMpool::db_register
+method registers page-in and page-out functions for files of type
+.I ftype
+in the specified pool.
+.PP
+If the
+.I pgin
+function is non-NULL,
+it is called each time a page is read into the memory pool from a file
+of type
+.IR ftype ,
+or a page is created for a file of type
+.I ftype
+(see the DB_MPOOL_CREATE flag for the
+.I DbMpoolFile::get
+method).
+If the
+.I pgout
+function is non-NULL,
+it is called each time a page is written to a file of type
+.IR ftype .
+.PP
+Both the
+.I pgin
+and
+.I pgout
+functions are called with the page number,
+a pointer to the page being read or written,
+and any argument
+.I pgcookie
+that was specified to the
+.I DbMpoolFile::open
+method when the file was opened.
+The
+.I pgin
+and
+.I pgout
+functions should return 0 on success,
+and an applicable non-zero
+.I errno
+value on failure,
+in which case the
+.I DbMpool
+method calling it will also fail,
+returning that
+.I errno
+value.
+.PP
+The purpose of the
+.I DbMpool::db_register
+method is to support processing when pages are entered into,
+or flushed from,
+the pool.
+A file type must be specified to make it possible for unrelated
+threads or processes,
+that are sharing a pool,
+to evict each other's pages from the pool.
+Applications should call
+.IR DbMpool::db_register ,
+during initialization,
+for each type of file requiring input or output processing that will be
+sharing the underlying pool.
+(No registry is necessary for the standard access method types,
+btree, hash and recno, as
+.IR Db::open (3)
+registers them separately.)
+.PP
+If a thread or process does not call
+.I DbMpool::db_register
+for a file type,
+it is impossible for it to evict pages for any file requiring input or
+output processing from the pool.
+For this reason,
+.I DbMpool::db_register
+should always be called by each application sharing a pool for each type of
+file included in the pool,
+regardless of whether or not the application itself uses files of that type.
+.PP
+There are no standard values for
+.IR ftype ,
+.IR pgin ,
+.I pgout
+and
+.IR pgcookie ,
+except that the
+.I ftype
+value for a file must be a non-zero positive number,
+as negative numbers are reserved for internal use by the DB library.
+For this reason,
+applications sharing a pool must coordinate their values amongst themselves.
+.PP
 .Rt DbMpool::db_register
+\}
 .PP
 .Fn DbMpool::trickle
 The
@@ -1048,11 +1144,17 @@ method ensures that at least
 .I pct
 percent of the pages in the shared memory pool are clean by writing dirty
 pages to their backing files.
+.ie '\*[TYPE]'CXX'\{\
 If the
 .I nwrotep
 argument is non-NULL,
 the number of pages that were written to reach the correct percentage is
 returned in the memory location it references.
+\}
+.el\{\
+The number of pages that were written to reach the correct percentage is
+returned.
+\}
 .PP
 The purpose of the
 .I DbMpool::trickle
@@ -1061,6 +1163,7 @@ always available for reading in new information without having to wait
 for a write.
 .PP
 .Rt DbMpool::trickle
+.if '\*[TYPE]'CXX'\{\
 .PP
 .Fn DbMpool::sync
 The
@@ -1103,12 +1206,13 @@ method returns that all pages have been written.
 To support the
 .I DbMpool::sync
 functionality,
-it is necessary that the pool functions know the location of the LSN on
+it is necessary that the pool methods know the location of the LSN on
 the page for each file type.
 This location should be specified when the file is opened using the
 .I DbMpoolFile::open
 method.
 (Note, it is not required that the LSN be aligned on the page in any way.)
+\}
 .PP
 .Fn DbMpool::stat
 .ie '\*[TYPE]'CXX'\{
@@ -1118,7 +1222,7 @@ method creates statistical structures and copies
 pointers to them into
 user-specified memory locations.
 \}
-.el \{
+.el\{\
 .Fn DbMpool::fstat
 The
 .I DbMpool::stat
@@ -1133,7 +1237,7 @@ and information as to how effective the cache has been.
 .PP
 .Ma "Statistical structures"
 .PP
-.ie '\*[TYPE]'CXX'\{
+.ie '\*[TYPE]'CXX'\{\
 If
 .I gsp
 is non-NULL, the global statistics for the memory pool
@@ -1156,56 +1260,56 @@ long get_st_cachesize();
 \}
 Cache size in bytes.
 .Nt
-.Sf st_cache_hit;
+.Sf st_cache_hit
 Requested pages found in the cache.
 .Nt
-.Sf st_cache_miss;
+.Sf st_cache_miss
 Requested pages not found in the cache.
 .Nt
-.Sf st_map;
+.Sf st_map
 Requested pages mapped into the process' address space (there is no
 available information as to whether or not this request caused disk I/O,
 although examining the application page fault rate may be helpful).
 .Nt
-.Sf st_page_create;
+.Sf st_page_create
 Pages created in the cache.
 .Nt
-.Sf st_page_in;
+.Sf st_page_in
 Pages read into the cache.
 .Nt
-.Sf st_page_out;
+.Sf st_page_out
 Pages written from the cache to the backing file.
 .Nt
-.Sf st_ro_evict;
+.Sf st_ro_evict
 Clean pages forced from the cache.
 .Nt
-.Sf st_rw_evict;
+.Sf st_rw_evict
 Dirty pages forced from the cache.
 .Nt
-.Sf st_hash_buckets;
+.Sf st_hash_buckets
 Number of hash buckets in buffer hash table.
 .Nt
-.Sf st_hash_searches;
+.Sf st_hash_searches
 Total number of buffer hash table lookups.
 .Nt
-.Sf st_hash_longest;
+.Sf st_hash_longest
 The longest chain ever encountered in buffer hash table lookups.
 .Nt
-.Sf st_hash_examined;
+.Sf st_hash_examined
 Total number of hash elements traversed during hash table lookups.
 .Nt
-.Sf st_page_clean;
+.Sf st_page_clean
 Clean pages currently in the cache.
 .Nt
-.Sf st_page_dirty;
+.Sf st_page_dirty
 Dirty pages currently in the cache.
 .Nt
-.Sf st_page_trickle;
+.Sf st_page_trickle
 Dirty pages written using the
 .I memp_trickle
 interface.
 .PP
-.ie '\*[TYPE]'CXX'\{
+.ie '\*[TYPE]'CXX'\{\
 If
 .I fsp
 is non-NULL,
@@ -1242,22 +1346,22 @@ long get_st_pagesize();
 \}
 Page size in bytes.
 .Nt
-.Sf st_cache_hit;
+.Sf st_cache_hit
 Requested pages found in the cache.
 .Nt
-.Sf st_cache_miss;
+.Sf st_cache_miss
 Requested pages not found in the cache.
 .Nt
-.Sf st_map;
+.Sf st_map
 Requested pages mapped into the process' address space.
 .Nt
-.Sf st_page_create;
+.Sf st_page_create
 Pages created in the cache.
 .Nt
-.Sf st_page_in;
+.Sf st_page_in
 Pages read into the cache.
 .Nt
-.Sf st_page_out;
+.Sf st_page_out
 Pages written from the cache to the backing file.
 .PP
 .Rt DbMpool::stat
@@ -1270,6 +1374,7 @@ The following environment variables affect the behavior of
 .Ev "memory pool" DbMpool
 .SH ERRORS
 .Ek
+.if '\*[TYPE]'CXX'\{\
 .PP
 .Ee DbMpool::open
 .na
@@ -1368,6 +1473,7 @@ and
 malloc(3). 
 .Hy
 .ad
+\}
 .PP
 .Ee DbMpool::trickle
 .na
@@ -1404,6 +1510,7 @@ write(2).
 .Ec DbMpool::trickle
 .TP 5
 .Ei
+.if '\*[TYPE]'CXX'\{\
 .PP
 .Ee DbMpool::sync
 .na
@@ -1446,6 +1553,7 @@ write(2).
 The
 .I DbMpool::sync
 method was called without logging having been initialized in the environment.
+\}
 .PP
 .Ee DbMpool::stat
 .na

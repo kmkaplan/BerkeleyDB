@@ -6,12 +6,12 @@ NNAAMMEE
 SSYYNNOOPPSSIISS
        ##iinncclluuddee <<ddbb__ccxxxx..hh>>
 
-       DDbbEEnnvv::::DDbbEEnnvv((ccoonnsstt cchhaarr **ddbb__hhoommee,, cchhaarr **ccoonnsstt **ddbb__ccoonnffiigg,, iinntt ffllaaggss));;
+       DDbbEEnnvv::::DDbbEEnnvv((ccoonnsstt cchhaarr **ddbb__hhoommee,, cchhaarr **ccoonnsstt **ddbb__ccoonnffiigg,, uu__iinntt3322__tt ffllaaggss));;
        DDbbEEnnvv::::DDbbEEnnvv(());;
        DDbbEEnnvv::::~~DDbbEEnnvv(());;
 
        iinntt DDbbEEnnvv::::aappppiinniitt((ccoonnsstt cchhaarr **ddbb__hhoommee,,
-            cchhaarr **ccoonnsstt **ddbb__ccoonnffiigg,, iinntt ffllaaggss));;
+            cchhaarr **ccoonnsstt **ddbb__ccoonnffiigg,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt DDbbEEnnvv::::ggeett__lloorrddeerr(()) ccoonnsstt;;
        vvooiidd DDbbEEnnvv::::sseett__lloorrddeerr((iinntt));;
@@ -41,29 +41,19 @@ SSYYNNOOPPSSIISS
        cchhaarr DDbbEEnnvv::::****ggeett__ddaattaa__ddiirr(()) ccoonnsstt;;
        vvooiidd DDbbEEnnvv::::sseett__ddaattaa__ddiirr((cchhaarr ****));;
 
-       iinntt DDbbEEnnvv::::ggeett__ddaattaa__ccnntt(()) ccoonnsstt;;
-       vvooiidd DDbbEEnnvv::::sseett__ddaattaa__ccnntt((iinntt));;
-
-       iinntt DDbbEEnnvv::::ggeett__ddaattaa__nneexxtt(()) ccoonnsstt;;
-       vvooiidd DDbbEEnnvv::::sseett__ddaattaa__nneexxtt((iinntt));;
-
        DDbbLLoocckkTTaabb DDbbEEnnvv::::**ggeett__llkk__iinnffoo(()) ccoonnsstt;;
 
        uu__iinntt88__tt DDbbEEnnvv::::**ggeett__llkk__ccoonnfflliiccttss(()) ccoonnsstt;;
        vvooiidd DDbbEEnnvv::::sseett__llkk__ccoonnfflliiccttss((uu__iinntt88__tt **));;
 
-       iinntt DDbbEEnnvv::::ggeett__llkk__mmooddeess(()) ccoonnsstt;;
-       vvooiidd DDbbEEnnvv::::sseett__llkk__mmooddeess((iinntt));;
+       uu__iinntt3322__tt DDbbEEnnvv::::ggeett__llkk__mmooddeess(()) ccoonnsstt;;
+       vvooiidd DDbbEEnnvv::::sseett__llkk__mmooddeess((uu__iinntt3322__tt));;
 
-       uunnssiiggnneedd iinntt DDbbEEnnvv::::ggeett__llkk__mmaaxx(()) ccoonnsstt;;
-       vvooiidd DDbbEEnnvv::::sseett__llkk__mmaaxx((uunnssiiggnneedd iinntt));;
+       uu__iinntt3322__tt DDbbEEnnvv::::ggeett__llkk__mmaaxx(()) ccoonnsstt;;
+       vvooiidd DDbbEEnnvv::::sseett__llkk__mmaaxx((uu__iinntt3322__tt));;
 
        uu__iinntt3322__tt DDbbEEnnvv::::ggeett__llkk__ddeetteecctt(()) ccoonnsstt;;
        vvooiidd DDbbEEnnvv::::sseett__llkk__ddeetteecctt((uu__iinntt3322__tt));;
-
-       ttyyppeeddeeff iinntt ((**ddbb__yyiieelldd__ffccnn)) ((vvooiidd));;
-       ddbb__yyiieelldd__ffccnn DDbbEEnnvv::::ggeett__yyiieelldd(()) ccoonnsstt;;
-       vvooiidd DDbbEEnnvv::::sseett__yyiieelldd((ddbb__yyiieelldd__ffccnn));;
 
        DDbbLLoogg DDbbEEnnvv::::**ggeett__llgg__iinnffoo(()) ccoonnsstt;;
 
@@ -80,8 +70,8 @@ SSYYNNOOPPSSIISS
 
        DDbbTTxxnnMMggrr DDbbEEnnvv::::**ggeett__ttxx__iinnffoo(()) ccoonnsstt;;
 
-       uunnssiiggnneedd iinntt DDbbEEnnvv::::ggeett__ttxx__mmaaxx(()) ccoonnsstt;;
-       vvooiidd DDbbEEnnvv::::sseett__ttxx__mmaaxx((uunnssiiggnneedd iinntt));;
+       uu__iinntt3322__tt DDbbEEnnvv::::ggeett__ttxx__mmaaxx(()) ccoonnsstt;;
+       vvooiidd DDbbEEnnvv::::sseett__ttxx__mmaaxx((uu__iinntt3322__tt));;
 
        ttyyppeeddeeff iinntt ((**ttxx__rreeccoovveerr__ffccnn))((DDBB__LLOOGG **,, DDBBTT **,, DDBB__LLSSNN **,, iinntt,, vvooiidd **));;
        ttxx__rreeccoovveerr__ffccnn DDbbEEnnvv::::ggeett__ttxx__rreeccoovveerr(()) ccoonnsstt;;
@@ -111,8 +101,8 @@ DDEESSCCRRIIPPTTIIOONN
 
        The DbEnv class provides simple access  to  an  underlying
        data  structure, whose elements can be examined or changed
-       using the _s_e_t__ or _g_e_t__  methods.   The  remainder  of  the
-       manual  page  sometimes refers to these accesses using the
+       using the _s_e_t__ or _g_e_t__ methods.  The remainder of the man-
+       ual  page  sometimes  refers  to  these accesses using the
        underlying name, e.g., simply _l_o_r_d_e_r instead of _g_e_t___l_o_r_d_e_r
        and  _s_e_t___l_o_r_d_e_r.  The constructors set all elements of the
        underlying structure to zero.  The constructor with  three
@@ -139,7 +129,7 @@ DDEESSCCRRIIPPTTIIOONN
 
        The  _f_l_a_g_s argument specifies the subsystems that are ini-
        tialized and how the environment affects Db  file  naming,
-       among  other  things.   The  flags  value  is specified by
+       among  other  things.   The  _f_l_a_g_s  value  is specified by
        oorr'ing together one or more of the following values:
 
 
@@ -165,6 +155,7 @@ DDEESSCCRRIIPPTTIIOONN
             Initialize the log  subsystem;  see  _D_b_L_o_g(3).   This
             subsystem  is  used when recovery from application or
             system failure is important.
+
 
        DB_INIT_MPOOL
             Initialize the mpool subsystem; see _D_b_M_p_o_o_l(3).  This
@@ -194,19 +185,29 @@ DDEESSCCRRIIPPTTIIOONN
        DB_RECOVER
             Run  normal recovery on this environment before open-
             ing it for normal use.  If  this  flag  is  set,  the
-            DB_CREATE,  DB_INIT_TXN,  and  DB_INIT_LOG flags must
-            also be set since the regions  will  be  removed  and
-            recreated.   For further information, consult the man
-            page for _d_b___r_e_c_o_v_e_r(1).
+            DB_CREATE  flag  must  also  be set since the regions
+            will be removed and recreated.
+
+            The _D_b_E_n_v_:_:_a_p_p_i_n_i_t function returns  successfully  if
+            DB_RECOVER is specified and no log files exist, so it
+            is necessary to ensure all necessary  log  files  are
+            present  before running recovery.  For further infor-
+            mation, consult the man page  for  _d_b___a_r_c_h_i_v_e(1)  and
+            _d_b___r_e_c_o_v_e_r(1).
 
 
        DB_RECOVER_FATAL
-            Run catastrophic recovery on this environment  before
-            opening  it for normal use.  If this flag is set, the
-            DB_CREATE, DB_INIT_TXN, and  DB_INIT_LOG  flags  must
-            also  be  set  since  the regions will be removed and
-            recreated.  For further information, consult the  man
-            page for _d_b___r_e_c_o_v_e_r(1).
+            Run  catastrophic recovery on this environment before
+            opening it for normal use.  If this flag is set,  the
+            DB_CREATE  flag  must  also  be set since the regions
+            will be removed and recreated.
+
+            The _D_b_E_n_v_:_:_a_p_p_i_n_i_t function returns  successfully  if
+            DB_RECOVER is specified and no log files exist, so it
+            is necessary to ensure all necessary  log  files  are
+            present  before running recovery.  For further infor-
+            mation, consult the man page  for  _d_b___a_r_c_h_i_v_e(1)  and
+            _d_b___r_e_c_o_v_e_r(1).
 
 
        DB_THREAD
@@ -303,29 +304,6 @@ DDEESSCCRRIIPPTTIIOONN
             as  error  messages  in the _d_b___e_r_r_c_a_l_l and _d_b___e_r_r_f_i_l_e
             output.
 
-       int (*db_yield)(void);
-            The Db library makes a system call to pause for  some
-            number  of  microseconds  whenever it is necessary to
-            wait on a lock.  This may not be optimal,  especially
-            in  a  thread-only  environment where it will be more
-            efficient  to  explicitly  yield  the  processor   to
-            another  thread.   If  _d_b___y_i_e_l_d returns 0, indicating
-            success, the lock will be  re-tried,  otherwise,  the
-            default  descheduling  method will be called and then
-            the lock will be  re-tried.   Note,  it  is  probably
-            incorrect  to supply a thread _d_b___y_i_e_l_d method if more
-            than a single process is operating in the Db environ-
-            ment.   This  is  because most thread-yield functions
-            will not allow other processes to run, and  the  lock
-            may  be  held  by  another  process,  not  by another
-            thread.
-
-            SSoollaarriiss aarrcchhiitteeccttuurree nnoottee:: Because of  bugs  in  ver-
-            sions  of  Solaris  before  version  5.6, Db uses the
-            _s_e_m_a___w_a_i_t(3T) call instead  of  the  _s_e_m_a___t_r_y_w_a_i_t(3T)
-            call.  For this reason, setting the _d_b___y_i_e_l_d field of
-            the DbEnv object will have no effect on Solaris.
-
        Each of the open functions that _a_p_p_i_n_i_t may call  (_D_b_L_o_c_k_-
        _T_a_b_:_:_o_p_e_n,  _D_b_L_o_g_:_:_o_p_e_n, _D_b_M_p_o_o_l_:_:_o_p_e_n and _D_b_T_x_n_M_g_r_:_:_o_p_e_n)
        is  called  as  follows,  where  the  DB_CREATE  flag   is
@@ -381,8 +359,8 @@ DDEESSCCRRIIPPTTIIOONN
 
        The  single  exception  to this rule is the _t_x___i_n_f_o field,
        which applications must explicitly specify to  the  _D_b_T_x_n_-
-       _M_g_r_:_:_b_e_g_i_n,   _D_b_T_x_n_M_g_r_:_:_c_h_e_c_k_p_o_i_n_t   and   _D_b_T_x_n_M_g_r_:_:_c_l_o_s_e
-       functions.
+       _M_g_r_:_:_b_e_g_i_n, _D_b_T_x_n_M_g_r_:_:_c_h_e_c_k_p_o_i_n_t and _D_b_T_x_n_M_g_r_:_:_c_l_o_s_e func-
+       tions.
 
        The _e_r_r_o_r___m_o_d_e_l field of DbEnv allows the user to  config-
        ure  the  way errors are treated in DB.  It can be changed
@@ -513,7 +491,6 @@ FFIILLEE NNAAMMIINNGG
             If any file name specified to any  Db  method  begins
             with  a leading slash, that file name is used without
             modification by Db.
-
        DB_CONFIG
             If   a   relevant   configuration    string    (e.g.,
             DB_DATA_DIR),  is specified in the DB_CONFIG configu-
@@ -544,6 +521,7 @@ FFIILLEE NNAAMMIINNGG
             and log files in different directories, or  instanti-
             ate  a  new  log  directory each time the application
             runs.
+
        DB_HOME
             If the DB_HOME environment variable was set, (and the
             application has set the appropriate DB_USE_ENVIRON or
@@ -652,7 +630,6 @@ EERRRROORRSS
        loc(3), stat(2), strchr(3), strcmp(3), strcpy(3),
        strdup(3), strerror(3), strlen(3), strsep(3), and time(3).
 
-
        In addition, the _a_p_p_i_n_i_t method may fail and throw a _D_b_E_x_-
        _c_e_p_t_i_o_n(3) or return _e_r_r_n_o for the following conditions:
 
@@ -662,35 +639,41 @@ EERRRROORRSS
             The DB_THREAD flag was specified  and  spinlocks  are
             not implemented for this architecture.
 
-            The  DB_HOME or TMPDIR environment variables were set
+            The  DB_RECOVER  or  DB_RECOVER_FATAL flag was speci-
+            fied, and no log files were found.
+
+            The DB_HOME or TMPDIR environment variables were  set
             but empty.
 
             An incorrectly formatted ``NAME VALUE'' entry or line
             was found.
 
        [ENOSPC]
-            HP-UX  only:  a previously created Db environment for
+            HP-UX only: a previously created Db  environment  for
             this process still exists.
 
-       The _D_b_E_n_v_:_:_a_p_p_e_x_i_t method may fail and  throw  a  _D_b_E_x_c_e_p_-
-       _t_i_o_n(3)
+       The   _D_b_E_n_v_:_:_a_p_p_e_x_i_t   method   may   fail   and  throw  a
+       _D_b_E_x_c_e_p_t_i_o_n(3)
 
-       or  return  _e_r_r_n_o  for any of the errors specified for the
+       or return _e_r_r_n_o for any of the errors  specified  for  the
        following DB and library functions: DbLockTab::close(3),
        DbLog::close(3), DbMpool::close(3), and DbTxn-
        Mgr::close(3).
 
 BBUUGGSS
        Due to the constraints of the PA-RISC memory architecture,
-       HP-UX  does  not  allow  a  process to map a file into its
-       address space multiple times.  For this  reason,  each  DB
+       HP-UX does not allow a process to  map  a  file  into  its
+       address  space  multiple  times.  For this reason, each DB
        environment may be opened only once by a process on HP-UX,
        i.e., calls to _a_p_p_i_n_i_t will fail if the specified Db envi-
        ronment has been opened and not subsequently  closed.
 
-       Because of bugs in versions of Solaris before version 5.6,
-       setting the _d_b___y_i_e_l_d field of the DbEnv object  will  have
-       no effect on Solaris.
+       On Windows/95, files that are opened by multiple processes
+       do  not  share data correctly.  To tell Berkeley DB to use
+       the paging file to share memory among processes,  use  the
+       DB_REGION_NAME  flag  of the _d_b___v_a_l_u_e___s_e_t function.  Obvi-
+       ously, you do not need to do this if only a single process
+       will be accessing database files.
 
 SSEEEE AALLSSOO
        _d_b___a_r_c_h_i_v_e(1), _d_b___c_h_e_c_k_p_o_i_n_t(1), _d_b___d_e_a_d_l_o_c_k(1), _d_b___d_u_m_p(1),

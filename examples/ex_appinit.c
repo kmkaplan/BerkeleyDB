@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)ex_appinit.c	10.14 (Sleepycat) 11/10/97
+ *	@(#)ex_appinit.c	10.16 (Sleepycat) 4/11/98
  */
 
 #include "config.h"
@@ -34,7 +34,7 @@
 #endif
 #endif
 
-DB_ENV *db_setup(FILE *);
+DB_ENV *db_setup __P((FILE *));
 int	main __P((int, char *[]));
 
 const char

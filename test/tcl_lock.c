@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)tcl_lock.c	10.6 (Sleepycat) 9/28/97";
+static const char sccsid[] = "@(#)tcl_lock.c	10.10 (Sleepycat) 4/10/98";
 #endif /* not lint */
 
 /*
@@ -64,12 +64,13 @@ lockmgr_cmd(notused, interp, argc, argv)
 	int argc;
 	char *argv[];
 {
+	static int mgr_number = 0;
 	DB_LOCKTAB *mgrp;
 	DB_ENV *env;
-	int flags, mode, ret;
 	mgr_data *md;
+	u_int32_t flags;
+	int mode, ret, tclint;
 	char mgrname[50];
-	static int mgr_number = 0;
 
 	notused = NULL;
 
@@ -77,10 +78,10 @@ lockmgr_cmd(notused, interp, argc, argv)
 
 	/* Check number of arguments. */
 	USAGE_GE(argc, 4, LOCKMGR_USAGE, DO_ENV);
-	if (Tcl_GetInt(interp, argv[2], &flags) != TCL_OK ||
+	if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK ||
 	    Tcl_GetInt(interp, argv[3], &mode) != TCL_OK)
 		return (TCL_ERROR);
-
+	flags = (u_int32_t)tclint;
 
 	/*
 	 * Call lock_open.
@@ -139,7 +140,6 @@ lockunlink_cmd(notused, interp, argc, argv)
 	int argc;
 	char *argv[];
 {
-	DB_ENV *env;
 	int force;
 
 	notused = NULL;
@@ -151,12 +151,7 @@ lockunlink_cmd(notused, interp, argc, argv)
 	if (Tcl_GetInt(interp, argv[2], &force) != TCL_OK)
 		return (TCL_ERROR);
 
-	if (process_env_options(interp, argc, argv, &env)) {
-		Tcl_PosixError(interp);
-		return (TCL_ERROR);
-	}
-
-	if (lock_unlink(argv[1], force, env) != 0) {
+	if (lock_unlink(argv[1], force, NULL) != 0) {
 		Tcl_SetResult(interp, "-1", TCL_STATIC);
 		return (TCL_OK);
 	}
@@ -184,15 +179,15 @@ lockwidget_cmd(cd_mgr, interp, argc, argv)
 	int argc;
 	char *argv[];
 {
-	static int lock_id = 0;
+	static int id = 0;
 	DB_LOCKTAB *mgr;
 	DB_LOCK lock;
 	DBT obj_dbt;
 	DB_ENV *env;
-	db_lockmode_t lmode;
+	db_lockmode_t mode;
 	lock_data *ld;
-	u_int32_t locker;
-	int iflags, ilocker, mode, ret;
+	u_int32_t locker, flags;
+	int ret, tclint;
 	char lockname[128];
 
 	debug_check();
@@ -215,25 +210,26 @@ lockwidget_cmd(cd_mgr, interp, argc, argv)
 		return (TCL_OK);
 	} else if (strcmp(argv[1], "get") == 0) {
 		USAGE(argc, 6, LOCKGET_USAGE, 0);
-		if (Tcl_GetInt(interp, argv[2], &ilocker) != TCL_OK) {
+		if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK) {
 			Tcl_PosixError(interp);
 			return (TCL_ERROR);
 		}
+		locker = (u_int32_t)tclint;
 		obj_dbt.data = argv[3];
 		obj_dbt.size = strlen(argv[3]) + 1;
-		if (Tcl_GetInt(interp, argv[4], &mode) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[4], &tclint) != TCL_OK)
 			return (TCL_ERROR);
-		if (Tcl_GetInt(interp, argv[5], &iflags) != TCL_OK)
+		mode = tclint;
+		if (Tcl_GetInt(interp, argv[5], &tclint) != TCL_OK)
 			return (TCL_ERROR);
+		flags = (u_int32_t)tclint;
 
-		lmode = mode;
-		locker = (u_int32_t)ilocker;
-		ret = lock_get(mgr, locker, iflags, &obj_dbt, lmode, &lock);
+		ret = lock_get(mgr, locker, flags, &obj_dbt, mode, &lock);
 
 		switch (ret) {
 		case 0:	/* Success */
-			sprintf(&lockname[0], "%s.lock%d", argv[0], lock_id);
-			lock_id++;
+			sprintf(&lockname[0], "%s.lock%d", argv[0], id);
+			id++;
 			if ((ld =
 			    (lock_data *)malloc(sizeof(lock_data))) == NULL) {
 				Tcl_PosixError(interp);
@@ -243,8 +239,8 @@ lockwidget_cmd(cd_mgr, interp, argc, argv)
 			ld->tabp = mgr;
 			ld->lock = lock;
 
-			Tcl_CreateCommand(interp, lockname, lock_cmd,
-			    (int *)ld, NULL);
+			Tcl_CreateCommand(interp,
+			    lockname, lock_cmd, (int *)ld, NULL);
 			Tcl_SetResult(interp, lockname, TCL_VOLATILE);
 			break;
 		case DB_LOCK_NOTGRANTED:
@@ -262,14 +258,11 @@ lockwidget_cmd(cd_mgr, interp, argc, argv)
 		return (do_lockvec(interp, mgr, argc, argv));
 #ifdef DEBUG
 	} else if (strcmp(argv[1], "dump") == 0) {
-		u_long flags;
-		int ival;
-
 		USAGE(argc, 3, LOCKDUMP_USAGE, 0);
-		if (Tcl_GetInt(interp, argv[2], &ival) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK)
 			flags = 0xffff;
 		else
-			flags = ival;
+			flags = (u_int32_t)tclint;
 		__lock_dump_region(mgr, flags);
 		return (TCL_OK);
 #endif
@@ -328,19 +321,19 @@ do_lockvec(interp, mgr, argc, argv)
 {
 	DB_LOCKREQ *reqlist, *err;
 	DBT *dblist;
-	db_lockmode_t lmode;
-	db_lockop_t liop;
-	int i, ilocker, ntup, nreqs, ret;
-	int iflags, iop, imode;
+	db_lockmode_t mode;
+	db_lockop_t iop;
 	u_int32_t flags, locker;
+	int i, ntup, nreqs, ret, tclint;
 	char **ap, **tuplist;
 
 	/* Get the locker id and the flags. */
-	if (Tcl_GetInt(interp, argv[2], &ilocker) != TCL_OK ||
-	    Tcl_GetInt(interp, argv[3], &iflags) != TCL_OK)
+	if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK)
 		return (TCL_ERROR);
-	flags = (u_int32_t)iflags;
-	locker = (u_int32_t)ilocker;
+	locker = (u_int32_t)tclint;
+	if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK)
+		return (TCL_ERROR);
+	flags = (u_int32_t)tclint;
 
 	/* The first three args are command, the rest are tuples. */
 	nreqs = argc - 4;
@@ -354,22 +347,21 @@ do_lockvec(interp, mgr, argc, argv)
 	for (i = 0; i < nreqs; i++)
 		reqlist[i].obj = &dblist[i];
 
-
 	for (ap = &argv[4], i = 0; i < nreqs; i++) {
 		tuplist = NULL;
-		if (Tcl_SplitList(interp, *ap, &ntup, &tuplist) !=
-		    TCL_OK)
+		if (Tcl_SplitList(interp, *ap, &ntup, &tuplist) != TCL_OK)
 			break;
-		if (Tcl_GetInt(interp, tuplist[1], &imode) != TCL_OK ||
-		    Tcl_GetInt(interp, tuplist[2], &iop) != TCL_OK)
+		if (Tcl_GetInt(interp, tuplist[1], &tclint) != TCL_OK)
 			break;
+		mode = (db_lockmode_t)tclint;
+		if (Tcl_GetInt(interp, tuplist[2], &tclint) != TCL_OK)
+			break;
+		iop = (db_lockop_t)tclint;
 
-		liop = iop;
-		reqlist[i].op = liop;
+		reqlist[i].op = iop;
 		reqlist[i].obj->data = (char *)strdup(tuplist[0]);
 		reqlist[i].obj->size = strlen(tuplist[0]);
-		lmode = imode;
-		reqlist[i].mode = lmode;
+		reqlist[i].mode = mode;
 
 		free(tuplist);
 	}

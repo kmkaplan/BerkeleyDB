@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)db_pr.c	10.19 (Sleepycat) 11/2/97";
+static const char sccsid[] = "@(#)db_pr.c	10.26 (Sleepycat) 4/28/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -81,7 +81,7 @@ __db_dump(dbp, name, all)
 {
 	FILE *fp, *save_fp;
 
-	save_fp = NULL;				/* XXX: Shut the compiler up. */
+	COMPQUIET(save_fp, NULL);
 
 	if (set_psize == PSIZE_BOUNDARY)
 		__db_psize(dbp->mpf);
@@ -179,12 +179,16 @@ __db_prbtree(dbp)
 	static const FN mfn[] = {
 		{ BTM_DUP,	"duplicates" },
 		{ BTM_RECNO,	"recno" },
+		{ BTM_RECNUM,	"btree:records" },
+		{ BTM_FIXEDLEN,	"recno:fixed-length" },
+		{ BTM_RENUMBER,	"recno:renumber" },
 		{ 0 },
 	};
 	BTMETA *mp;
 	BTREE *t;
 	EPG *epg;
 	FILE *fp;
+	PAGE *h;
 	RECNO *rp;
 	db_pgno_t i;
 	int ret;
@@ -193,18 +197,28 @@ __db_prbtree(dbp)
 	fp = __db_prinit(NULL);
 
 	(void)fprintf(fp, "%s\nOn-page metadata:\n", DB_LINE);
-	i = PGNO_METADATA;
 
+	i = PGNO_METADATA;
 	if ((ret = __bam_pget(dbp, (PAGE **)&mp, &i, 0)) != 0)
 		return (ret);
 
 	(void)fprintf(fp, "magic %#lx\n", (u_long)mp->magic);
-	(void)fprintf(fp, "version %lu\n", (u_long)mp->version);
+	(void)fprintf(fp, "version %#lx\n", (u_long)mp->version);
 	(void)fprintf(fp, "pagesize %lu\n", (u_long)mp->pagesize);
 	(void)fprintf(fp, "maxkey: %lu minkey: %lu\n",
 	    (u_long)mp->maxkey, (u_long)mp->minkey);
-	(void)fprintf(fp, "free %lu\n", (u_long)mp->free);
-	(void)fprintf(fp, "flags %lu", (u_long)mp->flags);
+
+	(void)fprintf(fp, "free %lu", (u_long)mp->free);
+	for (i = mp->free; i != PGNO_INVALID;) {
+		if ((ret = __bam_pget(dbp, &h, &i, 0)) != 0)
+			return (ret);
+		i = h->next_pgno;
+		(void)memp_fput(dbp->mpf, h, 0);
+		(void)fprintf(fp, ", %lu", (u_long)i);
+	}
+	(void)fprintf(fp, "\n");
+
+	(void)fprintf(fp, "flags %#lx", (u_long)mp->flags);
 	__db_prflags(mp->flags, mfn);
 	(void)fprintf(fp, "\n");
 	(void)memp_fput(dbp->mpf, mp, 0);
@@ -576,7 +590,7 @@ __db_isbad(h, die)
 	BKEYDATA *bk;
 	FILE *fp;
 	db_indx_t i;
-	int type;
+	u_int type;
 
 	fp = __db_prinit(NULL);
 
@@ -668,7 +682,8 @@ __db_pr(p, len)
 	u_int32_t len;
 {
 	FILE *fp;
-	int i, lastch;
+	u_int lastch;
+	int i;
 
 	fp = __db_prinit(NULL);
 
@@ -681,7 +696,7 @@ __db_pr(p, len)
 			if (isprint(*p) || *p == '\n')
 				fprintf(fp, "%c", *p);
 			else
-				fprintf(fp, "%#x", (u_int)*p);
+				fprintf(fp, "0x%.2x", (u_int)*p);
 		}
 		if (len > 20) {
 			fprintf(fp, "...");

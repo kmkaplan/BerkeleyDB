@@ -2,18 +2,18 @@
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)DbLockTab.sox	10.9 (Sleepycat) 11/25/97
+.\"	@(#)DbLockTab.sox	10.13 (Sleepycat) 4/10/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)macros.so	10.36 (Sleepycat) 11/28/97
+.\"	@(#)macros.so	10.45 (Sleepycat) 5/4/98
 .\"
 .\" We don't want hyphenation for any HTML documents.
 .ie '\*[HTML]'YES'\{\
@@ -54,19 +54,18 @@
 \}
 ..
 .\" Scoped name for Java.
-.\" Produces a.b, for Java, otherwise just b.
-.\" This macro is used for constants that must
-.\" be scoped in Java, but are global otherwise.
+.\" Produces Db.b, for Java, otherwise just b.  This macro is used for
+.\" constants that must be scoped in Java, but are global otherwise.
 .\" This macro takes two arguments:
 .\"	+ the class
 .\"	+ the name within the class or following the prefix
 .de Sj
 .ie '\*[TYPE]'JAVA'\{\
 .TP 5
-\\$1.\\$2\}
+Db.\\$1\}
 .el\{\
 .TP 5
-\\$2\}
+\\$1\}
 ..
 .\" The general information text macro.
 .de Gn
@@ -210,7 +209,9 @@ The default error behavior can be changed, see
 .IR DbLog (3),
 .IR DbLsn (3),
 .IR DbMpool (3),
+.if !'\*[TYPE]'JAVA'\{\
 .IR DbMpoolFile (3),
+\}
 .IR Dbt (3),
 .IR DbTxn (3),
 .IR DbTxnMgr (3)
@@ -360,8 +361,15 @@ based on the
 argument to
 .IR \\$1 ,
 which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
-It is expected that applications will use a single DB_ENV structure as the
-argument to all of the subsystems in the DB package.
+Applications will normally use the same DB_ENV structure (initialized
+by
+.IR db_appinit (3)),
+as an argument to all of the subsystems in the DB package.
+.PP
+References to the DB_ENV structure are maintained by DB,
+so it may not be discarded until the last close function,
+corresponding to an open function for which it was an argument,
+has returned.
 In order to ensure compatibility with future releases of DB, all fields of
 the DB_ENV structure that are not explicitly set should be initialized to 0
 before the first time the structure is used.
@@ -432,7 +440,7 @@ appropriate set method, before calling
 ..
 .\" The DB_ENV common fields macros.
 .de Se
-.ie '\*[TYPE]'JAVA'\{\
+.if '\*[TYPE]'JAVA'\{\
 .TP 5
 DbErrcall db_errcall;
 .ns
@@ -444,7 +452,6 @@ int db_verbose;
 The error fields of the DbEnv behave as described for
 .IR DbEnv (3).
 \}
-.el\{\
 .ie '\*[TYPE]'CXX'\{\
 .TP 5
 void *(*db_errcall)(char *db_errpfx, char *buffer);
@@ -476,7 +483,7 @@ const char *db_errpfx;
 int db_verbose;
 The error fields of the DB_ENV behave as described for
 .IR db_appinit (3).
-\}
+.sp
 \}
 ..
 .\" The open flags.
@@ -490,7 +497,7 @@ don't already exist.
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
-.Sj Db DB_CREATE
+.Sj DB_CREATE
 Create any underlying files, as necessary.
 If the files do not already exist and the DB_CREATE flag is not specified,
 the call will fail.
@@ -501,12 +508,17 @@ the call will fail.
 .\"	+ the object it returns.
 .de Ft
 .TP 5
-.Sj Db DB_THREAD
+.Sj DB_THREAD
 Cause the \\$2 handle returned by the
 .I \\$1
 .Al function method
 to be useable by multiple threads within a single address space,
 i.e., to be ``free-threaded''.
+.if '\*[TYPE]'JAVA'\{\
+Threading is assumed in the Java API,
+so no special flags are required,
+and DB functions will always behave as if the DB_THREAD flag was specified.
+\}
 ..
 .\" The mode macro.
 .\" This macro takes one argument:
@@ -736,7 +748,7 @@ the region removal will fail.
 In the case of catastrophic or system failure,
 database recovery must be performed (see
 .IR db_recover (1)
-or the DB_RECOVER flags to
+or the DB_RECOVER and DB_RECOVER_FATAL flags to
 .IR \\*(Va (3)).
 Alternatively, if recovery is not required because no database state is
 maintained across failures,
@@ -855,7 +867,7 @@ in a UNIX environment.
 .I db_vec
 \}
 ..
-.TH DbLockTab 3 "November 25, 1997"
+.TH DbLockTab 3 "April 10, 1998"
 .UC 7
 .SH NAME
 DbLockTab \- lock manager
@@ -868,18 +880,18 @@ DbLockTab \- lock manager
 static int
 DbLockTab::open(const char *dir,
 .ti +5
-int flags, int mode, DbEnv *dbenv, DbLockTab **regionp);
+u_int32_t flags, int mode, DbEnv *dbenv, DbLockTab **regionp);
 
 int
 DbLockTab::id(u_int32_t *idp);
 
 int
-DbLockTab::vec(u_int32_t locker, int flags,
+DbLockTab::vec(u_int32_t locker, u_int32_t flags,
 .ti +5
 DB_LOCKREQ list[], int nlist, DB_LOCKREQ **elistp);
 
 int
-DbLockTab::get(u_int32_t locker, int flags,
+DbLockTab::get(u_int32_t locker, u_int32_t flags,
 .ti +5
 const Dbt *obj, const db_lockmode_t lock_mode, DB_LOCK *lock);
 
@@ -890,7 +902,7 @@ static int
 DbLockTab::unlink(const char *dir, int force, DbEnv *dbenv);
 
 int
-DbLockTab::detect(int flags, int atype);
+DbLockTab::detect(u_int32_t flags, u_int32_t atype);
 \}
 .el\{\
 import com.sleepycat.db.*;
@@ -930,7 +942,7 @@ The
 .I DbLockTab
 class is intended to provide general-purpose
 locking.
-While designed to work with the other Db functions, this class is
+While designed to work with the other Db classes, this class is
 also useful for more general locking purposes.
 Locks can be shared between processes.
 In most cases, when multiple treads or processes are using locking, the
@@ -1000,23 +1012,23 @@ The
 field must be set to one of the following values.
 .RS
 .TP 5
-.Sj Db DB_LOCK_DEFAULT
+.Sj DB_LOCK_DEFAULT
 Use the default policy as specified in the
 .IR db_deadlock (1)
 man page.
 .TP 5
-.Sj Db DB_LOCK_OLDEST
+.Sj DB_LOCK_OLDEST
 Abort the oldest transaction.
 .TP 5
-.Sj Db DB_LOCK_RANDOM
+.Sj DB_LOCK_RANDOM
 Abort a random transaction involved in the deadlock.
 .TP 5
-.Sj Db DB_LOCK_YOUNGEST
+.Sj DB_LOCK_YOUNGEST
 Abort the youngest transaction.
 .RE
 .ie '\*[TYPE]'CXX'\{\
 .TP 5
-unsigned int lk_max;\}
+u_int32_t lk_max;\}
 .el\{\
 .TP 5
 int lk_max;\}
@@ -1028,8 +1040,13 @@ structures.
 If
 .I lk_max
 is not explicitly set, a default value is used.
+.ie '\*[TYPE]'CXX'\{\
 .TP 5
-int lk_modes;
+u_int32_t lk_modes;\}
+.el\{\
+.TP 5
+int lk_modes;\}
+.TP 5
 The number of lock modes to be recognized by the lock table (including
 the ``not-granted'' mode).
 If
@@ -1091,7 +1108,7 @@ The
 .I flags
 value must be set to 0 or the following value:
 .TP 5
-DB_LOCK_NOWAIT
+.Sj DB_LOCK_NOWAIT
 If a lock cannot be granted because the requested lock conflicts with an
 existing lock, return immediately instead of waiting for the lock to
 become available.
@@ -1110,7 +1127,7 @@ The operation to be performed, which must be set to one of the
 following values:
 .RS
 .TP 5
-DB_LOCK_GET
+.Sj DB_LOCK_GET
 Get a lock, as defined by the values of
 .IR locker ,
 .I obj
@@ -1129,12 +1146,12 @@ that releases the lock.)
 See
 .IR DbLock (3).
 .TP 5
-DB_LOCK_PUT
+.Sj DB_LOCK_PUT
 The lock referenced by the contents of the
 .I lock
 field is released.
 .TP 5
-DB_LOCK_PUT_ALL
+.Sj DB_LOCK_PUT_ALL
 All locks held by the
 .I locker
 are released.
@@ -1143,7 +1160,7 @@ are released.
 that appear after the DB_LOCK_PUT_ALL entry are not considered for this
 operation).
 .TP 5
-DB_LOCK_PUT_OBJ
+.Sj DB_LOCK_PUT_OBJ
 All locks held by the
 .IR locker ,
 on the object
@@ -1192,16 +1209,16 @@ In the case of an error,
 .I DbLockTab::vec
 may return one of the following values:
 .TP 5
-DB_LOCK_DEADLOCK
+.Sj DB_LOCK_DEADLOCK
 The specified
 .I locker
 was selected as a victim in order to resolve a deadlock.
 .TP 5
-DB_LOCK_NOTHELD
+.Sj DB_LOCK_NOTHELD
 The lock cannot be released, as it was not held by the
 .IR locker .
 .TP 5
-DB_LOCK_NOTGRANTED
+.Sj DB_LOCK_NOTGRANTED
 A lock was requested that could not be granted and the
 .I flag
 parameter was set to DB_LOCK_NOWAIT.
@@ -1264,7 +1281,7 @@ The
 .I flags
 value must be set to 0 or the following value:
 .TP 5
-Db.DB_LOCK_NOWAIT
+.Sj DB_LOCK_NOWAIT
 If a lock cannot be granted because the requested lock conflicts with an
 existing lock, return immediately instead of waiting for the lock to
 become available.
@@ -1295,7 +1312,7 @@ call.
 .PP
 .Cc DbLockTab
 .PP
-When multiple threads are using the DbLockTab handle concurrently,
+When multiple threads are using the DbLockTab object concurrently,
 only a single thread may call the
 .I DbLockTab::close
 method.
@@ -1307,8 +1324,8 @@ method.
 .Fn DbLockTab::detect
 The
 .I DbLockTab::detect
-method runs one iteration of the deadlock detector on the table
-represented by DbLockTab.
+method runs one iteration of the deadlock detector on the current
+lock table.
 The deadlock detector traverses the lock table, detects deadlocks,
 and if it finds one,
 marks one of the participating transactions for abort and then
@@ -1319,7 +1336,7 @@ The flags value is specified by
 together one or more of the following values:
 .PP
 .TP 5
-DB_LOCK_CONFLICT
+.Sj DB_LOCK_CONFLICT
 Only run the deadlock detector if a lock conflict has occurred since
 the last time that the deadlock detector was run.
 .PP
@@ -1370,13 +1387,13 @@ which which specify the type of the lock mode used with the standard tables abov
 \}
 .RS
 .TP 5
-DB_LOCK_NG
+.Sj DB_LOCK_NG
 not granted (always 0)
 .TP 5
-DB_LOCK_READ
+.Sj DB_LOCK_READ
 read (shared)
 .TP 5
-DB_LOCK_WRITE
+.Sj DB_LOCK_WRITE
 write (exclusive)
 .RE
 .SH "ERRORS"

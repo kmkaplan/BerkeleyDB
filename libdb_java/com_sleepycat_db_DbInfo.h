@@ -9,18 +9,58 @@ extern "C" {
 #endif
 /*
  * Class:     com_sleepycat_db_DbInfo
- * Method:    init_from
- * Signature: (Lcom/sleepycat/db/DbInfo;)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_init_1from
-  (JNIEnv *, jobject, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
  * Method:    finalize
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_finalize
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    get_bt_maxkey
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1bt_1maxkey
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    get_bt_minkey
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1bt_1minkey
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    get_cachesize
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbInfo_get_1cachesize
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    get_flags
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1flags
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    get_h_ffactor
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1h_1ffactor
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    get_h_nelem
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1h_1nelem
   (JNIEnv *, jobject);
 
 /*
@@ -33,123 +73,11 @@ JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1lorder
 
 /*
  * Class:     com_sleepycat_db_DbInfo
- * Method:    set_lorder
- * Signature: (I)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1lorder
-  (JNIEnv *, jobject, jint);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
- * Method:    get_cachesize
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbInfo_get_1cachesize
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
- * Method:    set_cachesize
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1cachesize
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
  * Method:    get_pagesize
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbInfo_get_1pagesize
   (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
- * Method:    set_pagesize
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1pagesize
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
- * Method:    get_bt_maxkey
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1bt_1maxkey
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
- * Method:    set_bt_maxkey
- * Signature: (I)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1bt_1maxkey
-  (JNIEnv *, jobject, jint);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
- * Method:    get_bt_minkey
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1bt_1minkey
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
- * Method:    set_bt_minkey
- * Signature: (I)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1bt_1minkey
-  (JNIEnv *, jobject, jint);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
- * Method:    get_h_ffactor
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1h_1ffactor
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
- * Method:    set_h_ffactor
- * Signature: (I)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1h_1ffactor
-  (JNIEnv *, jobject, jint);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
- * Method:    get_h_nelem
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1h_1nelem
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
- * Method:    set_h_nelem
- * Signature: (I)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1h_1nelem
-  (JNIEnv *, jobject, jint);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
- * Method:    get_re_pad
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1re_1pad
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
- * Method:    set_re_pad
- * Signature: (I)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1re_1pad
-  (JNIEnv *, jobject, jint);
 
 /*
  * Class:     com_sleepycat_db_DbInfo
@@ -161,14 +89,6 @@ JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1re_1delim
 
 /*
  * Class:     com_sleepycat_db_DbInfo
- * Method:    set_re_delim
- * Signature: (I)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1re_1delim
-  (JNIEnv *, jobject, jint);
-
-/*
- * Class:     com_sleepycat_db_DbInfo
  * Method:    get_re_len
  * Signature: ()I
  */
@@ -177,11 +97,11 @@ JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1re_1len
 
 /*
  * Class:     com_sleepycat_db_DbInfo
- * Method:    set_re_len
- * Signature: (I)V
+ * Method:    get_re_pad
+ * Signature: ()I
  */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1re_1len
-  (JNIEnv *, jobject, jint);
+JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1re_1pad
+  (JNIEnv *, jobject);
 
 /*
  * Class:     com_sleepycat_db_DbInfo
@@ -193,19 +113,35 @@ JNIEXPORT jstring JNICALL Java_com_sleepycat_db_DbInfo_get_1re_1source
 
 /*
  * Class:     com_sleepycat_db_DbInfo
- * Method:    set_re_source
- * Signature: (Ljava/lang/String;)V
+ * Method:    init_from
+ * Signature: (Lcom/sleepycat/db/DbInfo;)V
  */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1re_1source
-  (JNIEnv *, jobject, jstring);
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_init_1from
+  (JNIEnv *, jobject, jobject);
 
 /*
  * Class:     com_sleepycat_db_DbInfo
- * Method:    get_flags
- * Signature: ()I
+ * Method:    set_bt_maxkey
+ * Signature: (I)V
  */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1flags
-  (JNIEnv *, jobject);
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1bt_1maxkey
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    set_bt_minkey
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1bt_1minkey
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    set_cachesize
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1cachesize
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     com_sleepycat_db_DbInfo
@@ -214,6 +150,70 @@ JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbInfo_get_1flags
  */
 JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1flags
   (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    set_h_ffactor
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1h_1ffactor
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    set_h_nelem
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1h_1nelem
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    set_lorder
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1lorder
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    set_pagesize
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1pagesize
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    set_re_delim
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1re_1delim
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    set_re_len
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1re_1len
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    set_re_pad
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1re_1pad
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     com_sleepycat_db_DbInfo
+ * Method:    set_re_source
+ * Signature: (Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_set_1re_1source
+  (JNIEnv *, jobject, jstring);
 
 #ifdef __cplusplus
 }

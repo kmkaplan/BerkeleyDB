@@ -1,4 +1,4 @@
-# @(#)README	8.17 (Sleepycat) 9/5/97
+# @(#)README	8.23 (Sleepycat) 4/9/98
 
 This is a directory for building UNIX versions of DB.
 
@@ -28,7 +28,7 @@ scratch by entering:
 	make
 
 To build multiple UNIX versions of DB in the same source tree, create a
-new top-level directory, and then configure and build.
+new directory at the same level as build.unix, and then configure and build.
 
 	mkdir build.bsdos3.0
 	cd build.bsdos3.0
@@ -61,9 +61,23 @@ The DB specific options are as follows:
 
 	--enable-debug
 
+	as an argument to configure.  This will create DB with debugging
+	symbols, as well as load various routines that can be called from
+	a debugger to display pages, cursor queues and so forth.  This
+	flag should probably not be defined when configuring to build
+	production binaries, although there shouldn't be any significant
+	performance degradation.
+
+--enable-diagnostic:
+	If you want to build DB with debugging run-time sanity checks and
+	with DIAGNOSTIC #defined during compilation, enter:
+
+	--enable-diagnostic
+
 	as an argument to configure.  This will cause a number of special
 	checks to be performed when DB is running.  This flag should NOT
-	be defined when building production binaries.
+	be defined when configuring to build production binaries, as you
+	will lose a significant amount of performance.
 
 --enable-compat185
 	If you want to compile or load DB 1.85 applications against the
@@ -100,6 +114,20 @@ The DB specific options are as follows:
 	as an argument to configure.  Note, the Tcl test suite will only
 	build if the Tcl libraries and include files are found.
 
+--disable-bigfile:
+	Some systems, notably versions of AIX, HP/UX and Solaris, require
+	special compile-time options in order to create files larger than
+	2^32 bytes. These options are automatically enabled when DB is
+	compiled.  For this reason, binaries built on current versions of
+	these systems may not run on earlier versions of the system, as
+	the library and system calls necessary for large files are not
+	available.  To disable building with these compile-time options,
+	enter:
+
+	--disable-bigfile
+
+	as an argument to configure.
+
 =-=-=-=-=-=-=
 RUNNING THE DB TEST SUITE
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -110,91 +138,69 @@ information on running DB's test suite and debugging the DB package, see
 the file file ../test/README.
 
 =-=-=-=-=-=-=
-ADDING OR CHANGING COMPILERS, OR COMPILE OR LOAD LINE FLAGS
+CHANGING COMPILERS, LIBRARIES OR COMPILER AND LOADER OPTIONS
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-If you want to use a specific compiler, specify the CC environment
-variable before running configure.  For example:
+You can specify a compiler and/or compile and load time flags by using
+environment variables during configuration.  For example, if you want
+to use a specific compiler, specify the CC environment variable before
+running configure:
 
 	env CC=gcc ../dist/configure
 
 Using anything other than the native compiler will almost certainly
 mean that you'll want to check the compile and load line flags, too.
 
-If you want to specify additional load line flags, specify the ADDLDFLAGS
-environment variable before running configure.  For example:
+To specify debugging and optimization options for the C compiler,
+use the CFLAGS environment variable:
 
-	env ADDLDFLAGS="-Q" ../dist/configure
+	env CFLAGS=-O2 ../dist/configure
 
-would specify the -Q flag in the load line when the loader is called.
+To specify header file search directories and other miscellaneous options
+for the C preprocessor and compiler, use the CPPFLAGS environment variable:
 
-If you don't want configure to use the default load line flags for the
-system, specify the LDFLAGS environment variable before running configure.
-For example:
+	env CPPFLAGS=-I/usr/contrib/include ../dist/configure
 
-	env LDFLAGS="-32" ../dist/configure
+To specify debugging and optimization options for the C++ compiler,
+use the CXXFLAGS environment variable:
 
-will cause configure to set the load line flags to "-32", and not set
-them based on the current system.
+	env CXXFLAGS=-Woverloaded-virtual ../dist/configure
 
-If you want to specify additional compile line flags, specify the
-ADDCPPFLAGS environment variable before running configure.  For example:
+To specify miscellaneous options for the linker, use the LDFLAGS
+environment variable:
 
-	env ADDCPPFLAGS="-I../foo" ../dist/configure
+	env LDFLAGS="-N32" ../dist/configure
 
-would cause the compiler to be passed the -I../foo flag when compiling
-test programs during configuration as well as when building DB object
-files.
-
-If you don't want configure to use the default compile line flags for the
-system, specify the CPPFLAGS environment variable before running configure.
-For example:
-
-	env CPPFLAGS="-I.." ../dist/configure
-
-will cause configure to use "-I.." as the compile line flags instead of
-the default values based on the current system.
-
-=-=-=-=-=-=-=
-ADDING LIBRARIES AND INCLUDE FILES
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 If the Tcl or any other include files or libraries are in non-standard
 places on your system, you will need to specify the directory path where
 they can be found.
 
-If you want to specify additional library paths, set the ADDLIBS environment
-variable before running configure.  For example:
+If you want to specify additional libraries and library directories, set
+the LIBS environment variable before running configure.  For example:
 
-	env ADDLIBS="-L/a/b -L/e/f -lposix" ../dist/configure
+	env LIBS="-L/a/b -L/e/f -lposix" ../dist/configure
 
 would specify two additional directories to search for libraries, /a/b
 and /e/f, and one additional library to load, "posix".
 
-If you want to specify additional include paths, specify the ADDCPPFLAGS
-environment variable before running configure.  For example:
-
-	env ADDCPPFLAGS="-I/usr/local/include" LIBS="-lposix" ../dist/configure
-
-would search /usr/local/include for include files, as well as load the posix
-library as described above.
-
 Make sure that you prepend -L to any library directory names and that you
 prepend -I to any include file directory names!  Also, make sure that you
-quote the paths as shown above, i.e. with single or double quotes around
-the values you're specifying for ADDCPPFLAGS and ADDLIBS.
+quote the arguments as shown above, i.e. with single or double quotes
+around the values you're specifying for LIBS, if they contain blank or
+tab characters.
 
 The env command is available on most systems, and simply sets one or more
 environment variables before running a command.  If the env command is
 not available to you, you can set the environment variables in your shell
 before running configure.  For example, in sh or ksh, you could do:
 
-	ADDLIBS="-L/a/b -L/e/f -ldb" ../dist/configure
+	LIBS="-L/a/b -L/e/f -ldb" ../dist/configure
 
 and in csh or tcsh, you could do:
 
-	setenv ADDLIBS "-L/a/b -L/e/f -ldb"
+	setenv LIBS "-L/a/b -L/e/f -ldb"
 	../dist/configure
 
-See your shell manual page for further information.
+See your shell's manual page for further information.
 
 =-=-=-=-=-=-=
 INSTALLING DB

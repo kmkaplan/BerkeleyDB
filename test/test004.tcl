@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test004.tcl	10.3 (Sleepycat) 8/17/97
+#	@(#)test004.tcl	10.5 (Sleepycat) 4/10/98
 #
 # DB Test 4 {access method}
 # Check that cursor operations work.  Create a database.
@@ -33,6 +33,8 @@ proc test004 { method {nentries 10000} {reopen 4} {build_only 0} args} {
 	cleanup $testdir
 	set db [eval [concat dbopen \
 	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
+
 	set did [open $dict]
 
 	set flags 0
@@ -67,6 +69,7 @@ proc test004 { method {nentries 10000} {reopen 4} {build_only 0} args} {
 	if { $reopen == 5 } {
 		error_check_good db_close [$db close] 0
 		set db [ dbopen $testfile 0 0 DB_UNKNOWN ]
+		error_check_good dbopen [is_valid_db $db] TRUE
 	}
 	puts "\tTest00$reopen.b: get/delete loop"
 	# Now we will get each key from the DB and compare the results

@@ -1,16 +1,14 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test012.tcl	10.2 (Sleepycat) 5/30/97
-#
-# DB Test 12 {access method}
-# Take the .o and dbtest files in the current directory (build) and enter them
-# (the binaries) as keys with their names as data.
-# After all are entered, retrieve all; compare output
-# to original. Close file, reopen, do retrieve and re-verify.
+#	@(#)test012.tcl	10.6 (Sleepycat) 4/28/98
 
+# DB Test 12 {access method}
+# Take the source files and dbtest executable and enter their contents as
+# the key with their names as data.  After all are entered, retrieve all;
+# compare output to original. Close file, reopen, do retrieve and re-verify.
 proc test012 { method args} {
 	global names
 	set method [convert_method $method]
@@ -34,12 +32,13 @@ proc test012 { method args} {
 	cleanup $testdir
 	set db [eval [concat dbopen \
 	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 
 	set flags 0
 	set txn 0
 
 	# Here is the loop where we put and get each key/data pair
-	set file_list [glob ./*.o ./dbtest]
+	set file_list [glob ../*/*.c ./dbtest ./dbtest.exe]
 
 	puts "\tTest012.a: put/get loop"
 	set count 0
@@ -93,6 +92,6 @@ proc test012 { method args} {
 # Check function for test012; key should be file name; data should be contents
 proc test012.check { binfile tmpfile } {
 	source ./include.tcl
-	error_check_good Test012:cmp($binfile,$tmpfile) \
-	    [catch { exec $CMP $binfile $tmpfile } res] 0
+	error_check_good Test012:diff($binfile,$tmpfile) \
+	    [catch { exec $DIFF $binfile $tmpfile } res] 0
 }

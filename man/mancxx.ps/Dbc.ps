@@ -1,6 +1,6 @@
 %!PS-Adobe-3.0
 %%Creator: groff version 1.10
-%%CreationDate: Fri Nov 28 16:33:47 1997
+%%CreationDate: Mon May  4 20:57:15 1998
 %%DocumentNeededResources: font Times-Bold
 %%+ font Times-Roman
 %%+ font Times-Italic
@@ -208,12 +208,13 @@ BP
 (Dbc \255 database sequential access functions)108 40.8 Q F0(SYNOPSIS)72
 57.6 Q/F2 10/Times-Bold@0 SF(#include <db_cxx.h>)108 69.6 Q(int)108 93.6
 Q(Dbc::close\(v)108 105.6 Q(oid\);)-.1 E(int)108 129.6 Q
-(Dbc::del\(int \215ags\);)108 141.6 Q(int)108 165.6 Q(Dbc::get\(Dbt *k)
-108 177.6 Q(ey)-.1 E 2.5(,D)-.55 G(bt *data, int \215ags\);)-2.5 E(int)
-108 201.6 Q(Dbc::put\(Dbt *k)108 213.6 Q(ey)-.1 E 2.5(,D)-.55 G
-(bt *data, int \215ags\);)-2.5 E F0(DESCRIPTION)72 230.4 Q F1 1.02
-(The DB library is a f)108 242.4 R 1.019(amily of classes that pro)-.1 F
-1.019(vides a modular programming interf)-.15 F 1.019
+(Dbc::del\(u_int32_t \215ags\);)108 141.6 Q(int)108 165.6 Q
+(Dbc::get\(Dbt *k)108 177.6 Q(ey)-.1 E 2.5(,D)-.55 G
+(bt *data, u_int32_t \215ags\);)-2.5 E(int)108 201.6 Q(Dbc::put\(Dbt *k)
+108 213.6 Q(ey)-.1 E 2.5(,D)-.55 G(bt *data, u_int32_t \215ags\);)-2.5 E
+F0(DESCRIPTION)72 230.4 Q F1 1.02(The DB library is a f)108 242.4 R
+1.019(amily of classes that pro)-.1 F 1.019
+(vides a modular programming interf)-.15 F 1.019
 (ace to transactions and)-.1 F 1.377(record-oriented \214le access.)108
 254.4 R 1.378(The library includes support for transactions, locking, logging and \214le page)
 6.377 F .443(caching, as well as v)108 266.4 R .443(arious inde)-.25 F
@@ -262,10 +263,11 @@ F3(Db)2.74 E F1 .24(\(3\)\) discards an).23 F 2.74(yc)-.15 G .241
 Q F3(Dbc::close)3.522 E F1 1.022(method thro)3.522 F 1.022(ws a)-.25 F
 F3(DbException)3.521 E F1 1.021(\(3\) or returns the v).24 F 1.021
 (alue of)-.25 F F3(errno)3.521 E F1 1.021(on f)3.521 F 1.021
-(ailure and 0 on)-.1 F(success.)133 552 Q(int Dbc::del\(int \215ags\);)
-108 568.8 Q 2.5(Am)133 580.8 S(ethod that deletes the k)-2.5 E -.15(ey)
--.1 G(/data pair currently referenced by the cursor).15 E(.)-.55 E(The)
-133 597.6 Q F3<8d61>2.5 E(gs)-.1 E F1
+(ailure and 0 on)-.1 F(success.)133 552 Q
+(int Dbc::del\(u_int32_t \215ags\);)108 568.8 Q 2.5(Am)133 580.8 S
+(ethod that deletes the k)-2.5 E -.15(ey)-.1 G
+(/data pair currently referenced by the cursor).15 E(.)-.55 E(The)133
+597.6 Q F3<8d61>2.5 E(gs)-.1 E F1
 (parameter is currently unused, and must be set to 0.)2.5 E .13(The cursor position is unchanged after a delete and subsequent calls to cursor functions e)
 133 614.4 R .13(xpecting the)-.15 F(cursor to reference an e)133 626.4 Q
 (xisting k)-.15 E .3 -.15(ey w)-.1 H(ill f).15 E(ail.)-.1 E(The)133
@@ -275,7 +277,7 @@ F3(DbException)2.758 E F1 .258(\(3\) or returns the v).24 F .257
 (ailure, 0 on success,)-.1 F
 (and DB_KEYEMPTY if the element has already been deleted.)133 655.2 Q
 (int Dbc::get\(Dbt *k)108 672 Q -.15(ey)-.1 G 2.5(,D)-.5 G
-(bt *data, int \215ags\);)-2.5 E 4.041(Am)133 684 S 1.541
+(bt *data, u_int32_t \215ags\);)-2.5 E 4.041(Am)133 684 S 1.541
 (ethod that retrie)-4.041 F -.15(ve)-.25 G 4.041(sk).15 G -.15(ey)-4.141
 G 1.541(/data pairs from the database.).15 F 1.541
 (The address and length of the k)6.541 F 1.842 -.15(ey a)-.1 H(re).15 E
@@ -353,8 +355,8 @@ E 1.043(In the presence of duplicate k)158 676.8 R 1.343 -.15(ey v)-.1 H
 .319 -.15(ey ex)-.1 H .019(ists, b).15 F .018(ut w)-.2 F .018(as ne)-.1
 F -.15(ve)-.25 G 2.518(re).15 G .018(xplicitly created)-2.668 F
 (by the application or w)158 717.6 Q(as later deleted, the)-.1 E F1
-(Dbc::g)2.5 E(et)-.1 E F0(method returns DB_KEYEMPTY)2.5 E(.)-1.29 E(No)
-266.295 768 Q -.15(ve)-.15 G(mber 24, 1997).15 E(2)189.295 E EP
+(Dbc::g)2.5 E(et)-.1 E F0(method returns DB_KEYEMPTY)2.5 E(.)-1.29 E
+(April 10, 1998)276.695 768 Q(2)199.695 E EP
 %%Page: 3 3
 %%BeginPageSetup
 BP
@@ -366,12 +368,13 @@ E/F1 10/Times-Italic@0 SF(Dbc::g)2.5 E(et)-.1 E F0
 .458(The DB_SET_RANGE \215ag is identical to the DB_SET \215ag, e)158
 124.8 R .459(xcept that the k)-.15 F .759 -.15(ey i)-.1 H 2.959(sr).15 G
 .459(eturned as)-2.959 F .454(well as the data item, and, in the case of the btree access method, the returned k)
-158 136.8 R -.15(ey)-.1 G .453(/data pair is).15 F .675(the smallest k)
-158 148.8 R .975 -.15(ey g)-.1 H .675
-(reater than or equal to the speci\214ed k).15 F -.15(ey)-.1 G 3.176(,p)
--.5 G .676(ermitting partial k)-3.176 F .976 -.15(ey m)-.1 H .676
-(atches and).15 F(range searches.)158 160.8 Q(DB_SET_RECNO)133 189.6 Q
-(Mo)158 201.6 Q 1.84 -.15(ve t)-.15 H 1.54(he cursor to the speci\214c numbered record of the database, and return the associated)
+158 136.8 R -.15(ey)-.1 G .453(/data pair is).15 F 1.004(the smallest k)
+158 148.8 R 1.304 -.15(ey g)-.1 H 1.005
+(reater than or equal to the speci\214ed k).15 F 1.305 -.15(ey \()-.1 H
+1.005(as determined by the comparison).15 F
+(function\), permitting partial k)158 160.8 Q .3 -.15(ey m)-.1 H
+(atches and range searches.).15 E(DB_SET_RECNO)133 189.6 Q(Mo)158 201.6
+Q 1.84 -.15(ve t)-.15 H 1.54(he cursor to the speci\214c numbered record of the database, and return the associated)
 .15 F -.1(ke)158 213.6 S .404(y/data pair)-.05 F 5.404(.T)-.55 G(he)
 -5.404 E F1(data)2.904 E F0 .404(\214eld of the speci\214ed)2.904 F F1
 -.1(ke)2.904 G(y)-.2 E F0 .404
@@ -399,7 +402,7 @@ F1(DbException)2.633 E F0 .133(\(3\) or returns the v).24 F .133
 (Dbc::g)2.5 E(et)-.1 E F0 -.1(fa)2.5 G(ils for an).1 E 2.5(yr)-.15 G
 (eason, the state of the cursor will be unchanged.)-2.5 E
 (int Dbc::put\(Dbt *k)108 424.8 Q -.15(ey)-.1 G 2.5(,D)-.5 G
-(bt *data, int \215ags\);)-2.5 E 2.5(Am)135.5 436.8 S
+(bt *data, u_int32_t \215ags\);)-2.5 E 2.5(Am)135.5 436.8 S
 (ethod that stores k)-2.5 E -.15(ey)-.1 G
 (/data pairs into the database.).15 E(The)133 453.6 Q F1<8d61>2.5 E(gs)
 -.1 E F0(parameter must be set to e)2.5 E(xactly one of the follo)-.15 E
@@ -440,8 +443,7 @@ E F0(parameter is ignored.)2.5 E .252(In the case of the recno access method, it
 (peci\214ed, a ne)-2.809 F 2.809(wk)-.25 G .609 -.15(ey i)-2.909 H 2.809
 (sc).15 G .309
 (reated, the current record and all records after it are automatically)
--2.809 F(No)266.295 768 Q -.15(ve)-.15 G(mber 24, 1997).15 E(3)189.295 E
-EP
+-2.809 F(April 10, 1998)276.695 768 Q(3)199.695 E EP
 %%Page: 4 4
 %%BeginPageSetup
 BP
@@ -525,8 +527,8 @@ F1(DbException)2.5 E F0(\(3\).).24 E(The)108 700.8 Q F1(Dbc::close)2.5 E
 F0(method may f)2.5 E(ail and thro)-.1 E 2.5(wa)-.25 G F1(DbException)A
 F0(\(3\)).24 E(or return)108 724.8 Q F1(errno)2.5 E F0(for an)2.5 E 2.5
 (yo)-.15 G 2.5(ft)-2.5 G(he errors speci\214ed for the follo)-2.5 E
-(wing DB and library functions: DbLock::get\(3\),)-.25 E(No)266.295 768
-Q -.15(ve)-.15 G(mber 24, 1997).15 E(4)189.295 E EP
+(wing DB and library functions: DbLock::get\(3\),)-.25 E(April 10, 1998)
+276.695 768 Q(4)199.695 E EP
 %%Page: 5 5
 %%BeginPageSetup
 BP
@@ -603,8 +605,8 @@ Q([EPERM])108 626.4 Q .955(Database corruption w)133 638.4 R .955
 (poolFile::put\(3\), DbMpoolFile::set\(3\), calloc\(3\), fcntl\(2\), f)
 108 715.2 Q(\215ush\(3\), malloc\(3\), memcmp\(3\), memcp)-.25 E
 (y\(3\),)-.1 E(memmo)108 727.2 Q -.15(ve)-.15 G
-(\(3\), memset\(3\), realloc\(3\), and strerror\(3\).).15 E(No)266.295
-768 Q -.15(ve)-.15 G(mber 24, 1997).15 E(5)189.295 E EP
+(\(3\), memset\(3\), realloc\(3\), and strerror\(3\).).15 E
+(April 10, 1998)276.695 768 Q(5)199.695 E EP
 %%Page: 6 6
 %%BeginPageSetup
 BP
@@ -636,8 +638,7 @@ F1(DbLoc)2.5 E(kT)-.2 E(ab)-.92 E F0(\(3\),).23 E F1(DbLo)2.5 E(g)-.1 E
 F0(\(3\),).22 E F1(DbLsn)2.5 E F0(\(3\),).24 E F1(DbMpool)2.5 E F0
 (\(3\),).51 E F1(DbMpoolF)2.5 E(ile)-.45 E F0(\(3\),).18 E F1(Dbt)2.5 E
 F0(\(3\),).68 E F1(DbTxn)2.5 E F0(\(3\),).24 E F1(DbTxnMgr)108 288 Q F0
-(\(3\)).73 E(No)266.295 768 Q -.15(ve)-.15 G(mber 24, 1997).15 E(6)
-189.295 E EP
+(\(3\)).73 E(April 10, 1998)276.695 768 Q(6)199.695 E EP
 %%Trailer
 end
 %%EOF

@@ -25,6 +25,14 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLockTab_detect
 
 /*
  * Class:     com_sleepycat_db_DbLockTab
+ * Method:    finalize
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLockTab_finalize
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbLockTab
  * Method:    get
  * Signature: (IILcom/sleepycat/db/Dbt;I)Lcom/sleepycat/db/DbLock;
  */
@@ -54,14 +62,6 @@ JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbLockTab_open
  */
 JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLockTab_unlink
   (JNIEnv *, jclass, jstring, jint, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbLockTab
- * Method:    finalize
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLockTab_finalize
-  (JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }

@@ -1,10 +1,13 @@
-# @(#)Makefile.in	10.39 (Sleepycat) 11/25/97
+# @(#)Makefile.in	10.47 (Sleepycat) 4/25/98
 
 srcdir=	@srcdir@/..
+CPPFLAGS=-I. -I$(srcdir)/include @CPPFLAGS@
+CFLAGS=	-c @CFLAGS@ $(CPPFLAGS)
 CC=	@CC@
+CXXFLAGS=-c @CXXFLAGS@ $(CPPFLAGS)
 CXX=	@CXX@
-OPTFLAG=@OPTFLAG@
-CFLAGS=	-c $(OPTFLAG) @CFLAGS@ -I. -I$(srcdir)/include @CPPFLAGS@
+LDFLAGS=@LDFLAGS@
+LIBS=	@LIBS@
 
 SHELL=	@db_cv_path_sh@
 ar=	@db_cv_path_ar@ cq
@@ -15,32 +18,33 @@ ranlib= @db_cv_path_ranlib@
 rm=	@db_cv_path_rm@
 strip=	@db_cv_path_strip@
 
-OBJS=	bt_close.o bt_compare.o bt_conv.o bt_cursor.o bt_delete.o bt_open.o \
-	bt_page.o bt_put.o bt_rec.o bt_recno.o bt_rsearch.o bt_search.o \
-	bt_split.o bt_stat.o btree_auto.o db.o db_appinit.o db_apprec.o \
-	db_auto.o db_byteorder.o db_conv.o db_dispatch.o db_dup.o db_err.o \
-	db_log2.o db_overflow.o db_pr.o db_rec.o db_region.o db_ret.o \
-	db_salloc.o db_shash.o db_thread.o dbm.o hash.o hash_auto.o \
-	hash_conv.o hash_debug.o hash_dup.o hash_func.o hash_page.o hash_rec.o \
-	hash_stat.o hsearch.o lock.o lock_conflict.o lock_deadlock.o \
-	lock_util.o log.o log_archive.o log_auto.o log_compare.o log_findckp.o \
-	log_get.o log_put.o log_rec.o log_register.o mp_bh.o mp_fget.o \
-	mp_fopen.o mp_fput.o mp_fset.o mp_open.o mp_pr.o mp_region.o \
-	mp_sync.o mutex.o os_abs.o os_config.o os_dir.o os_fid.o os_fsync.o \
-	os_map.o os_oflags.o os_open.o os_rpath.o os_rw.o os_seek.o \
-	os_sleep.o os_spin.o os_stat.o os_unlink.o txn.o txn_auto.o txn_rec.o
+OBJS=   bt_close.o bt_compare.o bt_conv.o bt_cursor.o bt_delete.o \
+	bt_open.o bt_page.o bt_put.o bt_rec.o bt_recno.o bt_rsearch.o \
+	bt_search.o bt_split.o bt_stat.o btree_auto.o db.o db_appinit.o \
+	db_apprec.o db_auto.o db_byteorder.o db_conv.o db_dispatch.o \
+	db_dup.o db_err.o db_log2.o db_overflow.o db_pr.o db_rec.o \
+	db_region.o db_ret.o db_salloc.o db_shash.o db_thread.o dbm.o \
+	hash.o hash_auto.o hash_conv.o hash_debug.o hash_dup.o hash_func.o \
+	hash_page.o hash_rec.o hash_stat.o hsearch.o lock.o \
+	lock_conflict.o lock_deadlock.o lock_util.o lock_region.o log.o \
+	log_archive.o log_auto.o log_compare.o log_findckp.o log_get.o \
+	log_put.o log_rec.o log_register.o mp_bh.o mp_fget.o mp_fopen.o \
+	mp_fput.o mp_fset.o mp_open.o mp_pr.o mp_region.o mp_sync.o \
+	mutex.o os_abs.o os_alloc.o os_config.o os_dir.o os_fid.o \
+	os_fsync.o os_map.o os_oflags.o os_open.o os_rpath.o os_rw.o \
+	os_seek.o os_sleep.o os_spin.o os_stat.o os_unlink.o txn.o \
+	txn_auto.o txn_rec.o
 COBJS=	cxx_app.o cxx_except.o cxx_lock.o cxx_log.o cxx_mpool.o cxx_table.o \
 	cxx_txn.o
 
-PROGS=	db_archive db_checkpoint db_deadlock db_dump db_load \
-	db_recover db_stat @build_additional@
+PROGS=	@build_additional@ db_archive db_checkpoint db_deadlock \
+	db_dump db_load db_printlog db_recover db_stat
 
 LOBJS=	@LIBOBJS@
-LLIBS=	@LLIBS@
 POBJS=	err.o getlong.o
 
 libdb=	libdb.a
-all: $(libdb) @build_test@ $(PROGS)
+all: $(libdb) $(PROGS)
 
 $(libdb): db.h $(OBJS) $(LOBJS)
 	$(rm) -f $@
@@ -49,87 +53,86 @@ $(libdb): db.h $(OBJS) $(LOBJS)
 
 DBA=	db_archive.o $(POBJS)
 db_archive: $(DBA) $(libdb)
-	$(CC) -o $@ $(DBA) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBA) $(libdb) $(LIBS)
 
 DBB=	db_checkpoint.o $(POBJS)
 db_checkpoint: $(DBB) $(libdb)
-	$(CC) -o $@ $(DBB) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBB) $(libdb) $(LIBS)
 
 DBC=	db_deadlock.o $(POBJS)
 db_deadlock: $(DBC) $(libdb)
-	$(CC) -o $@ $(DBC) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBC) $(libdb) $(LIBS)
 
 DBD=	db_dump.o $(POBJS)
 db_dump: $(DBD) $(libdb)
-	$(CC) -o $@ $(DBD) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBD) $(libdb) $(LIBS)
 
 DBE=	db_dump185.o $(POBJS)
 db_dump185: $(DBE)
-	$(CC) -o $@ $(DBE) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBE) $(LIBS)
 
 DBF=	db_load.o $(POBJS)
 db_load: $(DBF) $(libdb)
-	$(CC) -o $@ $(DBF) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBF) $(libdb) $(LIBS)
 
 DBG=	db_printlog.o $(POBJS)
 db_printlog: $(DBG) $(libdb)
-	$(CC) -o $@ $(DBG) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBG) $(libdb) $(LIBS)
 
 DBH=	db_recover.o $(POBJS)
 db_recover: $(DBH) $(libdb)
-	$(CC) -o $@ $(DBH) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBH) $(libdb) $(LIBS)
 
 DBI=	db_stat.o $(POBJS)
 db_stat: $(DBI) $(libdb)
-	$(CC) -o $@ $(DBI) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBI) $(libdb) $(LIBS)
 
-EPROGS=	ex_access ex_appinit ex_btrec ex_lock ex_mpool ex_tpcb
+EPROGS=	ex_access ex_appinit ex_btrec ex_lock ex_mpool ex_thread ex_tpcb
 DBJ=	ex_access.o
 ex_access: $(DBJ) $(libdb)
-	$(CC) -o $@ $(DBJ) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBJ) $(libdb) $(LIBS)
 
 DBK=	ex_appinit.o
 ex_appinit: $(DBK) $(libdb)
-	$(CC) -o $@ $(DBK) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBK) $(libdb) $(LIBS)
 
 DBL=	ex_btrec.o
 ex_btrec: $(DBL) $(libdb)
-	$(CC) -o $@ $(DBL) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBL) $(libdb) $(LIBS)
 
 DBM=	ex_lock.o $(POBJS)
 ex_lock: $(DBM) $(libdb)
-	$(CC) -o $@ $(DBM) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBM) $(libdb) $(LIBS)
 
 DBN=	ex_mpool.o
 ex_mpool: $(DBN) $(libdb)
-	$(CC) -o $@ $(DBN) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBN) $(libdb) $(LIBS)
 
 DBO=	ex_thread.o
 ex_thread: $(DBO) $(libdb)
-	$(CC) -o $@ $(DBO) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBO) $(libdb) $(LIBS)
 
 DBP=	ex_tpcb.o $(POBJS)
 ex_tpcb: $(DBP) $(libdb)
-	$(CC) -o $@ $(DBP) $(libdb) $(LLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(DBP) $(libdb) $(LIBS)
 
 DBT=	tclAppInit.o tcl_dbm.o tcl_hsearch.o tcl_lock.o tcl_log.o tcl_mpool.o \
 	tcl_mutex.o tcl_ndbm.o tcl_txn.o utils.o $(POBJS)
 
 dbtest: .dbtestrc
 dbtest: $(DBT) $(libdb)
-	$(CC) -o $@ $(DBT) $(libdb) $(LLIBS) @LIBS@
+	$(CC) -o $@ $(LDFLAGS) $(DBT) $(libdb) $(LIBS)
 
-DBTT=	thread.o $(POBJS)
-thread:	$(DBTT) $(libdb)
-	$(CC) -o $@ $(DBTT) $(libdb) $(LLIBS)
+AOBJS=	err.o getcwd.o getlong.o getopt.o memcmp.o memcpy.o memmove.o \
+	raise.o snprintf.o strerror.o strsep.o vsnprintf.o
 
 clean:
-	$(rm) -f $(OBJS)
+	$(rm) -f $(OBJS) $(AOBJS)
 	$(rm) -f $(DBA) $(DBB) $(DBC) $(DBD) $(DBE) $(DBF) $(DBG) $(DBH)
 	$(rm) -f $(DBI) $(DBJ) $(DBK) $(DBL) $(DBM) $(DBN) $(DBO) $(DBP)
-	$(rm) -f $(DBT) $(DBTT)
+	$(rm) -f $(DBT)
 	$(rm) -f $(PROGS) $(EPROGS) $(POBJS) $(LOBJS) @build_test@
-	$(rm) -f thread core *.core .dbtestrc $(libdb)
+	$(rm) -f core *.core .dbtestrc $(libdb)
 
 depend obj:
 
@@ -325,19 +328,19 @@ btree_auto.o: $(srcdir)/btree/btree_auto.c
 
 # C++ interface files.
 cxx_app.o: $(srcdir)/cxx/cxx_app.cpp
-	$(CXX) $(CFLAGS) $?
+	$(CXX) $(CXXFLAGS) $?
 cxx_except.o: $(srcdir)/cxx/cxx_except.cpp
-	$(CXX) $(CFLAGS) $?
+	$(CXX) $(CXXFLAGS) $?
 cxx_lock.o: $(srcdir)/cxx/cxx_lock.cpp
-	$(CXX) $(CFLAGS) $?
+	$(CXX) $(CXXFLAGS) $?
 cxx_log.o: $(srcdir)/cxx/cxx_log.cpp
-	$(CXX) $(CFLAGS) $?
+	$(CXX) $(CXXFLAGS) $?
 cxx_mpool.o: $(srcdir)/cxx/cxx_mpool.cpp
-	$(CXX) $(CFLAGS) $?
+	$(CXX) $(CXXFLAGS) $?
 cxx_table.o: $(srcdir)/cxx/cxx_table.cpp
-	$(CXX) $(CFLAGS) $?
+	$(CXX) $(CXXFLAGS) $?
 cxx_txn.o: $(srcdir)/cxx/cxx_txn.cpp
-	$(CXX) $(CFLAGS) $?
+	$(CXX) $(CXXFLAGS) $?
 
 # Hash source files.
 hash_auto.o: $(srcdir)/hash/hash_auto.c
@@ -365,6 +368,8 @@ lock.o: $(srcdir)/lock/lock.c
 lock_conflict.o:$(srcdir)/lock/lock_conflict.c
 	$(CC) $(CFLAGS) $?
 lock_deadlock.o:$(srcdir)/lock/lock_deadlock.c
+	$(CC) $(CFLAGS) $?
+lock_region.o:$(srcdir)/lock/lock_region.c
 	$(CC) $(CFLAGS) $?
 lock_util.o:$(srcdir)/lock/lock_util.c
 	$(CC) $(CFLAGS) $?
@@ -454,6 +459,8 @@ db_shash.o: $(srcdir)/common/db_shash.c
 # OS specific source files.
 os_abs.o: $(srcdir)/os/os_abs.c
 	$(CC) $(CFLAGS) $?
+os_alloc.o: $(srcdir)/os/os_alloc.c
+	$(CC) $(CFLAGS) $?
 os_config.o: $(srcdir)/os/os_config.c
 	$(CC) $(CFLAGS) $?
 os_dir.o: $(srcdir)/os/os_dir.c
@@ -505,8 +512,6 @@ tcl_ndbm.o: $(srcdir)/test/tcl_ndbm.c
 	$(CC) $(CFLAGS) $?
 tcl_txn.o: $(srcdir)/test/tcl_txn.c
 	$(CC) $(CFLAGS) $?
-thread.o: $(srcdir)/test/thread.c
-	$(CC) $(CFLAGS) $?
 utils.o: $(srcdir)/test/utils.c
 	$(CC) $(CFLAGS) $?
 
@@ -528,8 +533,6 @@ memmove.o: $(srcdir)/clib/memmove.c
 raise.o: $(srcdir)/clib/raise.c
 	$(CC) $(CFLAGS) $?
 snprintf.o: $(srcdir)/clib/snprintf.c
-	$(CC) $(CFLAGS) $?
-strdup.o: $(srcdir)/clib/strdup.c
 	$(CC) $(CFLAGS) $?
 strerror.o: $(srcdir)/clib/strerror.c
 	$(CC) $(CFLAGS) $?

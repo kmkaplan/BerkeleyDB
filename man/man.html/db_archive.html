@@ -2,9 +2,9 @@
 <HEAD>
 <TITLE>db_archive</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>db_archive</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        <B>db</B>_<B>archive</B> [<B>-alsv</B>] [<B>-h</B> <B>home</B>]
@@ -110,59 +110,61 @@
        archival and when archival  is  completed.   To  create  a
        snapshot  as of a specific time, you must stop reading and
        writing  your  databases  for  the  entire  time  of   the
-       archival,  in  which  case the log files do not need to be
-       archived.
+       archival,  force  a checkpoint (see <B><A HREF="db_checkpoint.html">db_checkpoint(1)</A></B>), and
+       then archive the files listed by the db_archive  command's
+       <B>-s</B> and <B>-l</B> options.
 
-       Once these steps  are  completed,  your  database  can  be
+       Once  these  steps  are  completed,  your  database can be
        recovered from catastrophic failure to its state as of the
-       time the archival was done.  To update  your  snapshot  so
-       that  recovery from catastrophic failure is possible up to
-       a new point in time, repeat step #2, copying all  existing
+       time  the  archival  was done.  To update your snapshot so
+       that recovery from catastrophic failure is possible up  to
+       a  new point in time, repeat step #2, copying all existing
        log files to a backup device.
-       Each  time  that  a  complete  snapshot  is made, i.e. all
+
+       Each time that a  complete  snapshot  is  made,  i.e.  all
        database and log files are copied to backup media, you may
        discard all previous snapshots and saved log files.
 
        The  time  to  restore  from  catastrophic  failure  is  a
-       function of the number  of  log  records  that  have  been
-       written   since   the  snapshot  was  originally  created.
-       Perhaps more importantly,  the  more  separate  pieces  of
+       function  of  the  number  of  log  records that have been
+       written  since  the  snapshot  was   originally   created.
+       Perhaps  more  importantly,  the  more  separate pieces of
        backup media you use, the more likely that you will have a
-       problem reading from one of them.  For these  reasons,  it
+       problem  reading  from one of them.  For these reasons, it
        is often best to make snapshots on a regular basis.
 
-       <B>For</B>  <B>archival</B>  <B>safety</B>  <B>remember</B>  <B>to</B>  <B>ensure</B>  <B>that</B> <B>you</B> <B>have</B>
-       <B>multiple</B> <B>copies</B> <B>of</B> <B>your</B> <B>database</B> <B>backups,</B> <B>that</B> <B>you</B>  <B>verify</B>
+       <B>For</B> <B>archival</B> <B>safety</B>  <B>remember</B>  <B>to</B>  <B>ensure</B>  <B>that</B>  <B>you</B>  <B>have</B>
+       <B>multiple</B>  <B>copies</B> <B>of</B> <B>your</B> <B>database</B> <B>backups,</B> <B>that</B> <B>you</B> <B>verify</B>
        <B>that</B> <B>your</B> <B>archival</B> <B>media</B> <B>is</B> <B>error-free,</B> <B>and</B> <B>that</B> <B>copies</B> <B>of</B>
        <B>your</B> <B>backups</B> <B>are</B> <B>stored</B> <B>off-site!</B>
 
-       To restore your database after catastrophic  failure,  the
+       To  restore  your database after catastrophic failure, the
        following steps should be taken:
 
-       1.   Restore  the  copies  of  the database files from the
+       1.   Restore the copies of the  database  files  from  the
             backup media.
 
-       2.   Restore the copies of the log files from  the  backup
-            media,  <B>in</B>  <B>the</B>  <B>order</B>  <B>in</B>  <B>which</B>  <B>they</B> <B>were</B> <B>written</B>.
-            (It's possible that the  same  log  file  appears  on
-            multiple  backups,  and you only want the most recent
+       2.   Restore  the  copies of the log files from the backup
+            media, <B>in</B> <B>the</B>  <B>order</B>  <B>in</B>  <B>which</B>  <B>they</B>  <B>were</B>  <B>written</B>.
+            (It's  possible  that  the  same  log file appears on
+            multiple backups, and you only want the  most  recent
             version of that log file!)
 
        3.   Run db_recover -c to recover the database.
 
-       It is possible to recreate  the  database  in  a  location
-       different  than  the  original,  by specifying appropriate
+       It  is  possible  to  recreate  the database in a location
+       different than the  original,  by  specifying  appropriate
        pathnames to the -h option of the db_recover utility.
 
        To remove log files, the following steps should be taken:
 
        1.   If you are concerned with catastrophic failure, first
-            copy  them to backup media (e.g., tape), as described
-            above.  This is because log files are  necessary  for
+            copy them to backup media (e.g., tape), as  described
+            above.   This  is because log files are necessary for
             recovery from catastrophic failure.
 
-       2.   Run  db_archive,  without options, to identify all of
-            the log files  that  are  no  longer  in  use  (e.g.,
+       2.   Run db_archive, without options, to identify  all  of
+            the  log  files  that  are  no  longer  in use (e.g.,
             involved in an active transaction).
 
        3.   Remove those log files from the system.
@@ -170,27 +172,27 @@
 
 </PRE>
 <H2>ENVIRONMENT VARIABLES</H2><PRE>
-       The  following  environment variables affect the execution
+       The following environment variables affect  the  execution
        of db_archive:
 
        DB_HOME
             If the <B>-h</B> option is not specified and the environment
-            variable  DB_HOME  is  set, it is used as the path of
+            variable DB_HOME is set, it is used as  the  path  of
             the database home, as described in <B><A HREF="db_appinit.html">db_appinit(3)</A></B>.
 
 
 </PRE>
 <H2>SEE ALSO</H2><PRE>
-       The DB library is a family of  groups  of  functions  that
-       provides  a  modular programming interface to transactions
-       and record-oriented file  access.   The  library  includes
-       support  for  transactions, locking, logging and file page
-       caching, as well as various indexed access methods.   Many
-       of  the  functional  groups  (e.g.,  the file page caching
-       functions)  are  useful  independent  of  the   other   DB
-       functions,  although some functional groups are explicitly
-       based on other functional groups (e.g.,  transactions  and
-       logging).   For  a  general description of the DB package,
+       The  DB  library  is  a family of groups of functions that
+       provides a modular programming interface  to  transactions
+       and  record-oriented  file  access.   The library includes
+       support for transactions, locking, logging and  file  page
+       caching,  as well as various indexed access methods.  Many
+       of the functional groups  (e.g.,  the  file  page  caching
+       functions)   are   useful  independent  of  the  other  DB
+       functions, although some functional groups are  explicitly
+       based  on  other functional groups (e.g., transactions and
+       logging).  For a general description of  the  DB  package,
        see <B><A HREF="db_intro.html">db_intro(3)</A></B>.
 
        <B><A HREF="db_archive.html">db_archive(1)</A></B>, <B><A HREF="db_checkpoint.html">db_checkpoint(1)</A></B>, <B><A HREF="db_deadlock.html">db_deadlock(1)</A></B>, <B><A HREF="db_dump.html">db_dump(1)</A></B>,
@@ -200,7 +202,7 @@
        <B><A HREF="db_txn.html">db_txn(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

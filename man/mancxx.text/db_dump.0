@@ -17,7 +17,7 @@ DDEESSCCRRIIPPTTIIOONN
 
        The  _d_b___d_u_m_p_1_8_5  utility is similar to the _d_b___d_u_m_p utility
        except that it reads databases in the format  used  by  DB
-       version 1.85 and earlier.
+       versions 1.85 and 1.86.
 
        The options are as follows:
 
@@ -41,7 +41,7 @@ DDEESSCCRRIIPPTTIIOONN
             modify the contents of databases.
 
             Note, different systems may have different notions as
-            to  what  characters are ``printable'', and databases
+            to  what  characters  are ``printing'', and databases
             dumped in this manner may be less portable to  exter-
             nal systems.
 
@@ -60,7 +60,7 @@ DDEESSCCRRIIPPTTIIOONN
 
 
        The only available workaround for either case is to modify
-       the  sources  for  the  _d_b___l_o_a_d(3)  utility  to  load  the
+       the  sources  for  the  _d_b___l_o_a_d(1)  utility  to  load  the
        database using the correct  hash,  prefix  and  comparison
        functions.
 
@@ -72,6 +72,51 @@ DDEESSCCRRIIPPTTIIOONN
        The _d_b___d_u_m_p utility exits 0 on success, and >0 if an error
        occurs.  The _d_b___d_u_m_p_1_8_5 utility exits 0 on success, and >0
        if an error occurs.
+
+OOUUTTPPUUTT FFOORRMMAATTSS
+       There  are  two  output  formats  used  by   _d_b___d_u_m_p   and
+       _d_b___d_u_m_p_1_8_5.
+
+       In  both output formats, the first few lines of the output
+       contain  header  information  describing  the   underlying
+       access  method, filesystem page size and other bookkeeping
+       information.  This information is output in ``name=value''
+       pairs, where ``name'' may be any of the keywords listed in
+       the _d_b___l_o_a_d(1) manual page,  and  ``value''  will  be  its
+       value.  While this header information can be edited before
+       the database is reloaded, there is rarely any reason to do
+       so,  as  all of this information can be overridden by com-
+       mand-line arguments to _d_b___l_o_a_d.
+
+       Following the header information are  the  key/data  pairs
+       from  the  database.   If  the database being dumped is of
+       type bbttrreeee or hhaasshh, the output will  be  paired  lines  of
+       text,  where  the  first line of the pair is the key item,
+       and the second line of the pair is its corresponding  data
+       item.   If the database being dumped is of type rreeccnnoo, the
+       output will be lines of text, where each  line  is  a  new
+       data item for the database.
+
+       If the --pp option was specified, each output line will con-
+       sist of single characters representing any characters from
+       the database that were ``printing'', and backslash (``\'')
+       escaped characters for any that were not.  Backslash char-
+       acters  appearing in the output mean one of two things: if
+       the backslash character precedes another backslash charac-
+       ter,  it means that a literal backslash character occurred
+       in the key or data item.  If the backslash character  pre-
+       cedes  any other character, the next two characters should
+       be interpreted as hexadecimal specification  of  a  single
+       character,  e.g.,  ``\0a''  is  a newline character in the
+       ASCII character set.
+
+       If the --pp option was not specified, each output line  will
+       consist  of  paired  hexadecimal  values,  e.g.,  the line
+       ``726f6f74'' is the string ``root'' in the ASCII character
+       set.
+
+       In  both  output  formats, a single newline character ends
+       both the key and data items.
 
 EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
        The following environment variables affect  the  execution

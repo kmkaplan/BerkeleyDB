@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)os_dir.c	10.13 (Sleepycat) 10/28/97";
+static const char sccsid[] = "@(#)os_dir.c	10.15 (Sleepycat) 4/10/98";
 #endif /* not lint */
 
 #include "db_int.h"
@@ -27,7 +27,7 @@ __os_dirlist(dir, namesp, cntp)
 	struct _finddata_t fdata;
 	long dirhandle;
 	int arraysz, cnt, finished;
-	char **names, filespec[MAX_PATH];
+	char **names, filespec[MAXPATHLEN];
 
 	(void)snprintf(filespec, sizeof(filespec), "%s/*", dir);
 	if ((dirhandle = _findfirst(filespec, &fdata)) == -1)

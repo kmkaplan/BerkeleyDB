@@ -7,7 +7,7 @@ NNAAMMEE
        dbm_firstkey, dbm_nextkey, dbm_error, dbm_clearerr
 
 SSYYNNOOPPSSIISS
-       ##ddeeffiinnee DDBB__DDBBMM__HHSSEEAARRCCHH
+       ##ddeeffiinnee DDBB__DDBBMM__HHSSEEAARRCCHH    11
        ##iinncclluuddee <<ddbb..hh>>
 
        ttyyppeeddeeff ssttrruucctt {{
@@ -74,7 +74,7 @@ DDEESSCCRRIIPPTTIIOONN
        ``#include <dbm.h>'' or ``#include  <ndbm.h>'')  with  the
        following two lines:
 
-              #define DB_DBM_HSEARCH
+              #define DB_DBM_HSEARCH    1
               #include <db.h>
 
        and  recompile.   If  the  application  attempts  to  load

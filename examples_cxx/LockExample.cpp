@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)LockExample.cpp	10.4 (Sleepycat) 11/10/97
+ *	@(#)LockExample.cpp	10.5 (Sleepycat) 4/10/98
  */
 
 #include "config.h"

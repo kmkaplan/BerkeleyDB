@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test030.tcl	10.4 (Sleepycat) 10/4/97
+#	@(#)test030.tcl	10.6 (Sleepycat) 4/10/98
 #
 # DB Test 30 Run the random db tester on the specified access method.
 # Options are:
@@ -73,8 +73,7 @@ set usage "\t-adds <maximum number of keys before you disable adds>\
 	# Run the script with 3 times the number of initial elements to
 	# set it up.
 	set db [dbopen $f [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method]
-	error_check_bad dbopen:$f $db NULL
-	error_check_good dbopen:$f [is_substr $db db] 1
+	error_check_good dbopen:$f [is_valid_db $db] TRUE
 
 	set r [$db close]
 	error_check_good dbclose:$f $r 0

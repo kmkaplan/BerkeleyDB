@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)db_err.c	10.19 (Sleepycat) 11/9/97";
+static const char sccsid[] = "@(#)db_err.c	10.25 (Sleepycat) 5/2/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -26,6 +26,7 @@ static const char sccsid[] = "@(#)db_err.c	10.19 (Sleepycat) 11/9/97";
 #include "db_int.h"
 #include "common_ext.h"
 
+static int __db_keyempty __P((const DB_ENV *));
 static int __db_rdonly __P((const DB_ENV *, const char *));
 
 /*
@@ -81,11 +82,11 @@ __db_err(dbenv, fmt, va_alist)
  * appears before the assignment in the __db__panic() call.
  */
 static int __db_ecursor __P((DB *, DB_TXN *, DBC **));
-static int __db_edel __P((DB *, DB_TXN *, DBT *, int));
+static int __db_edel __P((DB *, DB_TXN *, DBT *, u_int32_t));
 static int __db_efd __P((DB *, int *));
-static int __db_egp __P((DB *, DB_TXN *, DBT *, DBT *, int));
-static int __db_estat __P((DB *, void *, void *(*)(size_t), int));
-static int __db_esync __P((DB *, int));
+static int __db_egp __P((DB *, DB_TXN *, DBT *, DBT *, u_int32_t));
+static int __db_estat __P((DB *, void *, void *(*)(size_t), u_int32_t));
+static int __db_esync __P((DB *, u_int32_t));
 
 /*
  * __db_ecursor --
@@ -97,7 +98,9 @@ __db_ecursor(a, b, c)
 	DB_TXN *b;
 	DBC **c;
 {
-	a = a; b = b; c = c;			/* XXX: Shut the compiler up. */
+	COMPQUIET(a, NULL);
+	COMPQUIET(b, NULL);
+	COMPQUIET(c, NULL);
 
 	return (EPERM);
 }
@@ -111,9 +114,12 @@ __db_edel(a, b, c, d)
 	DB *a;
 	DB_TXN *b;
 	DBT *c;
-	int d;
+	u_int32_t d;
 {
-	a = a; b = b; c = c; d = d;		/* XXX: Shut the compiler up. */
+	COMPQUIET(a, NULL);
+	COMPQUIET(b, NULL);
+	COMPQUIET(c, NULL);
+	COMPQUIET(d, 0);
 
 	return (EPERM);
 }
@@ -127,7 +133,8 @@ __db_efd(a, b)
 	DB *a;
 	int *b;
 {
-	a = a; b = b;				/* XXX: Shut the compiler up. */
+	COMPQUIET(a, NULL);
+	COMPQUIET(b, NULL);
 
 	return (EPERM);
 }
@@ -141,9 +148,13 @@ __db_egp(a, b, c, d, e)
 	DB *a;
 	DB_TXN *b;
 	DBT *c, *d;
-	int e;
+	u_int32_t e;
 {
-	a = a; b = b; c = c; d = d; e = e;	/* XXX: Shut the compiler up. */
+	COMPQUIET(a, NULL);
+	COMPQUIET(b, NULL);
+	COMPQUIET(c, NULL);
+	COMPQUIET(d, NULL);
+	COMPQUIET(e, 0);
 
 	return (EPERM);
 }
@@ -157,9 +168,12 @@ __db_estat(a, b, c, d)
 	DB *a;
 	void *b;
 	void *(*c) __P((size_t));
-	int d;
+	u_int32_t d;
 {
-	a = a; b = b; c = c; d = d;		/* XXX: Shut the compiler up. */
+	COMPQUIET(a, NULL);
+	COMPQUIET(b, NULL);
+	COMPQUIET(c, NULL);
+	COMPQUIET(d, 0);
 
 	return (EPERM);
 }
@@ -171,9 +185,10 @@ __db_estat(a, b, c, d)
 static int
 __db_esync(a, b)
 	DB *a;
-	int b;
+	u_int32_t b;
 {
-	a = a; b = b;				/* XXX: Shut the compiler up. */
+	COMPQUIET(a, NULL);
+	COMPQUIET(b, 0);
 
 	return (EPERM);
 }
@@ -194,6 +209,10 @@ __db_panic(dbp)
 	 *
 	 * We should call mpool and have it shut down the file, so we get
 	 * other processes sharing this file as well.
+	 *
+	 *	Chaos reigns within.
+	 *	Reflect, repent, and reboot.
+	 *	Order shall return.
 	 */
 	dbp->cursor = __db_ecursor;
 	dbp->del = __db_edel;
@@ -221,13 +240,13 @@ __db_panic(dbp)
  * __db_fchk --
  *	General flags checking routine.
  *
- * PUBLIC: int __db_fchk __P((DB_ENV *, const char *, int, int));
+ * PUBLIC: int __db_fchk __P((DB_ENV *, const char *, u_int32_t, u_int32_t));
  */
 int
 __db_fchk(dbenv, name, flags, ok_flags)
 	DB_ENV *dbenv;
 	const char *name;
-	int flags, ok_flags;
+	u_int32_t flags, ok_flags;
 {
 	DB_CHECK_FLAGS(dbenv, name, flags, ok_flags);
 	return (0);
@@ -237,13 +256,14 @@ __db_fchk(dbenv, name, flags, ok_flags)
  * __db_fcchk --
  *	General combination flags checking routine.
  *
- * PUBLIC: int __db_fcchk __P((DB_ENV *, const char *, int, int, int));
+ * PUBLIC: int __db_fcchk
+ * PUBLIC:    __P((DB_ENV *, const char *, u_int32_t, u_int32_t, u_int32_t));
  */
 int
 __db_fcchk(dbenv, name, flags, flag1, flag2)
 	DB_ENV *dbenv;
 	const char *name;
-	int flags, flag1, flag2;
+	u_int32_t flags, flag1, flag2;
 {
 	DB_CHECK_FCOMBO(dbenv, name, flags, flag1, flag2);
 	return (0);
@@ -253,12 +273,13 @@ __db_fcchk(dbenv, name, flags, flag1, flag2)
  * __db_cdelchk --
  *	Common cursor delete argument checking routine.
  *
- * PUBLIC: int __db_cdelchk __P((const DB *, int, int, int));
+ * PUBLIC: int __db_cdelchk __P((const DB *, u_int32_t, int, int));
  */
 int
 __db_cdelchk(dbp, flags, isrdonly, isvalid)
 	const DB *dbp;
-	int flags, isrdonly, isvalid;
+	u_int32_t flags;
+	int isrdonly, isvalid;
 {
 	/* Check for changes to a read-only tree. */
 	if (isrdonly)
@@ -278,17 +299,18 @@ __db_cdelchk(dbp, flags, isrdonly, isvalid)
  * __db_cgetchk --
  *	Common cursor get argument checking routine.
  *
- * PUBLIC: int __db_cgetchk __P((const DB *, DBT *, DBT *, int, int));
+ * PUBLIC: int __db_cgetchk __P((const DB *, DBT *, DBT *, u_int32_t, int));
  */
 int
 __db_cgetchk(dbp, key, data, flags, isvalid)
 	const DB *dbp;
 	DBT *key, *data;
-	int flags, isvalid;
+	u_int32_t flags;
+	int isvalid;
 {
-	int check_key;
+	int key_einval, key_flags;
 
-	check_key = 0;
+	key_flags = key_einval = 0;
 
 	/* Check for invalid dbc->c_get() function flags. */
 	switch (flags) {
@@ -297,10 +319,13 @@ __db_cgetchk(dbp, key, data, flags, isvalid)
 	case DB_LAST:
 	case DB_NEXT:
 	case DB_PREV:
+		key_flags = 1;
+		break;
 	case DB_SET_RANGE:
-		check_key = 1;
+		key_einval = key_flags = 1;
 		break;
 	case DB_SET:
+		key_einval = 1;
 		break;
 	case DB_GET_RECNO:
 		if (!F_ISSET(dbp, DB_BT_RECNUM))
@@ -309,14 +334,14 @@ __db_cgetchk(dbp, key, data, flags, isvalid)
 	case DB_SET_RECNO:
 		if (!F_ISSET(dbp, DB_BT_RECNUM))
 			goto err;
-		check_key = 1;
+		key_einval = key_flags = 1;
 		break;
 	default:
 err:		return (__db_ferr(dbp->dbenv, "c_get", 0));
 	}
 
 	/* Check for invalid key/data flags. */
-	if (check_key)
+	if (key_flags)
 		DB_CHECK_FLAGS(dbp->dbenv, "key", key->flags,
 		    DB_DBT_MALLOC | DB_DBT_USERMEM | DB_DBT_PARTIAL);
 	DB_CHECK_FLAGS(dbp->dbenv, "data", data->flags,
@@ -326,10 +351,14 @@ err:		return (__db_ferr(dbp->dbenv, "c_get", 0));
 	if (F_ISSET(dbp, DB_AM_THREAD)) {
 		if (!F_ISSET(data, DB_DBT_USERMEM | DB_DBT_MALLOC))
 			return (__db_ferr(dbp->dbenv, "threaded data", 1));
-		if (check_key &&
+		if (key_flags &&
 		    !F_ISSET(key, DB_DBT_USERMEM | DB_DBT_MALLOC))
 			return (__db_ferr(dbp->dbenv, "threaded key", 1));
 	}
+
+	/* Check for missing keys. */
+	if (key_einval && (key->data == NULL || key->size == 0))
+		return (__db_keyempty(dbp->dbenv));
 
 	/*
 	 * The cursor must be initialized for DB_CURRENT, return -1 for an
@@ -343,23 +372,24 @@ err:		return (__db_ferr(dbp->dbenv, "c_get", 0));
  *	Common cursor put argument checking routine.
  *
  * PUBLIC: int __db_cputchk __P((const DB *,
- * PUBLIC:    const DBT *, DBT *, int, int, int));
+ * PUBLIC:    const DBT *, DBT *, u_int32_t, int, int));
  */
 int
 __db_cputchk(dbp, key, data, flags, isrdonly, isvalid)
 	const DB *dbp;
 	const DBT *key;
 	DBT *data;
-	int flags, isrdonly, isvalid;
+	u_int32_t flags;
+	int isrdonly, isvalid;
 {
-	int check_key;
+	int key_einval, key_flags;
 
 	/* Check for changes to a read-only tree. */
 	if (isrdonly)
 		return (__db_rdonly(dbp->dbenv, "c_put"));
 
 	/* Check for invalid dbc->c_put() function flags. */
-	check_key = 0;
+	key_einval = key_flags = 0;
 	switch (flags) {
 	case DB_AFTER:
 	case DB_BEFORE:
@@ -374,18 +404,22 @@ __db_cputchk(dbp, key, data, flags, isrdonly, isvalid)
 	case DB_KEYLAST:
 		if (dbp->type == DB_RECNO)
 			goto err;
-		check_key = 1;
+		key_einval = key_flags = 1;
 		break;
 	default:
 err:		return (__db_ferr(dbp->dbenv, "c_put", 0));
 	}
 
 	/* Check for invalid key/data flags. */
-	if (check_key)
+	if (key_flags)
 		DB_CHECK_FLAGS(dbp->dbenv, "key", key->flags,
 		    DB_DBT_MALLOC | DB_DBT_USERMEM | DB_DBT_PARTIAL);
 	DB_CHECK_FLAGS(dbp->dbenv, "data", data->flags,
 	    DB_DBT_MALLOC | DB_DBT_USERMEM | DB_DBT_PARTIAL);
+
+	/* Check for missing keys. */
+	if (key_einval && (key->data == NULL || key->size == 0))
+		return (__db_keyempty(dbp->dbenv));
 
 	/*
 	 * The cursor must be initialized for anything other than DB_KEYFIRST
@@ -399,12 +433,14 @@ err:		return (__db_ferr(dbp->dbenv, "c_put", 0));
  * __db_delchk --
  *	Common delete argument checking routine.
  *
- * PUBLIC: int __db_delchk __P((const DB *, int, int));
+ * PUBLIC: int __db_delchk __P((const DB *, DBT *, u_int32_t, int));
  */
 int
-__db_delchk(dbp, flags, isrdonly)
+__db_delchk(dbp, key, flags, isrdonly)
 	const DB *dbp;
-	int flags, isrdonly;
+	DBT *key;
+	u_int32_t flags;
+	int isrdonly;
 {
 	/* Check for changes to a read-only tree. */
 	if (isrdonly)
@@ -413,6 +449,10 @@ __db_delchk(dbp, flags, isrdonly)
 	/* Check for invalid db->del() function flags. */
 	DB_CHECK_FLAGS(dbp->dbenv, "delete", flags, 0);
 
+	/* Check for missing keys. */
+	if (key->data == NULL || key->size == 0)
+		return (__db_keyempty(dbp->dbenv));
+
 	return (0);
 }
 
@@ -420,14 +460,14 @@ __db_delchk(dbp, flags, isrdonly)
  * __db_getchk --
  *	Common get argument checking routine.
  *
- * PUBLIC: int __db_getchk __P((const DB *, const DBT *, DBT *, int));
+ * PUBLIC: int __db_getchk __P((const DB *, const DBT *, DBT *, u_int32_t));
  */
 int
 __db_getchk(dbp, key, data, flags)
 	const DB *dbp;
 	const DBT *key;
 	DBT *data;
-	int flags;
+	u_int32_t flags;
 {
 	/* Check for invalid db->get() function flags. */
 	DB_CHECK_FLAGS(dbp->dbenv,
@@ -443,6 +483,10 @@ __db_getchk(dbp, key, data, flags)
 	    !F_ISSET(data, DB_DBT_MALLOC | DB_DBT_USERMEM))
 		return (__db_ferr(dbp->dbenv, "threaded data", 1));
 
+	/* Check for missing keys. */
+	if (key->data == NULL || key->size == 0)
+		return (__db_keyempty(dbp->dbenv));
+
 	return (0);
 }
 
@@ -450,14 +494,16 @@ __db_getchk(dbp, key, data, flags)
  * __db_putchk --
  *	Common put argument checking routine.
  *
- * PUBLIC: int __db_putchk __P((const DB *, DBT *, const DBT *, int, int, int));
+ * PUBLIC: int __db_putchk
+ * PUBLIC:    __P((const DB *, DBT *, const DBT *, u_int32_t, int, int));
  */
 int
 __db_putchk(dbp, key, data, flags, isrdonly, isdup)
 	const DB *dbp;
 	DBT *key;
 	const DBT *data;
-	int flags, isrdonly, isdup;
+	u_int32_t flags;
+	int isrdonly, isdup;
 {
 	/* Check for changes to a read-only tree. */
 	if (isrdonly)
@@ -474,12 +520,17 @@ __db_putchk(dbp, key, data, flags, isrdonly, isdup)
 	DB_CHECK_FCOMBO(dbp->dbenv,
 	    "data", data->flags, DB_DBT_MALLOC, DB_DBT_USERMEM);
 
+	/* Check for missing keys. */
+	if (key->data == NULL || key->size == 0)
+		return (__db_keyempty(dbp->dbenv));
+
 	/* Check for partial puts in the presence of duplicates. */
 	if (isdup && F_ISSET(data, DB_DBT_PARTIAL)) {
 		__db_err(dbp->dbenv,
 "a partial put in the presence of duplicates requires a cursor operation");
 		return (EINVAL);
 	}
+
 	return (0);
 }
 
@@ -487,12 +538,12 @@ __db_putchk(dbp, key, data, flags, isrdonly, isdup)
  * __db_statchk --
  *	Common stat argument checking routine.
  *
- * PUBLIC: int __db_statchk __P((const DB *, int));
+ * PUBLIC: int __db_statchk __P((const DB *, u_int32_t));
  */
 int
 __db_statchk(dbp, flags)
 	const DB *dbp;
-	int flags;
+	u_int32_t flags;
 {
 	/* Check for invalid db->stat() function flags. */
 	DB_CHECK_FLAGS(dbp->dbenv, "stat", flags, DB_RECORDCOUNT);
@@ -508,12 +559,12 @@ __db_statchk(dbp, flags)
  * __db_syncchk --
  *	Common sync argument checking routine.
  *
- * PUBLIC: int __db_syncchk __P((const DB *, int));
+ * PUBLIC: int __db_syncchk __P((const DB *, u_int32_t));
  */
 int
 __db_syncchk(dbp, flags)
 	const DB *dbp;
-	int flags;
+	u_int32_t flags;
 {
 	/* Check for invalid db->sync() function flags. */
 	DB_CHECK_FLAGS(dbp->dbenv, "sync", flags, 0);
@@ -528,13 +579,13 @@ __db_syncchk(dbp, flags)
  * PUBLIC: int __db_ferr __P((const DB_ENV *, const char *, int));
  */
 int
-__db_ferr(dbenv, name, combo)
+__db_ferr(dbenv, name, iscombo)
 	const DB_ENV *dbenv;
 	const char *name;
-	int combo;
+	int iscombo;
 {
 	__db_err(dbenv, "illegal flag %sspecified to %s",
-	    combo ? "combination " : "", name);
+	    iscombo ? "combination " : "", name);
 	return (EINVAL);
 }
 
@@ -549,4 +600,16 @@ __db_rdonly(dbenv, name)
 {
 	__db_err(dbenv, "%s: attempt to modify a read-only tree", name);
 	return (EACCES);
+}
+
+/*
+ * __db_keyempty --
+ *	Common missing or empty key value message.
+ */
+static int
+__db_keyempty(dbenv)
+	const DB_ENV *dbenv;
+{
+	__db_err(dbenv, "missing or empty key value specified");
+	return (EINVAL);
 }

@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)DbLog.java	10.2 (Sleepycat) 11/20/97
+ *	@(#)DbLog.java	10.4 (Sleepycat) 5/2/98
  */
 
 package com.sleepycat.db;
@@ -36,6 +36,9 @@ public class DbLog
          throws DbException;
 
     public native void put(DbLsn lsn, Dbt data, int flags)
+         throws DbException;
+
+    public native DbLogStat stat()
          throws DbException;
 
     public native /*u_int32_t fidp*/ int db_register(Db dbp, String name,

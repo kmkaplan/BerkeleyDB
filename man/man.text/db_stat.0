@@ -32,6 +32,10 @@ DDEESSCCRRIIPPTTIIOONN
        _d_b___s_t_a_t  to  clean  up  after  itself and exit, send it an
        interrupt signal (SIGINT).
 
+       Values smaller than 10  million  are  generally  displayed
+       without  any  special notation, values larger than 10 mil-
+       lion are normally displayed as ``<number>M''.
+
        The _d_b___s_t_a_t utility exits 0 on success, and >0 if an error
        occurs.
 

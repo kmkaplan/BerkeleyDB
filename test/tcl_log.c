@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)tcl_log.c	10.9 (Sleepycat) 11/22/97";
+static const char sccsid[] = "@(#)tcl_log.c	10.13 (Sleepycat) 4/10/98";
 #endif /* not lint */
 
 /*
@@ -31,15 +31,13 @@ static const char sccsid[] = "@(#)tcl_log.c	10.9 (Sleepycat) 11/22/97";
 #include "test_ext.h"
 
 /* Internal functions */
-
-int get_lsn __P((Tcl_Interp *, char *, DB_LSN *));
-
-int log_compare_cmd __P((Tcl_Interp *interp, int, char *argv[]));
-int log_flush_cmd __P((DB_LOG *, Tcl_Interp *interp, int, char *argv[]));
-int log_file_cmd __P((DB_LOG *, Tcl_Interp *interp, int, char *argv[]));
-int log_get_cmd __P((DB_LOG *, Tcl_Interp *interp, int, char *argv[]));
-int log_put_cmd __P((DB_LOG *, Tcl_Interp *interp, int, char *argv[]));
-int log_reg_cmd __P((DB_LOG *, Tcl_Interp *interp, int, char *argv[]));
+static int get_lsn __P((Tcl_Interp *, char *, DB_LSN *));
+static int log_compare_cmd __P((Tcl_Interp *interp, int, char *argv[]));
+static int log_file_cmd __P((DB_LOG *, Tcl_Interp *interp, int, char *argv[]));
+static int log_flush_cmd __P((DB_LOG *, Tcl_Interp *interp, int, char *argv[]));
+static int log_get_cmd __P((DB_LOG *, Tcl_Interp *interp, int, char *argv[]));
+static int log_put_cmd __P((DB_LOG *, Tcl_Interp *interp, int, char *argv[]));
+static int log_reg_cmd __P((DB_LOG *, Tcl_Interp *interp, int, char *argv[]));
 
 /*
  * log_cmd --
@@ -62,12 +60,13 @@ log_cmd(notused, interp, argc, argv)
 	int argc;
 	char *argv[];
 {
+	static int log_number = 0;
 	DB_LOG *lp;
 	DB_ENV *env;
 	log_data *ld;
-	int flags, mode;
+	u_int32_t flags;
+	int mode, tclint;
 	char logname[50];
-	static int log_number = 0;
 
 	notused = NULL;
 
@@ -75,11 +74,12 @@ log_cmd(notused, interp, argc, argv)
 
 	/* Check number of arguments. */
 	USAGE_GE(argc, 4, LOG_USAGE, DO_ENV);
-	if (Tcl_GetInt(interp, argv[2], &flags) != TCL_OK ||
-	    Tcl_GetInt(interp, argv[3], &mode) != TCL_OK)
+	if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK)
 		return (TCL_ERROR);
+	flags = (u_int32_t)tclint;
 
-
+	if (Tcl_GetInt(interp, argv[3], &mode) != TCL_OK)
+		return (TCL_ERROR);
 
 	if (process_env_options(interp, argc, argv, &env))
 		return (TCL_ERROR);
@@ -131,8 +131,6 @@ logunlink_cmd(notused, interp, argc, argv)
 	int argc;
 	char *argv[];
 {
-	DB_ENV *env;
-
 	int force;
 
 	notused = NULL;
@@ -144,10 +142,7 @@ logunlink_cmd(notused, interp, argc, argv)
 	if (Tcl_GetInt(interp, argv[2], &force) != TCL_OK)
 		return (TCL_ERROR);
 
-	if (process_env_options(interp, argc, argv, &env))
-		return (TCL_ERROR);
-
-	if (log_unlink(argv[1], force, env) != 0)
+	if (log_unlink(argv[1], force, NULL) != 0)
 		Tcl_SetResult(interp, "-1", TCL_STATIC);
 	else
 		Tcl_SetResult(interp, "0", TCL_STATIC);
@@ -245,7 +240,7 @@ logwidget_cmd(cd_lp, interp, argc, argv)
 /*
  * Implementation of all the individual widget commands.
  */
-int
+static int
 log_compare_cmd(interp, argc, argv)
 	Tcl_Interp *interp;
 	int argc;
@@ -266,7 +261,7 @@ log_compare_cmd(interp, argc, argv)
 	return (TCL_OK);
 }
 
-int
+static int
 log_flush_cmd(lp, interp, argc, argv)
 	DB_LOG *lp;
 	Tcl_Interp *interp;
@@ -289,7 +284,8 @@ log_flush_cmd(lp, interp, argc, argv)
 	Tcl_SetResult(interp, "0", TCL_STATIC);
 	return (TCL_OK);
 }
-int
+
+static int
 log_file_cmd(lp, interp, argc, argv)
 	DB_LOG *lp;
 	Tcl_Interp *interp;
@@ -298,7 +294,7 @@ log_file_cmd(lp, interp, argc, argv)
 {
 	DB_LSN lsn;
 	int ret;
-	char name[20];
+	char name[1024];
 
 	USAGE(argc, 3, LOGFILE_USAGE, 0);
 	if (get_lsn(interp, argv[2], &lsn) != TCL_OK)
@@ -312,7 +308,8 @@ log_file_cmd(lp, interp, argc, argv)
 	Tcl_SetResult(interp, name, TCL_VOLATILE);
 	return (TCL_OK);
 }
-int
+
+static int
 log_get_cmd(lp, interp, argc, argv)
 	DB_LOG *lp;
 	Tcl_Interp *interp;
@@ -321,12 +318,15 @@ log_get_cmd(lp, interp, argc, argv)
 {
 	DB_LSN lsn;
 	DBT data;
-	int flags, ret;
+	u_int32_t flags;
+	int ret, tclint;
 
 	USAGE(argc, 4, LOGGET_USAGE, 0);
-	if (get_lsn(interp, argv[2], &lsn) != TCL_OK ||
-	    Tcl_GetInt(interp, argv[3], &flags) != TCL_OK)
+	if (get_lsn(interp, argv[2], &lsn) != TCL_OK)
 		return (TCL_ERROR);
+	if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK)
+		return (TCL_ERROR);
+	flags = (u_int32_t)tclint;
 
 	memset(&data, 0, sizeof(data));
 	switch (ret = log_get(lp, &lsn, &data, flags)) {
@@ -343,7 +343,7 @@ log_get_cmd(lp, interp, argc, argv)
 	return (TCL_OK);
 }
 
-int
+static int
 log_put_cmd(lp, interp, argc, argv)
 	DB_LOG *lp;
 	Tcl_Interp *interp;
@@ -352,13 +352,15 @@ log_put_cmd(lp, interp, argc, argv)
 {
 	DB_LSN lsn;
 	DBT data;
+	u_int32_t flags;
+	int ret, tclint;
 	char resbuf[64];
-	int flags, ret;
 
 	USAGE(argc, 4, LOGPUT_USAGE, 0);
 
-	if (Tcl_GetInt(interp, argv[3], &flags) != TCL_OK)
+	if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK)
 		return (TCL_ERROR);
+	flags = (u_int32_t)tclint;
 
 	memset(&data, 0, sizeof(data));
 	data.data = argv[2];
@@ -375,24 +377,24 @@ log_put_cmd(lp, interp, argc, argv)
 	Tcl_SetResult(interp, resbuf, TCL_VOLATILE);
 	return (TCL_OK);
 }
-int
+
+static int
 log_reg_cmd(lp, interp, argc, argv)
 	DB_LOG *lp;
 	Tcl_Interp *interp;
 	int argc;
 	char *argv[];
 {
-	Tcl_CmdInfo cmd_info;
 	DB *dbp;
-	int itype, ret;
-	unsigned int regid;
 	DBTYPE type;
-
+	Tcl_CmdInfo cmd_info;
+	u_int32_t regid;
+	int ret, tclint;
 
 	USAGE(argc, 5, LOGREG_USAGE, 0);
-	if (Tcl_GetInt(interp, argv[4], &itype) != TCL_OK)
+	if (Tcl_GetInt(interp, argv[4], &tclint) != TCL_OK)
 		return (TCL_ERROR);
-	type = (DBTYPE)itype;
+	type = (DBTYPE)tclint;
 
 	if (Tcl_GetCommandInfo(interp, argv[2], &cmd_info) != TCL_OK)
 		dbp = NULL;
@@ -409,22 +411,22 @@ log_reg_cmd(lp, interp, argc, argv)
 	return (TCL_OK);
 }
 
-int
+static int
 get_lsn(interp, str, lsnp)
 	Tcl_Interp *interp;
 	char *str;
 	DB_LSN *lsnp;
 {
-	int largc, i1, i2;
+	int largc, tclint;
 	char **largv;
 
-	if (Tcl_SplitList(interp, str, &largc, &largv) != TCL_OK ||
-	    largc != 2 ||
-	    Tcl_GetInt(interp, largv[0], &i1) != TCL_OK ||
-	    Tcl_GetInt(interp, largv[1], &i2) != TCL_OK)
+	if (Tcl_SplitList(interp, str, &largc, &largv) != TCL_OK || largc != 2)
 		return (TCL_ERROR);
-
-	lsnp->offset = (u_int32_t)i1;
-	lsnp->file = (u_int32_t)i2;
+	if (Tcl_GetInt(interp, largv[0], &tclint) != TCL_OK)
+		return (TCL_ERROR);
+	lsnp->offset = (u_int32_t)tclint;
+	if (Tcl_GetInt(interp, largv[1], &tclint) != TCL_OK)
+		return (TCL_ERROR);
+	lsnp->file = (u_int32_t)tclint;
 	return (TCL_OK);
 }

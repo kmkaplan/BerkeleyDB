@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)cxx_log.cpp	10.5 (Sleepycat) 10/25/97";
+static const char sccsid[] = "@(#)cxx_log.cpp	10.7 (Sleepycat) 4/10/98";
 #endif /* not lint */
 
 #include "db_cxx.h"
@@ -30,7 +30,7 @@ DbLog::~DbLog()
 {
 }
 
-int DbLog::archive(char **list[], int flags, void *(*db_malloc)(size_t))
+int DbLog::archive(char **list[], u_int32_t flags, void *(*db_malloc)(size_t))
 {
     int err;
     DB_LOG *log = unwrap(this);
@@ -85,7 +85,7 @@ int DbLog::flush(const DbLsn *lsn)
     return 0;
 }
 
-int DbLog::get(DbLsn *lsn, Dbt *data, int flags)
+int DbLog::get(DbLsn *lsn, Dbt *data, u_int32_t flags)
 {
     int err;
     DB_LOG *log = unwrap(this);
@@ -96,7 +96,7 @@ int DbLog::get(DbLsn *lsn, Dbt *data, int flags)
     return 0;
 }
 
-int DbLog::put(DbLsn *lsn, const Dbt *data, int flags)
+int DbLog::put(DbLsn *lsn, const Dbt *data, u_int32_t flags)
 {
     int err = 0;
     DB_LOG *log = unwrap(this);
@@ -130,7 +130,7 @@ int DbLog::db_unregister(u_int32_t fid)
 }
 
 // static method
-int DbLog::open(const char *dir, int flags, int mode,
+int DbLog::open(const char *dir, u_int32_t flags, int mode,
                   DbEnv *dbenv, DbLog **regionp)
 {
     *regionp = 0;

@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
@@ -9,9 +9,9 @@
 
 #ifndef lint
 static const char copyright[] =
-"@(#) Copyright (c) 1997\n\
+"@(#) Copyright (c) 1996, 1997, 1998\n\
 	Sleepycat Software Inc.  All rights reserved.\n";
-static const char sccsid[] = "@(#)db_dump.c	10.16 (Sleepycat) 8/27/97";
+static const char sccsid[] = "@(#)db_dump.c	10.19 (Sleepycat) 4/20/98";
 #endif
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -30,6 +30,8 @@ static const char sccsid[] = "@(#)db_dump.c	10.16 (Sleepycat) 8/27/97";
 #include "btree.h"
 #include "hash.h"
 #include "clib_ext.h"
+
+#undef stat	/* XXX: GNU C library. */
 
 void	configure __P((char *));
 DB_ENV *db_init __P((char *));

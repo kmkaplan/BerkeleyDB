@@ -8,7 +8,7 @@ SSYYNNOOPPSSIISS
 
        iinntt
        lloogg__ooppeenn((ccoonnsstt cchhaarr **ddiirr,,
-            iinntt ffllaaggss,, iinntt mmooddee,, DDBB__EENNVV **ddbbeennvv,, DDBB__LLOOGG ****rreeggiioonnpp));;
+            uu__iinntt3322__tt ffllaaggss,, iinntt mmooddee,, DDBB__EENNVV **ddbbeennvv,, DDBB__LLOOGG ****rreeggiioonnpp));;
 
        iinntt
        lloogg__cclloossee((DDBB__LLOOGG **llooggpp));;
@@ -17,7 +17,7 @@ SSYYNNOOPPSSIISS
        lloogg__fflluusshh((DDBB__LLOOGG **llooggpp,, ccoonnsstt DDBB__LLSSNN **llssnn));;
 
        iinntt
-       lloogg__ggeett((DDBB__LLOOGG **llooggpp,, DDBB__LLSSNN **llssnn,, DDBBTT **ddaattaa,, iinntt ffllaaggss));;
+       lloogg__ggeett((DDBB__LLOOGG **llooggpp,, DDBB__LLSSNN **llssnn,, DDBBTT **ddaattaa,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
        lloogg__ccoommppaarree((ccoonnsstt DDBB__LLSSNN **llssnn00,, ccoonnsstt DDBB__LLSSNN **llssnn11));;
@@ -26,14 +26,14 @@ SSYYNNOOPPSSIISS
        lloogg__ffiillee((DDBB__LLOOGG **llooggpp,, ccoonnsstt DDBB__LLSSNN **llssnn,, cchhaarr **nnaammeepp,, ssiizzee__tt lleenn));;
 
        iinntt
-       lloogg__ppuutt((DDBB__LLOOGG **llooggpp,, DDBB__LLSSNN **llssnn,, ccoonnsstt DDBBTT **ddaattaa,, iinntt ffllaaggss));;
+       lloogg__ppuutt((DDBB__LLOOGG **llooggpp,, DDBB__LLSSNN **llssnn,, ccoonnsstt DDBBTT **ddaattaa,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
        lloogg__uunnlliinnkk((ccoonnsstt cchhaarr **ddiirr,, iinntt ffoorrccee,, DDBB__EENNVV **));;
 
        iinntt
        lloogg__aarrcchhiivvee((DDBB__LLOOGG **llooggpp,,
-            cchhaarr ****lliisstt[[]],, iinntt ffllaaggss,, vvooiidd **((**ddbb__mmaalllloocc))((ssiizzee__tt))));;
+            cchhaarr ****lliisstt[[]],, uu__iinntt3322__tt ffllaaggss,, vvooiidd **((**ddbb__mmaalllloocc))((ssiizzee__tt))));;
 
        iinntt
        lloogg__rreeggiisstteerr((DDBB__LLOOGG **llooggpp,,
@@ -139,38 +139,47 @@ DDEESSCCRRIIPPTTIIOONN
 
        The  logging  subsystem  is  configured based on the _d_b_e_n_v
        argument to _l_o_g___o_p_e_n, which is a pointer to a structure of
-       type  DB_ENV  (typedef'd  in <db.h>).  It is expected that
-       applications will use a single  DB_ENV  structure  as  the
-       argument  to  all of the subsystems in the DB package.  In
-       order to ensure compatibility with future releases of  DB,
-       all fields of the DB_ENV structure that are not explicitly
-       set should be initialized to 0 before the first  time  the
-       structure  is  used.   Do  this by declaring the structure
-       external or static, or by calling the  C  library  routine
-       _b_z_e_r_o(3) or _m_e_m_s_e_t(3).
+       type DB_ENV (typedef'd in <db.h>).  Applications will nor-
+       mally  use  the  same  DB_ENV  structure  (initialized  by
+       _d_b___a_p_p_i_n_i_t(3)), as an argument to all of the subsystems in
+       the DB package.
 
-       The  fields  of  the DB_ENV structure used by _l_o_g___o_p_e_n are
-       described below.  If _d_b_e_n_v is NULL or any  of  its  fields
+       References to the DB_ENV structure are maintained  by  DB,
+       so  it may not be discarded until the last close function,
+       corresponding to an open function  for  which  it  was  an
+       argument,  has returned.  In order to ensure compatibility
+       with future releases of  DB,  all  fields  of  the  DB_ENV
+       structure  that  are not explicitly set should be initial-
+       ized to 0 before the first time the structure is used.  Do
+       this  by declaring the structure external or static, or by
+       calling the C library routine _b_z_e_r_o(3) or _m_e_m_s_e_t(3).
+
+       The fields of the DB_ENV structure used  by  _l_o_g___o_p_e_n  are
+       described  below.   If  _d_b_e_n_v is NULL or any of its fields
        are set to 0, defaults appropriate for the system are used
        where possible.
 
-       The following fields in the DB_ENV structure may  be  ini-
+       The  following  fields in the DB_ENV structure may be ini-
        tialized before calling _l_o_g___o_p_e_n:
 
        void *(*db_errcall)(char *db_errpfx, char *buffer);
        FILE *db_errfile;
        const char *db_errpfx;
        int db_verbose;
-            The  error  fields  of the DB_ENV behave as described
+            The error fields of the DB_ENV  behave  as  described
             for _d_b___a_p_p_i_n_i_t(3).
 
+
        u_int32_t lg_max;
-            The maximum  size  of  a  single  file  in  the  log.
-            Because  DB_LSN file offsets are unsigned 4-byte val-
-            ues, _l_g___m_a_x  may  not  be  larger  than  the  maximum
+            The  maximum  size  of  a  single  file  in  the log.
+            Because DB_LSN file offsets are unsigned 4-byte  val-
+            ues,  _l_g___m_a_x  may  not  be  larger  than  the maximum
             unsigned 4-byte value.
 
             If _l_g___m_a_x is 0, a default value is used.
+
+            See the section "LOG FILE LIMITS" below, for  further
+            information.
 
        The  _l_o_g___o_p_e_n function returns the value of _e_r_r_n_o on fail-
        ure and 0 on success.
@@ -212,6 +221,7 @@ DDEESSCCRRIIPPTTIIOONN
        uussiinngg  tthhee rreettuurrnneedd DDBB__LLOOGG hhaannddllee ccoonnccuurrrreennttllyy,, eeiitthheerr tthhee
        DDBB__DDBBTT__MMAALLLLOOCC oorr DDBB__DDBBTT__UUSSEERRMMEEMM ffllaaggss  mmuusstt  bbee  ssppeecciiffiieedd
        ffoorr aannyy DDBBTT uusseedd ffoorr ddaattaa rreettrriieevvaall..
+
 
        The _f_l_a_g_s parameter must be set to exactly one of the fol-
        lowing values:
@@ -330,20 +340,24 @@ DDEESSCCRRIIPPTTIIOONN
             any information necessary to make the log  structures
             recoverable after a crash.
 
+       DB_CURLSN
+            The  DB_LSN  of the next record to be put is returned
+            in the _l_s_n parameter.
+
        DB_FLUSH
-            The  log is forced to disk after this record is writ-
-            ten, guaranteeing that all records with DB_LSNs  less
+            The log is forced to disk after this record is  writ-
+            ten,  guaranteeing that all records with DB_LSNs less
             than or equal to the one being put are on disk before
-            this function returns (this function  is  most  often
+            this  function  returns  (this function is most often
             used for a transaction commit, see _d_b___t_x_n(3)).
 
-       The  caller  is  responsible  for  providing any necessary
+       The caller is  responsible  for  providing  any  necessary
        structure to _d_a_t_a.  (For example, in a write-ahead logging
-       protocol,  the  application  must  understand what part of
-       _d_a_t_a is an operation code, what part is redo  information,
-       and  what  part  is  undo  information.  In addition, most
-       transaction managers will store in _d_a_t_a the DB_LSN of  the
-       previous  log  record for the same transaction, to support
+       protocol, the application must  understand  what  part  of
+       _d_a_t_a  is an operation code, what part is redo information,
+       and what part is  undo  information.   In  addition,  most
+       transaction  managers will store in _d_a_t_a the DB_LSN of the
+       previous log record for the same transaction,  to  support
        chaining back through the transaction's log records during
        undo.)
 
@@ -354,172 +368,217 @@ DDEESSCCRRIIPPTTIIOONN
   _l_o_g___u_n_l_i_n_k
        The _l_o_g___u_n_l_i_n_k function destroys the log region identified
        by the directory _d_i_r, removing all files used to implement
-       the log region.  (The log files themselves and the  direc-
-       tory  _d_i_r  are  not removed.)  If there are processes that
-       have called  _l_o_g___o_p_e_n  without  calling  _l_o_g___c_l_o_s_e  (i.e.,
-       there  are  processes  currently  using  the  log region),
-       _l_o_g___u_n_l_i_n_k will fail without further  action,  unless  the
-       force  flag  is set, in which case _l_o_g___u_n_l_i_n_k will attempt
+       the  log region.  (The log files themselves and the direc-
+       tory _d_i_r are not removed.)  If there  are  processes  that
+       have  called  _l_o_g___o_p_e_n  without  calling  _l_o_g___c_l_o_s_e (i.e.,
+       there are  processes  currently  using  the  log  region),
+       _l_o_g___u_n_l_i_n_k  will  fail  without further action, unless the
+       force flag is set, in which case _l_o_g___u_n_l_i_n_k  will  attempt
        to remove the log region files regardless of any processes
        still using the log region.
 
-       The  result  of  attempting to forcibly destroy the region
-       when a process has the region open is  unspecified.   Pro-
-       cesses  using a shared memory region maintain an open file
-       descriptor for it.  On UNIX systems,  the  region  removal
-       should  succeed and processes that have already joined the
-       region should  continue  to  run  in  the  region  without
-       change,  however  processes  attempting  to  join  the log
+       The result of attempting to forcibly  destroy  the  region
+       when  a  process has the region open is unspecified.  Pro-
+       cesses using a shared memory region maintain an open  file
+       descriptor  for  it.   On UNIX systems, the region removal
+       should succeed and processes that have already joined  the
+       region  should  continue  to  run  in  the  region without
+       change, however  processes  attempting  to  join  the  log
        region will either fail or attempt to create a new region.
-       On  other  systems,  e.g., WNT, where the _u_n_l_i_n_k(2) system
-       call will fail if any process has an open file  descriptor
+
+       On other systems, e.g., WNT, where  the  _u_n_l_i_n_k(2)  system
+       call  will fail if any process has an open file descriptor
        for the file, the region removal will fail.
 
-       In  the  case  of catastrophic or system failure, database
-       recovery must  be  performed  (see  _d_b___r_e_c_o_v_e_r(1)  or  the
-       DB_RECOVER  flags  to  _d_b___a_p_p_i_n_i_t(3)).   Alternatively, if
-       recovery is not required  because  no  database  state  is
-       maintained  across  failures, it is possible to clean up a
-       log region by removing all of the files in  the  directory
-       specified  to  the  _l_o_g___o_p_e_n function, as log region files
-       are never created in any  directory  other  than  the  one
-       specified  to  _l_o_g___o_p_e_n.  Note, however, that this has the
-       potential to remove files created by the other DB  subsys-
-       tems in this database environment.
+       In the case of catastrophic or  system  failure,  database
+       recovery  must  be  performed  (see  _d_b___r_e_c_o_v_e_r(1)  or the
+       DB_RECOVER and DB_RECOVER_FATAL flags  to  _d_b___a_p_p_i_n_i_t(3)).
+       Alternatively,  if  recovery  is  not  required because no
+       database state is maintained across failures, it is possi-
+       ble  to clean up a log region by removing all of the files
+       in the directory specified to the  _l_o_g___o_p_e_n  function,  as
+       log  region files are never created in any directory other
+       than the one specified to _l_o_g___o_p_e_n.  Note,  however,  that
+       this  has  the  potential  to  remove files created by the
+       other DB subsystems in this database environment.
 
-       The  _l_o_g___u_n_l_i_n_k  function  returns  the  value of _e_r_r_n_o on
+       The _l_o_g___u_n_l_i_n_k function returns  the  value  of  _e_r_r_n_o  on
        failure and 0 on success.
 
   _l_o_g___a_r_c_h_i_v_e
-       The _l_o_g___a_r_c_h_i_v_e function creates a  NULL-terminated  array
+       The  _l_o_g___a_r_c_h_i_v_e  function creates a NULL-terminated array
        of log or database file names and copies a pointer to them
        into the user-specified memory location _l_i_s_t.
 
-       By default, _l_o_g___a_r_c_h_i_v_e returns the names of  all  of  the
-       log  files  that  are  no  longer  in use (e.g., no longer
+       By  default,  _l_o_g___a_r_c_h_i_v_e  returns the names of all of the
+       log files that are no  longer  in  use  (e.g.,  no  longer
        involved in active transactions), and that may be archived
-       for  catastrophic  recovery and then removed from the sys-
-       tem.  If there were no file names to return, _l_i_s_t will  be
+       for catastrophic recovery and then removed from  the  sys-
+       tem.   If there were no file names to return, _l_i_s_t will be
        set to NULL.
 
-       Arrays  of log file names are created in allocated memory.
-       If _d_b___m_a_l_l_o_c is non-NULL, it is  called  to  allocate  the
+       Arrays of log file names are created in allocated  memory.
+       If  _d_b___m_a_l_l_o_c  is  non-NULL,  it is called to allocate the
        memory, otherwise, the library function _m_a_l_l_o_c(3) is used.
-       The function _d_b___m_a_l_l_o_c must match the calling  conventions
-       of  the _m_a_l_l_o_c(3) library routine.  Regardless, the caller
-       is responsible for deallocating the returned  memory.   To
-       deallocate  the returned memory, free each returned memory
-       pointer; pointers inside the memory  do  not  need  to  be
+       The  function _d_b___m_a_l_l_o_c must match the calling conventions
+       of the _m_a_l_l_o_c(3) library routine.  Regardless, the  caller
+       is  responsible  for deallocating the returned memory.  To
+       deallocate the returned memory, free each returned  memory
+       pointer;  pointers  inside  the  memory  do not need to be
        individually freed.
 
-       The  _f_l_a_g_s argument is specified by oorr'ing together one or
+       The _f_l_a_g_s argument is specified by oorr'ing together one  or
        more of the following values:
 
        DB_ARCH_ABS
-            All pathnames are  returned  as  absolute  pathnames,
+            All  pathnames  are  returned  as absolute pathnames,
             instead of relative to the database home directory.
 
        DB_ARCH_DATA
             Return the database files that need to be archived in
             order to recover the database from catastrophic fail-
-            ure.   If  any  of  the  database files have not been
-            accessed during  the  lifetime  of  the  current  log
-            files,  _l_o_g___a_r_c_h_i_v_e  will  not  include  them in this
-            list.  It is also possible that  some  of  the  files
-            referenced  in  the  log have since been deleted from
+            ure.  If any of the  database  files  have  not  been
+            accessed  during  the  lifetime  of  the  current log
+            files, _l_o_g___a_r_c_h_i_v_e will  not  include  them  in  this
+            list.   It  is  also  possible that some of the files
+            referenced in the log have since  been  deleted  from
             the system.
 
        DB_ARCH_LOG
-            Return all the log file names regardless  of  whether
+            Return  all  the log file names regardless of whether
             or not they are in use.
 
        The DB_ARCH_DATA and DB_ARCH_LOG flags are mutually exclu-
        sive.
 
-       The _l_o_g___a_r_c_h_i_v_e function returns the  value  of  _e_r_r_n_o  on
+       The  _l_o_g___a_r_c_h_i_v_e  function  returns  the value of _e_r_r_n_o on
        failure and 0 on success.
 
-       The  _l_o_g___a_r_c_h_i_v_e  function is the underlying function used
+       The _l_o_g___a_r_c_h_i_v_e function is the underlying  function  used
        by the _d_b___a_r_c_h_i_v_e(1) utility.  See the source code for the
-       _d_b___a_r_c_h_i_v_e  utility for an example of using _l_o_g___a_r_c_h_i_v_e in
+       _d_b___a_r_c_h_i_v_e utility for an example of using _l_o_g___a_r_c_h_i_v_e  in
        a UNIX environment.  See the _d_b___a_r_c_h_i_v_e(1) manual page for
        more information on database archival procedures.
 
   _l_o_g___r_e_g_i_s_t_e_r
-       The  _l_o_g___r_e_g_i_s_t_e_r  function registers a file name with the
-       log manager and copies a file identification  number  into
+       The _l_o_g___r_e_g_i_s_t_e_r function registers a file name  with  the
+       log  manager  and copies a file identification number into
        the memory location referenced by _f_i_d_p.  This file identi-
-       fication number should be used in all subsequent log  mes-
+       fication  number should be used in all subsequent log mes-
        sages that refer to operations on this file.  The log man-
-       ager records all file name to file  identification  number
+       ager  records  all file name to file identification number
        mappings at each checkpoint so that a recovery process can
        identify the file to which a record in the log refers.
 
-       The _l_o_g___r_e_g_i_s_t_e_r function is called when an access  method
+       The  _l_o_g___r_e_g_i_s_t_e_r function is called when an access method
        registers the open of a file.  The _d_b_p parameter should be
-       a pointer to the DB structure which is being  returned  by
+       a  pointer  to the DB structure which is being returned by
        the access method.
 
        The _t_y_p_e parameter should be one of the DB types specified
        in _d_b___o_p_e_n(3), e.g., DB_HASH.
 
-       The _l_o_g___r_e_g_i_s_t_e_r function returns the value  of  _e_r_r_n_o  on
+       The  _l_o_g___r_e_g_i_s_t_e_r  function  returns the value of _e_r_r_n_o on
        failure and 0 on success.
 
   _l_o_g___u_n_r_e_g_i_s_t_e_r
        The _l_o_g___u_n_r_e_g_i_s_t_e_r function disassociates the file name to
-       file identification number mapping for the file  identifi-
-       cation  number  specified  by the _f_i_d parameter.  The file
+       file  identification number mapping for the file identifi-
+       cation number specified by the _f_i_d  parameter.   The  file
        identification number may then be reused.
 
-       The _l_o_g___u_n_r_e_g_i_s_t_e_r function returns the value of _e_r_r_n_o  on
+       The  _l_o_g___u_n_r_e_g_i_s_t_e_r function returns the value of _e_r_r_n_o on
        failure and 0 on success.
 
   _l_o_g___s_t_a_t
-       The  _l_o_g___s_t_a_t function creates a statistical structure and
-       copies a pointer to  it  into  the  user-specified  memory
+       The _l_o_g___s_t_a_t function creates a statistical structure  and
+       copies  a  pointer  to  it  into the user-specified memory
        location.
 
        Statistical structure are created in allocated memory.  If
-       _d_b___m_a_l_l_o_c is non-NULL, it is called to allocate  the  mem-
-       ory,  otherwise,  the  library function _m_a_l_l_o_c(3) is used.
-       The function _d_b___m_a_l_l_o_c must match the calling  conventions
-       of  the _m_a_l_l_o_c(3) library routine.  Regardless, the caller
-       is responsible for deallocating the returned  memory.   To
-       deallocate  the returned memory, free each returned memory
-       pointer; pointers inside the memory  do  not  need  to  be
+       _d_b___m_a_l_l_o_c  is  non-NULL, it is called to allocate the mem-
+       ory, otherwise, the library function  _m_a_l_l_o_c(3)  is  used.
+       The  function _d_b___m_a_l_l_o_c must match the calling conventions
+       of the _m_a_l_l_o_c(3) library routine.  Regardless, the  caller
+       is  responsible  for deallocating the returned memory.  To
+       deallocate the returned memory, free each returned  memory
+       pointer;  pointers  inside  the  memory  do not need to be
        individually freed.
 
-       The  log  region  statistics  are stored in a structure of
-       type DB_LOG_STAT (typedef'd  in  <db.h>).   The  following
+       The log region statistics are stored  in  a  structure  of
+       type  DB_LOG_STAT  (typedef'd  in  <db.h>).  The following
        DB_LOG_STAT fields will be filled in:
+
        u_int32_t st_magic;
-            The  magic  number  that  identifies  a file as a log
+            The magic number that identifies  a  file  as  a  log
             file.
        u_int32_t st_version;
             The version of the log file type.
        int st_mode;
             The mode of any created log files.
        u_int32_t st_lg_max;
-            The maximum size of any  individual  file  comprising
+            The  maximum  size  of any individual file comprising
             the log.
-       u_int32_t st_w_bytes;
-            The  number of bytes over and above _s_t___w___m_b_y_t_e_s writ-
-            ten to this log.
        u_int32_t st_w_mbytes;
             The number of megabytes written to this log.
-       u_int32_t st_wc_bytes;
-            The number of bytes over and above _s_t___w_c___m_b_y_t_e_s writ-
-            ten to this log since the last checkpoint.
+       u_int32_t st_w_bytes;
+            The number of bytes over and above _s_t___w___m_b_y_t_e_s  writ-
+            ten to this log.
        u_int32_t st_wc_mbytes;
             The number of megabytes written to this log since the
             last checkpoint.
+       u_int32_t st_wc_bytes;
+            The number of bytes over and above _s_t___w_c___m_b_y_t_e_s writ-
+            ten to this log since the last checkpoint.
+       u_int32_t st_cur_file;
+            The current log file number.
+       u_int32_t st_cur_offset;
+            The byte offset in the current log file.
        u_int32_t st_region_wait;
-            The number of times that  a  thread  of  control  was
+            The  number  of  times  that  a thread of control was
             forced to wait before obtaining the region lock.
        u_int32_t st_region_nowait;
             The number of times that a thread of control was able
             to obtain the region lock without waiting.
+
+LLOOGG FFIILLEE LLIIMMIITTSS
+       Log file sizes impose a time limit on the length of time a
+       database may be  accessed  under  transaction  protection,
+       before  it needs to be dumped and reloaded (see _d_b___d_u_m_p_(_3_)
+       and _d_b___l_o_a_d_(_3_)_)_.  Unfortunately,  the  limits  are  poten-
+       tially difficult to calculate.
+
+       The log file name consists of "log." followed by 5 digits,
+       resulting in a maximum of 99,999 log files.   Consider  an
+       application performing 600 transactions per second, for 15
+       hours a day, logged into 10Mb log files, where each trans-
+       action  is  logging  approximately 100 bytes of data.  The
+       calculation:
+
+              (10 * 2^20 * 99999) /
+                   (600 * 60 * 60 * 15 * 100) = 323.63
+
+       indicates that the system will run out of log  file  space
+       in  roughly  324 days.  If we increase the maximum size of
+       the files from 10Mb to 100Mb, the same  calculation  indi-
+       cates  that the application will run out of log file space
+       in roughly 9 years.
+
+       There is no way to reset the log file name space in Berke-
+       ley  DB.   If  your application is reaching the end of its
+       log file name space, you should:
+
+       1.   Archive your databases as if to  prepare  for  catas-
+            trophic  failure (see _d_b___a_r_c_h_i_v_e(1) for more informa-
+            tion).
+
+       2.   Dump and re-load aallll your databases  (see  _d_b___d_u_m_p(1)
+            and _d_b___l_o_a_d(1) for more information).
+
+       3.   Remove  all  of the log files from the database envi-
+            ronment (see _d_b___a_r_c_h_i_v_e(1) for more information).
+
+       4.   Restart your applications.
 
 EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
        The following environment variables affect  the  execution
@@ -597,6 +656,7 @@ EERRRROORRSS
        In addition, the _l_o_g___g_e_t  function  may  fail  and  return
        _e_r_r_n_o for the following conditions:
 
+
        [EINVAL]
             An invalid flag value or parameter was specified.
 
@@ -650,11 +710,10 @@ EERRRROORRSS
        The _l_o_g___a_r_c_h_i_v_e function may fail and return _e_r_r_n_o for any
        of  the  errors specified for the following DB and library
        functions: close(2), fcntl(2), fflush(3), getcwd(3),
-       log_compare(3), log_get(3), malloc(3), memcpy(3), mem-
-       set(3), open(2), qsort(3), realloc(3), sigfillset(3), sig-
-       procmask(2), stat(2), strchr(3), strcmp(3), strcpy(3),
+       log_compare(3), log_get(3), malloc(3), memcpy(3),
+       memset(3), open(2), qsort(3), realloc(3), sigfillset(3),
+       sigprocmask(2), stat(2), strchr(3), strcmp(3), strcpy(3),
        strdup(3), strerror(3), strlen(3), and unlink(2).
-
 
        In addition, the _l_o_g___a_r_c_h_i_v_e function may fail and  return
        _e_r_r_n_o for the following conditions:

@@ -2,16 +2,16 @@
 <HEAD>
 <TITLE>DbMpool</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>DbMpool</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        <B>#include</B> <B>&lt;db</B>_<B>cxx.h&gt;</B>
 
        <B>static</B> <B>int</B>
        <B>DbMpool::open(char</B> <B>*dir,</B>
-            <B>int</B> <B>flags,</B> <B>int</B> <B>mode,</B> <B>DbEnv</B> <B>*dbenv,</B> <B>DbMpool</B> <B>**regionp);</B>
+            <B>u</B>_<B>int32</B>_<B>t</B> <B>flags,</B> <B>int</B> <B>mode,</B> <B>DbEnv</B> <B>*dbenv,</B> <B>DbMpool</B> <B>**regionp);</B>
 
        <B>int</B>
        <B>DbMpool::close();</B>
@@ -54,15 +54,15 @@
        The  <B><A HREF="DbMpool.html">DbMpool(3)</A></B> and <B><A HREF="DbMpoolFile.html">DbMpoolFile(3)</A></B> classes are the library
        interface  intended  to  provide  general-purpose,   page-
        oriented  buffer  management  of one or more files.  While
-       designed to  work  with  the  other  Db  functions,  these
-       functions  are also useful for more general purposes.  The
-       memory pools (DbMpool's) are referred to in this  document
-       as   simply   ``pools''.   Pools  may  be  shared  between
-       processes.  Pools are usually filled by pages from one  or
-       more   files  (DbMpoolFile's).   Pages  in  the  pool  are
-       replaced in LRU (least-recently-used) order, with each new
-       page  replacing the page that has been unused the longest.
-       Pages retrieved from the pool using  DbMpoolFile::get  are
+       designed to work with the other Db classes, this class  is
+       also  useful  for more general purposes.  The memory pools
+       (DbMpool's) are referred to in  this  document  as  simply
+       ``pools''.   Pools may be shared between processes.  Pools
+       are usually  filled  by  pages  from  one  or  more  files
+       (DbMpoolFile's).   Pages  in  the pool are replaced in LRU
+       (least-recently-used) order, with each new page  replacing
+       the   page  that  has  been  unused  the  longest.   Pages
+       retrieved  from  the  pool  using   DbMpoolFile::get   are
        ``pinned''  in  the  pool,  by  default,  until  they  are
        returned to the pool's control using the  DbMpoolFile::put
        method.
@@ -151,23 +151,23 @@
             <B><A HREF="DbEnv.html">DbEnv(3)</A></B>.
 
        size_t mp_mmapsize;
-             Files that are opened read-only  in  the  pool  (and
-            that  satisfy  a few other criteria) are, by default,
-            mapped into the  process  address  space  instead  of
-            being  copied  into the local cache.  This can result
-            in  better-than-usual   performance,   as   available
-            virtual memory is normally much larger than the local
-            cache, and page faults are faster than  page  copying
-            on many systems.  However, in the presence of limited
-            virtual memory it can cause resource starvation,  and
-            in  the presence of large databases, it can result in
-            immense process sizes.  If mp_mmapsize  is  non-zero,
-            it  specifies  the maximum file size for a file to be
-            mapped into the process address space.   By  default,
-            it is set to 10Mb.
+            Files that are opened read-only in the pool (and that
+            satisfy a few other criteria) are, by default, mapped
+            into the  process  address  space  instead  of  being
+            copied  into  the  local  cache.   This can result in
+            better-than-usual performance, as  available  virtual
+            memory  is normally much larger than the local cache,
+            and page faults are faster than page copying on  many
+            systems.  However, in the presence of limited virtual
+            memory it can cause resource starvation, and  in  the
+            presence of large databases, it can result in immense
+            process  sizes.   If  mp_mmapsize  is  non-zero,   it
+            specifies the maximum file size, in bytes, for a file
+            to be mapped into  the  process  address  space.   By
+            default, it is set to 10Mb.
 
        size_t mp_size;
-              The  suggested  size  of  the pool, in bytes.  This
+            The  suggested  size  of  the  pool,  in bytes.  This
             should be the size of the normal working data set  of
             the application, with some small amount of additional
             memory for unusual situations.   (Note,  the  working
@@ -182,209 +182,258 @@
   DbMpool::close
        The DbMpool::close method closes the pool indicated by the
        DbMpool object, as returned by DbMpool::open.  This method
-       does   not  imply  a  call  to  DbMpoolFile::sync  (or  to
-       DbMpoolFile::close) i.e.  no  pages  are  written  to  the
-       source file as as a result of calling DbMpool::close.
+       does not imply a call to DbMpoolFile::sync, but does imply
+       a  call  to  DbMpoolFile::close  for  any  remaining  open
+       DbMpoolFile  objects  returned to this process by calls to
+       DbMpoolFile::open.
 
        In addition, if the dir argument to DbMpool::open was NULL
-       and dbenv was not initialized  using  DbEnv::appinit,  all
-       files  created  for this shared region will be removed, as
+       and  dbenv  was  not initialized using DbEnv::appinit, all
+       files created for this shared region will be  removed,  as
        if DbMpool::unlink were called.
 
-       When  multiple  threads  are  using  the  DbMpool   handle
-       concurrently,   only   a   single   thread  may  call  the
+       When   multiple  threads  are  using  the  DbMpool  handle
+       concurrently,  only  a  single   thread   may   call   the
        DbMpool::close method.
 
        The  DbMpool::close  method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>  or
        returns the value of errno on failure and 0 on success.
 
   DbMpool::unlink
-       The   DbMpool::unlink  method  destroys  the  memory  pool
-       identified by the directory dir, removing all  files  used
-       to  implement  the memory pool.  (The directory dir is not
-       removed.)   If  there  are  processes  that  have   called
-       DbMpool::open  without calling DbMpool::close (i.e., there
-       are  processes   currently   using   the   memory   pool),
-       DbMpool::unlink  will  fail without further action, unless
-       the force flag is set, in which case DbMpool::unlink  will
-       attempt  to remove the memory pool files regardless of any
+       The  DbMpool::unlink  method  destroys  the  memory   pool
+       identified  by  the directory dir, removing all files used
+       to implement the memory pool.  (The directory dir  is  not
+       removed.)    If  there  are  processes  that  have  called
+       DbMpool::open without calling DbMpool::close (i.e.,  there
+       are   processes   currently   using   the   memory  pool),
+       DbMpool::unlink will fail without further  action,  unless
+       the  force flag is set, in which case DbMpool::unlink will
+       attempt to remove the memory pool files regardless of  any
        processes still using the memory pool.
 
-       The result of attempting to forcibly  destroy  the  region
+       The  result  of  attempting to forcibly destroy the region
        when  a  process  has  the  region  open  is  unspecified.
-       Processes using a shared memory region  maintain  an  open
-       file  descriptor  for  it.   On  UNIX  systems, the region
-       removal should succeed and  processes  that  have  already
-       joined  the  region  should  continue to run in the region
-       without change, however processes attempting to  join  the
-       memory  pool  will  either fail or attempt to create a new
-       region.  On other systems, e.g., WNT, where the  <B>unlink(2)</B>
-       system  call  will  fail  if  any process has an open file
+       Processes  using  a  shared memory region maintain an open
+       file descriptor for  it.   On  UNIX  systems,  the  region
+       removal  should  succeed  and  processes that have already
+       joined the region should continue to  run  in  the  region
+       without  change,  however processes attempting to join the
+       memory pool will either fail or attempt to  create  a  new
+       region.   On other systems, e.g., WNT, where the <B>unlink(2)</B>
+       system call will fail if any  process  has  an  open  file
        descriptor for the file, the region removal will fail.
-
-       In the case of catastrophic or  system  failure,  database
-       recovery  must  be  performed  (see  <B><A HREF="db_recover.html">db_recover(1)</A></B>  or the
-       DB_RECOVER flags to <B><A HREF="DbEnv.html">DbEnv::appinit(3)</A></B>).  Alternatively, if
-       recovery  is  not  required  because  no database state is
-       maintained across failures, it is possible to clean  up  a
-       memory  pool by removing all of the files in the directory
-       specified to the  DbMpool::open  method,  as  memory  pool
-       files  are  never  created in any directory other than the
-       one specified to DbMpool::open.  Note, however, that  this
-       has  the potential to remove files created by the other DB
-       subsystems in this database environment.
+       In  the  case  of catastrophic or system failure, database
+       recovery must  be  performed  (see  <B><A HREF="db_recover.html">db_recover(1)</A></B>  or  the
+       DB_RECOVER      and      DB_RECOVER_FATAL     flags     to
+       <B><A HREF="DbEnv.html">DbEnv::appinit(3)</A></B>).  Alternatively,  if  recovery  is  not
+       required  because  no  database state is maintained across
+       failures, it is possible to clean  up  a  memory  pool  by
+       removing  all  of  the files in the directory specified to
+       the DbMpool::open method, as memory pool files  are  never
+       created  in  any directory other than the one specified to
+       DbMpool::open.  Note, however, that this has the potential
+       to remove files created by the other DB subsystems in this
+       database environment.
 
        The DbMpool::unlink  method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>  or
        returns the value of errno on failure and 0 on success.
+
+  DbMpool::db_register
+       The  DbMpool::db_register  method  registers  page-in  and
+       page-out  functions  for  files  of  type  ftype  in   the
+       specified pool.
+
+       If the pgin function is non-NULL, it is called each time a
+       page is read into the memory pool  from  a  file  of  type
+       ftype,  or a page is created for a file of type ftype (see
+       the DB_MPOOL_CREATE flag for the DbMpoolFile::get method).
+       If  the pgout function is non-NULL, it is called each time
+       a page is written to a file of type ftype.
+
+       Both the pgin and pgout functions are called with the page
+       number,  a  pointer to the page being read or written, and
+       any  argument  pgcookie  that   was   specified   to   the
+       DbMpoolFile::open  method  when  the file was opened.  The
+       pgin and pgout functions should return 0 on  success,  and
+       an  applicable  non-zero  errno value on failure, in which
+       case  the  DbMpool  method  calling  it  will  also  fail,
+       returning that errno value.
+
+       The  purpose  of  the  DbMpool::db_register  method  is to
+       support processing when pages are entered into, or flushed
+       from,  the pool.  A file type must be specified to make it
+       possible for unrelated  threads  or  processes,  that  are
+       sharing a pool, to evict each other's pages from the pool.
+       Applications  should  call  DbMpool::db_register,   during
+       initialization,  for  each type of file requiring input or
+       output processing that  will  be  sharing  the  underlying
+       pool.   (No  registry is necessary for the standard access
+       method  types,  btree,  hash  and  recno,  as  <B><A HREF="Db.html">Db::open(3)</A></B>
+       registers them separately.)
+
+       If  a thread or process does not call DbMpool::db_register
+       for a file type, it is impossible for it  to  evict  pages
+       for any file requiring input or output processing from the
+       pool.  For this reason, DbMpool::db_register should always
+       be called by each application sharing a pool for each type
+       of file included in the pool, regardless of whether or not
+       the application itself uses files of that type.
+
+       There  are  no  standard values for ftype, pgin, pgout and
+       pgcookie, except that the ftype value for a file must be a
+       non-zero positive number, as negative numbers are reserved
+       for internal use by the  DB  library.   For  this  reason,
+       applications  sharing  a pool must coordinate their values
+       amongst themselves.
 
        The DbMpool::db_register method throws a <B><A HREF="DbException.html">DbException(3)</A></B> or
        returns the value of errno on failure and 0 on success.
 
   DbMpool::trickle
-       The DbMpool::trickle method  ensures  that  at  least  pct
-       percent  of  the pages in the shared memory pool are clean
-       by writing dirty pages to their  backing  files.   If  the
-       nwrotep  argument  is  non-NULL,  the number of pages that
-       were written to reach the correct percentage  is  returned
+       The  DbMpool::trickle  method  ensures  that  at least pct
+       percent of the pages in the shared memory pool  are  clean
+       by  writing  dirty  pages  to their backing files.  If the
+       nwrotep argument is non-NULL, the  number  of  pages  that
+       were  written  to reach the correct percentage is returned
        in the memory location it references.
 
-       The  purpose of the DbMpool::trickle method is to enable a
-       memory pool manager  to  ensure  that  a  page  is  always
+       The purpose of the DbMpool::trickle method is to enable  a
+       memory  pool  manager  to  ensure  that  a  page is always
        available for reading in new information without having to
        wait for a write.
 
-       The DbMpool::trickle method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>  or
+       The  DbMpool::trickle  method  throws  a <B><A HREF="DbException.html">DbException(3)</A></B> or
        returns the value of errno on failure and 0 on success.
 
   DbMpool::sync
-       The  DbMpool::sync  method  ensures  that all the modified
-       pages in the pool with log sequence  numbers  (LSNs)  less
+       The DbMpool::sync method ensures  that  all  the  modified
+       pages  in  the  pool with log sequence numbers (LSNs) less
        than the lsn argument are written to disk.
 
-       The   DbMpool::sync  method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>  or
-       returns the value of errno on failure, 0 on  success,  and
+       The  DbMpool::sync  method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>   or
+       returns  the  value of errno on failure, 0 on success, and
        DB_INCOMPLETE if there were pages which need to be written
-       but which DbMpool::sync was unable to  write  immediately.
-       In  addition,  if DbMpool::sync returns success, the value
-       of lsn will be overwritten with the largest LSN  from  any
-       page  which  was  written by DbMpool::sync to satisfy this
+       but  which  DbMpool::sync was unable to write immediately.
+       In addition, if DbMpool::sync returns success,  the  value
+       of  lsn  will be overwritten with the largest LSN from any
+       page which was written by DbMpool::sync  to  satisfy  this
        request.
 
-       The purpose of the DbMpool::sync method  is  to  enable  a
-       transaction  manager  to  ensure, as part of a checkpoint,
-       that all pages  modified  by  a  certain  time  have  been
-       written  to  disk.   Pages  in  the  pool  which cannot be
-       written back to  disk  immediately  (e.g.,  are  currently
-       pinned)  are  written to disk as soon as it is possible to
-       do so.  The expected behavior of the  transaction  manager
-       is  to  call  the  DbMpool::sync  method  and then, if the
-       return indicates that some  pages  could  not  be  written
+       The  purpose  of  the  DbMpool::sync method is to enable a
+       transaction manager to ensure, as part  of  a  checkpoint,
+       that  all  pages  modified  by  a  certain  time have been
+       written to disk.   Pages  in  the  pool  which  cannot  be
+       written  back  to  disk  immediately  (e.g., are currently
+       pinned) are written to disk as soon as it is  possible  to
+       do  so.   The expected behavior of the transaction manager
+       is to call the  DbMpool::sync  method  and  then,  if  the
+       return  indicates  that  some  pages  could not be written
        immediately, to wait briefly and retry again with the same
-       LSN until the DbMpool::sync method returns that all  pages
+       LSN  until the DbMpool::sync method returns that all pages
        have been written.
 
-       To   support   the   DbMpool::sync  functionality,  it  is
-       necessary that the pool functions know the location of the
-       LSN  on the page for each file type.  This location should
-       be  specified  when  the  file   is   opened   using   the
-       DbMpoolFile::open  method.  (Note, it is not required that
+       To  support  the  DbMpool::sync   functionality,   it   is
+       necessary  that  the pool methods know the location of the
+       LSN on the page for each file type.  This location  should
+       be   specified   when   the   file  is  opened  using  the
+       DbMpoolFile::open method.  (Note, it is not required  that
        the LSN be aligned on the page in any way.)
 
   DbMpool::stat
 
-       The DbMpool::stat method  creates  statistical  structures
-       and  copies  pointers  to  them into user-specified memory
-       locations.  The statistics include  the  number  of  files
-       participating  in  the pool, the active pages in the pool,
+       The  DbMpool::stat  method  creates statistical structures
+       and copies pointers to  them  into  user-specified  memory
+       locations.   The  statistics  include  the number of files
+       participating in the pool, the active pages in  the  pool,
        and information as to how effective the cache has been.
 
-       Statistical structures are created  in  allocated  memory.
-       If  db_malloc  is  non-NULL,  it is called to allocate the
+       Statistical  structures  are  created in allocated memory.
+       If db_malloc is non-NULL, it is  called  to  allocate  the
        memory, otherwise, the library function <B>malloc(3)</B> is used.
-       The  function db_malloc must match the calling conventions
-       of the <B>malloc(3)</B> library routine.  Regardless, the  caller
-       is  responsible  for deallocating the returned memory.  To
-       deallocate the returned memory, free each returned  memory
-       pointer;  pointers  inside  the  memory  do not need to be
+       The function db_malloc must match the calling  conventions
+       of  the <B>malloc(3)</B> library routine.  Regardless, the caller
+       is responsible for deallocating the returned  memory.   To
+       deallocate  the returned memory, free each returned memory
+       pointer; pointers inside the memory  do  not  need  to  be
        individually freed.
 
-       If gsp is non-NULL, the global statistics for  the  memory
+       If  gsp  is non-NULL, the global statistics for the memory
        pool  object  are  copied  into  the  memory  location  it
-       references.   The  global  statistics  are  stored  in   a
+       references.    The  global  statistics  are  stored  in  a
        structure of type DB_MPOOL_STAT (typedef'd in &lt;db_cxx.h&gt;).
 
        The following DB_MPOOL_STAT fields will be filled in:
 
        size_t st_cachesize;
              Cache size in bytes.
-       unsigned long st_cache_hit;;
+       u_int32_t st_cache_hit;
             Requested pages found in the cache.
-       unsigned long st_cache_miss;;
+       u_int32_t st_cache_miss;
             Requested pages not found in the cache.
-       unsigned long st_map;;
-            Requested pages  mapped  into  the  process'  address
+       u_int32_t st_map;
+            Requested  pages  mapped  into  the  process' address
             space  (there  is  no  available  information  as  to
             whether or not this request caused disk I/O, although
-            examining  the  application  page  fault  rate may be
+            examining the application  page  fault  rate  may  be
             helpful).
-       unsigned long st_page_create;;
+       u_int32_t st_page_create;
             Pages created in the cache.
-
-       unsigned long st_page_in;;
+       u_int32_t st_page_in;
             Pages read into the cache.
-       unsigned long st_page_out;;
+       u_int32_t st_page_out;
             Pages written from the cache to the backing file.
-       unsigned long st_ro_evict;;
+       u_int32_t st_ro_evict;
             Clean pages forced from the cache.
-       unsigned long st_rw_evict;;
+
+       u_int32_t st_rw_evict;
             Dirty pages forced from the cache.
-       unsigned long st_hash_buckets;;
+       u_int32_t st_hash_buckets;
             Number of hash buckets in buffer hash table.
-       unsigned long st_hash_searches;;
+       u_int32_t st_hash_searches;
             Total number of buffer hash table lookups.
-       unsigned long st_hash_longest;;
-            The longest chain ever  encountered  in  buffer  hash
+       u_int32_t st_hash_longest;
+            The  longest  chain  ever  encountered in buffer hash
             table lookups.
-       unsigned long st_hash_examined;;
-            Total  number  of hash elements traversed during hash
+       u_int32_t st_hash_examined;
+            Total number of hash elements traversed  during  hash
             table lookups.
-       unsigned long st_page_clean;;
+       u_int32_t st_page_clean;
             Clean pages currently in the cache.
-       unsigned long st_page_dirty;;
+       u_int32_t st_page_dirty;
             Dirty pages currently in the cache.
-       unsigned long st_page_trickle;;
+       u_int32_t st_page_trickle;
             Dirty pages written using the memp_trickle interface.
 
        If  fsp  is  non-NULL,  a  pointer  to  a  NULL-terminated
-       variable length array of statistics for  individual  files
-       in  the  memory pool is copied into the memory location it
+       variable  length  array of statistics for individual files
+       in the memory pool is copied into the memory  location  it
        references.  If no individual files currently exist in the
        memory pool, fsp will be set to NULL.
 
-       The  per-file  statistics are stored in structures of type
-       DB_MPOOL_FSTAT (typedef'd in &lt;db_cxx.h&gt;).   The  following
-       DB_MPOOL_FSTAT  fields  will be filled in for each file in
+       The per-file statistics are stored in structures  of  type
+       DB_MPOOL_FSTAT  (typedef'd  in &lt;db_cxx.h&gt;).  The following
+       DB_MPOOL_FSTAT fields will be filled in for each  file  in
        the pool, i.e., each element of the array:
 
        char *file_name;
             The name of the file.
        size_t st_pagesize;
              Page size in bytes.
-       unsigned long st_cache_hit;;
+       u_int32_t st_cache_hit;
             Requested pages found in the cache.
-       unsigned long st_cache_miss;;
+       u_int32_t st_cache_miss;
             Requested pages not found in the cache.
-       unsigned long st_map;;
-            Requested pages  mapped  into  the  process'  address
+       u_int32_t st_map;
+            Requested  pages  mapped  into  the  process' address
             space.
-       unsigned long st_page_create;;
+       u_int32_t st_page_create;
             Pages created in the cache.
-       unsigned long st_page_in;;
+       u_int32_t st_page_in;
             Pages read into the cache.
-       unsigned long st_page_out;;
+       u_int32_t st_page_out;
             Pages written from the cache to the backing file.
 
-       The   DbMpool::stat  method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>  or
+       The  DbMpool::stat  method  throws  a  <B><A HREF="DbException.html">DbException(3)</A></B>   or
        returns the value of errno on failure and 0 on success.
 
 
@@ -392,33 +441,32 @@
 <H2>ENVIRONMENT VARIABLES</H2><PRE>
        The following environment variables affect the behavior of
        DbMpoolFile:
-
        DB_HOME
-            If   the   dbenv   argument   to   DbMpool::open  was
+            If  the   dbenv   argument   to   DbMpool::open   was
             initialized   using   db_appinit,   the   environment
-            variable  DB_HOME  may  be  used  as  the path of the
-            database home  for  the  interpretation  of  the  dir
-            argument    to   DbMpool::open,   as   described   in
+            variable DB_HOME may be  used  as  the  path  of  the
+            database  home  for  the  interpretation  of  the dir
+            argument   to   DbMpool::open,   as   described    in
             <B><A HREF="db_appinit.html">db_appinit(3)</A></B>.
 
        TMPDIR
-            If the dbenv argument to DbMpool::open  was  NULL  or
-            not  initialized  using  db_appinit,  the environment
+            If  the  dbenv  argument to DbMpool::open was NULL or
+            not initialized  using  db_appinit,  the  environment
             variable TMPDIR may be used as the directory in which
-            to  create  the  memory  pool,  as  described  in the
+            to create  the  memory  pool,  as  described  in  the
             DbMpool::open section above.
 
 
 </PRE>
 <H2>ERRORS</H2><PRE>
-       Methods marked as returning errno will, by default,  throw
+       Methods  marked as returning errno will, by default, throw
        an exception that encapsulates the error information.  The
        default error behavior can be changed, see <B><A HREF="DbException.html">DbException(3)</A></B>.
 
-       The   DbMpool::open   method   may   fail   and   throw  a
+       The  DbMpool::open   method   may   fail   and   throw   a
        <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or return errno for any of the errors  specified  for  the
+       or  return  errno  for any of the errors specified for the
        following DB and library functions: <B><A HREF="db_mpool.html">DBmemp-&gt;pgin(3)</A></B>,
        <B><A HREF="db_mpool.html">DBmemp-&gt;pgout(3)</A></B>, <B><A HREF="DbLog.html">DbLog::compare(3)</A></B>, <B><A HREF="DbLog.html">DbLog::flush(3)</A></B>,
        <B><A HREF="DbMpool.html">DbMpool::close(3)</A></B>, <B><A HREF="DbMpool.html">DbMpool::unlink(3)</A></B>, <B>close(2)</B>,
@@ -429,17 +477,17 @@
        <B>time(3)</B>, <B>unlink(2)</B>, and <B>write(2)</B>.
 
        In addition, the DbMpool::open method may fail and throw a
-       <B><A HREF="DbException.html">DbException(3)</A></B>   or   return   errno   for  the  following
+       <B><A HREF="DbException.html">DbException(3)</A></B>  or  return   errno   for   the   following
        conditions:
 
        [EAGAIN]
-            The shared memory region was locked and  (repeatedly)
+            The  shared memory region was locked and (repeatedly)
             unavailable.
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-            The  DB_THREAD  flag  was specified and spinlocks are
+            The DB_THREAD flag was specified  and  spinlocks  are
             not implemented for this architecture.
 
             A   NULL   pathname   was   specified   without   the
@@ -447,17 +495,16 @@
 
             The specified cache size was impossibly small.
 
-       The   DbMpool::close   method   may   fail   and  throw  a
+       The  DbMpool::close  method   may   fail   and   throw   a
        <B><A HREF="DbException.html">DbException(3)</A></B>
-
-       or return errno for any of the errors  specified  for  the
+       or  return  errno  for any of the errors specified for the
        following DB and library functions: <B><A HREF="DbMpoolFile.html">DbMpoolFile::close(3)</A></B>,
        <B>close(2)</B>, <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>munmap(2)</B>, and <B>strerror(3)</B>.
 
-       The   DbMpool::unlink   method   may   fail  and  throw  a
+       The  DbMpool::unlink  method  may   fail   and   throw   a
        <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or return errno for any of the errors  specified  for  the
+       or  return  errno  for any of the errors specified for the
        following DB and library functions: <B>close(2)</B>, <B>fcntl(2)</B>,
        <B>fflush(3)</B>, <B>malloc(3)</B>, <B>memcpy(3)</B>, <B>memset(3)</B>, <B>mmap(2)</B>,
        <B>munmap(2)</B>, <B>open(2)</B>, <B>sigfillset(3)</B>, <B>sigprocmask(2)</B>,
@@ -465,24 +512,24 @@
        <B>unlink(2)</B>.
 
        In addition, the DbMpool::unlink method may fail and throw
-       a  <B><A HREF="DbException.html">DbException(3)</A></B>  or  return  errno  for  the   following
+       a   <B><A HREF="DbException.html">DbException(3)</A></B>  or  return  errno  for  the  following
        conditions:
 
        [EBUSY]
-            The  shared  memory  region  was in use and the force
+            The shared memory region was in  use  and  the  force
             flag was not set.
 
-       The DbMpool::db_register  method  may  fail  and  throw  a
-       <B><A HREF="DbException.html">DbException(3)</A></B>
-
-       or  return  errno  for any of the errors specified for the
-       following DB and library functions: <B>fcntl(2)</B>, and
-       <B>malloc(3)</B>.
-
-       The   DbMpool::trickle   method   may  fail  and  throw  a
+       The  DbMpool::db_register  method  may  fail  and  throw a
        <B><A HREF="DbException.html">DbException(3)</A></B>
 
        or return errno for any of the errors  specified  for  the
+       following DB and library functions: <B>fcntl(2)</B>, and
+       <B>malloc(3)</B>.
+
+       The  DbMpool::trickle  method  may  fail   and   throw   a
+       <B><A HREF="DbException.html">DbException(3)</A></B>
+
+       or  return  errno  for any of the errors specified for the
        following DB and library functions: <B><A HREF="db_mpool.html">DBmemp-&gt;pgin(3)</A></B>,
        <B><A HREF="db_mpool.html">DBmemp-&gt;pgout(3)</A></B>, <B><A HREF="DbLog.html">DbLog::compare(3)</A></B>, <B><A HREF="DbLog.html">DbLog::flush(3)</A></B>,
        <B>close(2)</B>, <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>fsync(2)</B>, <B>lseek(2)</B>,
@@ -491,39 +538,39 @@
        <B>strcpy(3)</B>, <B>strdup(3)</B>, <B>strerror(3)</B>, <B>strlen(3)</B>, <B>time(3)</B>,
        <B>unlink(2)</B>, and <B>write(2)</B>.
 
-       In  addition,  the  DbMpool::trickle  method  may fail and
-       throw a <B><A HREF="DbException.html">DbException(3)</A></B> or return errno for  the  following
+       In addition, the  DbMpool::trickle  method  may  fail  and
+       throw  a  <B><A HREF="DbException.html">DbException(3)</A></B> or return errno for the following
        conditions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-       The   DbMpool::sync   method   may   fail   and   throw  a
+       The  DbMpool::sync   method   may   fail   and   throw   a
        <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or return errno for any of the errors  specified  for  the
+       or  return  errno  for any of the errors specified for the
        following DB and library functions: <B><A HREF="db_mpool.html">DBmemp-&gt;pgin(3)</A></B>,
        <B><A HREF="db_mpool.html">DBmemp-&gt;pgout(3)</A></B>, <B><A HREF="DbLog.html">DbLog::compare(3)</A></B>, <B><A HREF="DbLog.html">DbLog::flush(3)</A></B>,
        <B>close(2)</B>, <B>fcntl(2)</B>, <B>fflush(3)</B>, <B>fsync(2)</B>, <B>lseek(2)</B>,
        <B>malloc(3)</B>, <B>memcmp(3)</B>, <B>memcpy(3)</B>, <B>memset(3)</B>, <B>mmap(2)</B>,
        <B>open(2)</B>, <B>qsort(3)</B>, <B>realloc(3)</B>, <B>sigfillset(3)</B>,
        <B>sigprocmask(2)</B>, <B>stat(2)</B>, <B>strcpy(3)</B>, <B>strdup(3)</B>,
-       <B>strerror(3)</B>,  <B>strlen(3)</B>, <B>time(3)</B>, <B>unlink(2)</B>, and <B>write(2)</B>.
+       <B>strerror(3)</B>, <B>strlen(3)</B>, <B>time(3)</B>, <B>unlink(2)</B>, and  <B>write(2)</B>.
 
        In addition, the DbMpool::sync method may fail and throw a
-       <B><A HREF="DbException.html">DbException(3)</A></B>   or   return   errno   for  the  following
+       <B><A HREF="DbException.html">DbException(3)</A></B>  or  return   errno   for   the   following
        conditions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-            The DbMpool::sync method was called  without  logging
+            The  DbMpool::sync  method was called without logging
             having been initialized in the environment.
 
-       The   DbMpool::stat   method   may   fail   and   throw  a
+       The  DbMpool::stat   method   may   fail   and   throw   a
        <B><A HREF="DbException.html">DbException(3)</A></B>
 
-       or return errno for any of the errors  specified  for  the
+       or  return  errno  for any of the errors specified for the
        following DB and library functions: <B>fcntl(2)</B>, <B>malloc(3)</B>,
        <B>memcpy(3)</B>, and <B>strlen(3)</B>.
 
@@ -538,7 +585,7 @@
        <B><A HREF="DbTxnMgr.html">DbTxnMgr(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

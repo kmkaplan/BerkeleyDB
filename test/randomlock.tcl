@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)randomlock.tcl	10.1 (Sleepycat) 4/12/97
+#	@(#)randomlock.tcl	10.3 (Sleepycat) 4/10/98
 #
 # Exercise multi-process aspects of lock.  Generate a bunch of parallel
 # testers that try to randomly obtain locks.
@@ -28,15 +28,15 @@ source ./include.tcl
 			set s [lindex $seeds $i]
 		}
 		puts "exec ./dbtest ../test/lockscript.tcl $dir $iter \
-		    $objs $wait $ldegree $reads $s > $i.lockout &"
+		    $objs $wait $ldegree $reads $s > $dir/$i.lockout &"
 		set p [exec ./dbtest ../test/lockscript.tcl $dir $iter \
-		    $objs $wait $ldegree $reads $s > $i.lockout & ]
+		    $objs $wait $ldegree $reads $s > $dir/$i.lockout & ]
 		lappend pidlist $p
 	}
 	puts "Lock005: $procs independent processes now running"
 	watch_procs $pidlist
 	# Remove log files
 	for { set i 0 } {$i < $procs} {incr i} {
-		exec $RM -f $i.lockout
+		exec $RM -f $dir/$i.lockout
 	}
 }

@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -47,14 +47,13 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)hash_rec.c	10.14 (Sleepycat) 11/2/97";
+static const char sccsid[] = "@(#)hash_rec.c	10.18 (Sleepycat) 4/26/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
 #include <errno.h>
-#include <stdlib.h>
 #include <string.h>
 #endif
 
@@ -64,7 +63,6 @@ static const char sccsid[] = "@(#)hash_rec.c	10.14 (Sleepycat) 11/2/97";
 #include "hash.h"
 #include "btree.h"
 #include "log.h"
-#include "db_dispatch.h"
 #include "common_ext.h"
 
 /*
@@ -453,7 +451,7 @@ __ham_newpgno_recover(logp, dbtp, lsnp, redo, info)
 	DBT *dbtp;
 	DB_LSN *lsnp;
 	int redo;
-	 void *info;
+	void *info;
 {
 	__ham_newpgno_args *argp;
 	DB *mdbp, *file_dbp;
@@ -574,7 +572,7 @@ __ham_splitmeta_recover(logp, dbtp, lsnp, redo, info)
 	DBT *dbtp;
 	DB_LSN *lsnp;
 	int redo;
-	 void *info;
+	void *info;
 {
 	__ham_splitmeta_args *argp;
 	DB *mdbp, *file_dbp;
@@ -649,7 +647,7 @@ __ham_splitdata_recover(logp, dbtp, lsnp, redo, info)
 	DBT *dbtp;
 	DB_LSN *lsnp;
 	int redo;
-	 void *info;
+	void *info;
 {
 	__ham_splitdata_args *argp;
 	DB *mdbp, *file_dbp;
@@ -811,7 +809,7 @@ out:	if (getmeta)
 /*
  * __ham_copypage_recover --
  *	Recovery function for copypage.
- * 
+ *
  * PUBLIC: int __ham_copypage_recover
  * PUBLIC:   __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
  */

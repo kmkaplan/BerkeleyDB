@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)lock.tcl	10.4 (Sleepycat) 10/4/97
+#	@(#)lock.tcl	10.6 (Sleepycat) 4/10/98
 #
 # Test driver for lock tests.
 #						General	Multi	Random
@@ -77,7 +77,7 @@ source ./include.tcl
 	    -maxlocks $maxlocks -nmodes $nmodes -conflicts $conflicts]
 	lock002 $lp $iterations $nmodes
 	error_check_good lock_close [$lp close] 0
-	set ret [ lock_unlink "" 0 ]
+	set ret [ lock_unlink $testdir 0 ]
 	error_check_good lock_unlink $ret 0
 
 	lock003 $nmodes $conflicts
@@ -113,7 +113,7 @@ source ./include.tcl
 	error_check_bad lock_open $lp NULL
 
 	# Try unlinking without force (should fail)
-	set ret [ lock_unlink "" 0 ]
+	set ret [ lock_unlink $testdir 0 ]
 	error_check_good lock_unlink $ret -1
 
 	# Close the region
@@ -129,7 +129,7 @@ source ./include.tcl
 	error_check_good close $ret 0
 
 	# Finally, try unlinking the region without force and no live processes
-	set ret [ lock_unlink "" 0 ]
+	set ret [ lock_unlink $testdir 0 ]
 	error_check_good lock_unlink $ret 0
 
 	# Now try creating the region in a different directory
@@ -140,7 +140,7 @@ source ./include.tcl
 	    -maxlocks $maxl -nmodes $nmodes -conflicts $conf]
 	error_check_bad lock_open $lp NULL
 	error_check_good lock_close [$lp close] 0
-	error_check_good lock_unlink [lock_unlink MYLOCK 0] 0
+	error_check_good lock_unlink [lock_unlink $testdir/MYLOCK 0] 0
 }
 
 # Make sure that the basic lock tests work.  Do some simple gets and puts for

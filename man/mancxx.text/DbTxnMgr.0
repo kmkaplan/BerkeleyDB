@@ -8,13 +8,13 @@ SSYYNNOOPPSSIISS
 
        ssttaattiicc iinntt
        DDbbTTxxnnMMggrr::::ooppeenn((ccoonnsstt cchhaarr **ddiirr,,
-            iinntt ffllaaggss,, iinntt mmooddee,, DDbbEEnnvv **ddbbeennvv,, DDbbTTxxnnMMggrr ****rreeggiioonnpp));;
+            uu__iinntt3322__tt ffllaaggss,, iinntt mmooddee,, DDbbEEnnvv **ddbbeennvv,, DDbbTTxxnnMMggrr ****rreeggiioonnpp));;
 
        iinntt
        DDbbTTxxnnMMggrr::::bbeeggiinn((DDbbTTxxnn **ppiidd,, DDbbTTxxnn ****ttiidd));;
 
        iinntt
-       DDbbTTxxnnMMggrr::::cchheecckkppooiinntt((iinntt kkbbyyttee,, iinntt mmiinn)) ccoonnsstt;;
+       DDbbTTxxnnMMggrr::::cchheecckkppooiinntt((uu__iinntt3322__tt kkbbyyttee,, uu__iinntt3322__tt mmiinn)) ccoonnsstt;;
 
        iinntt
        DDbbTTxxnnMMggrr::::cclloossee(());;
@@ -158,7 +158,7 @@ DDEESSCCRRIIPPTTIIOONN
             _l_k___i_n_f_o  is NULL, no locking is done in this transac-
             tion environment.
 
-       unsigned int tx_max;
+       u_int32_t tx_max;
             The maximum number of simultaneous transactions  that
             are supported.  This bounds the size of backing files
             and is used to derive limits for the size of the lock
@@ -182,11 +182,13 @@ DDEESSCCRRIIPPTTIIOONN
             redo An  integer value that is set to one of the fol-
                  lowing values:
 
+
                  DB_TXN_BACKWARD_ROLL
                       The log is being read backward to determine
                       which  transactions have been committed and
                       which transactions  were  not  (and  should
                       therefore be aborted during recovery).
+
 
                  DB_TXN_FORWARD_ROLL
                       The log is being played forward, any trans-
@@ -194,13 +196,16 @@ DDEESSCCRRIIPPTTIIOONN
                       entered  into  the  list referenced by _i_n_f_o
                       should be ignored.
 
+
                  DB_TXN_OPENFILES
                       The log is being read to open all the files
                       required to perform recovery.
 
+
                  DB_TXN_REDO
                       Redo  the  operation  described  by the log
                       record.
+
 
                  DB_TXN_UNDO
                       Undo the operation  described  by  the  log
@@ -278,16 +283,16 @@ DDEESSCCRRIIPPTTIIOONN
 
        In  the  case  of catastrophic or system failure, database
        recovery must  be  performed  (see  _d_b___r_e_c_o_v_e_r(1)  or  the
-       DB_RECOVER flags to _D_b_E_n_v_:_:_a_p_p_i_n_i_t(3)).  Alternatively, if
-       recovery is not required  because  no  database  state  is
-       maintained  across  failures, it is possible to clean up a
-       transaction region by removing all of  the  files  in  the
-       directory  specified  to  the  _D_b_T_x_n_M_g_r_:_:_o_p_e_n  method,  as
-       transaction region files are never created in  any  direc-
-       tory  other  than  the  one  specified  to _D_b_T_x_n_M_g_r_:_:_o_p_e_n.
-       Note, however, that this has the potential to remove files
-       created  by the other DB subsystems in this database envi-
-       ronment.
+       DB_RECOVER      and      DB_RECOVER_FATAL     flags     to
+       _D_b_E_n_v_:_:_a_p_p_i_n_i_t(3)).  Alternatively,  if  recovery  is  not
+       required  because  no  database state is maintained across
+       failures, it is possible to clean up a transaction  region
+       by removing all of the files in the directory specified to
+       the _D_b_T_x_n_M_g_r_:_:_o_p_e_n method, as transaction region files are
+       never  created  in any directory other than the one speci-
+       fied to _D_b_T_x_n_M_g_r_:_:_o_p_e_n.  Note, however, that this has  the
+       potential  to remove files created by the other DB subsys-
+       tems in this database environment.
 
        The _D_b_T_x_n_M_g_r_:_:_u_n_l_i_n_k method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)  or
        returns the value of _e_r_r_n_o on failure and 0 on success.
@@ -324,12 +329,14 @@ DDEESSCCRRIIPPTTIIOONN
        Statistical structures are created  in  allocated  memory.
        If  _d_b___m_a_l_l_o_c  is  non-NULL,  it is called to allocate the
        memory, otherwise, the library function _m_a_l_l_o_c(3) is used.
+
        The  function _d_b___m_a_l_l_o_c must match the calling conventions
        of the _m_a_l_l_o_c(3) library routine.  Regardless, the  caller
        is  responsible  for deallocating the returned memory.  To
        deallocate the returned memory, free each returned  memory
        pointer;  pointers  inside  the  memory  do not need to be
        individually freed.
+
 
        The transaction region statistics are stored in  a  struc-
        ture  of  type DB_TXN_STAT (typedef'd in <db_cxx.h>).  The
@@ -357,6 +364,12 @@ DDEESSCCRRIIPPTTIIOONN
             The number of transactions that have begun.
        u_int32_t st_ncommits;
             The number of transactions that have committed.
+       u_int32_t ;
+            The  number  of  times  that  a thread of control was
+            forced to wait before obtaining the region lock.
+       u_int32_t ;
+            The number of times that a thread of control was able
+            to obtain the region lock without waiting.
 
        DB_TXN_ACTIVE *st_txnarray;
             A  pointer  to  an  array of _s_t___n_a_c_t_i_v_e DB_TXN_ACTIVE
@@ -371,8 +384,6 @@ DDEESSCCRRIIPPTTIIOONN
                  _M_g_r_:_:_b_e_g_i_n(3).
             DbLsn lsn;
                  The LSN of the transaction-begin record.
-
-
 EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
        The following environment variables affect  the  execution
        of _d_b___t_x_n:
@@ -383,7 +394,6 @@ EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
             DB_HOME  may be used as the path of the database home
             for the interpretation of the _d_i_r argument to  _D_b_T_x_n_-
             _M_g_r_:_:_o_p_e_n, as described in _d_b___a_p_p_i_n_i_t(3).
-
 
        TMPDIR
             If  the  _d_b_e_n_v argument to _D_b_T_x_n_M_g_r_:_:_o_p_e_n was NULL or
@@ -481,8 +491,8 @@ EERRRROORRSS
        _t_i_o_n(3)
 
        or return _e_r_r_n_o for any of the errors  specified  for  the
-       following DB and library functions: fcntl(2), and mal-
-       loc(3).
+       following DB and library functions: fcntl(2), and
+       malloc(3).
 
 SSEEEE AALLSSOO
        _L_I_B_T_P_: _P_o_r_t_a_b_l_e_,  _M_o_d_u_l_a_r  _T_r_a_n_s_a_c_t_i_o_n_s  _f_o_r  _U_N_I_X,  Margo

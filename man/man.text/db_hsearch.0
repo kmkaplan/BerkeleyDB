@@ -4,7 +4,7 @@ NNAAMMEE
        hsearch - hsearch, hcreate, hdestroy
 
 SSYYNNOOPPSSIISS
-       ##ddeeffiinnee DDBB__DDBBMM__HHSSEEAARRCCHH
+       ##ddeeffiinnee DDBB__DDBBMM__HHSSEEAARRCCHH    11
        ##iinncclluuddee <<ddbb..hh>>
 
        ttyyppeeddeeff eennuumm {{
@@ -20,7 +20,7 @@ SSYYNNOOPPSSIISS
        hhsseeaarrcchh((EENNTTRRYY iitteemm,, AACCTTIIOONN aaccttiioonn));;
 
        iinntt
-       hhccrreeaattee((uunnssiiggnneedd iinntt nneelleemm));;
+       hhccrreeaattee((ssiizzee__tt nneelleemm));;
 
        vvooiidd
        hhddeessttrrooyy((vvooiidd));;
@@ -34,7 +34,7 @@ DDEESSCCRRIIPPTTIIOONN
        _#_i_n_c_l_u_d_e of the hsearch  include  file  (e.g.,  ``#include
        <search.h>'') with the following two lines:
 
-              #define DB_DBM_HSEARCH
+              #define DB_DBM_HSEARCH    1
               #include <db.h>
 
        and recompile.
@@ -63,8 +63,7 @@ DDEESSCCRRIIPPTTIIOONN
             ence  to  an _E_N_T_R_Y structure referencing the existing
             key and its associated data element.
 
-       FIND
-            Retrieve  the  specified  key/data  pair   from   the
+       FIND Retrieve  the  specified  key/data  pair   from   the
             database.
 
 
@@ -112,6 +111,7 @@ SSEEEE AALLSSOO
        based on other functional groups (e.g.,  transactions  and
        logging).   For  a  general description of the DB package,
        see _d_b___i_n_t_r_o(3).
+
        _d_b___a_r_c_h_i_v_e(1), _d_b___c_h_e_c_k_p_o_i_n_t(1), _d_b___d_e_a_d_l_o_c_k(1), _d_b___d_u_m_p(1),
        _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3),
        _d_b___a_p_p_i_n_i_t(3), _d_b___c_u_r_s_o_r(3), _d_b___d_b_m(3), _d_b___i_n_t_e_r_n_a_l(3),

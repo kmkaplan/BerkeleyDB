@@ -2,16 +2,16 @@
 <HEAD>
 <TITLE>db_log</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>db_log</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        <B>#include</B> <B>&lt;db.h&gt;</B>
 
        <B>int</B>
        <B>log</B>_<B>open(const</B> <B>char</B> <B>*dir,</B>
-            <B>int</B> <B>flags,</B> <B>int</B> <B>mode,</B> <B>DB</B>_<B>ENV</B> <B>*dbenv,</B> <B>DB</B>_<B>LOG</B> <B>**regionp);</B>
+            <B>u</B>_<B>int32</B>_<B>t</B> <B>flags,</B> <B>int</B> <B>mode,</B> <B>DB</B>_<B>ENV</B> <B>*dbenv,</B> <B>DB</B>_<B>LOG</B> <B>**regionp);</B>
 
        <B>int</B>
        <B>log</B>_<B>close(DB</B>_<B>LOG</B> <B>*logp);</B>
@@ -20,7 +20,7 @@
        <B>log</B>_<B>flush(DB</B>_<B>LOG</B> <B>*logp,</B> <B>const</B> <B>DB</B>_<B>LSN</B> <B>*lsn);</B>
 
        <B>int</B>
-       <B>log</B>_<B>get(DB</B>_<B>LOG</B> <B>*logp,</B> <B>DB</B>_<B>LSN</B> <B>*lsn,</B> <B>DBT</B> <B>*data,</B> <B>int</B> <B>flags);</B>
+       <B>log</B>_<B>get(DB</B>_<B>LOG</B> <B>*logp,</B> <B>DB</B>_<B>LSN</B> <B>*lsn,</B> <B>DBT</B> <B>*data,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
        <B>log</B>_<B>compare(const</B> <B>DB</B>_<B>LSN</B> <B>*lsn0,</B> <B>const</B> <B>DB</B>_<B>LSN</B> <B>*lsn1);</B>
@@ -29,14 +29,14 @@
        <B>log</B>_<B>file(DB</B>_<B>LOG</B> <B>*logp,</B> <B>const</B> <B>DB</B>_<B>LSN</B> <B>*lsn,</B> <B>char</B> <B>*namep,</B> <B>size</B>_<B>t</B> <B>len);</B>
 
        <B>int</B>
-       <B>log</B>_<B>put(DB</B>_<B>LOG</B> <B>*logp,</B> <B>DB</B>_<B>LSN</B> <B>*lsn,</B> <B>const</B> <B>DBT</B> <B>*data,</B> <B>int</B> <B>flags);</B>
+       <B>log</B>_<B>put(DB</B>_<B>LOG</B> <B>*logp,</B> <B>DB</B>_<B>LSN</B> <B>*lsn,</B> <B>const</B> <B>DBT</B> <B>*data,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
        <B>log</B>_<B>unlink(const</B> <B>char</B> <B>*dir,</B> <B>int</B> <B>force,</B> <B>DB</B>_<B>ENV</B> <B>*);</B>
 
        <B>int</B>
        <B>log</B>_<B>archive(DB</B>_<B>LOG</B> <B>*logp,</B>
-            <B>char</B> <B>**list[],</B> <B>int</B> <B>flags,</B> <B>void</B> <B>*(*db</B>_<B>malloc)(size</B>_<B>t));</B>
+            <B>char</B> <B>**list[],</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags,</B> <B>void</B> <B>*(*db</B>_<B>malloc)(size</B>_<B>t));</B>
 
        <B>int</B>
        <B>log</B>_<B>register(DB</B>_<B>LOG</B> <B>*logp,</B>
@@ -141,15 +141,21 @@
 
        The logging subsystem is configured  based  on  the  dbenv
        argument to log_open, which is a pointer to a structure of
-       type DB_ENV (typedef'd in &lt;db.h&gt;).  It  is  expected  that
-       applications  will  use  a  single DB_ENV structure as the
-       argument to all of the subsystems in the DB  package.   In
-       order  to ensure compatibility with future releases of DB,
-       all fields of the DB_ENV structure that are not explicitly
-       set  should  be initialized to 0 before the first time the
-       structure is used.  Do this  by  declaring  the  structure
-       external  or  static,  or by calling the C library routine
-       <B>bzero(3)</B> or <B>memset(3)</B>.
+       type DB_ENV  (typedef'd  in  &lt;db.h&gt;).   Applications  will
+       normally  use  the  same  DB_ENV structure (initialized by
+       <B><A HREF="db_appinit.html">db_appinit(3)</A></B>), as an argument to all of the subsystems in
+       the DB package.
+
+       References  to  the DB_ENV structure are maintained by DB,
+       so it may not be discarded until the last close  function,
+       corresponding  to  an  open  function  for which it was an
+       argument, has returned.  In order to ensure  compatibility
+       with  future  releases  of  DB,  all  fields of the DB_ENV
+       structure  that  are  not   explicitly   set   should   be
+       initialized  to  0  before the first time the structure is
+       used.  Do this by  declaring  the  structure  external  or
+       static,  or  by  calling the C library routine <B>bzero(3)</B> or
+       <B>memset(3)</B>.
 
        The fields of the DB_ENV structure used  by  log_open  are
        described  below.   If  dbenv is NULL or any of its fields
@@ -174,163 +180,169 @@
 
             If lg_max is 0, a default value is used.
 
-       The log_open  function  returns  the  value  of  errno  on
+            See the section "LOG FILE LIMITS" below, for  further
+            information.
+
+       The  log_open  function  returns  the  value  of  errno on
        failure and 0 on success.
 
   log_close
-       The  log_close  function  closes  the log specified by the
+       The log_close function closes the  log  specified  by  the
        logp argument.
 
-       In addition, if the dir argument to log_open was NULL  and
-       dbenv  was  not  initialized  using  db_appinit, all files
-       created for this shared region  will  be  removed,  as  if
+       In  addition, if the dir argument to log_open was NULL and
+       dbenv was not  initialized  using  db_appinit,  all  files
+       created  for  this  shared  region  will be removed, as if
        log_unlink were called.
 
-       When   multiple   threads  are  using  the  DB_LOG  handle
-       concurrently, only a single thread may call the  log_close
+       When  multiple  threads  are  using  the   DB_LOG   handle
+       concurrently,  only a single thread may call the log_close
        function.
 
-       The  log_close  function  returns  the  value  of errno on
+       The log_close function  returns  the  value  of  errno  on
        failure and 0 on success.
 
   log_flush
-       The log_flush function guarantees  that  all  log  records
-       whose  LSNs  are  less  than or equal to the lsn parameter
+       The  log_flush  function  guarantees  that all log records
+       whose LSNs are less than or equal  to  the  lsn  parameter
        have been written to disk.  If lsn is NULL, all records in
        the log are flushed.
 
-       The  log_flush  function  returns  the  value  of errno on
+       The log_flush function  returns  the  value  of  errno  on
        failure and 0 on success.
 
   log_get
-       The log_get function implements a  cursor  inside  of  the
-       log,  retrieving records from the log according to the lsn
+       The  log_get  function  implements  a cursor inside of the
+       log, retrieving records from the log according to the  lsn
        and flags parameters.
 
-       The data field of the data structure is set to the  record
+       The  data field of the data structure is set to the record
        retrieved and the size field indicates the number of bytes
-       in the record.  See <B><A HREF="db_dbt.html">db_dbt(3)</A></B> for a description  of  other
-       fields  in  the data structure.  <B>When</B> <B>multiple</B> <B>threads</B> <B>are</B>
-       <B>using</B> <B>the</B> <B>returned</B> <B>DB</B>_<B>LOG</B> <B>handle</B> <B>concurrently,</B> <B>either</B>  <B>the</B>
-       <B>DB</B>_<B>DBT</B>_<B>MALLOC</B>  <B>or</B>  <B>DB</B>_<B>DBT</B>_<B>USERMEM</B>  <B>flags</B> <B>must</B> <B>be</B> <B>specified</B>
+       in  the  record.  See <B><A HREF="db_dbt.html">db_dbt(3)</A></B> for a description of other
+       fields in the data structure.  <B>When</B> <B>multiple</B>  <B>threads</B>  <B>are</B>
+       <B>using</B>  <B>the</B> <B>returned</B> <B>DB</B>_<B>LOG</B> <B>handle</B> <B>concurrently,</B> <B>either</B> <B>the</B>
+       <B>DB</B>_<B>DBT</B>_<B>MALLOC</B> <B>or</B> <B>DB</B>_<B>DBT</B>_<B>USERMEM</B> <B>flags</B>  <B>must</B>  <B>be</B>  <B>specified</B>
        <B>for</B> <B>any</B> <B>DBT</B> <B>used</B> <B>for</B> <B>data</B> <B>retrieval.</B>
 
-       The flags parameter must be set  to  exactly  one  of  the
+       The  flags  parameter  must  be  set to exactly one of the
        following values:
 
        DB_CHECKPOINT
-            The  last  record written with the DB_CHECKPOINT flag
-            specified to the log_put function is returned in  the
-            data  argument.  The lsn argument is overwritten with
-            the DB_LSN of the record returned.  If no record  has
-            been  previously  written with the DB_CHECKPOINT flag
+            The last record written with the  DB_CHECKPOINT  flag
+            specified  to the log_put function is returned in the
+            data argument.  The lsn argument is overwritten  with
+            the  DB_LSN of the record returned.  If no record has
+            been previously written with the  DB_CHECKPOINT  flag
             specified, the first record in the log is returned.
 
-            If the log is empty the log_get function will  return
+            If  the log is empty the log_get function will return
             DB_NOTFOUND.
 
        DB_FIRST
-            The  first  record from any of the log files found in
-            the log directory is returned in the  data  argument.
-            The  lsn  argument  is overwritten with the DB_LSN of
+            The first record from any of the log files  found  in
+            the  log  directory is returned in the data argument.
+            The lsn argument is overwritten with  the  DB_LSN  of
             the record returned.
 
-            If the log is empty the log_get function will  return
+            If  the log is empty the log_get function will return
             DB_NOTFOUND.
 
        DB_LAST
-            The  last  record  in the log is returned in the data
-            argument.  The lsn argument is overwritten  with  the
+            The last record in the log is returned  in  the  data
+            argument.   The  lsn argument is overwritten with the
             DB_LSN of the record returned.
 
             If the log is empty, the log_get function will return
             DB_NOTFOUND.
 
        DB_NEXT
-            The current log position  is  advanced  to  the  next
-            record  in the log and that record is returned in the
-            data argument.  The lsn argument is overwritten  with
-            the DB_LSN of the record returned.
-
-            If the pointer has not been initialized via DB_FIRST,
-            DB_LAST, DB_SET, DB_NEXT, or  DB_PREV,  log_get  will
-            return  the first record in the log.  If the last log
-            record has already been returned or the log is empty,
-            the log_get function will return DB_NOTFOUND.
-
-            If  the  log  was opened with the DB_THREAD flag set,
-            calls to log_get  with  the  DB_NEXT  flag  set  will
-            return EINVAL.
-
-       DB_PREV
-            The  current  log  position  is moved to the previous
+            The  current  log  position  is  advanced to the next
             record in the log and that record is returned in  the
             data  argument.  The lsn argument is overwritten with
             the DB_LSN of the record returned.
 
             If the pointer has not been initialized via DB_FIRST,
             DB_LAST,  DB_SET,  DB_NEXT,  or DB_PREV, log_get will
-            return the last record in the log.  If the first  log
+            return the first record in the log.  If the last  log
             record has already been returned or the log is empty,
             the log_get function will return DB_NOTFOUND.
 
             If the log was opened with the  DB_THREAD  flag  set,
-            calls  to  log_get  with  the  DB_PREV  flag set will
+            calls  to  log_get  with  the  DB_NEXT  flag set will
+            return EINVAL.
+
+       DB_PREV
+            The current log position is  moved  to  the  previous
+            record  in the log and that record is returned in the
+            data argument.  The lsn argument is overwritten  with
+            the DB_LSN of the record returned.
+            If the pointer has not been initialized via DB_FIRST,
+            DB_LAST, DB_SET, DB_NEXT, or  DB_PREV,  log_get  will
+            return  the last record in the log.  If the first log
+            record has already been returned or the log is empty,
+            the log_get function will return DB_NOTFOUND.
+
+            If  the  log  was opened with the DB_THREAD flag set,
+            calls to log_get  with  the  DB_PREV  flag  set  will
             return EINVAL.
 
        DB_CURRENT
-            Return the log record  currently  referenced  by  the
+            Return  the  log  record  currently referenced by the
             log.
 
-            If  the  log  pointer  has  not  been initialized via
+            If the log  pointer  has  not  been  initialized  via
             DB_FIRST, DB_LAST, DB_SET, DB_NEXT, or DB_PREV, or if
-            the  log  was  opened  with  the  DB_THREAD flag set,
+            the log was  opened  with  the  DB_THREAD  flag  set,
             log_get will return EINVAL.
 
        DB_SET
-            Retrieve the record specified by  the  lsn  argument.
-            If  the  specified  DB_LSN is invalid (e.g., does not
+            Retrieve  the  record  specified by the lsn argument.
+            If the specified DB_LSN is invalid  (e.g.,  does  not
             appear in the log) log_get will return EINVAL.
 
        Otherwise, the log_get function returns the value of errno
        on failure and 0 on success.
 
   log_compare
-       The  log_compare function allows the caller to compare two
-       DB_LSN's.  Log_compare returns 0 if the two  DB_LSN's  are
-       equal,  1  if lsn0 is greater than lsn1, and -1 if lsn0 is
+       The log_compare function allows the caller to compare  two
+       DB_LSN's.   Log_compare  returns 0 if the two DB_LSN's are
+       equal, 1 if lsn0 is greater than lsn1, and -1 if  lsn0  is
        less than lsn1.
 
   log_file
-       The log_file function maps DB_LSN's to  file  names.   The
-       log_file  function  copies the name of the file containing
-       the  record  named  by  lsn  into  the   memory   location
-       referenced  by  namep.  (This mapping of DB_LSN to file is
-       needed  for  database  administration.   For  example,   a
-       transaction  manager typically records the earliest DB_LSN
-       needed for restart, and  the  database  administrator  may
-       want  to  archive log files to tape when they contain only
+       The  log_file  function  maps DB_LSN's to file names.  The
+       log_file function copies the name of the  file  containing
+       the   record   named  by  lsn  into  the  memory  location
+       referenced by namep.  (This mapping of DB_LSN to  file  is
+       needed   for  database  administration.   For  example,  a
+       transaction manager typically records the earliest  DB_LSN
+       needed  for  restart,  and  the database administrator may
+       want to archive log files to tape when they  contain  only
        DB_LSN's before the earliest one needed for restart.)
 
-       The len argument is the length  of  the  namep  buffer  in
-       bytes.   If  namep  is  too  short  to hold the file name,
-       log_file will return ENOMEM.  Note,  as  described  above,
-       log  file  names  are  quite  short,  on  the  order of 10
+       The  len  argument  is  the  length of the namep buffer in
+       bytes.  If namep is too  short  to  hold  the  file  name,
+       log_file  will  return  ENOMEM.  Note, as described above,
+       log file names  are  quite  short,  on  the  order  of  10
        characters.
 
-       The log_file  function  returns  the  value  of  errno  on
+       The  log_file  function  returns  the  value  of  errno on
        failure and 0 on success.
 
   log_put
-       The  log_put  function  appends  records  to the log.  The
+       The log_put function appends  records  to  the  log.   The
        DB_LSN of the put record is returned in the lsn parameter.
-       The  flags  parameter  may  be set to one of the following
+       The flags parameter may be set to  one  of  the  following
        values:
 
        DB_CHECKPOINT
-            The log should write a checkpoint  record,  recording
-            any  information necessary to make the log structures
+            The  log  should write a checkpoint record, recording
+            any information necessary to make the log  structures
             recoverable after a crash.
+
+       DB_CURLSN
+            The  DB_LSN  of the next record to be put is returned
+            in the lsn parameter.
 
        DB_FLUSH
             The log is  forced  to  disk  after  this  record  is
@@ -378,15 +390,15 @@
 
        In  the  case  of catastrophic or system failure, database
        recovery must  be  performed  (see  <B><A HREF="db_recover.html">db_recover(1)</A></B>  or  the
-       DB_RECOVER  flags  to  <B><A HREF="db_appinit.html">db_appinit(3)</A></B>).   Alternatively, if
-       recovery is not required  because  no  database  state  is
-       maintained  across  failures, it is possible to clean up a
-       log region by removing all of the files in  the  directory
-       specified  to  the  log_open function, as log region files
-       are never created in any  directory  other  than  the  one
-       specified  to  log_open.  Note, however, that this has the
-       potential  to  remove  files  created  by  the  other   DB
-       subsystems in this database environment.
+       DB_RECOVER  and  DB_RECOVER_FATAL flags to <B><A HREF="db_appinit.html">db_appinit(3)</A></B>).
+       Alternatively, if recovery  is  not  required  because  no
+       database  state  is  maintained  across  failures,  it  is
+       possible to clean up a log region by removing all  of  the
+       files in the directory specified to the log_open function,
+       as log region files are never  created  in  any  directory
+       other  than the one specified to log_open.  Note, however,
+       that this has the potential to remove files created by the
+       other DB subsystems in this database environment.
 
        The  log_unlink  function  returns  the  value of errno on
        failure and 0 on success.
@@ -439,6 +451,7 @@
 
        The log_archive function returns the  value  of  errno  on
        failure and 0 on success.
+
        The  log_archive  function is the underlying function used
        by the <B><A HREF="db_archive.html">db_archive(1)</A></B> utility.  See the source code for the
        db_archive  utility for an example of using log_archive in
@@ -505,23 +518,68 @@
        u_int32_t st_lg_max;
             The  maximum  size  of any individual file comprising
             the log.
+       u_int32_t st_w_mbytes;
+            The number of megabytes written to this log.
        u_int32_t st_w_bytes;
             The  number  of  bytes  over  and  above  st_w_mbytes
             written to this log.
-       u_int32_t st_w_mbytes;
-            The number of megabytes written to this log.
-       u_int32_t st_wc_bytes;
-            The  number  of  bytes  over  and  above st_wc_mbytes
-            written to this log since the last checkpoint.
        u_int32_t st_wc_mbytes;
             The number of megabytes written to this log since the
             last checkpoint.
+       u_int32_t st_wc_bytes;
+            The number  of  bytes  over  and  above  st_wc_mbytes
+            written to this log since the last checkpoint.
+       u_int32_t st_cur_file;
+            The current log file number.
+       u_int32_t st_cur_offset;
+            The byte offset in the current log file.
        u_int32_t st_region_wait;
             The  number  of  times  that  a thread of control was
             forced to wait before obtaining the region lock.
        u_int32_t st_region_nowait;
             The number of times that a thread of control was able
             to obtain the region lock without waiting.
+
+
+</PRE>
+<H2>LOG FILE LIMITS</H2><PRE>
+       Log file sizes impose a time limit on the length of time a
+       database may be  accessed  under  transaction  protection,
+       before  it needs to be dumped and reloaded (see <B><A HREF="db_dump.html">db_dump(3)</A></B>
+       and   <B><A HREF="db_load.html">db_load(3)</A></B>).    Unfortunately,   the   limits    are
+       potentially difficult to calculate.
+
+       The log file name consists of "log." followed by 5 digits,
+       resulting in a maximum of 99,999 log files.   Consider  an
+       application performing 600 transactions per second, for 15
+       hours a day,  logged  into  10Mb  log  files,  where  each
+       transaction  is  logging  approximately 100 bytes of data.
+       The calculation:
+
+              (10 * 2^20 * 99999) /
+                   (600 * 60 * 60 * 15 * 100) = 323.63
+
+       indicates that the system will run out of log  file  space
+       in  roughly  324 days.  If we increase the maximum size of
+       the  files  from  10Mb  to  100Mb,  the  same  calculation
+       indicates  that  the  application will run out of log file
+       space in roughly 9 years.
+
+       There is no way to  reset  the  log  file  name  space  in
+       Berkeley  DB.   If your application is reaching the end of
+       its log file name space, you should:
+
+       1.   Archive  your  databases  as  if   to   prepare   for
+            catastrophic  failure  (see  <B><A HREF="db_archive.html">db_archive(1)</A></B>  for  more
+            information).
+
+       2.   Dump and re-load <B>all</B> your databases  (see  <B><A HREF="db_dump.html">db_dump(1)</A></B>
+            and <B><A HREF="db_load.html">db_load(1)</A></B> for more information).
+
+       3.   Remove  all  of  the  log  files  from  the  database
+            environment (see <B><A HREF="db_archive.html">db_archive(1)</A></B> for more information).
+
+       4.   Restart your applications.
 
 
 </PRE>
@@ -720,7 +778,7 @@
        <B><A HREF="db_txn.html">db_txn(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

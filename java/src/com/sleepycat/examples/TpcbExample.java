@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)TpcbExample.java	10.2 (Sleepycat) 11/20/97
+ *	@(#)TpcbExample.java	10.4 (Sleepycat) 4/20/98
  */
 
 package com.sleepycat.examples;
@@ -384,6 +384,12 @@ class TpcbExample extends DbEnv
         branch = random_id(BRANCH, anum, bnum, tnum);
         teller = random_id(TELLER, anum, bnum, tnum);
 
+        // The history key will not actually be retrieved,
+        // but it does need to be set to something.
+        byte hist_key[] = new byte[4];
+	k_histdbt.set_data(hist_key);
+	k_histdbt.set_size(4 /* == sizeof(int)*/);
+
         byte key_bytes[] = new byte[4];
         k_dbt.set_data(key_bytes);
         k_dbt.set_size(4 /* == sizeof(int)*/);
@@ -431,12 +437,11 @@ class TpcbExample extends DbEnv
             tcurs.put(k_dbt, d_dbt, Db.DB_CURRENT);
 
             // History record
-            if (hcurs.get(k_histdbt, d_histdbt, Db.DB_LAST) != 0)
-                throw new TpcbException();
             d_histdbt.set_flags(0);
             d_histdbt.set_data(hrec.data);
             d_histdbt.set_ulen(hrec.length());
-            hcurs.put(k_histdbt, d_histdbt, Db.DB_AFTER);
+            if (hdb.put(t, k_histdbt, d_histdbt, Db.DB_APPEND) != 0)
+		throw(new DbException("put failed"));
 
             acurs.close();
             bcurs.close();

@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test006.tcl	10.2 (Sleepycat) 8/17/97
+#	@(#)test006.tcl	10.4 (Sleepycat) 4/10/98
 #
 # DB Test 6 {access method}
 # Keyed delete test.
@@ -37,6 +37,7 @@ proc test006 { method {nentries 10000} {reopen 6} args} {
 	cleanup $testdir
 	set db [eval [concat dbopen \
 	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	set did [open $dict]
 	while { [gets $did str] != -1 && $count < $nentries } {
 		if { [string compare $method DB_RECNO] == 0 } {
@@ -62,6 +63,7 @@ proc test006 { method {nentries 10000} {reopen 6} args} {
 	if { $reopen == 7 } {
 		error_check_good db_close [$db close] 0
 		set db [ dbopen $testfile 0 0 DB_UNKNOWN ]
+		error_check_good dbopen [is_valid_db $db] TRUE
 	}
 
 	# Now we will get each key from the DB and compare the results

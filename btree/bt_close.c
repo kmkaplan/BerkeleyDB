@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -47,18 +47,14 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)bt_close.c	10.24 (Sleepycat) 9/17/97";
+static const char sccsid[] = "@(#)bt_close.c	10.31 (Sleepycat) 4/28/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
-#include <sys/mman.h>
 
-#include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #endif
 
 #include "db_int.h"
@@ -104,12 +100,12 @@ __bam_close(dbp)
  * __bam_sync --
  *	Sync the btree to disk.
  *
- * PUBLIC: int __bam_sync __P((DB *, int));
+ * PUBLIC: int __bam_sync __P((DB *, u_int32_t));
  */
 int
 __bam_sync(argdbp, flags)
 	DB *argdbp;
-	int flags;
+	u_int32_t flags;
 {
 	DB *dbp;
 	int ret;
@@ -144,9 +140,9 @@ __bam_upstat(dbp)
 {
 	BTREE *t;
 	BTMETA *meta;
-	DB_LOCK mlock;
+	DB_LOCK metalock;
 	db_pgno_t pgno;
-	int flags, ret;
+	u_int32_t flags;
 
 	/*
 	 * We use a no-op log call to log the update of the statistics onto the
@@ -161,13 +157,13 @@ __bam_upstat(dbp)
 	pgno = PGNO_METADATA;
 
 	/* Lock and retrieve the page. */
-	if (__bam_lget(dbp, 0, pgno, DB_LOCK_WRITE, &mlock) != 0)
+	if (__bam_lget(dbp, 0, pgno, DB_LOCK_WRITE, &metalock) != 0)
 		return;
 	if (__bam_pget(dbp, (PAGE **)&meta, &pgno, 0) == 0) {
 		/* Log the change. */
 		if (DB_LOGGING(dbp) &&
-		    (ret = __db_noop_log(dbp->dbenv->lg_info, dbp->txn,
-		    &LSN(meta), 0)) == 0)
+		    __db_noop_log(dbp->dbenv->lg_info, dbp->txn, &LSN(meta), 0,
+		    dbp->log_fileid, PGNO_METADATA, &LSN(meta)) != 0)
 			goto err;
 
 		/* Update the statistics. */
@@ -178,5 +174,5 @@ __bam_upstat(dbp)
 	}
 
 err:	(void)memp_fput(dbp->mpf, (PAGE *)meta, flags);
-	(void)__BT_LPUT(dbp, mlock);
+	(void)__BT_LPUT(dbp, metalock);
 }

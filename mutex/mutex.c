@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)mutex.c	10.29 (Sleepycat) 11/25/97";
+static const char sccsid[] = "@(#)mutex.c	10.42 (Sleepycat) 4/26/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -23,7 +23,6 @@ static const char sccsid[] = "@(#)mutex.c	10.29 (Sleepycat) 11/25/97";
 #endif
 
 #include "db_int.h"
-#include "common_ext.h"
 
 #ifdef HAVE_SPINLOCKS
 
@@ -43,13 +42,21 @@ static const char sccsid[] = "@(#)mutex.c	10.29 (Sleepycat) 11/25/97";
  * Should we not use MSEM_IF_NOWAIT and let the system block for us?
  * I've no idea if this will block all threads in the process or not.
  */
-#define	TSL_INIT(x)	msem_init(x, MSEM_UNLOCKED)
+#define	TSL_INIT(x)	(msem_init(x, MSEM_UNLOCKED) == NULL)
+#define	TSL_INIT_ERROR	1
 #define	TSL_SET(x)	(!msem_lock(x, MSEM_IF_NOWAIT))
 #define	TSL_UNSET(x)	msem_unlock(x, 0)
 #endif
 
+#ifdef HAVE_FUNC_RELIANT
+#define	TSL_INIT(x)	initspin(x, 1)
+#define	TSL_SET(x)	(cspinlock(x) == 0)
+#define	TSL_UNSET(x)	spinunlock(x)
+#endif
+
 #ifdef HAVE_FUNC_SGI
-#define	TSL_INIT(x)	init_lock(x)
+#define	TSL_INIT(x)	(init_lock(x) != 0)
+#define	TSL_INIT_ERROR	1
 #define	TSL_SET(x)	(!acquire_lock(x))
 #define	TSL_UNSET(x)	release_lock(x)
 #endif
@@ -58,13 +65,18 @@ static const char sccsid[] = "@(#)mutex.c	10.29 (Sleepycat) 11/25/97";
 /*
  * Semaphore calls don't work on Solaris 5.5.
  *
- * #define	TSL_INIT(x)	sema_init(x, 1, USYNC_PROCESS, NULL)
+ * #define	TSL_INIT(x)	(sema_init(x, 1, USYNC_PROCESS, NULL) != 0)
+ * #define	TSL_INIT_ERROR	1
  * #define	TSL_SET(x)	(sema_wait(x) == 0)
  * #define	TSL_UNSET(x)	sema_post(x)
  */
 #define	TSL_INIT(x)
 #define	TSL_SET(x)	(_lock_try(x))
 #define	TSL_UNSET(x)	_lock_clear(x)
+#endif
+
+#ifdef HAVE_ASSEM_PARISC_GCC
+#include "parisc.gcc"
 #endif
 
 #ifdef HAVE_ASSEM_SCO_CC
@@ -85,17 +97,20 @@ static const char sccsid[] = "@(#)mutex.c	10.29 (Sleepycat) 11/25/97";
 #include "x86.gcc"
 #endif
 
-#if defined(_WIN32)
-/* DBDB this needs to be byte-aligned!! */
+#ifdef WIN16
+/* Win16 spinlocks are simple because we cannot possibly be preempted. */
 #define	TSL_INIT(tsl)
-#define	TSL_SET(tsl)	(!InterlockedExchange((PLONG)tsl, 1))
+#define	TSL_SET(tsl)	(*(tsl) = 1)
 #define	TSL_UNSET(tsl)	(*(tsl) = 0)
 #endif
 
-#ifdef macintosh
-/* Mac spinlocks are simple because we cannot possibly be preempted. */
+#if defined(_WIN32)
+/*
+ * XXX
+ * DBDB this needs to be byte-aligned!!
+ */
 #define	TSL_INIT(tsl)
-#define	TSL_SET(tsl)	(*(tsl) = 1)
+#define	TSL_SET(tsl)	(!InterlockedExchange((PLONG)tsl, 1))
 #define	TSL_UNSET(tsl)	(*(tsl) = 0)
 #endif
 
@@ -105,14 +120,14 @@ static const char sccsid[] = "@(#)mutex.c	10.29 (Sleepycat) 11/25/97";
  * __db_mutex_init --
  *	Initialize a DB mutex structure.
  *
- * PUBLIC: void __db_mutex_init __P((db_mutex_t *, off_t));
+ * PUBLIC: int __db_mutex_init __P((db_mutex_t *, u_int32_t));
  */
-void
+int
 __db_mutex_init(mp, off)
 	db_mutex_t *mp;
-	off_t off;
+	u_int32_t off;
 {
-#ifdef DEBUG
+#ifdef DIAGNOSTIC
 	if ((ALIGNTYPE)mp & (MUTEX_ALIGNMENT - 1)) {
 		(void)fprintf(stderr,
 		    "MUTEX ERROR: mutex NOT %d-byte aligned!\n",
@@ -123,11 +138,19 @@ __db_mutex_init(mp, off)
 	memset(mp, 0, sizeof(db_mutex_t));
 
 #ifdef HAVE_SPINLOCKS
+	COMPQUIET(off, 0);
+
+#ifdef TSL_INIT_ERROR
+	if (TSL_INIT(&mp->tsl_resource))
+		return (errno);
+#else
 	TSL_INIT(&mp->tsl_resource);
+#endif
 	mp->spins = __os_spin();
 #else
 	mp->off = off;
 #endif
+	return (0);
 }
 
 #define	MS(n)		((n) * 1000)	/* Milliseconds to micro-seconds. */
@@ -149,27 +172,41 @@ __db_mutex_lock(mp, fd)
 #ifdef HAVE_SPINLOCKS
 	int nspins;
 
+	COMPQUIET(fd, 0);
+
 	for (usecs = MS(10);;) {
-		/* Try and acquire the uncontested resource lock for N spins. */
-		for (nspins = mp->spins; nspins > 0; --nspins)
-			if (TSL_SET(&mp->tsl_resource)) {
-#ifdef DEBUG
-				if (mp->pid != 0) {
-					(void)fprintf(stderr,
+		/* Try and acquire the resource lock. */
+		if (TSL_SET(&mp->tsl_resource)) {
+#ifdef DIAGNOSTIC
+			if (mp->holder != 0) {
+				(void)fprintf(stderr,
 		    "MUTEX ERROR: __db_mutex_lock: lock currently locked\n");
-					abort();
-				}
-				mp->pid = getpid();
-#endif
-				if (usecs == MS(10))
-					++mp->mutex_set_nowait;
-				else
-					++mp->mutex_set_wait;
-				return (0);
+				abort();
 			}
+			mp->holder = getpid();
+#else
+			mp->holder = 1;
+#endif
+			if (usecs == MS(10))
+				++mp->mutex_set_nowait;
+			return (0);
+		}
+
+		++mp->mutex_set_wait;
+
+		/*
+		 * Spin...
+		 *
+		 * Test-and-sets are expensive as the bus has to lock and CPUs
+		 * synchronize.  Spin using a load instruction, and retry the
+		 * real lock only when we're pretty sure we'll get it.
+		 */
+		for (nspins = mp->spins;
+		    nspins > 0 && mp->holder != 0; --nspins)
+			;
 
 		/* Yield the processor; wait 10ms initially, up to 1 second. */
-		if (__db_yield == NULL || __db_yield() != 0) {
+		if (nspins == 0 && (__db_yield == NULL || __db_yield() != 0)) {
 			(void)__db_sleep(0, usecs);
 			if ((usecs <<= 1) > SECOND)
 				usecs = SECOND;
@@ -192,7 +229,7 @@ __db_mutex_lock(mp, fd)
 		 * Wait for the lock to become available; wait 10ms initially,
 		 * up to 1 second.
 		 */
-		for (usecs = MS(10); mp->pid != 0;)
+		for (usecs = MS(10); mp->holder != 0;)
 			if (__db_yield == NULL || __db_yield() != 0) {
 				(void)__db_sleep(0, usecs);
 				if ((usecs <<= 1) > SECOND)
@@ -202,18 +239,18 @@ __db_mutex_lock(mp, fd)
 		/* Acquire an exclusive kernel lock. */
 		k_lock.l_type = F_WRLCK;
 		if (fcntl(fd, F_SETLKW, &k_lock))
-			return (1);
+			return (errno);
 
 		/* If the resource tsl is still available, it's ours. */
-		if (mp->pid == 0) {
+		if (mp->holder == 0) {
 			locked = 1;
-			mp->pid = mypid;
+			mp->holder = mypid;
 		}
 
 		/* Release the kernel lock. */
 		k_lock.l_type = F_UNLCK;
 		if (fcntl(fd, F_SETLK, &k_lock))
-			return (1);
+			return (errno);
 
 		/*
 		 * If we got the resource tsl we're done.
@@ -242,28 +279,32 @@ __db_mutex_unlock(mp, fd)
 	db_mutex_t *mp;
 	int fd;
 {
-#ifdef DEBUG
-	if (mp->pid == 0) {
+#ifdef DIAGNOSTIC
+	if (mp->holder == 0) {
 		(void)fprintf(stderr,
 	    "MUTEX ERROR: __db_mutex_unlock: lock already unlocked\n");
 		abort();
 	}
 #endif
+	/*
+	 * Reset the holder field.
+	 *
+	 * If we don't have spinlocks, this releases the resource tsl.  We
+	 * don't have to acquire real locks in that case, because processes
+	 * trying to acquire the lock are checking for a holder value of 0,
+	 * not a specific value -- we don't care if they read in the middle
+	 * of the instruction.
+	 *
+	 * If we have spinlocks, we're just resetting the in-use value.
+	 */
+	mp->holder = 0;
 
 #ifdef HAVE_SPINLOCKS
-#ifdef DEBUG
-	mp->pid = 0;
-#endif
+	COMPQUIET(fd, 0);
 
 	/* Release the resource tsl. */
 	TSL_UNSET(&mp->tsl_resource);
-#else
-	/*
-	 * Release the resource tsl.  We don't have to acquire any locks
-	 * because processes trying to acquire the lock are checking for
-	 * a pid of 0, not a specific value.
-	 */
-	mp->pid = 0;
 #endif
+
 	return (0);
 }

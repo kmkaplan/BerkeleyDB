@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)os_fid.c	10.11 (Sleepycat) 10/28/97";
+static const char sccsid[] = "@(#)os_fid.c	10.13 (Sleepycat) 4/17/98";
 #endif /* not lint */
 
 #include "db_int.h"
@@ -71,6 +71,7 @@ __db_fileid(dbenv, fname, timestamp, fidp)
 		memcpy(fidp, &fi.nFileIndexHigh, sizeof(u_int32_t));
 		fidp += sizeof(u_int32_t);
 		memcpy(fidp, &fi.dwVolumeSerialNumber, sizeof(u_int32_t));
+		fidp += sizeof(u_int32_t);
 	}
 
 	if (timestamp) {

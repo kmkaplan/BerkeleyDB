@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)recd003.tcl	10.5 (Sleepycat) 11/2/97
+#	@(#)recd003.tcl	10.6 (Sleepycat) 4/10/98
 #
 # Recovery Test 3.
 # Test all the duplicate log messages and recovery operations.  We make

@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
@@ -9,9 +9,9 @@
 
 #ifndef lint
 static const char copyright[] =
-"@(#) Copyright (c) 1997\n\
+"@(#) Copyright (c) 1996, 1997, 1998\n\
 	Sleepycat Software Inc.  All rights reserved.\n";
-static const char sccsid[] = "@(#)db185.c	8.14 (Sleepycat) 10/25/97";
+static const char sccsid[] = "@(#)db185.c	8.16 (Sleepycat) 4/10/98";
 #endif
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -114,6 +114,16 @@ dbopen(file, oflags, mode, type, openinfo)
 		 * and DB 2.0 doesn't.
 		 *
 		 * !!!
+		 * Setting the file name to NULL specifies that we're creating
+		 * a temporary backing file, in DB 2.X.  If we're opening the
+		 * DB file read-only, change the flags to read-write, because
+		 * temporary backing files cannot be opened read-only, and DB
+		 * 2.X will return an error.  We are cheating here -- if the
+		 * application does a put on the database, it will succeed --
+		 * although that would be a stupid thing for the application
+		 * to do.
+		 *
+		 * !!!
 		 * Note, the file name in DB 1.85 was a const -- we don't do
 		 * that in DB 2.0, so do that cast.
 		 */
@@ -121,6 +131,10 @@ dbopen(file, oflags, mode, type, openinfo)
 			if (oflags & O_CREAT && __db_exists(file, NULL) != 0)
 				(void)__os_close(__os_open(file, oflags, mode));
 			dbinfop->re_source = (char *)file;
+
+			if (O_RDONLY)
+				oflags &= ~O_RDONLY;
+			oflags |= O_RDWR;
 			file = NULL;
 		}
 

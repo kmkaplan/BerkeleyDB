@@ -1,13 +1,13 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)java_DbInfo.cpp	10.1 (Sleepycat) 11/10/97";
+static const char sccsid[] = "@(#)java_DbInfo.cpp	10.3 (Sleepycat) 4/10/98";
 #endif /* not lint */
 
 #include <jni.h>
@@ -29,10 +29,13 @@ JAVADB_RW_ACCESS(DbInfo, jint, h_1nelem, DB_INFO, h_nelem)
 JAVADB_RW_ACCESS(DbInfo, jint, re_1pad, DB_INFO, re_pad)
 JAVADB_RW_ACCESS(DbInfo, jint, re_1delim, DB_INFO, re_delim)
 JAVADB_RW_ACCESS(DbInfo, jint, re_1len, DB_INFO, re_len)
-// TODO: JAVADB_RW_ACCESS_STRING(DbInfo, re_1len, DB_INFO, re_source)
+// TODO: JAVADB_RW_ACCESS_STRING(DbInfo, re_1source, DB_INFO, re_source)
 JAVADB_RW_ACCESS(DbInfo, jint, flags, DB_INFO, flags)
 
 
+/* Initialize one DbInfo object from another.
+ * If jthat is null, make this a default initialization.
+ */
 JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_init_1from
   (JNIEnv *jnienv, jobject jthis, /*DbInfo*/ jobject jthat)
 {
@@ -43,6 +46,7 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbInfo_init_1from
     }
     else {
         memset(dbthis, 0, sizeof(DB_INFO));
+        dbthis->db_malloc = java_db_malloc;
     }
     set_private_info(jnienv, name_DB_INFO, jthis, dbthis);
 }

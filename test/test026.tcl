@@ -1,18 +1,21 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test026.tcl	8.2 (Sleepycat) 9/27/97
+#	@(#)test026.tcl	8.5 (Sleepycat) 4/25/98
 #
 # DB Test 26 {access method}
 # Keyed delete test through cursor.
 # If ndups is small; this will test on-page dups; if it's large, it
 # will test off-page dups.
 proc test026 { method {nentries 2000} {ndups 5} {tnum 26} args} {
+	set omethod $method
 	set method [convert_method $method]
-	if { [string compare $method DB_RECNO] == 0 } {
-		puts "Test0$tnum skipping for method RECNO"
+	set args [convert_args $method $args]
+	if { [string compare $method DB_RECNO] == 0 || \
+	    [is_rbtree $omethod] == 1 } {
+		puts "Test0$tnum skipping for method $omethod"
 		return
 	}
 	puts "Test0$tnum: $method ($args) $nentries keys with $ndups dups; cursor delete test"
@@ -32,8 +35,10 @@ proc test026 { method {nentries 2000} {ndups 5} {tnum 26} args} {
 
 	puts "Test0$tnum.a: Put loop"
 	cleanup $testdir
+	set args [add_to_args $DB_DUP $args]
 	set db [eval [concat dbopen $testfile \
-	    [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method -flags $DB_DUP $args]]
+	    [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	set did [open $dict]
 	while { [gets $did str] != -1 && $count < [expr $nentries * $ndups] } {
 		set datastr [ make_data_str $str ]
@@ -47,6 +52,7 @@ proc test026 { method {nentries 2000} {ndups 5} {tnum 26} args} {
 
 	error_check_good db_close [$db close] 0
 	set db [ dbopen $testfile 0 0 DB_UNKNOWN ]
+	error_check_good dbopen [is_valid_db $db] TRUE
 
 	# Now we will sequentially traverse the database getting each
 	# item and deleting it.
@@ -84,6 +90,7 @@ proc test026 { method {nentries 2000} {ndups 5} {tnum 26} args} {
 	puts "Test0$tnum.c: Verify empty file"
 	# Double check that file is now empty
 	set db [ dbopen $testfile 0 0 DB_UNKNOWN ]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	set dbc [$db cursor $txn]
 	error_check_good db_cursor [is_substr $dbc $db] 1
 	set ret [$dbc get 0 $DB_FIRST]

@@ -8,7 +8,7 @@ SSYYNNOOPPSSIISS
 
        ssttaattiicc iinntt
        DDbbMMppooooll::::ooppeenn((cchhaarr **ddiirr,,
-            iinntt ffllaaggss,, iinntt mmooddee,, DDbbEEnnvv **ddbbeennvv,, DDbbMMppooooll ****rreeggiioonnpp));;
+            uu__iinntt3322__tt ffllaaggss,, iinntt mmooddee,, DDbbEEnnvv **ddbbeennvv,, DDbbMMppooooll ****rreeggiioonnpp));;
 
        iinntt
        DDbbMMppooooll::::cclloossee(());;
@@ -49,12 +49,12 @@ DDEESSCCRRIIPPTTIIOONN
        The  _D_b_M_p_o_o_l(3) and _D_b_M_p_o_o_l_F_i_l_e(3) classes are the library
        interface intended to provide  general-purpose,  page-ori-
        ented  buffer  management  of  one  or  more files.  While
-       designed to work with the other Db functions, these  func-
-       tions are also useful for more general purposes.  The mem-
-       ory pools (DbMpool's) are referred to in this document  as
-       simply  ``pools''.  Pools may be shared between processes.
-       Pools are usually filled by pages from one or  more  files
-       (DbMpoolFile's).   Pages  in  the pool are replaced in LRU
+       designed to work with the other Db classes, this class  is
+       also  useful  for more general purposes.  The memory pools
+       (DbMpool's) are referred to in  this  document  as  simply
+       ``pools''.   Pools may be shared between processes.  Pools
+       are usually filled by pages from one or more  files  (DbM-
+       poolFile's).   Pages  in  the  pool  are  replaced  in LRU
        (least-recently-used) order, with each new page  replacing
        the   page  that  has  been  unused  the  longest.   Pages
        retrieved  from  the  pool  using   _D_b_M_p_o_o_l_F_i_l_e_:_:_g_e_t   are
@@ -148,23 +148,23 @@ DDEESSCCRRIIPPTTIIOONN
             _D_b_E_n_v(3).
 
        size_t mp_mmapsize;
-             Files that are opened read-only  in  the  pool  (and
-            that  satisfy  a few other criteria) are, by default,
-            mapped into the  process  address  space  instead  of
-            being  copied  into the local cache.  This can result
-            in better-than-usual performance, as  available  vir-
-            tual  memory  is  normally much larger than the local
-            cache, and page faults are faster than  page  copying
-            on many systems.  However, in the presence of limited
-            virtual memory it can cause resource starvation,  and
-            in  the presence of large databases, it can result in
-            immense process sizes.  If _m_p___m_m_a_p_s_i_z_e  is  non-zero,
-            it  specifies  the maximum file size for a file to be
-            mapped into the process address space.   By  default,
-            it is set to 10Mb.
+            Files that are opened read-only in the pool (and that
+            satisfy a few other criteria) are, by default, mapped
+            into the  process  address  space  instead  of  being
+            copied into the local cache.  This can result in bet-
+            ter-than-usual performance, as available virtual mem-
+            ory is normally much larger than the local cache, and
+            page faults are faster than page copying on many sys-
+            tems.   However,  in  the presence of limited virtual
+            memory it can cause resource starvation, and  in  the
+            presence of large databases, it can result in immense
+            process sizes.  If _m_p___m_m_a_p_s_i_z_e is non-zero, it speci-
+            fies  the  maximum file size, in bytes, for a file to
+            be  mapped  into  the  process  address  space.    By
+            default, it is set to 10Mb.
 
        size_t mp_size;
-              The  suggested  size  of  the pool, in bytes.  This
+            The  suggested  size  of  the  pool,  in bytes.  This
             should be the size of the normal working data set  of
             the application, with some small amount of additional
             memory for unusual situations.   (Note,  the  working
@@ -179,17 +179,18 @@ DDEESSCCRRIIPPTTIIOONN
   _D_b_M_p_o_o_l_:_:_c_l_o_s_e
        The _D_b_M_p_o_o_l_:_:_c_l_o_s_e method closes the pool indicated by the
        DbMpool object, as returned by _D_b_M_p_o_o_l_:_:_o_p_e_n.  This method
-       does  not  imply  a  call to _D_b_M_p_o_o_l_F_i_l_e_:_:_s_y_n_c (or to _D_b_M_-
-       _p_o_o_l_F_i_l_e_:_:_c_l_o_s_e) i.e. no pages are written to  the  source
-       file as as a result of calling _D_b_M_p_o_o_l_:_:_c_l_o_s_e.
+       does not imply a call to _D_b_M_p_o_o_l_F_i_l_e_:_:_s_y_n_c, but does imply
+       a call to _D_b_M_p_o_o_l_F_i_l_e_:_:_c_l_o_s_e for any remaining  open  DbM-
+       poolFile objects returned to this process by calls to _D_b_M_-
+       _p_o_o_l_F_i_l_e_:_:_o_p_e_n.
 
        In addition, if the _d_i_r argument to _D_b_M_p_o_o_l_:_:_o_p_e_n was NULL
-       and _d_b_e_n_v was not initialized  using  _D_b_E_n_v_:_:_a_p_p_i_n_i_t,  all
-       files  created  for this shared region will be removed, as
+       and  _d_b_e_n_v  was  not initialized using _D_b_E_n_v_:_:_a_p_p_i_n_i_t, all
+       files created for this shared region will be  removed,  as
        if _D_b_M_p_o_o_l_:_:_u_n_l_i_n_k were called.
 
        When multiple threads are using the DbMpool handle concur-
-       rently,  only  a single thread may call the _D_b_M_p_o_o_l_:_:_c_l_o_s_e
+       rently, only a single thread may call  the  _D_b_M_p_o_o_l_:_:_c_l_o_s_e
        method.
 
        The  _D_b_M_p_o_o_l_:_:_c_l_o_s_e  method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)  or
@@ -197,119 +198,166 @@ DDEESSCCRRIIPPTTIIOONN
 
 
   _D_b_M_p_o_o_l_:_:_u_n_l_i_n_k
-       The  _D_b_M_p_o_o_l_:_:_u_n_l_i_n_k method destroys the memory pool iden-
-       tified by the directory _d_i_r, removing all  files  used  to
-       implement  the  memory  pool.   (The  directory _d_i_r is not
-       removed.)  If there are processes that  have  called  _D_b_M_-
+       The _D_b_M_p_o_o_l_:_:_u_n_l_i_n_k method destroys the memory pool  iden-
+       tified  by  the  directory _d_i_r, removing all files used to
+       implement the memory pool.   (The  directory  _d_i_r  is  not
+       removed.)   If  there  are processes that have called _D_b_M_-
        _p_o_o_l_:_:_o_p_e_n without calling _D_b_M_p_o_o_l_:_:_c_l_o_s_e (i.e., there are
-       processes  currently  using   the   memory   pool),   _D_b_M_-
-       _p_o_o_l_:_:_u_n_l_i_n_k  will fail without further action, unless the
-       force flag is set,  in  which  case  _D_b_M_p_o_o_l_:_:_u_n_l_i_n_k  will
-       attempt  to remove the memory pool files regardless of any
+       processes   currently   using   the   memory  pool),  _D_b_M_-
+       _p_o_o_l_:_:_u_n_l_i_n_k will fail without further action, unless  the
+       force  flag  is  set,  in  which case _D_b_M_p_o_o_l_:_:_u_n_l_i_n_k will
+       attempt to remove the memory pool files regardless of  any
        processes still using the memory pool.
 
-       The result of attempting to forcibly  destroy  the  region
-       when  a  process has the region open is unspecified.  Pro-
-       cesses using a shared memory region maintain an open  file
-       descriptor  for  it.   On UNIX systems, the region removal
-       should succeed and processes that have already joined  the
-       region  should  continue  to  run  in  the  region without
-       change, however processes attempting to  join  the  memory
-       pool  will  either fail or attempt to create a new region.
-       On other systems, e.g., WNT, where  the  _u_n_l_i_n_k(2)  system
-       call  will fail if any process has an open file descriptor
+       The  result  of  attempting to forcibly destroy the region
+       when a process has the region open is  unspecified.   Pro-
+       cesses  using a shared memory region maintain an open file
+       descriptor for it.  On UNIX systems,  the  region  removal
+       should  succeed and processes that have already joined the
+       region should  continue  to  run  in  the  region  without
+       change,  however  processes  attempting to join the memory
+       pool will either fail or attempt to create a  new  region.
+       On  other  systems,  e.g., WNT, where the _u_n_l_i_n_k(2) system
+       call will fail if any process has an open file  descriptor
        for the file, the region removal will fail.
 
-
-       In the case of catastrophic or  system  failure,  database
-       recovery  must  be  performed  (see  _d_b___r_e_c_o_v_e_r(1)  or the
-       DB_RECOVER flags to _D_b_E_n_v_:_:_a_p_p_i_n_i_t(3)).  Alternatively, if
-       recovery  is  not  required  because  no database state is
-       maintained across failures, it is possible to clean  up  a
-       memory  pool by removing all of the files in the directory
-       specified to the  _D_b_M_p_o_o_l_:_:_o_p_e_n  method,  as  memory  pool
-       files  are  never  created in any directory other than the
-       one specified to _D_b_M_p_o_o_l_:_:_o_p_e_n.  Note, however, that  this
-       has  the potential to remove files created by the other DB
-       subsystems in this database environment.
+       In  the  case  of catastrophic or system failure, database
+       recovery must  be  performed  (see  _d_b___r_e_c_o_v_e_r(1)  or  the
+       DB_RECOVER      and      DB_RECOVER_FATAL     flags     to
+       _D_b_E_n_v_:_:_a_p_p_i_n_i_t(3)).  Alternatively,  if  recovery  is  not
+       required  because  no  database state is maintained across
+       failures, it is possible to clean  up  a  memory  pool  by
+       removing  all  of  the files in the directory specified to
+       the _D_b_M_p_o_o_l_:_:_o_p_e_n method, as memory pool files  are  never
+       created  in  any directory other than the one specified to
+       _D_b_M_p_o_o_l_:_:_o_p_e_n.  Note, however, that this has the potential
+       to remove files created by the other DB subsystems in this
+       database environment.
 
        The _D_b_M_p_o_o_l_:_:_u_n_l_i_n_k  method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)  or
        returns the value of _e_r_r_n_o on failure and 0 on success.
+
+  _D_b_M_p_o_o_l_:_:_d_b___r_e_g_i_s_t_e_r
+       The  _D_b_M_p_o_o_l_:_:_d_b___r_e_g_i_s_t_e_r  method  registers  page-in  and
+       page-out functions for files of type _f_t_y_p_e in  the  speci-
+       fied pool.
+
+       If the _p_g_i_n function is non-NULL, it is called each time a
+       page is read into the memory pool  from  a  file  of  type
+       _f_t_y_p_e,  or a page is created for a file of type _f_t_y_p_e (see
+       the DB_MPOOL_CREATE flag for the _D_b_M_p_o_o_l_F_i_l_e_:_:_g_e_t method).
+       If  the _p_g_o_u_t function is non-NULL, it is called each time
+       a page is written to a file of type _f_t_y_p_e.
+
+       Both the _p_g_i_n and _p_g_o_u_t functions are called with the page
+       number,  a  pointer to the page being read or written, and
+       any argument _p_g_c_o_o_k_i_e  that  was  specified  to  the  _D_b_M_-
+       _p_o_o_l_F_i_l_e_:_:_o_p_e_n  method when the file was opened.  The _p_g_i_n
+       and _p_g_o_u_t functions should return 0  on  success,  and  an
+       applicable  non-zero _e_r_r_n_o value on failure, in which case
+       the _D_b_M_p_o_o_l method calling it will  also  fail,  returning
+       that _e_r_r_n_o value.
+
+       The  purpose of the _D_b_M_p_o_o_l_:_:_d_b___r_e_g_i_s_t_e_r method is to sup-
+       port processing when pages are entered  into,  or  flushed
+       from,  the pool.  A file type must be specified to make it
+       possible for unrelated  threads  or  processes,  that  are
+       sharing a pool, to evict each other's pages from the pool.
+       Applications should call _D_b_M_p_o_o_l_:_:_d_b___r_e_g_i_s_t_e_r, during ini-
+       tialization, for each type of file requiring input or out-
+       put processing that will be sharing the  underlying  pool.
+       (No  registry  is necessary for the standard access method
+       types, btree, hash and  recno,  as  _D_b_:_:_o_p_e_n(3)  registers
+       them separately.)
+
+       If  a thread or process does not call _D_b_M_p_o_o_l_:_:_d_b___r_e_g_i_s_t_e_r
+       for a file type, it is impossible for it  to  evict  pages
+       for any file requiring input or output processing from the
+       pool.  For this reason, _D_b_M_p_o_o_l_:_:_d_b___r_e_g_i_s_t_e_r should always
+       be called by each application sharing a pool for each type
+       of file included in the pool, regardless of whether or not
+       the application itself uses files of that type.
+
+       There  are  no  standard values for _f_t_y_p_e, _p_g_i_n, _p_g_o_u_t and
+       _p_g_c_o_o_k_i_e, except that the _f_t_y_p_e value for a file must be a
+       non-zero positive number, as negative numbers are reserved
+       for internal use by the  DB  library.   For  this  reason,
+       applications  sharing  a pool must coordinate their values
+       amongst themselves.
 
        The _D_b_M_p_o_o_l_:_:_d_b___r_e_g_i_s_t_e_r method throws a _D_b_E_x_c_e_p_t_i_o_n(3) or
        returns the value of _e_r_r_n_o on failure and 0 on success.
 
   _D_b_M_p_o_o_l_:_:_t_r_i_c_k_l_e
        The _D_b_M_p_o_o_l_:_:_t_r_i_c_k_l_e method ensures that at least _p_c_t per-
-       cent  of  the pages in the shared memory pool are clean by
-       writing dirty  pages  to  their  backing  files.   If  the
-       _n_w_r_o_t_e_p  argument  is  non-NULL,  the number of pages that
-       were written to reach the correct percentage  is  returned
+       cent of the pages in the shared memory pool are  clean  by
+       writing  dirty  pages  to  their  backing  files.   If the
+       _n_w_r_o_t_e_p argument is non-NULL, the  number  of  pages  that
+       were  written  to reach the correct percentage is returned
        in the memory location it references.
 
-       The  purpose of the _D_b_M_p_o_o_l_:_:_t_r_i_c_k_l_e method is to enable a
+       The purpose of the _D_b_M_p_o_o_l_:_:_t_r_i_c_k_l_e method is to enable  a
        memory pool manager to ensure that a page is always avail-
        able for reading in new information without having to wait
        for a write.
 
-       The _D_b_M_p_o_o_l_:_:_t_r_i_c_k_l_e method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)  or
+       The  _D_b_M_p_o_o_l_:_:_t_r_i_c_k_l_e  method  throws  a _D_b_E_x_c_e_p_t_i_o_n(3) or
        returns the value of _e_r_r_n_o on failure and 0 on success.
 
   _D_b_M_p_o_o_l_:_:_s_y_n_c
-       The  _D_b_M_p_o_o_l_:_:_s_y_n_c  method  ensures  that all the modified
-       pages in the pool with log sequence  numbers  (LSNs)  less
+       The _D_b_M_p_o_o_l_:_:_s_y_n_c method ensures  that  all  the  modified
+       pages  in  the  pool with log sequence numbers (LSNs) less
        than the _l_s_n argument are written to disk.
 
-       The   _D_b_M_p_o_o_l_:_:_s_y_n_c  method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)  or
-       returns the value of _e_r_r_n_o on failure, 0 on  success,  and
+       The  _D_b_M_p_o_o_l_:_:_s_y_n_c  method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)   or
+       returns  the  value of _e_r_r_n_o on failure, 0 on success, and
        DB_INCOMPLETE if there were pages which need to be written
-       but which _D_b_M_p_o_o_l_:_:_s_y_n_c was unable to  write  immediately.
-       In  addition,  if _D_b_M_p_o_o_l_:_:_s_y_n_c returns success, the value
-       of _l_s_n will be overwritten with the largest LSN  from  any
-       page  which  was  written by _D_b_M_p_o_o_l_:_:_s_y_n_c to satisfy this
+       but  which  _D_b_M_p_o_o_l_:_:_s_y_n_c was unable to write immediately.
+       In addition, if _D_b_M_p_o_o_l_:_:_s_y_n_c returns success,  the  value
+       of  _l_s_n  will be overwritten with the largest LSN from any
+       page which was written by _D_b_M_p_o_o_l_:_:_s_y_n_c  to  satisfy  this
        request.
 
-       The purpose of the _D_b_M_p_o_o_l_:_:_s_y_n_c method  is  to  enable  a
-       transaction  manager  to  ensure, as part of a checkpoint,
-       that all pages modified by a certain time have been  writ-
-       ten  to  disk.   Pages in the pool which cannot be written
-       back to disk immediately (e.g., are currently pinned)  are
-       written  to  disk as soon as it is possible to do so.  The
-       expected behavior of the transaction manager  is  to  call
+       The  purpose  of  the  _D_b_M_p_o_o_l_:_:_s_y_n_c method is to enable a
+       transaction manager to ensure, as part  of  a  checkpoint,
+       that  all pages modified by a certain time have been writ-
+       ten to disk.  Pages in the pool which  cannot  be  written
+       back  to disk immediately (e.g., are currently pinned) are
+       written to disk as soon as it is possible to do  so.   The
+       expected  behavior  of  the transaction manager is to call
        the _D_b_M_p_o_o_l_:_:_s_y_n_c method and then, if the return indicates
-       that some pages could not be written immediately, to  wait
-       briefly  and  retry again with the same LSN until the _D_b_M_-
-       _p_o_o_l_:_:_s_y_n_c method returns that all pages have  been  writ-
-       ten.
+       that  some pages could not be written immediately, to wait
+       briefly and retry again with the same LSN until  the  _D_b_M_-
+       _p_o_o_l_:_:_s_y_n_c   method  returns  that  all  pages  have  been
+       written.
 
-       To  support  the _D_b_M_p_o_o_l_:_:_s_y_n_c functionality, it is neces-
-       sary that the pool functions know the location of the  LSN
-       on  the  page for each file type.  This location should be
-       specified  when  the  file  is  opened  using   the   _D_b_M_-
+       To support the _D_b_M_p_o_o_l_:_:_s_y_n_c functionality, it  is  neces-
+       sary that the pool methods know the location of the LSN on
+       the page for each file  type.   This  location  should  be
+       specified   when   the  file  is  opened  using  the  _D_b_M_-
        _p_o_o_l_F_i_l_e_:_:_o_p_e_n method.  (Note, it is not required that the
        LSN be aligned on the page in any way.)
 
   _D_b_M_p_o_o_l_:_:_s_t_a_t
 
-       The _D_b_M_p_o_o_l_:_:_s_t_a_t method  creates  statistical  structures
-       and  copies  pointers  to  them into user-specified memory
-       locations.  The statistics include  the  number  of  files
-       participating  in  the pool, the active pages in the pool,
+       The  _D_b_M_p_o_o_l_:_:_s_t_a_t  method  creates statistical structures
+       and copies pointers to  them  into  user-specified  memory
+       locations.   The  statistics  include  the number of files
+       participating in the pool, the active pages in  the  pool,
        and information as to how effective the cache has been.
 
-       Statistical structures are created  in  allocated  memory.
-       If  _d_b___m_a_l_l_o_c  is  non-NULL,  it is called to allocate the
+       Statistical  structures  are  created in allocated memory.
+       If _d_b___m_a_l_l_o_c is non-NULL, it is  called  to  allocate  the
        memory, otherwise, the library function _m_a_l_l_o_c(3) is used.
-       The  function _d_b___m_a_l_l_o_c must match the calling conventions
-       of the _m_a_l_l_o_c(3) library routine.  Regardless, the  caller
-       is  responsible  for deallocating the returned memory.  To
-       deallocate the returned memory, free each returned  memory
-       pointer;  pointers  inside  the  memory  do not need to be
+       The function _d_b___m_a_l_l_o_c must match the calling  conventions
+       of  the _m_a_l_l_o_c(3) library routine.  Regardless, the caller
+       is responsible for deallocating the returned  memory.   To
+       deallocate  the returned memory, free each returned memory
+       pointer; pointers inside the memory  do  not  need  to  be
        individually freed.
 
-
-       If _g_s_p is non-NULL, the global statistics for  the  memory
-       pool  object are copied into the memory location it refer-
+       If  _g_s_p  is non-NULL, the global statistics for the memory
+       pool object are copied into the memory location it  refer-
        ences.  The global statistics are stored in a structure of
        type DB_MPOOL_STAT (typedef'd in <db_cxx.h>).
 
@@ -317,103 +365,101 @@ DDEESSCCRRIIPPTTIIOONN
 
        size_t st_cachesize;
              Cache size in bytes.
-       unsigned long st_cache_hit;;
+       u_int32_t st_cache_hit;
             Requested pages found in the cache.
-       unsigned long st_cache_miss;;
+       u_int32_t st_cache_miss;
             Requested pages not found in the cache.
-       unsigned long st_map;;
-            Requested  pages  mapped  into  the  process' address
+       u_int32_t st_map;
+            Requested pages  mapped  into  the  process'  address
             space  (there  is  no  available  information  as  to
             whether or not this request caused disk I/O, although
-            examining the application  page  fault  rate  may  be
+            examining  the  application  page  fault  rate may be
             helpful).
-       unsigned long st_page_create;;
+       u_int32_t st_page_create;
             Pages created in the cache.
-       unsigned long st_page_in;;
+       u_int32_t st_page_in;
             Pages read into the cache.
-       unsigned long st_page_out;;
+       u_int32_t st_page_out;
             Pages written from the cache to the backing file.
-       unsigned long st_ro_evict;;
+       u_int32_t st_ro_evict;
             Clean pages forced from the cache.
-       unsigned long st_rw_evict;;
+       u_int32_t st_rw_evict;
             Dirty pages forced from the cache.
-       unsigned long st_hash_buckets;;
+       u_int32_t st_hash_buckets;
             Number of hash buckets in buffer hash table.
-       unsigned long st_hash_searches;;
+       u_int32_t st_hash_searches;
             Total number of buffer hash table lookups.
-       unsigned long st_hash_longest;;
-            The  longest  chain  ever  encountered in buffer hash
+       u_int32_t st_hash_longest;
+            The longest chain ever  encountered  in  buffer  hash
             table lookups.
-       unsigned long st_hash_examined;;
-            Total number of hash elements traversed  during  hash
+       u_int32_t st_hash_examined;
+            Total  number  of hash elements traversed during hash
             table lookups.
-       unsigned long st_page_clean;;
+       u_int32_t st_page_clean;
             Clean pages currently in the cache.
-       unsigned long st_page_dirty;;
+       u_int32_t st_page_dirty;
             Dirty pages currently in the cache.
-       unsigned long st_page_trickle;;
+       u_int32_t st_page_trickle;
             Dirty pages written using the _m_e_m_p___t_r_i_c_k_l_e interface.
 
-
-       If _f_s_p is non-NULL, a pointer to a  NULL-terminated  vari-
-       able  length  array  of statistics for individual files in
+       If  _f_s_p  is non-NULL, a pointer to a NULL-terminated vari-
+       able length array of statistics for  individual  files  in
        the memory pool is copied into the memory location it ref-
-       erences.   If  no  individual files currently exist in the
+       erences.  If no individual files currently  exist  in  the
        memory pool, _f_s_p will be set to NULL.
 
-       The per-file statistics are stored in structures  of  type
-       DB_MPOOL_FSTAT  (typedef'd  in <db_cxx.h>).  The following
-       DB_MPOOL_FSTAT fields will be filled in for each  file  in
+       The  per-file  statistics are stored in structures of type
+       DB_MPOOL_FSTAT (typedef'd in <db_cxx.h>).   The  following
+       DB_MPOOL_FSTAT  fields  will be filled in for each file in
        the pool, i.e., each element of the array:
 
        char *file_name;
             The name of the file.
        size_t st_pagesize;
              Page size in bytes.
-       unsigned long st_cache_hit;;
+       u_int32_t st_cache_hit;
             Requested pages found in the cache.
-       unsigned long st_cache_miss;;
+       u_int32_t st_cache_miss;
             Requested pages not found in the cache.
-       unsigned long st_map;;
-            Requested  pages  mapped  into  the  process' address
+       u_int32_t st_map;
+            Requested pages  mapped  into  the  process'  address
             space.
-       unsigned long st_page_create;;
+       u_int32_t st_page_create;
             Pages created in the cache.
-       unsigned long st_page_in;;
+       u_int32_t st_page_in;
             Pages read into the cache.
-       unsigned long st_page_out;;
+       u_int32_t st_page_out;
             Pages written from the cache to the backing file.
 
-       The  _D_b_M_p_o_o_l_:_:_s_t_a_t  method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)   or
+       The   _D_b_M_p_o_o_l_:_:_s_t_a_t  method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)  or
        returns the value of _e_r_r_n_o on failure and 0 on success.
 
 EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
        The following environment variables affect the behavior of
        _D_b_M_p_o_o_l_F_i_l_e:
-
        DB_HOME
-            If the _d_b_e_n_v argument to _D_b_M_p_o_o_l_:_:_o_p_e_n  was  initial-
-            ized   using  _d_b___a_p_p_i_n_i_t,  the  environment  variable
-            DB_HOME may be used as the path of the database  home
-            for  the  interpretation  of the _d_i_r argument to _D_b_M_-
+            If  the  _d_b_e_n_v argument to _D_b_M_p_o_o_l_:_:_o_p_e_n was initial-
+            ized  using  _d_b___a_p_p_i_n_i_t,  the  environment   variable
+            DB_HOME  may be used as the path of the database home
+            for the interpretation of the _d_i_r  argument  to  _D_b_M_-
             _p_o_o_l_:_:_o_p_e_n, as described in _d_b___a_p_p_i_n_i_t(3).
 
        TMPDIR
-            If the _d_b_e_n_v argument to _D_b_M_p_o_o_l_:_:_o_p_e_n  was  NULL  or
-            not  initialized  using  _d_b___a_p_p_i_n_i_t,  the environment
+            If  the  _d_b_e_n_v  argument to _D_b_M_p_o_o_l_:_:_o_p_e_n was NULL or
+            not initialized  using  _d_b___a_p_p_i_n_i_t,  the  environment
             variable TMPDIR may be used as the directory in which
-            to  create  the memory pool, as described in the _D_b_M_-
+            to create the memory pool, as described in  the  _D_b_M_-
             _p_o_o_l_:_:_o_p_e_n section above.
 
 EERRRROORRSS
-       Methods marked as returning _e_r_r_n_o will, by default,  throw
+       Methods  marked as returning _e_r_r_n_o will, by default, throw
        an exception that encapsulates the error information.  The
        default error behavior can be changed, see _D_b_E_x_c_e_p_t_i_o_n(3).
 
-       The  _D_b_M_p_o_o_l_:_:_o_p_e_n  method  may  fail and throw a _D_b_E_x_c_e_p_-
+       The _D_b_M_p_o_o_l_:_:_o_p_e_n method may fail  and  throw  a  _D_b_E_x_c_e_p_-
        _t_i_o_n(3)
 
-       or return _e_r_r_n_o for any of the errors  specified  for  the
+       or  return  _e_r_r_n_o  for any of the errors specified for the
        following DB and library functions: DBmemp->pgin(3),
        DBmemp->pgout(3), DbLog::compare(3), DbLog::flush(3), DbM-
        pool::close(3), DbMpool::unlink(3), close(2), db_ver-
@@ -424,17 +470,17 @@ EERRRROORRSS
        unlink(2), and write(2).
 
        In addition, the _D_b_M_p_o_o_l_:_:_o_p_e_n method may fail and throw a
-       _D_b_E_x_c_e_p_t_i_o_n(3)  or  return  _e_r_r_n_o for the following condi-
+       _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for  the  following  condi-
        tions:
 
        [EAGAIN]
-            The shared memory region was locked and  (repeatedly)
+            The  shared memory region was locked and (repeatedly)
             unavailable.
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-            The  DB_THREAD  flag  was specified and spinlocks are
+            The DB_THREAD flag was specified  and  spinlocks  are
             not implemented for this architecture.
 
             A   NULL   pathname   was   specified   without   the
@@ -442,17 +488,17 @@ EERRRROORRSS
 
             The specified cache size was impossibly small.
 
-       The  _D_b_M_p_o_o_l_:_:_c_l_o_s_e  method  may fail and throw a _D_b_E_x_c_e_p_-
+       The _D_b_M_p_o_o_l_:_:_c_l_o_s_e method may fail and  throw  a  _D_b_E_x_c_e_p_-
        _t_i_o_n(3)
 
-       or return _e_r_r_n_o for any of the errors  specified  for  the
+       or  return  _e_r_r_n_o  for any of the errors specified for the
        following DB and library functions: DbMpoolFile::close(3),
        close(2), fcntl(2), fflush(3), munmap(2), and strerror(3).
 
-       The  _D_b_M_p_o_o_l_:_:_u_n_l_i_n_k  method may fail and throw a _D_b_E_x_c_e_p_-
+       The _D_b_M_p_o_o_l_:_:_u_n_l_i_n_k method may fail and throw  a  _D_b_E_x_c_e_p_-
        _t_i_o_n(3)
 
-       or return _e_r_r_n_o for any of the errors  specified  for  the
+       or  return  _e_r_r_n_o  for any of the errors specified for the
        following DB and library functions: close(2), fcntl(2),
        fflush(3), malloc(3), memcpy(3), memset(3), mmap(2), mun-
        map(2), open(2), sigfillset(3), sigprocmask(2), stat(2),
@@ -460,24 +506,24 @@ EERRRROORRSS
        unlink(2).
 
        In addition, the _D_b_M_p_o_o_l_:_:_u_n_l_i_n_k method may fail and throw
-       a _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for the following  condi-
+       a  _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for the following condi-
        tions:
 
        [EBUSY]
-            The  shared  memory  region  was in use and the force
+            The shared memory region was in  use  and  the  force
             flag was not set.
 
        The _D_b_M_p_o_o_l_:_:_d_b___r_e_g_i_s_t_e_r method may fail and throw a _D_b_E_x_-
        _c_e_p_t_i_o_n(3)
 
-       or  return  _e_r_r_n_o  for any of the errors specified for the
+       or return _e_r_r_n_o for any of the errors  specified  for  the
        following DB and library functions: fcntl(2), and mal-
        loc(3).
 
-       The  _D_b_M_p_o_o_l_:_:_t_r_i_c_k_l_e method may fail and throw a _D_b_E_x_c_e_p_-
+       The _D_b_M_p_o_o_l_:_:_t_r_i_c_k_l_e method may fail and throw a  _D_b_E_x_c_e_p_-
        _t_i_o_n(3)
 
-       or return _e_r_r_n_o for any of the errors  specified  for  the
+       or  return  _e_r_r_n_o  for any of the errors specified for the
        following DB and library functions: DBmemp->pgin(3),
        DBmemp->pgout(3), DbLog::compare(3), DbLog::flush(3),
        close(2), fcntl(2), fflush(3), fsync(2), lseek(2), mal-
@@ -486,17 +532,17 @@ EERRRROORRSS
        strdup(3), strerror(3), strlen(3), time(3), unlink(2), and
        write(2).
 
-       In  addition,  the  _D_b_M_p_o_o_l_:_:_t_r_i_c_k_l_e  method  may fail and
-       throw a _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for  the  following
+       In addition, the  _D_b_M_p_o_o_l_:_:_t_r_i_c_k_l_e  method  may  fail  and
+       throw  a  _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for the following
        conditions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-       The  _D_b_M_p_o_o_l_:_:_s_y_n_c  method  may  fail and throw a _D_b_E_x_c_e_p_-
+       The _D_b_M_p_o_o_l_:_:_s_y_n_c method may fail  and  throw  a  _D_b_E_x_c_e_p_-
        _t_i_o_n(3)
 
-       or return _e_r_r_n_o for any of the errors  specified  for  the
+       or  return  _e_r_r_n_o  for any of the errors specified for the
        following DB and library functions: DBmemp->pgin(3),
        DBmemp->pgout(3), DbLog::compare(3), DbLog::flush(3),
        close(2), fcntl(2), fflush(3), fsync(2), lseek(2), mal-
@@ -506,19 +552,19 @@ EERRRROORRSS
        time(3), unlink(2), and write(2).
 
        In addition, the _D_b_M_p_o_o_l_:_:_s_y_n_c method may fail and throw a
-       _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for  the  following  condi-
+       _D_b_E_x_c_e_p_t_i_o_n(3)  or  return  _e_r_r_n_o for the following condi-
        tions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-            The  _D_b_M_p_o_o_l_:_:_s_y_n_c  method was called without logging
+            The _D_b_M_p_o_o_l_:_:_s_y_n_c method was called  without  logging
             having been initialized in the environment.
 
-       The _D_b_M_p_o_o_l_:_:_s_t_a_t method may fail  and  throw  a  _D_b_E_x_c_e_p_-
+       The  _D_b_M_p_o_o_l_:_:_s_t_a_t  method  may  fail and throw a _D_b_E_x_c_e_p_-
        _t_i_o_n(3)
 
-       or  return  _e_r_r_n_o  for any of the errors specified for the
+       or return _e_r_r_n_o for any of the errors  specified  for  the
        following DB and library functions: fcntl(2), malloc(3),
        memcpy(3), and strlen(3).
 

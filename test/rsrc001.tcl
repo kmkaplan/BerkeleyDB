@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)rsrc001.tcl	8.6 (Sleepycat) 10/4/97
+#	@(#)rsrc001.tcl	8.8 (Sleepycat) 4/22/98
 #
 # Recno backing file test.
 # Try different patterns of adding records and making sure that the
@@ -34,6 +34,9 @@ proc rsrc001 { } {
 	close $oid1
 	close $oid2
 
+	sanitize_textfile $testdir/rsrc.txt
+	sanitize_textfile $testdir/check.txt
+
 	puts "Rsrc001.a: Read file, rewrite last record; write it out and diff"
 	set db [dbopen $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 DB_RECNO\
 		-recsrc rsrc.txt]
@@ -58,7 +61,6 @@ proc rsrc001 { } {
 		set laststr $str
 	}
 	close $oid
-
 	error_check_good getlast $data $laststr
 
 	set ret [$db put0 $txn $key $data 0]
@@ -80,6 +82,7 @@ proc rsrc001 { } {
 	}
 	error_check_good db_sync [$db sync 0] 0
 	close $oid
+	sanitize_textfile $testdir/check.txt
 	set ret [catch { exec $DIFF $testdir/rsrc.txt $testdir/check.txt } res]
 	error_check_good Rsrc001:diff($testdir/{rsrc.txt,check.txt}) $ret 0
 
@@ -95,6 +98,7 @@ proc rsrc001 { } {
 
 	error_check_good db_sync [$db sync 0] 0
 	close $oid
+	sanitize_textfile $testdir/check.txt
 	set ret [catch { exec $DIFF $testdir/rsrc.txt $testdir/check.txt } res]
 	error_check_good Rsrc001:diff($testdir/{rsrc.txt,check.txt}) $ret 0
 
@@ -112,6 +116,20 @@ proc rsrc001 { } {
 
 	error_check_good db_sync [$db sync 0] 0
 	close $oid
+	sanitize_textfile $testdir/check.txt
 	set ret [catch { exec $DIFF $testdir/rsrc.txt $testdir/check.txt } res]
 	error_check_good Rsrc001:diff($testdir/{rsrc.txt,check.txt}) $ret 0
+}
+
+# convert CR/LF to just LF.
+# Needed on Windows when a file is created as text but read as binary.
+proc sanitize_textfile { filename } {
+	global tcl_platform
+	source ./include.tcl
+
+	if { $tcl_platform(platform) == "windows" } {
+		set TR "c:/mksnt/tr.exe"
+		catch { exec $TR -d '\015' <$filename > $testdir/nonl.tmp } res
+		catch { exec $MV $testdir/nonl.tmp $filename } res
+	}
 }

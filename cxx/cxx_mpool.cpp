@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)cxx_mpool.cpp	10.6 (Sleepycat) 10/5/97";
+static const char sccsid[] = "@(#)cxx_mpool.cpp	10.9 (Sleepycat) 5/2/98";
 #endif /* not lint */
 
 #include "db_cxx.h"
@@ -31,15 +31,14 @@ DbMpoolFile::~DbMpoolFile()
 }
 
 int DbMpoolFile::open(DbMpool *mp, const char *file,
-                      int ftype, int flags, int mode,
-                      size_t pagesize, int lsn_offset,
-                      Dbt *pgcookie, u_int8_t *uid, DbMpoolFile **result)
+                      u_int32_t flags, int mode, size_t pagesize,
+                      DB_MPOOL_FINFO *finfop, DbMpoolFile **result)
 {
     int err;
 
     DB_MPOOLFILE *mpf;
-    if ((err = memp_fopen(unwrap(mp), file, ftype, flags, mode, pagesize,
-                          lsn_offset, pgcookie, uid, &mpf)) != 0) {
+    if ((err = memp_fopen(unwrap(mp), file, flags, mode, pagesize,
+                          finfop, &mpf)) != 0) {
         DB_ERROR("DbMpoolFile::open", err);
         return err;
     }
@@ -68,7 +67,7 @@ int DbMpoolFile::close()
     return 0;
 }
 
-int DbMpoolFile::get(db_pgno_t *pgnoaddr, int flags, void *pagep)
+int DbMpoolFile::get(db_pgno_t *pgnoaddr, u_int32_t flags, void *pagep)
 {
     DB_MPOOLFILE *mpf = unwrap(this);
     int err = 0;
@@ -81,7 +80,7 @@ int DbMpoolFile::get(db_pgno_t *pgnoaddr, int flags, void *pagep)
     return err;
 }
 
-int DbMpoolFile::put(void *pgaddr, int flags)
+int DbMpoolFile::put(void *pgaddr, u_int32_t flags)
 {
     DB_MPOOLFILE *mpf = unwrap(this);
     int err = 0;
@@ -94,7 +93,7 @@ int DbMpoolFile::put(void *pgaddr, int flags)
     return err;
 }
 
-int DbMpoolFile::set(void *pgaddr, int flags)
+int DbMpoolFile::set(void *pgaddr, u_int32_t flags)
 {
     DB_MPOOLFILE *mpf = unwrap(this);
     int err = 0;
@@ -216,7 +215,7 @@ int DbMpool::trickle(int pct, int *nwrotep)
     return err;
 }
 // static method
-int DbMpool::open(const char *dir, int flags, int mode,
+int DbMpool::open(const char *dir, u_int32_t flags, int mode,
                   DbEnv *dbenv, DbMpool **regionp)
 {
     *regionp = 0;

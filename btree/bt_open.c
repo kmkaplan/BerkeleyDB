@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -47,7 +47,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)bt_open.c	10.21 (Sleepycat) 10/25/97";
+static const char sccsid[] = "@(#)bt_open.c	10.26 (Sleepycat) 5/3/98";
 #endif /* not lint */
 
 /*
@@ -60,21 +60,16 @@ static const char sccsid[] = "@(#)bt_open.c	10.21 (Sleepycat) 10/25/97";
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #include <errno.h>
-#include <fcntl.h>
 #include <limits.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #endif
 
 #include "db_int.h"
 #include "db_page.h"
 #include "btree.h"
-#include "common_ext.h"
 
 static int __bam_keyalloc __P((BTREE *));
 static int __bam_setmeta __P((DB *, BTREE *));
@@ -265,18 +260,18 @@ __bam_setmeta(dbp, t)
 {
 	BTMETA *meta;
 	PAGE *root;
-	DB_LOCK mlock, rlock;
+	DB_LOCK metalock, rootlock;
 	db_pgno_t pgno;
 	int ret;
 
 	/* Get, and optionally create the metadata page. */
 	pgno = PGNO_METADATA;
 	if ((ret =
-	    __bam_lget(dbp, 0, PGNO_METADATA, DB_LOCK_WRITE, &mlock)) != 0)
+	    __bam_lget(dbp, 0, PGNO_METADATA, DB_LOCK_WRITE, &metalock)) != 0)
 		return (ret);
 	if ((ret =
 	    __bam_pget(dbp, (PAGE **)&meta, &pgno, DB_MPOOL_CREATE)) != 0) {
-		(void)__BT_LPUT(dbp, mlock);
+		(void)__BT_LPUT(dbp, metalock);
 		return (ret);
 	}
 
@@ -290,11 +285,12 @@ __bam_setmeta(dbp, t)
 		t->bt_minkey = meta->minkey;
 
 		(void)memp_fput(dbp->mpf, (PAGE *)meta, 0);
-		(void)__BT_LPUT(dbp, mlock);
+		(void)__BT_LPUT(dbp, metalock);
 		return (0);
 	}
 
 	/* Initialize the tree structure metadata information. */
+	memset(meta, 0, sizeof(BTMETA));
 	ZERO_LSN(meta->lsn);
 	meta->pgno = PGNO_METADATA;
 	meta->magic = DB_BTREEMAGIC;
@@ -303,7 +299,6 @@ __bam_setmeta(dbp, t)
 	meta->maxkey = t->bt_maxkey;
 	meta->minkey = t->bt_minkey;
 	meta->free = PGNO_INVALID;
-	meta->flags = 0;
 	if (dbp->type == DB_RECNO)
 		F_SET(meta, BTM_RECNO);
 	if (F_ISSET(dbp, DB_AM_DUP))
@@ -314,16 +309,15 @@ __bam_setmeta(dbp, t)
 		F_SET(meta, BTM_RECNUM);
 	if (F_ISSET(dbp, DB_RE_RENUMBER))
 		F_SET(meta, BTM_RENUMBER);
-	meta->re_len = 0;
-	meta->re_pad = 0;
 	memcpy(meta->uid, dbp->lock.fileid, DB_FILE_ID_LEN);
 
 	/* Create and initialize a root page. */
 	pgno = PGNO_ROOT;
-	if ((ret = __bam_lget(dbp, 0, PGNO_ROOT, DB_LOCK_WRITE, &rlock)) != 0)
+	if ((ret =
+	    __bam_lget(dbp, 0, PGNO_ROOT, DB_LOCK_WRITE, &rootlock)) != 0)
 		return (ret);
 	if ((ret = __bam_pget(dbp, &root, &pgno, DB_MPOOL_CREATE)) != 0) {
-		(void)__BT_LPUT(dbp, rlock);
+		(void)__BT_LPUT(dbp, rootlock);
 		return (ret);
 	}
 	P_INIT(root, dbp->pgsize, PGNO_ROOT, PGNO_INVALID,
@@ -348,8 +342,8 @@ __bam_setmeta(dbp, t)
 		ret = EINVAL;
 
 	/* Release the locks. */
-	(void)__BT_LPUT(dbp, mlock);
-	(void)__BT_LPUT(dbp, rlock);
+	(void)__BT_LPUT(dbp, metalock);
+	(void)__BT_LPUT(dbp, rootlock);
 
 	return (ret);
 }

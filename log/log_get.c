@@ -1,23 +1,20 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)log_get.c	10.22 (Sleepycat) 11/22/97";
+static const char sccsid[] = "@(#)log_get.c	10.31 (Sleepycat) 4/26/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
 #include <errno.h>
-#include <fcntl.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #endif
 
 #include "db_int.h"
@@ -36,9 +33,8 @@ log_get(dblp, alsn, dbt, flags)
 	DB_LOG *dblp;
 	DB_LSN *alsn;
 	DBT *dbt;
-	int flags;
+	u_int32_t flags;
 {
-	LOG *lp;
 	int ret;
 
 	/* Validate arguments. */
@@ -65,8 +61,6 @@ log_get(dblp, alsn, dbt, flags)
 		if (!F_ISSET(dbt, DB_DBT_USERMEM | DB_DBT_MALLOC))
 			return (__db_ferr(dblp->dbenv, "threaded data", 1));
 	}
-
-	lp = dblp->lp;
 
 	LOCK_LOGREGION(dblp);
 
@@ -97,14 +91,15 @@ log_get(dblp, alsn, dbt, flags)
  * __log_get --
  *	Get a log record; internal version.
  *
- * PUBLIC: int __log_get __P((DB_LOG *, DB_LSN *, DBT *, int, int));
+ * PUBLIC: int __log_get __P((DB_LOG *, DB_LSN *, DBT *, u_int32_t, int));
  */
 int
 __log_get(dblp, alsn, dbt, flags, silent)
 	DB_LOG *dblp;
 	DB_LSN *alsn;
 	DBT *dbt;
-	int flags, silent;
+	u_int32_t flags;
+	int silent;
 {
 	DB_LSN nlsn;
 	HDR hdr;
@@ -122,7 +117,7 @@ __log_get(dblp, alsn, dbt, flags, silent)
 	nlsn = dblp->c_lsn;
 	switch (flags) {
 	case DB_CHECKPOINT:
-		nlsn = dblp->lp->c_lsn;
+		nlsn = lp->chkpt_lsn;
 		if (IS_ZERO_LSN(nlsn)) {
 			__db_err(dblp->dbenv,
 	"log_get: unable to find checkpoint record: no checkpoint set.");
@@ -138,26 +133,18 @@ __log_get(dblp, alsn, dbt, flags, silent)
 		}
 		/* FALLTHROUGH */
 	case DB_FIRST:				/* Find the first log record. */
-		/*
-		 * Find any log file.  Note, we may have only entered records
-		 * in the buffer, and not yet written a log file.
-		 */
-		if ((ret = __log_find(dblp, &cnt)) != 0) {
-			__db_err(dblp->dbenv,
-	"log_get: unable to find the first record: no log files found.");
+		/* Find the first log file. */
+		if ((ret = __log_find(dblp, 1, &cnt)) != 0)
 			goto err2;
-		}
 
-		/* If there's anything in the buffer, it belongs to file 1. */
+		/*
+		 * We may have only entered records in the buffer, and not
+		 * yet written a log file.  If no log files were found and
+		 * there's anything in the buffer, it belongs to file 1.
+		 */
 		if (cnt == 0)
 			cnt = 1;
 
-		/* Now go backwards to find the smallest one. */
-		for (; cnt > 1; --cnt)
-			if (__log_valid(dblp, NULL, cnt) != 0) {
-				++cnt;
-				break;
-			}
 		nlsn.file = cnt;
 		nlsn.offset = 0;
 		break;
@@ -227,7 +214,8 @@ retry:
 	}
 
 	/* Seek to the header offset and read the header. */
-	if ((ret = __db_seek(dblp->c_fd, 0, 0, nlsn.offset, SEEK_SET)) != 0) {
+	if ((ret =
+	    __db_seek(dblp->c_fd, 0, 0, nlsn.offset, 0, SEEK_SET)) != 0) {
 		fail = "seek";
 		goto err1;
 	}
@@ -280,7 +268,13 @@ retry:
 		goto cksum;
 	}
 
-	/* Allocate temporary memory to hold the record. */
+	/*
+	 * Allocate temporary memory to hold the record.
+	 *
+	 * XXX
+	 * We're calling malloc(3) with a region locked.  This isn't
+	 * a good idea.
+	 */
 	if ((tbuf = (char *)__db_malloc(len)) == NULL) {
 		ret = ENOMEM;
 		goto err1;

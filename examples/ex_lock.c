@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)ex_lock.c	10.12 (Sleepycat) 11/10/97
+ *	@(#)ex_lock.c	10.14 (Sleepycat) 4/10/98
  */
 
 #include "config.h"
@@ -26,7 +26,7 @@
 #define	LOCK_HOME	"/var/tmp/lock"
 #endif
 
-DB_ENV *db_init(char *, int, int);
+DB_ENV *db_init(char *, u_int32_t, int);
 int	main __P((int, char *[]));
 void	usage(void);
 
@@ -45,8 +45,8 @@ main(argc, argv)
 	DB_LOCK lock;
 	db_lockmode_t lock_type;
 	long held;
-	u_int32_t len, locker;
-	int ch, do_unlink, did_get, maxlocks, ret;
+	u_int32_t len, locker, maxlocks;
+	int ch, do_unlink, did_get, i, ret;
 	char *home, opbuf[16], objbuf[1024], lockbuf[16];
 
 	home = LOCK_HOME;
@@ -58,8 +58,9 @@ main(argc, argv)
 			home = optarg;
 			break;
 		case 'm':
-			if ((maxlocks = atoi(optarg)) <= 0)
+			if ((i = atoi(optarg)) <= 0)
 				usage();
+			maxlocks = (u_int32_t)i;  /* XXX: possible overflow. */
 			break;
 		case 'u':
 			do_unlink = 1;
@@ -75,7 +76,7 @@ main(argc, argv)
 		usage();
 
 	/* Initialize the database environment. */
-	dbenv = db_init(home, do_unlink, maxlocks);
+	dbenv = db_init(home, maxlocks, do_unlink);
 
 	/*
 	 * Accept lock requests.
@@ -168,10 +169,10 @@ main(argc, argv)
  *	Initialize the environment.
  */
 DB_ENV *
-db_init(home, rem, maxlocks)
+db_init(home, maxlocks, do_unlink)
 	char *home;
-	int rem;
-	int maxlocks;
+	u_int32_t maxlocks;
+	int do_unlink;
 {
 	DB_ENV *dbenv;
 
@@ -182,10 +183,10 @@ db_init(home, rem, maxlocks)
 	}
 	dbenv->db_errfile = stderr;
 	dbenv->db_errpfx = progname;
-	dbenv->lk_max = (unsigned int)maxlocks;
+	dbenv->lk_max = maxlocks;
 
 	/* Open for naming only if we need to remove the old lock region. */
-	if (rem) {
+	if (do_unlink) {
 		if ((errno = db_appinit(home, NULL, dbenv, 0)) != 0)
 			fprintf(stderr,
 			    "%s: db_appinit: %s", progname, strerror(errno));

@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)bug007.tcl	8.1 (Sleepycat) 11/9/97
+#	@(#)bug007.tcl	8.2 (Sleepycat) 4/10/98
 #
 # Bug Test001:
 # Make sure that we handle retrieves of zero-length data items correctly.

@@ -2,18 +2,18 @@
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)DbEnv.sox	10.7 (Sleepycat) 11/25/97
+.\"	@(#)DbEnv.sox	10.17 (Sleepycat) 5/1/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)macros.so	10.36 (Sleepycat) 11/28/97
+.\"	@(#)macros.so	10.45 (Sleepycat) 5/4/98
 .\"
 .\" We don't want hyphenation for any HTML documents.
 .ie '\*[HTML]'YES'\{\
@@ -54,19 +54,18 @@
 \}
 ..
 .\" Scoped name for Java.
-.\" Produces a.b, for Java, otherwise just b.
-.\" This macro is used for constants that must
-.\" be scoped in Java, but are global otherwise.
+.\" Produces Db.b, for Java, otherwise just b.  This macro is used for
+.\" constants that must be scoped in Java, but are global otherwise.
 .\" This macro takes two arguments:
 .\"	+ the class
 .\"	+ the name within the class or following the prefix
 .de Sj
 .ie '\*[TYPE]'JAVA'\{\
 .TP 5
-\\$1.\\$2\}
+Db.\\$1\}
 .el\{\
 .TP 5
-\\$2\}
+\\$1\}
 ..
 .\" The general information text macro.
 .de Gn
@@ -210,7 +209,9 @@ The default error behavior can be changed, see
 .IR DbLog (3),
 .IR DbLsn (3),
 .IR DbMpool (3),
+.if !'\*[TYPE]'JAVA'\{\
 .IR DbMpoolFile (3),
+\}
 .IR Dbt (3),
 .IR DbTxn (3),
 .IR DbTxnMgr (3)
@@ -360,8 +361,15 @@ based on the
 argument to
 .IR \\$1 ,
 which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
-It is expected that applications will use a single DB_ENV structure as the
-argument to all of the subsystems in the DB package.
+Applications will normally use the same DB_ENV structure (initialized
+by
+.IR db_appinit (3)),
+as an argument to all of the subsystems in the DB package.
+.PP
+References to the DB_ENV structure are maintained by DB,
+so it may not be discarded until the last close function,
+corresponding to an open function for which it was an argument,
+has returned.
 In order to ensure compatibility with future releases of DB, all fields of
 the DB_ENV structure that are not explicitly set should be initialized to 0
 before the first time the structure is used.
@@ -432,7 +440,7 @@ appropriate set method, before calling
 ..
 .\" The DB_ENV common fields macros.
 .de Se
-.ie '\*[TYPE]'JAVA'\{\
+.if '\*[TYPE]'JAVA'\{\
 .TP 5
 DbErrcall db_errcall;
 .ns
@@ -444,7 +452,6 @@ int db_verbose;
 The error fields of the DbEnv behave as described for
 .IR DbEnv (3).
 \}
-.el\{\
 .ie '\*[TYPE]'CXX'\{\
 .TP 5
 void *(*db_errcall)(char *db_errpfx, char *buffer);
@@ -476,7 +483,7 @@ const char *db_errpfx;
 int db_verbose;
 The error fields of the DB_ENV behave as described for
 .IR db_appinit (3).
-\}
+.sp
 \}
 ..
 .\" The open flags.
@@ -490,7 +497,7 @@ don't already exist.
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
-.Sj Db DB_CREATE
+.Sj DB_CREATE
 Create any underlying files, as necessary.
 If the files do not already exist and the DB_CREATE flag is not specified,
 the call will fail.
@@ -501,12 +508,17 @@ the call will fail.
 .\"	+ the object it returns.
 .de Ft
 .TP 5
-.Sj Db DB_THREAD
+.Sj DB_THREAD
 Cause the \\$2 handle returned by the
 .I \\$1
 .Al function method
 to be useable by multiple threads within a single address space,
 i.e., to be ``free-threaded''.
+.if '\*[TYPE]'JAVA'\{\
+Threading is assumed in the Java API,
+so no special flags are required,
+and DB functions will always behave as if the DB_THREAD flag was specified.
+\}
 ..
 .\" The mode macro.
 .\" This macro takes one argument:
@@ -736,7 +748,7 @@ the region removal will fail.
 In the case of catastrophic or system failure,
 database recovery must be performed (see
 .IR db_recover (1)
-or the DB_RECOVER flags to
+or the DB_RECOVER and DB_RECOVER_FATAL flags to
 .IR \\*(Va (3)).
 Alternatively, if recovery is not required because no database state is
 maintained across failures,
@@ -847,7 +859,7 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH DbEnv 3 "November 25, 1997"
+.TH DbEnv 3 "May 1, 1998"
 .UC 7
 .SH NAME
 DbEnv \- Db initialization and environment options
@@ -857,13 +869,13 @@ DbEnv \- Db initialization and environment options
 .ie '\*[TYPE]'CXX'\{
 #include <db_cxx.h>
 
-DbEnv::DbEnv(const char *db_home, char *const *db_config, int flags);
+DbEnv::DbEnv(const char *db_home, char *const *db_config, u_int32_t flags);
 DbEnv::DbEnv();
 DbEnv::~DbEnv();
 
 int DbEnv::appinit(const char *db_home,
 .ti +5
-char *const *db_config, int flags);
+char *const *db_config, u_int32_t flags);
 
 int DbEnv::get_lorder() const;
 void DbEnv::set_lorder(int);
@@ -893,29 +905,19 @@ void DbEnv::set_tmp_dir(char *);
 char DbEnv::**get_data_dir() const;
 void DbEnv::set_data_dir(char **);
 
-int DbEnv::get_data_cnt() const;
-void DbEnv::set_data_cnt(int);
-
-int DbEnv::get_data_next() const;
-void DbEnv::set_data_next(int);
-
 DbLockTab DbEnv::*get_lk_info() const;
 
 u_int8_t DbEnv::*get_lk_conflicts() const;
 void DbEnv::set_lk_conflicts(u_int8_t *);
 
-int DbEnv::get_lk_modes() const;
-void DbEnv::set_lk_modes(int);
+u_int32_t DbEnv::get_lk_modes() const;
+void DbEnv::set_lk_modes(u_int32_t);
 
-unsigned int DbEnv::get_lk_max() const;
-void DbEnv::set_lk_max(unsigned int);
+u_int32_t DbEnv::get_lk_max() const;
+void DbEnv::set_lk_max(u_int32_t);
 
 u_int32_t DbEnv::get_lk_detect() const;
 void DbEnv::set_lk_detect(u_int32_t);
-
-typedef int (*db_yield_fcn) (void);
-db_yield_fcn DbEnv::get_yield() const;
-void DbEnv::set_yield(db_yield_fcn);
 
 DbLog DbEnv::*get_lg_info() const;
 
@@ -932,8 +934,8 @@ void DbEnv::set_mp_size(size_t);
 
 DbTxnMgr DbEnv::*get_tx_info() const;
 
-unsigned int DbEnv::get_tx_max() const;
-void DbEnv::set_tx_max(unsigned int);
+u_int32_t DbEnv::get_tx_max() const;
+void DbEnv::set_tx_max(u_int32_t);
 
 typedef int (*tx_recover_fcn)(DB_LOG *, DBT *, DB_LSN *, int, void *);
 tx_recover_fcn DbEnv::get_tx_recover() const;
@@ -986,12 +988,6 @@ public void set_log_dir(String log_dir);
 
 public String get_tmp_dir();
 public void set_tmp_dir(String tmp_dir);
-
-public int get_data_cnt();
-public void set_data_cnt(int data_cnt);
-
-public int get_data_next();
-public void set_data_next(int data_next);
 
 public DbLockTab get_lk_info();
 
@@ -1091,11 +1087,13 @@ The
 argument specifies the subsystems that are initialized
 and how the environment affects Db file naming,
 among other things.
-The flags value is specified by
+The
+.I flags
+value is specified by
 .BR or 'ing
 together one or more of the following values:
 .TP 5
-.Sj Db DB_CREATE
+.Sj DB_CREATE
 Cause subsystems to create any underlying files, as necessary.
 (See
 .IR Db (3),
@@ -1106,7 +1104,7 @@ and
 .IR DbTxnMgr (3)
 for more information.)
 .TP 5
-.Sj Db DB_INIT_LOCK
+.Sj DB_INIT_LOCK
 Initialize the lock subsystem; see
 .IR DbLockTab (3).
 This subsystem should be used when multiple processes or threads are
@@ -1119,52 +1117,68 @@ to run the deadlock detector,
 .IR db_deadlock (1),
 as well.
 .TP 5
-.Sj Db DB_INIT_LOG
+.Sj DB_INIT_LOG
 Initialize the log subsystem; see
 .IR DbLog (3).
 This subsystem is used when recovery from application or system
 failure is important.
 .TP 5
-.Sj Db DB_INIT_MPOOL
+.Sj DB_INIT_MPOOL
 Initialize the mpool subsystem; see
 .IR DbMpool (3).
 This subsystem is used whenever the application is using the Db access
 methods for any purpose.
 .TP 5
-.Sj Db DB_INIT_TXN
+.Sj DB_INIT_TXN
 Initialize the transaction subsystem; see
 .IR DbTxn (3).
 This subsystem is used when atomicity of multiple operations
 and recovery are important.
 The DB_INIT_TXN flag implies the DB_INIT_LOG flag.
 .TP 5
-.Sj Db DB_MPOOL_PRIVATE
+.Sj DB_MPOOL_PRIVATE
 Create a private memory pool (see
 .IR DbMpool (3)
 for further information).
 Ignored unless DB_INIT_MPOOL is also specified.
 .TP 5
-.Sj Db DB_NOMMAP
+.Sj DB_NOMMAP
 Do not map any files within this environment (see
 .IR DbMpool (3)
 for further information).
 Ignored unless DB_INIT_MPOOL is also specified.
 .TP 5
-.Sj Db DB_RECOVER
+.Sj DB_RECOVER
 Run normal recovery on this environment before opening it for normal use.
-If this flag is set, the DB_CREATE, DB_INIT_TXN, and DB_INIT_LOG flags
-must also be set since the regions will be removed and recreated.
+If this flag is set, the DB_CREATE flag must also be set since the regions
+will be removed and recreated.
+.sp
+The
+.I DbEnv::appinit
+function returns successfully if DB_RECOVER is specified and no log files
+exist, so it is necessary to ensure all necessary log files are present
+before running recovery.
 For further information, consult the man page for
+.IR db_archive (1)
+and
 .IR db_recover (1).
 .TP 5
-.Sj Db DB_RECOVER_FATAL
+.Sj DB_RECOVER_FATAL
 Run catastrophic recovery on this environment before opening it for normal use.
-If this flag is set, the DB_CREATE, DB_INIT_TXN, and DB_INIT_LOG flags
-must also be set since the regions will be removed and recreated.
+If this flag is set, the DB_CREATE flag must also be set since the regions
+will be removed and recreated.
+.sp
+The
+.I DbEnv::appinit
+function returns successfully if DB_RECOVER is specified and no log files
+exist, so it is necessary to ensure all necessary log files are present
+before running recovery.
 For further information, consult the man page for
+.IR db_archive (1)
+and
 .IR db_recover (1).
 .TP 5
-.Sj Db DB_THREAD
+.Sj DB_THREAD
 Ensure that handles returned by the Db subsystems are useable by multiple
 threads within a single process, i.e., that the system is ``free-threaded''.
 (See
@@ -1176,17 +1190,19 @@ and
 .IR DbTxn (3)
 for more information.)
 .if '\*[TYPE]'JAVA'\{\
-The DB_THREAD flag is automatically turned on when DB operates
-in the Java environment.
+.sp
+Threading is assumed in the Java API,
+so no special flags are required,
+and DB functions will always behave as if the DB_THREAD flag was specified.
 \}
 .TP 5
-.Sj Db DB_TXN_NOSYNC
+.Sj DB_TXN_NOSYNC
 On transaction commit, do not synchronously flush the log (see
 .IR DbTxn (3)
 for further information).
 Ignored unless DB_INIT_TXN is also specified.
 .TP 5
-.Sj Db DB_USE_ENVIRON
+.Sj DB_USE_ENVIRON
 The Db process' environment may be permitted to specify information to
 be used when naming files (see the section entitled ``FILE NAMING'' below).
 As permitting users to specify which files are used can create security
@@ -1194,7 +1210,7 @@ problems,
 environment information will be used in file naming for all users only
 if the DB_USE_ENVIRON flag is set.
 .TP 5
-.Sj Db DB_USE_ENVIRON_ROOT
+.Sj DB_USE_ENVIRON_ROOT
 The Db process' environment may be permitted to specify information to
 be used when naming files (see the section entitled ``FILE NAMING'' below).
 As permitting users to specify which files are used can create security
@@ -1314,41 +1330,6 @@ Include informational and debugging messages as well as error messages in the
 and
 .I db_errfile
 output.
-.if '\*[TYPE]'CXX'\{\
-.TP 5
-int (*db_yield)(void);
-The Db library makes a system call to pause for some number of microseconds
-whenever it is necessary to wait on a lock.
-This may not be optimal,
-especially in a thread-only environment where it will be more efficient to
-explicitly yield the processor to another thread.
-If
-.I db_yield
-returns 0, indicating success,
-the lock will be re-tried, otherwise,
-the default descheduling method will be called and then the lock will be
-re-tried.
-Note,
-it is probably incorrect to supply a thread
-.I db_yield
-method if more than a single process is operating in the Db environment.
-This is because most thread-yield functions will not allow other processes
-to run,
-and the lock may be held by another process, not by another thread.
-.sp
-.ft B
-Solaris architecture note:
-.ft R
-Because of bugs in versions of Solaris before version 5.6,
-Db uses the
-.IR sema_wait (3T)
-call instead of the
-.IR sema_trywait (3T)
-call.
-For this reason, setting the
-.I db_yield
-field of the DbEnv object will have no effect on Solaris.
-\}
 .PP
 Each of the open functions that
 .I appinit
@@ -1883,6 +1864,9 @@ time(3).
 .sp
 .Et
 .sp
+The DB_RECOVER or DB_RECOVER_FATAL flag was specified, and no
+log files were found.
+.sp
 The DB_HOME or TMPDIR environment variables were set but empty.
 .sp
 An incorrectly formatted ``NAME VALUE'' entry or line was found.
@@ -1912,9 +1896,12 @@ i.e., calls to
 will fail if the specified Db environment has been opened and not
 subsequently  closed.
 .PP
-Because of bugs in versions of Solaris before version 5.6,
-setting the
-.I db_yield
-field of the DbEnv object will have no effect on Solaris.
+On Windows/95, files that are opened by multiple processes do not share
+data correctly.  To tell Berkeley DB to use the paging file to share
+memory among processes, use the DB_REGION_NAME flag of the
+.I db_value_set
+function.
+Obviously, you do not need to do this if only a single process will be
+accessing database files.
 .SH "SEE ALSO"
 .Sa

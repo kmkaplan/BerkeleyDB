@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test017.tcl	10.1 (Sleepycat) 4/12/97
+#	@(#)test017.tcl	10.2 (Sleepycat) 4/10/98
 #
 # DB Test 17 {access method}
 # Run duplicates with small page size so that we test off page duplicates.

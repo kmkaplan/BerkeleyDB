@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)tcl_mutex.c	10.11 (Sleepycat) 11/30/97";
+static const char sccsid[] = "@(#)tcl_mutex.c	10.16 (Sleepycat) 5/4/98";
 #endif /* not lint */
 
 /*
@@ -18,7 +18,6 @@ static const char sccsid[] = "@(#)tcl_mutex.c	10.11 (Sleepycat) 11/30/97";
  */
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #include <errno.h>
 #include <stdlib.h>
@@ -58,11 +57,11 @@ typedef struct _mutex_region {
 } mu_region;
 
 typedef struct _mutex_data {
-	DB_ENV *env;
-	mu_region *region;
-	mutex_entry *marray;
-	size_t size;
-	int fd;
+	DB_ENV		*env;
+	REGINFO		 reginfo;
+	mutex_entry	*marray;
+	mu_region	*region;
+	size_t		 size;
 } mutex_data;
 
 /*
@@ -81,44 +80,53 @@ mutex_cmd(notused, interp, argc, argv)
 	int argc;
 	char *argv[];
 {
+	static int mut_number = 0;
 	DB_ENV *env;
+	mu_region *region;
 	mutex_data *md;
 	mutex_entry *marray;
-	mu_region *region;
-	int fd, flags, i, mode, nitems;
+	u_int32_t flags;
+	int i, mode, nitems, tclint;
 	char mutname[50];
-	static int mut_number = 0;
-
-	env = NULL;
-	md = NULL;
-	region = NULL;
-	fd = -1;
 
 	notused = NULL;
 	debug_check();
 
 	/* Check number of arguments. */
 	USAGE_GE(argc, 5, MUTEX_USAGE, 0);
-	if (Tcl_GetInt(interp, argv[2], &nitems) != TCL_OK ||
-	    Tcl_GetInt(interp, argv[3], &flags) != TCL_OK ||
-	    Tcl_GetInt(interp, argv[4], &mode) != TCL_OK)
+	if (Tcl_GetInt(interp, argv[2], &nitems) != TCL_OK)
+		return (TCL_ERROR);
+	if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK)
+		return (TCL_ERROR);
+	flags = (u_int32_t)tclint;
+	if (Tcl_GetInt(interp, argv[4], &mode) != TCL_OK)
 		return (TCL_ERROR);
 
 	if ((md = (mutex_data *)malloc(sizeof(mutex_data))) == NULL)
 		goto posixout;
 
-	md->size = ALIGN(sizeof(mu_region), 32) +
-	    sizeof(mutex_entry) * nitems;
+	md->size = ALIGN(sizeof(mu_region), 32) + sizeof(mutex_entry) * nitems;
 
 	/* Create a file of the appropriate size. */
 	if (process_env_options(interp, argc, argv, &env))
 		goto errout;
 
-	errno = 0;
-	if (flags & DB_CREATE &&
-	    (errno =__db_rcreate(env, DB_APP_NONE,
-	        argv[1], MUTEX_FILE, mode, md->size, 0, &fd, &region)) == 0) {
-		/* Initialize the region. */
+	/* Map in the region. */
+	memset(&md->reginfo, 0, sizeof(md->reginfo));
+	md->reginfo.dbenv = env;
+	md->reginfo.appname = DB_APP_NONE;
+	md->reginfo.path = argv[1];
+	md->reginfo.file = MUTEX_FILE;
+	md->reginfo.mode = mode;
+	md->reginfo.size = md->size;
+	md->reginfo.dbflags = flags;
+	md->reginfo.flags = 0;
+	if ((errno = __db_rattach(&md->reginfo)) != 0)
+		goto posixout;
+	md->region = region = md->reginfo.addr;
+
+	/* Initialize a created region. */
+	if (F_ISSET(&md->reginfo, REGION_CREATED)) {
 		region->n_mutex = nitems;
 		marray = (mutex_entry *)((u_int8_t *)region +
 		    ALIGN(sizeof(mu_region), 32));
@@ -126,27 +134,13 @@ mutex_cmd(notused, interp, argc, argv)
 			marray[i].val = 0;
 			__db_mutex_init(&marray[i].m, i);
 		}
-
-		/* Unlock the region. */
-		(void)__db_mutex_unlock(&((RLAYOUT *)region)->lock, fd);
-
-		if ((errno = __db_rclose(env, fd, region)) != 0)
-			goto posixout;
 	}
-	if (errno != 0 && errno != EEXIST)
-		goto posixout;
 
-	/* Now, open and attach to the region for real. */
-	flags &= ~DB_CREATE;
-	if ((errno = __db_ropen(env,
-	    DB_APP_NONE, argv[1], MUTEX_FILE, flags, &fd, &region)) != 0)
-		goto posixout;
-
-	md->region = region;
-	md->marray = (mutex_entry *)((u_int8_t *)region +
-			    ALIGN(sizeof(mu_region), 32));
+	md->marray =
+	    (mutex_entry *)((u_int8_t *)region + ALIGN(sizeof(mu_region), 32));
 	md->env = env;
-	md->fd = fd;
+
+	(void)__db_mutex_unlock(&region->hdr.lock, md->reginfo.fd);
 
 	/* Create new command name. */
 	sprintf(&mutname[0], "mutex%d", mut_number);
@@ -160,12 +154,13 @@ mutex_cmd(notused, interp, argc, argv)
 posixout:
 	Tcl_PosixError(interp);
 errout:
-	if (region != NULL)
-		(void)__db_rclose(env, fd, region);
-	if (md != NULL)
-		free (md);
+	if (md != NULL) {
+		if (md->reginfo.addr != NULL)
+			(void)__db_rdetach(&md->reginfo);
+		free(md);
+	}
 	if (env != NULL)
-		free (env);
+		free(env);
 	Tcl_SetResult(interp, "NULL", TCL_STATIC);
 	return (TCL_OK);
 }
@@ -179,7 +174,7 @@ mutexunlink_cmd(notused, interp, argc, argv)
 	char *argv[];
 {
 	DB_ENV *env;
-	int ret;
+	REGINFO reginfo;
 
 	notused = NULL;
 	debug_check();
@@ -192,10 +187,15 @@ mutexunlink_cmd(notused, interp, argc, argv)
 		return (TCL_ERROR);
 	}
 
-	if ((ret = __db_runlink(env, DB_APP_NONE, argv[1], MUTEX_FILE, 1)) != 0)
-		Tcl_SetResult(interp, "-1", TCL_STATIC);
-	else
+	memset(&reginfo, 0, sizeof(reginfo));
+	reginfo.dbenv = env;
+	reginfo.appname = DB_APP_NONE;
+	reginfo.path = argv[1];
+	reginfo.file = MUTEX_FILE;
+	if (__db_runlink(&reginfo, 1) == 0)
 		Tcl_SetResult(interp, "0", TCL_STATIC);
+	else
+		Tcl_SetResult(interp, "-1", TCL_STATIC);
 	return (TCL_OK);
 }
 
@@ -217,8 +217,8 @@ mutexwidget_cmd(cd_md, interp, argc, argv)
 	char *argv[];
 {
 	mutex_data *md;
-	int ret, xval;
 	u_int32_t id;
+	int ret, tclint;
 	char intbuf[50];
 
 	debug_check();
@@ -229,17 +229,18 @@ mutexwidget_cmd(cd_md, interp, argc, argv)
 
 	if (strcmp(argv[1], "close") == 0) {
 		USAGE(argc, 2, MUTEXCLOSE_USAGE, 0);
-		(void)__db_rclose(md->env, md->fd, md->region);
+		(void)__db_rdetach(&md->reginfo);
 		Tcl_DeleteCommand(interp, argv[0]);
 		Tcl_SetResult(interp, "0", TCL_STATIC);
 		return (TCL_OK);
 	}
 	USAGE_GE(argc, 3, MUTEXGR_USAGE, 0);
 
-	if (Tcl_GetInt(interp, argv[2], (int *)&id) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK) {
 		Tcl_PosixError(interp);
 		return (TCL_ERROR);
 	}
+	id = (u_int32_t)tclint;
 	if (id >= md->region->n_mutex) {
 		Tcl_SetResult(interp, "Invalid mutex id", TCL_STATIC);
 		sprintf(intbuf, "%d", id);
@@ -249,20 +250,20 @@ mutexwidget_cmd(cd_md, interp, argc, argv)
 
 	ret = 0;
 	if (strcmp(argv[1], "get") == 0)
-		ret = __db_mutex_lock(&md->marray[id].m, md->fd);
+		ret = __db_mutex_lock(&md->marray[id].m, md->reginfo.fd);
 	else if (strcmp(argv[1], "release") == 0)
-		ret = __db_mutex_unlock(&md->marray[id].m, md->fd);
+		ret = __db_mutex_unlock(&md->marray[id].m, md->reginfo.fd);
 	else if (strcmp(argv[1], "getval") == 0) {
 		sprintf(intbuf, "%d", md->marray[id].val);
 		Tcl_SetResult(interp, intbuf, TCL_VOLATILE);
 		return (TCL_OK);
 	} else if (strcmp(argv[1], "setval") == 0) {
 		USAGE(argc, 4, MUTEXV_USAGE, 0);
-		if (Tcl_GetInt(interp, argv[3], &xval) != TCL_OK) {
+		if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK) {
 			Tcl_PosixError(interp);
 			return (TCL_ERROR);
 		}
-		md->marray[id].val = (u_int32_t)xval;
+		md->marray[id].val = (u_int32_t)tclint;
 	} else {
 		Tcl_SetResult(interp, MUTEXWIDGET_USAGE, TCL_STATIC);
 		return (TCL_ERROR);

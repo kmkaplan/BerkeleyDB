@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -40,10 +40,10 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)getcwd.c	10.4 (Sleepycat) 10/25/97";
+static const char sccsid[] = "@(#)getcwd.c	10.7 (Sleepycat) 4/18/98";
 #endif /* not lint */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 
 #if HAVE_DIRENT_H
@@ -132,11 +132,11 @@ getcwd(pt, size)
 	/*
 	 * Allocate bytes (1024 - malloc space) for the string of "../"'s.
 	 * Should always be enough (it's 340 levels).  If it's not, allocate
-	 * as necessary.  Special * case the first stat, it's ".", not "..".
+	 * as necessary.  Special case the first stat, it's ".", not "..".
 	 */
 	if ((up = (char *)__db_malloc(upsize = 1024 - 4)) == NULL)
 		goto err;
-	eup = up + MAXPATHLEN;
+	eup = up + 1024;
 	bup = up;
 	up[0] = '.';
 	up[1] = '\0';

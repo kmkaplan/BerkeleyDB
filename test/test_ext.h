@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	"@(#)test_ext.h	8.23 (Sleepycat) 9/28/97"
+ *	"@(#)test_ext.h	8.24 (Sleepycat) 4/10/98"
  */
 
 /* Macros for error handling. */

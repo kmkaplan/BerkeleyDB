@@ -1,6 +1,6 @@
 %!PS-Adobe-3.0
 %%Creator: groff version 1.10
-%%CreationDate: Fri Nov 28 16:32:44 1997
+%%CreationDate: Mon May  4 20:56:09 1998
 %%DocumentNeededResources: font Times-Bold
 %%+ font Times-Roman
 %%+ font Times-Italic
@@ -209,12 +209,12 @@ BP
 (SYNOPSIS)72 57.6 Q/F2 10/Times-Bold@0 SF(#include <db)108 69.6 Q(.h>)
 -.4 E(int)108 93.6 Q(DBcursor)108 105.6 Q(->c_close\(DBC *cursor\);)-.37
 E(int)108 129.6 Q(DBcursor)108 141.6 Q(->c_del\(DBC *cursor)-.37 E 2.5
-(,i)-.92 G(nt \215ags\);)-2.5 E(int)108 165.6 Q(DBcursor)108 177.6 Q
-(->c_get\(DBC *cursor)-.37 E 2.5(,D)-.92 G(BT *k)-2.5 E(ey)-.1 E 2.5(,D)
--.55 G(BT *data, int \215ags\);)-2.5 E(int)108 201.6 Q(DBcursor)108
-213.6 Q(->c_put\(DBC *, DBT *k)-.37 E(ey)-.1 E 2.5(,D)-.55 G
-(BT *data, int \215ags\);)-2.5 E F0(DESCRIPTION)72 230.4 Q F1 .486
-(The DB library is a f)108 242.4 R .485
+(,u)-.92 G(_int32_t \215ags\);)-2.5 E(int)108 165.6 Q(DBcursor)108 177.6
+Q(->c_get\(DBC *cursor)-.37 E 2.5(,D)-.92 G(BT *k)-2.5 E(ey)-.1 E 2.5
+(,D)-.55 G(BT *data, u_int32_t \215ags\);)-2.5 E(int)108 201.6 Q
+(DBcursor)108 213.6 Q(->c_put\(DBC *, DBT *k)-.37 E(ey)-.1 E 2.5(,D)-.55
+G(BT *data, u_int32_t \215ags\);)-2.5 E F0(DESCRIPTION)72 230.4 Q F1
+.486(The DB library is a f)108 242.4 R .485
 (amily of groups of functions that pro)-.1 F .485
 (vides a modular programming interf)-.15 F .485(ace to trans-)-.1 F .523
 (actions and record-oriented \214le access.)108 254.4 R .523
@@ -264,10 +264,11 @@ G .886(he cursor operations returns that a)-3.386 F(deadlock \(EA)108
 (of)-5 G(urther references to the cursor should be made.)-2.5 E(The)133
 564 Q F3(c_close)2.5 E F1(function returns the v)2.5 E(alue of)-.25 E F3
 (errno)2.5 E F1(on f)2.5 E(ailure and 0 on success.)-.1 E
-(int \(*c_del\)\(DBC *cursor)108 580.8 Q 2.5(,i)-.4 G(nt \215ags\);)-2.5
-E 2.5(Ap)133 592.8 S(ointer to a function that deletes the k)-2.5 E -.15
-(ey)-.1 G(/data pair currently referenced by the cursor).15 E(.)-.55 E
-(The)133 609.6 Q F3<8d61>2.5 E(gs)-.1 E F1
+(int \(*c_del\)\(DBC *cursor)108 580.8 Q 2.5(,u)-.4 G
+(_int32_t \215ags\);)-2.5 E 2.5(Ap)133 592.8 S
+(ointer to a function that deletes the k)-2.5 E -.15(ey)-.1 G
+(/data pair currently referenced by the cursor).15 E(.)-.55 E(The)133
+609.6 Q F3<8d61>2.5 E(gs)-.1 E F1
 (parameter is currently unused, and must be set to 0.)2.5 E .13(The cursor position is unchanged after a delete and subsequent calls to cursor functions e)
 133 626.4 R .13(xpecting the)-.15 F(cursor to reference an e)133 638.4 Q
 (xisting k)-.15 E .3 -.15(ey w)-.1 H(ill f).15 E(ail.)-.1 E(The)133
@@ -276,10 +277,10 @@ E 2.5(Ap)133 592.8 S(ointer to a function that deletes the k)-2.5 E -.15
 (ailure, 0 on success, and DB_KEYEMPTY if the)-.1 F
 (element has already been deleted.)133 667.2 Q
 (int \(*c_get\)\(DBC *cursor)108 684 Q 2.5(,D)-.4 G(BT *k)-2.5 E -.15
-(ey)-.1 G 2.5(,D)-.5 G(BT *data, int \215ags\);)-2.5 E 2.776(Ap)133 696
-S .276(ointer to a function that retrie)-2.776 F -.15(ve)-.25 G 2.775
-(sk).15 G -.15(ey)-2.875 G .275(/data pairs from the database.).15 F
-.275(The address and length of the)5.275 F -.1(ke)133 708 S 2.663(ya)
+(ey)-.1 G 2.5(,D)-.5 G(BT *data, u_int32_t \215ags\);)-2.5 E 2.776(Ap)
+133 696 S .276(ointer to a function that retrie)-2.776 F -.15(ve)-.25 G
+2.775(sk).15 G -.15(ey)-2.875 G .275(/data pairs from the database.).15
+F .275(The address and length of the)5.275 F -.1(ke)133 708 S 2.663(ya)
 -.05 G .163(re returned in the structure referenced by)-2.663 F F3 -.1
 (ke)2.663 G(y)-.2 E F1(\(e)2.663 E .164
 (xcept for the case of the DB_SET \215ag where the)-.15 F F3 -.1(ke)133
@@ -362,19 +363,19 @@ F -.15(ve)-.25 G 2.518(re).15 G .018(xplicitly created)-2.668 F
 (The DB_SET_RANGE \215ag is identical to the DB_SET \215ag, e)158 703.2
 R .459(xcept that the k)-.15 F .759 -.15(ey i)-.1 H 2.959(sr).15 G .459
 (eturned as)-2.959 F .454(well as the data item, and, in the case of the btree access method, the returned k)
-158 715.2 R -.15(ey)-.1 G .453(/data pair is).15 F .675(the smallest k)
-158 727.2 R .975 -.15(ey g)-.1 H .675
-(reater than or equal to the speci\214ed k).15 F -.15(ey)-.1 G 3.176(,p)
--.5 G .676(ermitting partial k)-3.176 F .976 -.15(ey m)-.1 H .676
-(atches and).15 F(No)268.795 768 Q -.15(ve)-.15 G(mber 9, 1997).15 E(2)
-191.795 E EP
+158 715.2 R -.15(ey)-.1 G .453(/data pair is).15 F 1.004(the smallest k)
+158 727.2 R 1.304 -.15(ey g)-.1 H 1.005
+(reater than or equal to the speci\214ed k).15 F 1.305 -.15(ey \()-.1 H
+1.005(as determined by the comparison).15 F(April 10, 1998)276.695 768 Q
+(2)199.695 E EP
 %%Page: 3 3
 %%BeginPageSetup
 BP
 %%EndPageSetup
 /F0 10/Times-Roman@0 SF 324.38(DB_CURSOR\(3\) DB_CURSOR\(3\))72 48 R
-(range searches.)158 84 Q(DB_SET_RECNO)133 100.8 Q(Mo)158 112.8 Q 1.84
--.15(ve t)-.15 H 1.54(he cursor to the speci\214c numbered record of the database, and return the associated)
+(function\), permitting partial k)158 84 Q .3 -.15(ey m)-.1 H
+(atches and range searches.).15 E(DB_SET_RECNO)133 100.8 Q(Mo)158 112.8
+Q 1.84 -.15(ve t)-.15 H 1.54(he cursor to the speci\214c numbered record of the database, and return the associated)
 .15 F -.1(ke)158 124.8 S .404(y/data pair)-.05 F 5.404(.T)-.55 G(he)
 -5.404 E/F1 10/Times-Italic@0 SF(data)2.904 E F0 .404
 (\214eld of the speci\214ed)2.904 F F1 -.1(ke)2.904 G(y)-.2 E F0 .404
@@ -400,7 +401,7 @@ E(ailure and 0 on success.)-.1 E(If)133 295.2 Q F1(c_g)2.5 E(et)-.1 E F0
 -.1(fa)2.5 G(ils for an).1 E 2.5(yr)-.15 G
 (eason, the state of the cursor will be unchanged.)-2.5 E
 (int \(*c_put\)\(DBC *, DBT *k)108 312 Q -.15(ey)-.1 G 2.5(,D)-.5 G
-(BT *data, int \215ags\);)-2.5 E 2.5(Ap)133 324 S
+(BT *data, u_int32_t \215ags\);)-2.5 E 2.5(Ap)133 324 S
 (ointer to a function that stores k)-2.5 E -.15(ey)-.1 G
 (/data pairs into the database.).15 E(The)133 340.8 Q F1<8d61>2.5 E(gs)
 -.1 E F0(parameter must be set to e)2.5 E(xactly one of the follo)-.15 E
@@ -452,8 +453,8 @@ F0 .488(parameter is ignored.)2.988 F(See)5.488 E F1(db_open)2.988 E F0
 (/data pair referenced by the cursor with the speci\214ed data item.).15
 E(The)158 691.2 Q F1 -.1(ke)2.5 G(y)-.2 E F0(parameter is ignored.)2.5 E
 (If the cursor is not yet initialized, the)158 708 Q F1(c_put)2.5 E F0
-(function will return EINV)2.5 E(AL.)-1.35 E(No)268.795 768 Q -.15(ve)
--.15 G(mber 9, 1997).15 E(3)191.795 E EP
+(function will return EINV)2.5 E(AL.)-1.35 E(April 10, 1998)276.695 768
+Q(3)199.695 E EP
 %%Page: 4 4
 %%BeginPageSetup
 BP
@@ -540,7 +541,7 @@ Q(In addition, the)108 672 Q F1(DBcur)2.5 E(sor)-.1 E(->c_del)-.2 E F0
 (function may f)2.5 E(ail and return)-.1 E F1(errno)2.5 E F0
 (for the follo)2.5 E(wing conditions:)-.25 E([EA)108 688.8 Q(GAIN])-.4 E
 2.5(Al)133 700.8 S(ock w)-2.5 E(as una)-.1 E -.25(va)-.2 G(ilable.).25 E
-(No)268.795 768 Q -.15(ve)-.15 G(mber 9, 1997).15 E(4)191.795 E EP
+(April 10, 1998)276.695 768 Q(4)199.695 E EP
 %%Page: 5 5
 %%BeginPageSetup
 BP
@@ -606,7 +607,7 @@ F0(\(3\),).32 E F1(db_internal)2.5 E F0(\(3\),).51 E F1(db_loc)2.5 E(k)
 -.2 E F0(\(3\),).67 E F1(db_lo)2.5 E(g)-.1 E F0(\(3\),).22 E F1
 (db_mpool)2.5 E F0(\(3\),).51 E F1(db_open)108 590.4 Q F0(\(3\),).24 E
 F1(db_thr)2.5 E(ead)-.37 E F0(\(3\),).77 E F1(db_txn)2.5 E F0(\(3\)).24
-E(No)268.795 768 Q -.15(ve)-.15 G(mber 9, 1997).15 E(5)191.795 E EP
+E(April 10, 1998)276.695 768 Q(5)199.695 E EP
 %%Trailer
 end
 %%EOF

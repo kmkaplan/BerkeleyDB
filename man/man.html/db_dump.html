@@ -2,9 +2,9 @@
 <HEAD>
 <TITLE>db_dump</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>db_dump</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        <B>db</B>_<B>dump</B> [<B>-d</B>] [<B>-f</B> <B>output</B>] db_file
@@ -22,7 +22,7 @@
 
        The  db_dump185  utility is similar to the db_dump utility
        except that it reads databases in the format  used  by  DB
-       version 1.85 and earlier.
+       versions 1.85 and 1.86.
 
        The options are as follows:
 
@@ -46,7 +46,7 @@
             modify the contents of databases.
 
             Note, different systems may have different notions as
-            to  what  characters are ``printable'', and databases
+            to  what  characters  are ``printing'', and databases
             dumped  in  this  manner  may  be  less  portable  to
             external systems.
 
@@ -64,7 +64,7 @@
        <B>record</B> <B>storage</B> <B>or</B> <B>retrieval.</B>
 
        The only available workaround for either case is to modify
-       the  sources  for  the  <B><A HREF="db_load.html">db_load(3)</A></B>  utility  to  load  the
+       the  sources  for  the  <B><A HREF="db_load.html">db_load(1)</A></B>  utility  to  load  the
        database using the correct  hash,  prefix  and  comparison
        functions.
 
@@ -76,6 +76,53 @@
        The db_dump utility exits 0 on success, and &gt;0 if an error
        occurs.  The db_dump185 utility exits 0 on success, and &gt;0
        if an error occurs.
+
+
+</PRE>
+<H2>OUTPUT FORMATS</H2><PRE>
+       There  are  two  output  formats  used  by   db_dump   and
+       db_dump185.
+
+       In  both output formats, the first few lines of the output
+       contain  header  information  describing  the   underlying
+       access  method, filesystem page size and other bookkeeping
+       information.  This information is output in ``name=value''
+       pairs, where ``name'' may be any of the keywords listed in
+       the <B><A HREF="db_load.html">db_load(1)</A></B> manual page,  and  ``value''  will  be  its
+       value.  While this header information can be edited before
+       the database is reloaded, there is rarely any reason to do
+       so,  as  all  of  this  information  can  be overridden by
+       command-line arguments to db_load.
+
+       Following the header information are  the  key/data  pairs
+       from  the  database.   If  the database being dumped is of
+       type <B>btree</B> or <B>hash</B>, the output will  be  paired  lines  of
+       text,  where  the  first line of the pair is the key item,
+       and the second line of the pair is its corresponding  data
+       item.   If the database being dumped is of type <B>recno</B>, the
+       output will be lines of text, where each  line  is  a  new
+       data item for the database.
+
+       If  the  <B>-p</B>  option  was  specified, each output line will
+       consist of single characters representing  any  characters
+       from  the  database  that were ``printing'', and backslash
+       (``\'')  escaped  characters  for  any  that   were   not.
+       Backslash  characters  appearing in the output mean one of
+       two things: if the backslash  character  precedes  another
+       backslash  character,  it  means  that a literal backslash
+       character occurred in  the  key  or  data  item.   If  the
+       backslash character precedes any other character, the next
+       two  characters  should  be  interpreted  as   hexadecimal
+       specification  of  a  single character, e.g., ``\0a'' is a
+       newline character in the ASCII character set.
+
+       If the <B>-p</B> option was not specified, each output line  will
+       consist  of  paired  hexadecimal  values,  e.g.,  the line
+       ``726f6f74'' is the string ``root'' in the ASCII character
+       set.
+
+       In  both  output  formats, a single newline character ends
+       both the key and data items.
 
 
 </PRE>
@@ -112,7 +159,7 @@
        <B><A HREF="db_txn.html">db_txn(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

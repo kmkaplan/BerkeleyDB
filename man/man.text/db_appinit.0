@@ -11,7 +11,7 @@ SSYYNNOOPPSSIISS
 
        iinntt
        ddbb__aappppiinniitt((cchhaarr **ddbb__hhoommee,,
-            cchhaarr **ddbb__ccoonnffiigg[[]],, DDBB__EENNVV **ddbbeennvv,, iinntt ffllaaggss));;
+            cchhaarr **ddbb__ccoonnffiigg[[]],, DDBB__EENNVV **ddbbeennvv,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
        ddbb__aappppeexxiitt((DDBB__EENNVV **ddbbeennvv));;
@@ -50,7 +50,7 @@ DDEESSCCRRIIPPTTIIOONN
 
        The _f_l_a_g_s argument specifies the subsystems that are  ini-
        tialized  and  how the environment affects DB file naming,
-       among other things.   The  flags  value  is  specified  by
+       among other things.   The  _f_l_a_g_s  value  is  specified  by
        oorr'ing together one or more of the following values:
 
        DB_CREATE
@@ -98,19 +98,28 @@ DDEESSCCRRIIPPTTIIOONN
        DB_RECOVER
             Run normal recovery on this environment before  open-
             ing  it  for  normal  use.   If this flag is set, the
-            DB_CREATE, DB_INIT_TXN, and  DB_INIT_LOG  flags  must
-            also  be  set  since  the regions will be removed and
-            recreated.  For further information, consult the  man
-            page for _d_b___r_e_c_o_v_e_r(1).
+            DB_CREATE flag must also be  set  since  the  regions
+            will be removed and recreated.
+
+            The   _d_b___a_p_p_i_n_i_t  function  returns  successfully  if
+            DB_RECOVER is specified and no log files exist, so it
+            is  necessary  to  ensure all necessary log files are
+            present before running recovery.  For further  infor-
+            mation,  consult  the  man page for _d_b___a_r_c_h_i_v_e(1) and
+            _d_b___r_e_c_o_v_e_r(1).
 
        DB_RECOVER_FATAL
-            Run  catastrophic recovery on this environment before
-            opening it for normal use.  If this flag is set,  the
-            DB_CREATE,  DB_INIT_TXN,  and  DB_INIT_LOG flags must
-            also be set since the regions  will  be  removed  and
-            recreated.   For further information, consult the man
-            page for _d_b___r_e_c_o_v_e_r(1).
+            Run catastrophic recovery on this environment  before
+            opening  it for normal use.  If this flag is set, the
+            DB_CREATE flag must also be  set  since  the  regions
+            will be removed and recreated.
 
+            The   _d_b___a_p_p_i_n_i_t  function  returns  successfully  if
+            DB_RECOVER is specified and no log files exist, so it
+            is  necessary  to  ensure all necessary log files are
+            present before running recovery.  For further  infor-
+            mation,  consult  the  man page for _d_b___a_r_c_h_i_v_e(1) and
+            _d_b___r_e_c_o_v_e_r(1).
 
        DB_THREAD
             Ensure that handles returned by the DB subsystems are
@@ -146,15 +155,21 @@ DDEESSCCRRIIPPTTIIOONN
 
        The DB environment is configured based on the _d_b_e_n_v  argu-
        ment  to  _d_b___a_p_p_i_n_i_t, which is a pointer to a structure of
-       type DB_ENV (typedef'd in <db.h>).  It  is  expected  that
-       applications  will  use  a  single DB_ENV structure as the
-       argument to all of the subsystems in the DB  package.   In
-       order  to ensure compatibility with future releases of DB,
-       all fields of the DB_ENV structure that are not explicitly
-       set  should  be initialized to 0 before the first time the
-       structure is used.  Do this  by  declaring  the  structure
-       external  or  static,  or by calling the C library routine
-       _b_z_e_r_o(3) or _m_e_m_s_e_t(3).
+       type DB_ENV (typedef'd in <db.h>).  Applications will nor-
+       mally  use  the  same  DB_ENV  structure  (initialized  by
+       _d_b___a_p_p_i_n_i_t(3)), as an argument to all of the subsystems in
+       the DB package.
+
+       References  to  the DB_ENV structure are maintained by DB,
+       so it may not be discarded until the last close  function,
+       corresponding  to  an  open  function  for which it was an
+       argument, has returned.  In order to ensure  compatibility
+       with  future  releases  of  DB,  all  fields of the DB_ENV
+       structure  that  are  not   explicitly   set   should   be
+       initialized  to  0  before the first time the structure is
+       used.  Do this by  declaring  the  structure  external  or
+       static,  or  by  calling the C library routine _b_z_e_r_o(3) or
+       _m_e_m_s_e_t(3).
 
        The fields of the DB_ENV structure used by _d_b___a_p_p_i_n_i_t  are
        described  below.  The _d_b_e_n_v argument may not be NULL.  If
@@ -219,11 +234,11 @@ DDEESSCCRRIIPPTTIIOONN
 
        In  addition,  the  _d_b_e_n_v  argument  is passed to the open
        functions of any  subsystems  initialized  by  _d_b___a_p_p_i_n_i_t.
-       For  this  reason  the  fields  of  the  DB_ENV  structure
-       relevant to the subsystems being  initialized  must  them-
-       selves  be  initialized  before _d_b___a_p_p_i_n_i_t is called.  See
-       the manual page for each subsystem for  a  list  of  these
-       fields and their uses.
+       For  this  reason the fields of the DB_ENV structure rele-
+       vant to the subsystems being initialized  must  themselves
+       be  initialized before _d_b___a_p_p_i_n_i_t is called.  See the man-
+       ual page for each subsystem for a list of these fields and
+       their uses.
 
        The return value from each of these calls is placed in the
        appropriate field of the DB_ENV structure:
@@ -273,7 +288,6 @@ DDEESSCCRRIIPPTTIIOONN
        When  multiple threads are using the DB_ENV handle concur-
        rently, only a single thread may call the _d_b___a_p_p_e_x_i_t func-
        tion.
-
 
        The  _d_b___a_p_p_e_x_i_t  function  returns  the  value of _e_r_r_n_o on
        failure and 0 on success.
@@ -328,8 +342,8 @@ FFIILLEE NNAAMMIINNGG
             more <space> or <tab> characters.  (Leading or trail-
             ing  <space>  and  <tab>  characters  are discarded.)
             Each entry must specify both the NAME and  the  VALUE
-            of  the  pair.   All  entries  with unrecognized NAME
-            values will be ignored.  The _d_b___c_o_n_f_i_g array must  be
+            of the pair.  All entries with unrecognized NAME val-
+            ues will be ignored.  The  _d_b___c_o_n_f_i_g  array  must  be
             NULL terminated.
 
        DB_CONFIG
@@ -544,28 +558,38 @@ EERRRROORRSS
             The  DB_THREAD  flag  was specified and spinlocks are
             not implemented for this architecture.
 
-            The DB_HOME or TMPDIR environment variables were  set
+            The DB_RECOVER or DB_RECOVER_FATAL  flag  was  speci-
+            fied, and no log files were found.
+
+            The  DB_HOME or TMPDIR environment variables were set
             but empty.
 
             An incorrectly formatted ``NAME VALUE'' entry or line
             was found.
 
        [ENOSPC]
-            HP-UX only: a previously created DB  environment  for
+            HP-UX  only:  a previously created DB environment for
             this process still exists.
 
-       The  _d_b___a_p_p_e_x_i_t function may fail and return _e_r_r_n_o for any
-       of the errors specified for the following DB  and  library
+       The _d_b___a_p_p_e_x_i_t function may fail and return _e_r_r_n_o for  any
+       of  the  errors specified for the following DB and library
        functions: lock_close(3), log_close(3), memp_close(3), and
        txn_close(3).
 
 BBUUGGSS
        Due to the constraints of the PA-RISC memory architecture,
-       HP-UX  does  not  allow  a  process to map a file into its
-       address space multiple times.  For this  reason,  each  DB
+       HP-UX does not allow a process to  map  a  file  into  its
+       address  space  multiple  times.  For this reason, each DB
        environment may be opened only once by a process on HP-UX,
        i.e., calls to _a_p_p_i_n_i_t will fail if the specified DB envi-
        ronment has been opened and not subsequently closed.
+
+       On Windows/95, files that are opened by multiple processes
+       do  not  share data correctly.  To tell Berkeley DB to use
+       the paging file to share memory among processes,  use  the
+       DB_REGION_NAME  flag  of the _d_b___v_a_l_u_e___s_e_t function.  Obvi-
+       ously, you do not need to do this if only a single process
+       will be accessing database files.
 
 SSEEEE AALLSSOO
        _d_b___a_r_c_h_i_v_e(1), _d_b___c_h_e_c_k_p_o_i_n_t(1), _d_b___d_e_a_d_l_o_c_k(1), _d_b___d_u_m_p(1),

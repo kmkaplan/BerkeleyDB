@@ -2,22 +2,22 @@
 <HEAD>
 <TITLE>Db</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>Db</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        <B>#include</B> <B>&lt;db</B>_<B>cxx.h&gt;</B>
 
        <B>static</B> <B>int</B>
        <B>Db::open(const</B> <B>char</B> <B>*fname,</B> <B>DBTYPE</B> <B>type,</B>
-            <B>int</B> <B>flags,</B> <B>int</B> <B>mode,</B> <B>DbEnv</B> <B>*dbenv,</B> <B>DbInfo</B> <B>*dbinfo,</B> <B>Db</B> <B>**dbpp);</B>
+            <B>u</B>_<B>int32</B>_<B>t</B> <B>flags,</B> <B>int</B> <B>mode,</B> <B>DbEnv</B> <B>*dbenv,</B> <B>DbInfo</B> <B>*dbinfo,</B> <B>Db</B> <B>**dbpp);</B>
 
        <B>DBTYPE</B>
        <B>Db::get</B>_<B>type(void)</B> <B>const;</B>
 
        <B>int</B>
-       <B>Db::close(int</B> <B>flags);</B>
+       <B>Db::close(u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
        <B>Db::cursor(DbTxn</B> <B>*txnid,</B> <B>Dbc</B> <B>**cursorp);</B>
@@ -29,16 +29,16 @@
        <B>Db::fd(int</B> <B>*fdp);</B>
 
        <B>int</B>
-       <B>Db::get(DbTxn</B> <B>*txnid,</B> <B>Dbt</B> <B>*key,</B> <B>Dbt</B> <B>*data,</B> <B>int</B> <B>flags);</B>
+       <B>Db::get(DbTxn</B> <B>*txnid,</B> <B>Dbt</B> <B>*key,</B> <B>Dbt</B> <B>*data,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
-       <B>Db::put(DbTxn</B> <B>*txnid,</B> <B>Dbt</B> <B>*key,</B> <B>Dbt</B> <B>*data,</B> <B>int</B> <B>flags);</B>
+       <B>Db::put(DbTxn</B> <B>*txnid,</B> <B>Dbt</B> <B>*key,</B> <B>Dbt</B> <B>*data,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
-       <B>Db::stat(void</B> <B>*sp,</B> <B>void</B> <B>*(*db</B>_<B>malloc)(size</B>_<B>t),</B> <B>int</B> <B>flags);</B>
+       <B>Db::stat(void</B> <B>*sp,</B> <B>void</B> <B>*(*db</B>_<B>malloc)(size</B>_<B>t),</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
-       <B>Db::sync(int</B> <B>flags);</B>
+       <B>Db::sync(u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
 
 </PRE>
@@ -149,7 +149,7 @@
             type of the database after  a  return  from  Db::open
             with the type argument set to DB_UNKNOWN.
 
-       int Db::close(int flags);
+       int Db::close(u_int32_t flags);
             A  method  to  flush  any cached information to disk,
             close  any  open  cursors  (see  <B><A HREF="Dbc.html">Dbc(3)</A></B>),  free   any
             allocated  resources, and close any underlying files.
@@ -209,7 +209,7 @@
             The cursor method throws a <B><A HREF="DbException.html">DbException(3)</A></B> or  returns
             the value of errno on failure and 0 on success.
 
-       int Db::del(DbTxn *txnid, Dbt *key, int flags);
+       int Db::del(DbTxn *txnid, Dbt *key, u_int32_t flags);
             A  method to remove key/data pairs from the database.
             The key/data pair associated with the  specified  key
             is  discarded  from the database.  In the presence of
@@ -246,7 +246,8 @@
             The  fd method throws a <B><A HREF="DbException.html">DbException(3)</A></B> or returns the
             value of errno on failure and 0 on success.
 
-       int Db::get(DbTxn *txnid, Dbt *key, Dbt *data, int flags);
+       int Db::get(DbTxn *txnid, Dbt *key, Dbt *data, u_int32_t
+            flags);
             A  method  that  is  an interface for keyed retrieval
             from the database.  The address  and  length  of  the
             data  associated  with the specified key are returned
@@ -289,7 +290,8 @@
             <B><A HREF="DbException.html">DbException(3)</A></B>  or  returns  the  value  of  errno on
             failure and 0 on success.
 
-       int Db::put(DbTxn *txnid, Dbt *key, Dbt *data, int flags);
+       int Db::put(DbTxn *txnid, Dbt *key, Dbt *data, u_int32_t
+            flags);
             A method to store key/data pairs in the database.  If
             the database supports duplicates, the put method adds
             the new data value at the end of the duplicate set.
@@ -325,7 +327,7 @@
             DB_KEYEXIST  if  the  DB_NOOVERWRITE flag was set and
             the key already exists in the file.
 
-       int Db::sync(int flags);
+       int Db::sync(u_int32_t flags);
             A method to flush any cached information to disk.  If
             the  database  is in memory only, the sync method has
             no effect and will always succeed.
@@ -340,7 +342,7 @@
             the value of errno on failure and 0 on success.
 
        int Db::stat(void *sp,
-                 void *(*db_malloc)(size_t), int flags);
+                 void *(*db_malloc)(size_t), u_int32_t flags);
             A method to create a statistical structure and copy a
             pointer to it into user-specified  memory  locations.
             Specifically,  if  sp  is  non-NULL, a pointer to the
@@ -419,6 +421,7 @@
                  Number of tree duplicate pages.
             u_int32_t bt_over_pg;
                  Number of tree overflow pages.
+
             u_int32_t bt_free;
                  Number of pages on the free list.
             u_int32_t bt_freed;
@@ -537,6 +540,7 @@
 
             The  DB_THREAD  flag  was specified and spinlocks are
             not implemented for this architecture.
+
             There is a mismatch between  the  version  number  of
             file and the software.
 
@@ -749,9 +753,8 @@
        <B><A HREF="DbException.html">DbException(3)</A></B>, <B><A HREF="DbInfo.html">DbInfo(3)</A></B>, <B><A HREF="DbLock.html">DbLock(3)</A></B>, <B><A HREF="DbLockTab.html">DbLockTab(3)</A></B>, <B><A HREF="DbLog.html">DbLog(3)</A></B>,
        <B><A HREF="DbLsn.html">DbLsn(3)</A></B>, <B><A HREF="DbMpool.html">DbMpool(3)</A></B>, <B><A HREF="DbMpoolFile.html">DbMpoolFile(3)</A></B>, <B><A HREF="Dbt.html">Dbt(3)</A></B>, <B><A HREF="DbTxn.html">DbTxn(3)</A></B>,
        <B><A HREF="DbTxnMgr.html">DbTxnMgr(3)</A></B>
-
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)cxx_lock.cpp	10.5 (Sleepycat) 11/25/97";
+static const char sccsid[] = "@(#)cxx_lock.cpp	10.7 (Sleepycat) 4/10/98";
 #endif /* not lint */
 
 #include "db_cxx.h"
@@ -52,7 +52,7 @@ int DbLockTab::close()
     return 0;
 }
 
-int DbLockTab::detect(int flags, int atype)
+int DbLockTab::detect(u_int32_t flags, int atype)
 {
     DB_LOCKTAB *locktab = unwrap(this);
 
@@ -68,7 +68,7 @@ int DbLockTab::detect(int flags, int atype)
     return err;
 }
 
-int DbLockTab::get(u_int32_t locker, int flags, const Dbt *obj,
+int DbLockTab::get(u_int32_t locker, u_int32_t flags, const Dbt *obj,
                    db_lockmode_t lock_mode, DbLock *lock)
 {
     DB_LOCKTAB *locktab = unwrap(this);
@@ -101,7 +101,7 @@ int DbLockTab::id(u_int32_t *idp)
     return err;
 }
 
-int DbLockTab::vec(u_int32_t locker, int flags,
+int DbLockTab::vec(u_int32_t locker, u_int32_t flags,
                    DB_LOCKREQ list[],
                    int nlist, DB_LOCKREQ **elist_returned)
 {
@@ -121,7 +121,7 @@ int DbLockTab::vec(u_int32_t locker, int flags,
 }
 
 // static method
-int DbLockTab::open(const char *dir, int flags, int mode,
+int DbLockTab::open(const char *dir, u_int32_t flags, int mode,
                   DbEnv *dbenv, DbLockTab **regionp)
 {
     *regionp = 0;

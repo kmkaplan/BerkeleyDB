@@ -2,10 +2,10 @@
 #
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)db_gen.sh	10.10 (Sleepycat) 11/23/97
+#	@(#)db_gen.sh	10.17 (Sleepycat) 5/2/98
 #
 
 # This script generates all the log, print, and read routines for the db
@@ -29,9 +29,10 @@ dir=$2
 dname=`basename $ifile .src`
 hfile=../include/$dname"_auto.h"
 cfile=$dir/$dname"_auto.c"
-rfile="rec_"$dname
+rfile=template/"rec_"$dname
 
 # Create the files as automagically generated files
+echo "Building $hfile, $cfile, $rfile"
 msg="/* Do not edit: automatically built by dist/db_gen.sh. */"
 echo "$msg" > $hfile; chmod 444 $hfile
 echo "$msg" > $cfile; chmod 444 $cfile
@@ -59,10 +60,10 @@ awk  '
 	if (prefix != "db")
 		printf("#include \"%s.h\"\n", DIR) >> CFILE
 	printf("#include \"db_am.h\"\n", DIR) >> CFILE
-	printf("#include \"common_ext.h\"\n\n") >> CFILE
 
 	# Write Recover file headers
-	cmd = sprintf("sed -e s/PREF/%s/ < rec_htemp > %s", prefix, RFILE);
+	cmd = sprintf("sed -e s/PREF/%s/ < \
+	    template/rec_htemp > %s", prefix, RFILE);
 	system(cmd);
 
 	num_funcs = 0;
@@ -145,6 +146,8 @@ awk  '
 			printf("\n * PUBLIC:     ") >> CFILE;
 		else
 			printf(" ") >> CFILE;
+		if (modes[i] == "DBT")
+			printf("const ") >> CFILE;
 		printf("%s", types[i]) >> CFILE;
 		if (modes[i] == "DBT")
 			printf(" *") >> CFILE;
@@ -169,7 +172,7 @@ awk  '
 	printf("\tu_int32_t flags;\n") >> CFILE;
 	for (i = 0; i < nvars; i++) {
 		if (modes[i] == "DBT")
-			printf("\t%s *%s;\n", types[i], vars[i]) >> CFILE;
+			printf("\tconst %s *%s;\n", types[i], vars[i]) >> CFILE;
 		else
 			printf("\t%s %s;\n", types[i], vars[i]) >> CFILE;
 	}
@@ -241,7 +244,7 @@ awk  '
 	}
 
 	# Error checking
-	printf("#ifdef DEBUG\n") >> CFILE;
+	printf("#ifdef DIAGNOSTIC\n") >> CFILE;
 	printf("\tif ((u_int32_t)(bp - (u_int8_t *)logrec.data) != logrec.size)") >> CFILE;
 	printf("\n\t\tfprintf(stderr, \"%s\");\n", \
 	    "Error in log record length") >> CFILE;
@@ -274,19 +277,19 @@ awk  '
 
 	# Function declaration
 	printf("int\n__%s_print(notused1, ", funcname) >> CFILE;
-	printf("dbtp, lsnp, notused3, notused4)\n") >> CFILE;
+	printf("dbtp, lsnp, notused2, notused3)\n") >> CFILE;
 	printf("\tDB_LOG *notused1;\n\tDBT *dbtp;\n") >> CFILE;
 	printf("\tDB_LSN *lsnp;\n") >> CFILE;
-	printf("\tint notused3;\n\tvoid *notused4;\n{\n") >> CFILE;
+	printf("\tint notused2;\n\tvoid *notused3;\n{\n") >> CFILE;
 
 	# Locals
 	printf("\t__%s_args *argp;\n", funcname) >> CFILE;
-	printf("\tu_int32_t i;\n\tint c, ret;\n\n") >> CFILE;
+	printf("\tu_int32_t i;\n\tu_int ch;\n\tint ret;\n\n") >> CFILE;
 
 	# Get rid of complaints about unused parameters.
-	printf("\ti = 0;\n\tc = 0;\n") >> CFILE;
+	printf("\ti = 0;\n\tch = 0;\n") >> CFILE;
 	printf("\tnotused1 = NULL;\n") >> CFILE;
-	printf("\tnotused3 = 0;\n\tnotused4 = NULL;\n\n") >> CFILE;
+	printf("\tnotused2 = 0;\n\tnotused3 = NULL;\n\n") >> CFILE;
 
 	# Call read routine to initialize structure
 	printf("\tif ((ret = __%s_read(dbtp->data, &argp)) != 0)\n", \
@@ -312,12 +315,12 @@ awk  '
 			printf("\");\n") >> CFILE;
 			printf("\tfor (i = 0; i < ") >> CFILE;
 			printf("argp->%s.size; i++) {\n", vars[i]) >> CFILE;
-			printf("\t\tc = ((char *)argp->%s.data)[i];\n", \
+			printf("\t\tch = ((u_int8_t *)argp->%s.data)[i];\n", \
 			    vars[i]) >> CFILE;
-			printf("\t\tif (isprint(c) || c == 0xa)\n") >> CFILE;
-			printf("\t\t\tputchar(c);\n") >> CFILE;
+			printf("\t\tif (isprint(ch) || ch == 0xa)\n") >> CFILE;
+			printf("\t\t\tputchar(ch);\n") >> CFILE;
 			printf("\t\telse\n") >> CFILE;
-			printf("\t\t\tprintf(\"%%#x \", c);\n") >> CFILE;
+			printf("\t\t\tprintf(\"%%#x \", ch);\n") >> CFILE;
 			printf("\t}\n\tprintf(\"\\n\");\n") >> CFILE;
 		} else if (types[i] == "DB_LSN *") {
 			printf("[%%%s][%%%s]\\n\",\n", \
@@ -402,8 +405,8 @@ awk  '
 
 # Recovery template
 
-	cmd = sprintf("sed -e s/PREF/%s/ -e s/FUNC/%s/ < rec_ctemp >> %s", \
-	    prefix, thisfunc, RFILE)
+	cmd = sprintf("sed -e s/PREF/%s/ -e s/FUNC/%s/ < \
+	    template/rec_ctemp >> %s", prefix, thisfunc, RFILE)
 	system(cmd);
 
 	# Done writing stuff, reset and continue.

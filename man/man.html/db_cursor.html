@@ -2,9 +2,9 @@
 <HEAD>
 <TITLE>db_cursor</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>db_cursor</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        <B>#include</B> <B>&lt;db.h&gt;</B>
@@ -13,13 +13,13 @@
        <B>DBcursor-&gt;c</B>_<B>close(DBC</B> <B>*cursor);</B>
 
        <B>int</B>
-       <B>DBcursor-&gt;c</B>_<B>del(DBC</B> <B>*cursor,</B> <B>int</B> <B>flags);</B>
+       <B>DBcursor-&gt;c</B>_<B>del(DBC</B> <B>*cursor,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
-       <B>DBcursor-&gt;c</B>_<B>get(DBC</B> <B>*cursor,</B> <B>DBT</B> <B>*key,</B> <B>DBT</B> <B>*data,</B> <B>int</B> <B>flags);</B>
+       <B>DBcursor-&gt;c</B>_<B>get(DBC</B> <B>*cursor,</B> <B>DBT</B> <B>*key,</B> <B>DBT</B> <B>*data,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
        <B>int</B>
-       <B>DBcursor-&gt;c</B>_<B>put(DBC</B> <B>*,</B> <B>DBT</B> <B>*key,</B> <B>DBT</B> <B>*data,</B> <B>int</B> <B>flags);</B>
+       <B>DBcursor-&gt;c</B>_<B>put(DBC</B> <B>*,</B> <B>DBT</B> <B>*key,</B> <B>DBT</B> <B>*data,</B> <B>u</B>_<B>int32</B>_<B>t</B> <B>flags);</B>
 
 
 </PRE>
@@ -77,7 +77,7 @@
             The c_close function returns the value  of  errno  on
             failure and 0 on success.
 
-       int (*c_del)(DBC *cursor, int flags);
+       int (*c_del)(DBC *cursor, u_int32_t flags);
             A  pointer  to  a  function that deletes the key/data
             pair currently referenced by the cursor.
 
@@ -92,7 +92,8 @@
             failure, 0 on success, and DB_KEYEMPTY if the element
             has already been deleted.
 
-       int (*c_get)(DBC *cursor, DBT *key, DBT *data, int flags);
+       int (*c_get)(DBC *cursor, DBT *key, DBT *data, u_int32_t
+            flags);
             A pointer to a function that retrieves key/data pairs
             from the database.  The address and length of the key
             are returned  in  the  structure  referenced  by  key
@@ -116,7 +117,6 @@
             the same database file  without  using  locking,  the
             results  are  undefined.   For  more  detail, see the
             section below on cursor stability.
-
             The parameter flags must be set to exactly one of the
             following values:
 
@@ -199,41 +199,42 @@
                  the data item, and, in the  case  of  the  btree
                  access method, the returned key/data pair is the
                  smallest  key  greater  than  or  equal  to  the
-                 specified  key,  permitting  partial key matches
-                 and range searches.
+                 specified  key  (as determined by the comparison
+                 function), permitting partial  key  matches  and
+                 range searches.
 
             DB_SET_RECNO
-                 Move the cursor to the specific numbered  record
+                 Move  the cursor to the specific numbered record
                  of  the  database,  and  return  the  associated
-                 key/data pair.  The data field of the  specified
-                 key  must be a pointer to a memory location from
-                 which a db_recno_t may be read, as described  in
+                 key/data  pair.  The data field of the specified
+                 key must be a pointer to a memory location  from
+                 which  a db_recno_t may be read, as described in
                  <B><A HREF="db_dbt.html">db_dbt(3)</A></B>.  This memory location will be read to
                  determine the record to be retrieved.
 
                  For DB_SET_RECNO to be specified, the underlying
-                 database  must be of type btree and it must have
-                 been  created  with  the  DB_RECNUM  flag   (see
+                 database must be of type btree and it must  have
+                 been   created  with  the  DB_RECNUM  flag  (see
                  <B><A HREF="db_open.html">db_open(3)</A></B>).
 
             DB_GET_RECNO
-                 Return  the  record  number  associated with the
-                 cursor.  The record number will be  returned  in
+                 Return the record  number  associated  with  the
+                 cursor.   The  record number will be returned in
                  the data DBT as described in <B><A HREF="db_dbt.html">db_dbt(3)</A></B>.  The key
                  parameter is ignored.
 
                  For DB_GET_RECNO to be specified, the underlying
-                 database  must be of type btree and it must have
-                 been  created  with  the  DB_RECNUM  flag   (see
+                 database must be of type btree and it must  have
+                 been   created  with  the  DB_RECNUM  flag  (see
                  <B><A HREF="db_open.html">db_open(3)</A></B>).
 
-            Otherwise,  the  c_get  function returns the value of
+            Otherwise, the c_get function returns  the  value  of
             errno on failure and 0 on success.
 
-            If c_get fails for  any  reason,  the  state  of  the
+            If  c_get  fails  for  any  reason,  the state of the
             cursor will be unchanged.
 
-       int (*c_put)(DBC *, DBT *key, DBT *data, int flags);
+       int (*c_put)(DBC *, DBT *key, DBT *data, u_int32_t flags);
             A  pointer  to  a function that stores key/data pairs
             into the database.
 
@@ -469,7 +470,7 @@
        <B><A HREF="db_txn.html">db_txn(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

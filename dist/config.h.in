@@ -18,6 +18,9 @@
 /* Define to `unsigned' if <sys/types.h> doesn't define.  */
 #undef size_t
 
+/* Define if the `S_IS*' macros in <sys/stat.h> do not work properly.  */
+#undef STAT_MACROS_BROKEN
+
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
 
@@ -30,6 +33,9 @@
 
 /* Define if you want a debugging version. */
 #undef DEBUG
+
+/* Define if you want a version with run-time diagnostic checking. */
+#undef DIAGNOSTIC
 
 /* Define if you have sigfillset (and sigprocmask). */
 #undef HAVE_SIGFILLSET
@@ -45,6 +51,9 @@
 
 /* Define if you want to use mc68020/gcc assembly spinlocks. */
 #undef HAVE_ASSEM_MC68020_GCC
+
+/* Define if you want to use parisc/gcc assembly spinlocks. */
+#undef HAVE_ASSEM_PARISC_GCC
 
 /* Define if you want to use sco/cc assembly spinlocks. */
 #undef HAVE_ASSEM_SCO_CC
@@ -66,6 +75,9 @@
 
 /* Define if you have the SGI abilock_t spinlocks. */
 #undef HAVE_FUNC_SGI
+
+/* Define if you have the ReliantUNIX spinlock_t spinlocks. */
+#undef HAVE_FUNC_RELIANT
 
 /* Define if you have the Solaris mutex_t spinlocks. */
 #undef HAVE_FUNC_SOLARIS
@@ -100,11 +112,11 @@
 /* Define if you have the select function.  */
 #undef HAVE_SELECT
 
+/* Define if you have the shmget function.  */
+#undef HAVE_SHMGET
+
 /* Define if you have the snprintf function.  */
 #undef HAVE_SNPRINTF
-
-/* Define if you have the strdup function.  */
-#undef HAVE_STRDUP
 
 /* Define if you have the strerror function.  */
 #undef HAVE_STRERROR

@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)archive.tcl	10.5 (Sleepycat) 10/4/97
+#	@(#)archive.tcl	10.7 (Sleepycat) 4/30/98
 #
 # Options are:
 # -checkrec <checkpoint frequency"
@@ -76,16 +76,18 @@ global alphabet
 	set baserec "1:$alphabet:2:$alphabet:3:$alphabet:4:$alphabet"
 	puts "Archive.a: Writing log records; checkpoint every $checkrec records"
 	set nrecs $maxfile
+	set rec 0:$baserec
+	# Begin transaction and write a log record 
 	set t1 [$txn begin]
-	set l1 [lindex [$lp last] 0]
+	set l1 [lindex [$lp put $rec 0] 1]
 	set lsnlist [list $l1]
 
 	set t2 [$txn begin]
-	set l1 [lindex [$lp last] 0]
+	set l1 [lindex [$lp put $rec 0] 1]
 	lappend lsnlist $l1
 
 	set t3 [$txn begin]
-	set l1 [lindex [$lp last] 0]
+	set l1 [lindex [$lp put $rec 0] 1]
 	lappend lsnlist $l1
 
 	set txnlist [list $t1 $t2 $t3]
@@ -157,19 +159,19 @@ global alphabet
 				set t1 [$txn begin]
 				error_check_bad tx_begin $t1 NULL
 				error_check_good tx_begin [is_substr $t1 $txn] 1
-				set l1 [lindex [$lp last] 0]
+				set l1 [lindex [$lp put $rec 0] 1]
 				lappend lsnlist [min $l1 $ckp_file]
 
 				set t2 [$txn begin]
 				error_check_bad tx_begin $t2 NULL
 				error_check_good tx_begin [is_substr $t2 $txn] 1
-				set l1 [lindex [$lp last] 0]
+				set l1 [lindex [$lp put $rec 0] 1]
 				lappend lsnlist [min $l1 $ckp_file]
 
 				set t3 [$txn begin]
 				error_check_bad tx_begin $t3 NULL
 				error_check_good tx_begin [is_substr $t3 $txn] 1
-				set l1 [lindex [$lp last] 0]
+				set l1 [lindex [$lp put $rec 0] 1]
 				lappend lsnlist [min $l1 $ckp_file]
 
 				set txnlist [list $t1 $t2 $t3]

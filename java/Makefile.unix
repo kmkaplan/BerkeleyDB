@@ -1,4 +1,4 @@
-# @(#)Makefile.unix	10.1 (Sleepycat) 11/10/97
+# @(#)Makefile.unix	10.2 (Sleepycat) 4/8/98
 #
 # build java source code, UNIX version
 #
@@ -7,19 +7,24 @@
 #
 JAVAC=javac
 
-# If $CLASSPATH is not already set in your environment,
-# adjust it here and uncomment this line:
+# Do not change.
+# Location of DB java class directory,
+# relative to the source directories.
 #
-# CLASSPATH=c:/java/lib/classes.zip
-#
+DBJAVA_CLASSES=../../../../classes
 
-JAVACFLAGS=-classpath "../../../../classes:$(CLASSPATH)"
+# Normally, you shouldn't have to change these.
+# Whether or not your CLASSPATH environment variable is
+# set, the compiler should pick up the core classes.
+#
+JAVACFLAGS=
+CLASSPATH=$(DBJAVA_CLASSES):$(CLASSPATH)
 
 all: build_java
 
 build_java:
 	mkdir -p classes
 	cd src/com/sleepycat/db; \
-	$(JAVAC) $(JAVACFLAGS) -d ../../../../classes *.java
+	$(JAVAC) $(JAVACFLAGS) -d $(DBJAVA_CLASSES) *.java
 	cd src/com/sleepycat/examples; \
-	$(JAVAC) $(JAVACFLAGS) -d ../../../../classes *.java
+	$(JAVAC) $(JAVACFLAGS) -d $(DBJAVA_CLASSES) *.java

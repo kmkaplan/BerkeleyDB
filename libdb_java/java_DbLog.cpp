@@ -1,13 +1,13 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)java_DbLog.cpp	10.2 (Sleepycat) 11/20/97";
+static const char sccsid[] = "@(#)java_DbLog.cpp	10.5 (Sleepycat) 5/2/98";
 #endif /* not lint */
 
 #include <jni.h>
@@ -102,7 +102,9 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLog_get
     int err;
     DB_LOG *dblog = get_DB_LOG(jnienv, jthis);
     DB_LSN *dblsn = get_DB_LSN(jnienv, lsn);
-    LockedDBT dbdata(jnienv, data);
+    LockedDBT dbdata(jnienv, data, 1);
+    if (dbdata.has_error())
+        return;
 
     err = log_get(dblog, dblsn, dbdata.dbt, flags);
     verify_return(jnienv, err);
@@ -115,7 +117,9 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLog_put
     int err;
     DB_LOG *dblog = get_DB_LOG(jnienv, jthis);
     DB_LSN *dblsn = get_DB_LSN(jnienv, lsn);
-    LockedDBT dbdata(jnienv, data);
+    LockedDBT dbdata(jnienv, data, 0);
+    if (dbdata.has_error())
+        return;
 
     err = log_put(dblog, dblsn, dbdata.dbt, flags);
     verify_return(jnienv, err);
@@ -144,6 +148,21 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLog_db_1unregister
 
     err = log_unregister(dblog, fid);
     verify_return(jnienv, err);
+}
+
+JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbLog_stat
+  (JNIEnv *jnienv, jobject jthis)
+{
+    int err;
+    DB_LOG *dblog = get_DB_LOG(jnienv, jthis);
+    DB_LOG_STAT *statp = 0;
+
+    if (!verify_non_null(jnienv, dblog))
+        return 0;
+
+    err = log_stat(dblog, &statp, 0);
+    verify_return(jnienv, err);
+    return get_DbLogStat(jnienv, statp);
 }
 
 JNIEXPORT /*DbLog*/ jobject JNICALL Java_com_sleepycat_db_DbLog_open

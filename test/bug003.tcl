@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)bug003.tcl	10.2 (Sleepycat) 10/4/97
+#	@(#)bug003.tcl	10.3 (Sleepycat) 4/10/98
 #
 # Bug Test003:
 # Check if deleting a key when a cursor is on a duplicate of that key works.

@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)tcl_txn.c	10.9 (Sleepycat) 9/28/97";
+static const char sccsid[] = "@(#)tcl_txn.c	10.14 (Sleepycat) 4/27/98";
 #endif /* not lint */
 
 /*
@@ -54,20 +54,23 @@ txnmgr_cmd(notused, interp, argc, argv)
 	int argc;
 	char *argv[];
 {
-	DB_TXNMGR *mgrp;
-	DB_ENV *env;
-	txn_data *td;
-	int flags, mode, ret;
-	char mgrname[50];
 	static int mgr_number = 0;
+	DB_ENV *env;
+	DB_TXNMGR *mgrp;
+	txn_data *td;
+	int mode, tclint;
+	u_int32_t flags;
+	char mgrname[50];
 
 	notused = NULL;
 	debug_check();
 
 	/* Check number of arguments. */
 	USAGE_GE(argc, 4, TXNMGR_USAGE, DO_ENV);
-	if (Tcl_GetInt(interp, argv[2], &flags) != TCL_OK ||
-	    Tcl_GetInt(interp, argv[3], &mode) != TCL_OK)
+	if (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK)
+		return (TCL_ERROR);
+	flags = (u_int32_t)tclint;
+	if (Tcl_GetInt(interp, argv[3], &mode) != TCL_OK)
 		return (TCL_ERROR);
 
 	/*
@@ -81,7 +84,7 @@ txnmgr_cmd(notused, interp, argc, argv)
 
 	if (F_ISSET(env, DB_ENV_STANDALONE))
 		mgrp = env->tx_info;
-	else if ((ret = txn_open(argv[1], flags, mode, env, &mgrp)) != 0) {
+	else if (txn_open(argv[1], flags, mode, env, &mgrp) != 0) {
 		Tcl_SetResult(interp, "NULL", TCL_STATIC);
 		return (TCL_OK);
 	} else
@@ -127,7 +130,6 @@ txnunlink_cmd(notused, interp, argc, argv)
 	int argc;
 	char *argv[];
 {
-	DB_ENV *env;
 	int force;
 
 	notused = NULL;
@@ -138,13 +140,7 @@ txnunlink_cmd(notused, interp, argc, argv)
 	if (Tcl_GetInt(interp, argv[2], &force) != TCL_OK)
 		return (TCL_ERROR);
 
-	if (process_env_options(interp, argc, argv, &env)) {
-		Tcl_SetResult(interp, "txn_unlink: ", TCL_STATIC);
-		Tcl_AppendResult(interp, Tcl_PosixError(interp), 0);
-		return (TCL_ERROR);
-	}
-
-	if (txn_unlink(argv[1], force, env) != 0)
+	if (txn_unlink(argv[1], force, NULL) != 0)
 		Tcl_SetResult(interp, "-1", TCL_STATIC);
 	else
 		Tcl_SetResult(interp, "0", TCL_STATIC);
@@ -169,15 +165,15 @@ txnwidget_cmd(cd_mgr, interp, argc, argv)
 	int argc;
 	char *argv[];
 {
+	static int id = 0;
+	DB_ENV *env;
+	DB_TXN *txn, *parent;
 	DB_TXNMGR *mgr;
 	DB_TXN_STAT *statp;
-	DB_TXN *txn, *parent;
-	DB_ENV *env;
 	Tcl_CmdInfo info;
-	static int txn_id = 0;
-	int i, kbytes, minutes, ret;
-	char txnname[128];
-	char *p, *statbuf;
+	u_int32_t i, kbytes, minutes;
+	int ret, tclint;
+	char *p, *statbuf, txnname[128];
 
 	debug_check();
 
@@ -221,20 +217,22 @@ txnwidget_cmd(cd_mgr, interp, argc, argv)
 			return (TCL_OK);
 		}
 
-		sprintf(&txnname[0], "%s.txn%d", argv[0], txn_id);
-		txn_id++;
+		sprintf(&txnname[0], "%s.txn%d", argv[0], id);
+		id++;
 
 		Tcl_CreateCommand(interp, txnname, txn_cmd, (int *)txn, NULL);
 		Tcl_SetResult(interp, txnname, TCL_VOLATILE);
 	} else if (strcmp(argv[1], "check") == 0) {
 		USAGE_GE(argc, 2, TXNCHECK_USAGE, 0);
 		if (argc <= 2 ||
-		    (Tcl_GetInt(interp, argv[2], (int *)&kbytes) != TCL_OK))
-			kbytes = 0;
+		    (Tcl_GetInt(interp, argv[2], &tclint) != TCL_OK))
+			tclint = 0;
+		kbytes = (u_int32_t)tclint;
 
 		if (argc <= 3 ||
-		    (Tcl_GetInt(interp, argv[3], (int *)&minutes) != TCL_OK))
-			minutes = 0;
+		    (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK))
+			tclint = 0;
+		minutes = (u_int32_t)tclint;
 
 		if ((ret = txn_checkpoint(mgr, kbytes, minutes)) != 0) {
 			Tcl_SetResult(interp, "txn_checkpoint: ", TCL_STATIC);

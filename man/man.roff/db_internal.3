@@ -2,18 +2,18 @@
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)db_internal.so	10.7 (Sleepycat) 11/28/97
+.\"	@(#)db_internal.so	10.18 (Sleepycat) 5/3/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)macros.so	10.36 (Sleepycat) 11/28/97
+.\"	@(#)macros.so	10.45 (Sleepycat) 5/4/98
 .\"
 .\" We don't want hyphenation for any HTML documents.
 .ie '\*[HTML]'YES'\{\
@@ -54,19 +54,18 @@
 \}
 ..
 .\" Scoped name for Java.
-.\" Produces a.b, for Java, otherwise just b.
-.\" This macro is used for constants that must
-.\" be scoped in Java, but are global otherwise.
+.\" Produces Db.b, for Java, otherwise just b.  This macro is used for
+.\" constants that must be scoped in Java, but are global otherwise.
 .\" This macro takes two arguments:
 .\"	+ the class
 .\"	+ the name within the class or following the prefix
 .de Sj
 .ie '\*[TYPE]'JAVA'\{\
 .TP 5
-\\$1.\\$2\}
+Db.\\$1\}
 .el\{\
 .TP 5
-\\$2\}
+\\$1\}
 ..
 .\" The general information text macro.
 .de Gn
@@ -210,7 +209,9 @@ The default error behavior can be changed, see
 .IR DbLog (3),
 .IR DbLsn (3),
 .IR DbMpool (3),
+.if !'\*[TYPE]'JAVA'\{\
 .IR DbMpoolFile (3),
+\}
 .IR Dbt (3),
 .IR DbTxn (3),
 .IR DbTxnMgr (3)
@@ -360,8 +361,15 @@ based on the
 argument to
 .IR \\$1 ,
 which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
-It is expected that applications will use a single DB_ENV structure as the
-argument to all of the subsystems in the DB package.
+Applications will normally use the same DB_ENV structure (initialized
+by
+.IR db_appinit (3)),
+as an argument to all of the subsystems in the DB package.
+.PP
+References to the DB_ENV structure are maintained by DB,
+so it may not be discarded until the last close function,
+corresponding to an open function for which it was an argument,
+has returned.
 In order to ensure compatibility with future releases of DB, all fields of
 the DB_ENV structure that are not explicitly set should be initialized to 0
 before the first time the structure is used.
@@ -432,7 +440,7 @@ appropriate set method, before calling
 ..
 .\" The DB_ENV common fields macros.
 .de Se
-.ie '\*[TYPE]'JAVA'\{\
+.if '\*[TYPE]'JAVA'\{\
 .TP 5
 DbErrcall db_errcall;
 .ns
@@ -444,7 +452,6 @@ int db_verbose;
 The error fields of the DbEnv behave as described for
 .IR DbEnv (3).
 \}
-.el\{\
 .ie '\*[TYPE]'CXX'\{\
 .TP 5
 void *(*db_errcall)(char *db_errpfx, char *buffer);
@@ -476,7 +483,7 @@ const char *db_errpfx;
 int db_verbose;
 The error fields of the DB_ENV behave as described for
 .IR db_appinit (3).
-\}
+.sp
 \}
 ..
 .\" The open flags.
@@ -490,7 +497,7 @@ don't already exist.
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
-.Sj Db DB_CREATE
+.Sj DB_CREATE
 Create any underlying files, as necessary.
 If the files do not already exist and the DB_CREATE flag is not specified,
 the call will fail.
@@ -501,12 +508,17 @@ the call will fail.
 .\"	+ the object it returns.
 .de Ft
 .TP 5
-.Sj Db DB_THREAD
+.Sj DB_THREAD
 Cause the \\$2 handle returned by the
 .I \\$1
 .Al function method
 to be useable by multiple threads within a single address space,
 i.e., to be ``free-threaded''.
+.if '\*[TYPE]'JAVA'\{\
+Threading is assumed in the Java API,
+so no special flags are required,
+and DB functions will always behave as if the DB_THREAD flag was specified.
+\}
 ..
 .\" The mode macro.
 .\" This macro takes one argument:
@@ -736,7 +748,7 @@ the region removal will fail.
 In the case of catastrophic or system failure,
 database recovery must be performed (see
 .IR db_recover (1)
-or the DB_RECOVER flags to
+or the DB_RECOVER and DB_RECOVER_FATAL flags to
 .IR \\*(Va (3)).
 Alternatively, if recovery is not required because no database state is
 maintained across failures,
@@ -855,15 +867,16 @@ function with
 .IR func ,
 which must conform to the standard interface.
 ..
+.ds aa "IEEE Std 1003.1b-1993 (``POSIX'')
 .\" POSIX 1003.1 function replacement.
 .de Po
-Replace all DB calls to the IEEE Std 1003.1b-1993 (``POSIX'') standard
+Replace all DB calls to the \*(aa
 .I \\$1
 function with
 .IR func ,
 which must conform to the standard interface.
 ..
-.TH DB_JUMP 3 "November 28, 1997"
+.TH DB_JUMP 3 "March 22, 1998"
 .UC 7
 .SH NAME
 db_jump_set, db_value_set \- replace underlying DB functionality
@@ -881,6 +894,10 @@ db_value_set(int value, int which);
 .fi
 .SH DESCRIPTION
 .Gn
+.PP
+This manual page describes interfaces to tune or replace underlying system
+functionality used by the DB library.
+Few applications should have any need for these interfaces.
 .PP
 .Fn db_jump_set
 The
@@ -985,9 +1002,11 @@ argument must conform to the following interface:
 .sp
 .nf
 .ti +5
-int ioinfo(const char *path,
+int ioinfo(const char *path, int fd,
 .ti +8
-int fd, off_t *sizep, off_t *iop);
+u_int32_t *mbytesp, u_int32_t *bytesp,
+.ti +8
+u_int32_t *iosizep);
 .fi
 .sp
 The
@@ -996,16 +1015,27 @@ argument is the pathname of the file to be checked, and the
 .I fd
 argument is an open file descriptor on the file.
 .sp
-The
+If the
+.I mbytesp
+and
+.I bytesp
+arguments are non-NULL, the
 .I ioinfo
-function must return the size of the file in the memory location referenced
-by the
-.I sizep
+function must return in them the size of the file: the number of megabytes
+in the file into the memory location referenced by the
+.I mbytesp
 argument,
-and the appropriate granularity for I/O operations to the file in the memory
-location referenced by the
-.I iop
+and the number of bytes over and above that number of megabytes into the
+memory location referenced by the
+.I bytesp
 argument.
+.sp
+In addition, if the
+.I iosizep
+argument is non-NULL, the
+.I ioinfo
+function must return the optimum granularity for I/O operations to the
+file in the memory location referenced by it.
 .sp
 .Rt ioinfo
 .TP 5
@@ -1013,40 +1043,104 @@ DB_FUNC_MALLOC
 .An malloc
 .TP 5
 DB_FUNC_MAP
-The DB library requires the ability to map a file into memory.
+The DB library requires the ability to map a file into memory and to
+create shared memory regions (which may or may not be backed by files).
 The
 .I func
 argument must conform to the following interface:
 .sp
 .nf
 .ti +5
-int map(int fd, size_t len,
+int map(char *path, int fd, size_t len,
 .ti +8
-int is_private, int rdonly, void **addr);
+int is_region, int is_anonymous, int is_rdonly,
+.ti +8
+void **addr);
 .fi
 .sp
 The
-.I fd
-argument is an open file descriptor on the file.
+.I path
+argument is the name of a file.
 The
+.I fd
+argument is an open file descriptor on that file.
+.sp
+The
+.I is_region
+argument will be zero if the intention is to map a file into shared
+memory.
+In this case, the
 .I map
 function must map the first
 .I len
 bytes of the file into memory and return a pointer to the mapped
-location in the the memory location referenced by the argument
+location in the memory location referenced by the argument
 .IR addr .
-.sp
-The
-.I is_private
-argument will be non-zero if the file is private to the application,
-otherwise, the file must be mapped into shared memory accessible to any
-number of processes.
-.sp
+In this case, the
+.I is_anonymous
+argument will always be zero.
 The
 .I is_rdonly
 argument will be non-zero if the file is considered read-only by the caller.
 .sp
-Both private and public files may contain semaphores.
+The
+.I is_region
+argument will be non-zero if the memory is intended to be used as a
+shared memory region for synchronization between DB threads/processes.
+In this case, the returned memory may be of any kind (e.g., anonymous),
+but must be able to support semaphores.
+If the application has previously specified that regions are to be
+instantiated in anonymous memory (see DB_REGION_ANON below),
+or the region is being joined and is believed to have been allocated
+in anonymous shared memory, the
+.I is_anonymous
+argument will be non-zero.
+Additionally, the
+.I path
+and
+.I fd
+arguments may be ignored (although future
+.I map
+calls using the same
+.I path
+must return the same memory),
+and the
+.I is_rdonly
+argument will always be zero.
+.sp
+By default, on UNIX systems, the DB library will use the \*(aa
+.IR mmap (2)
+interface to both map regular files into shared memory and create
+shared memory regions.
+If the application specifies that shared memory regions be instantiated
+in anonymous memory (see DB_REGION_ANON below), the
+.IR shmget (2)
+shared memory segment interface will be used, where available, and
+the MAP_ANON or MAP_ANONYMOUS options to
+.IR mmap (2)
+when
+.IR shmget (2)
+is not available.
+.sp
+When using
+.IR shmget (2),
+shared memory regions are named, and so multiple processes may share them.
+When using the
+.I mmap
+MAP_ANON or MAP_ANONYMOUS options, shared memory regions are
+.B not
+named, and so may only be accessed by a single process and its threads.
+.sp
+.RS
+.TP 5
+HP/UX note:
+The
+.IR shmget (2)
+interfaces are not used on HP/UX, even though they exist, as anonymous
+memory allocated using
+.IR shmget (2)
+cannot be used to store semaphores.
+.RE
 .sp
 .Rt map
 .TP 5
@@ -1059,18 +1153,37 @@ DB_FUNC_READ
 DB_FUNC_REALLOC
 .An realloc
 .TP 5
-DB_FUNC_SEEK
-The DB library requires the ability to specify that a subsequent read or
-write to a file will occur from a specific location in that file.
+DB_FUNC_RUNLINK
+The DB library requires the ability to remove shared memory regions from
+the system, whether or not they are backed by regular files.
 The
 .I func
 argument must conform to the following interface:
 .sp
 .nf
 .ti +5
-int seek(int fd, size_t pgsize,
+int runlink(char *path);
+.fi
+.sp
+The
+.I path
+argument is the path argument specified to the DB_FUNC_MAP function when
+the region was mapped into memory.
+.sp
+.Rt runlink
+.TP 5
+DB_FUNC_SEEK
+The DB library requires the ability to specify that a subsequent read from
+or write to a file will occur at a specific location in that file.
+The
+.I func
+argument must conform to the following interface:
+.sp
+.nf
+.ti +5
+int seek(int fd, size_t pgsize, db_pgno_t pageno,
 .ti +8
-db_pgno_t pageno, u_long relative, int whence);
+u_int32_t relative, int rewind, int whence);
 .fi
 .sp
 The
@@ -1078,17 +1191,20 @@ The
 argument is an open file descriptor on the file.
 The
 .I seek
-function must cause a subsequent read or write from the file to occur
+function must cause a subsequent read from or write to the file to occur
 at a byte offset specified by the calculation:
 .sp
 .ti +5
 (pgsize * pageno) + relative
 .sp
+If
+.I rewind
+is non-zero, the byte offset is treated as a backwards seek, not a forwards one.
 .sp
 The
 .I whence
 argument specifies where in the file the byte offset is relative to,
-as described by the \*(Po for the
+as described by the \*(aa
 .I lseek
 system call.
 .sp
@@ -1124,14 +1240,12 @@ argument may be greater than 1000000.
 .sp
 .Rt sleep
 .TP 5
-DB_FUNC_STRDUP
-.An strdup
-.TP 5
 DB_FUNC_UNLINK
 .Po unlink
 .TP 5
 DB_FUNC_UNMAP
-The DB library requires the ability to unmap a file from memory.
+The DB library requires the ability to unmap a file or shared memory region
+from memory.
 The
 .I func
 argument must conform to the following interface:
@@ -1142,12 +1256,12 @@ int unmap(void *addr, size_t len);
 The
 .I addr
 argument is the argument returned by the DB_FUNC_MAP function when the
-file was mapped into memory, and the
+file or region was mapped into memory, and the
 .I len
 argument is the same as the
 .I len
-argument specified to the DB_FUNC_MAP function when the
-file was mapped into memory.
+argument specified to the DB_FUNC_MAP function when the file or region
+was mapped into memory.
 .sp
 .Rt unmap
 .TP 5
@@ -1192,19 +1306,19 @@ function to fail, the
 function
 .B must
 cause the processor to reschedule any waiting threads of control for execution.
-.sp
-.ft B
-Solaris architecture note:
-.ft R
-Because of bugs in versions of Solaris before version 5.6,
-the DB library uses the
-.IR sema_wait (3T)
-call instead of the
-.IR sema_trywait (3T)
-call.
-For this reason, replacing the
-.I yield
-function will have no effect on Solaris.
+.\".sp
+.\".ft B
+.\"Solaris architecture note:
+.\".ft R
+.\"Because of bugs in versions of Solaris before version 5.6,
+.\"the DB library uses the
+.\".IR sema_wait (3T)
+.\"call instead of the
+.\".IR sema_trywait (3T)
+.\"call.
+.\"For this reason, replacing the
+.\".I yield
+.\"function will have no effect on Solaris.
 .sp
 .Rt yield
 .PP
@@ -1223,14 +1337,40 @@ The following values of
 .I which
 are supported:
 .TP 5
+DB_REGION_ANON
+Setting
+.I value
+to a non-zero value specifies that shared memory regions are to be created
+in anonymous memory, and not backed by a regular file.
+DB_REGION_NAME differs from DB_REGION_ANON in that the former will fail if
+the shared memory regions cannot be named, that is, if multiple processes
+cannot use them.
+See DB_FUNC_MAP for more information.
+.TP 5
+DB_REGION_INIT
+In some applications, the expense of page-faulting the shared memory regions
+can affect performance, e.g., when the page-fault occurs while holding a lock,
+other lock requests can convoy and overall throughput may decrease.
+Setting
+.I value
+to a non-zero value specifies that one byte be read from each 4K page of the
+shared memory region when the region is initialized.
+.TP 5
+DB_REGION_NAME
+Setting
+.I value
+to a non-zero value specifies that shared memory regions are to be created
+in anonymous memory, and not backed by a regular file.
+DB_REGION_NAME differs from DB_REGION_ANON in that the former will fail if
+the shared memory regions cannot be named, that is, if multiple processes
+cannot use them.
+See DB_FUNC_MAP for more information.
+.TP 5
 DB_TSL_SPINS
 Specify the number of times mutexes should spin without blocking.
 .sp
-This value normally defaults to 1 (correct for uniprocessor systems),
-but on multiprocessor Win32 systems defaults to 50 times the number
-of processors.
-Otherwise, the number of spins should be set to an appropriate value
-when applications are running on multiprocessor systems.
+This value defaults to 1 on uniprocessor systems and to 50 times the number
+of processors on multiprocessor systems.
 .PP
 .Rt db_value_set
 .SH ERRORS
@@ -1247,5 +1387,27 @@ No type checking is done of the
 argument,
 and specifying an invalid replacement routine will cause unpredictable
 results.
+.PP
+Applications should be careful to replace related functions as a group
+and at the same time.
+Replacing DB_FUNC_MALLOC without replacing DB_FUNC_REALLOC is likely
+to result in unpredictable results.
+.PP
+On Windows/95, files that are opened by multiple processes do not share
+data correctly.  To tell Berkeley DB to use a named region of the paging
+file to share memory instead, use:
+.PP
+.RS
+db_value_set(1, DB_REGION_NAME);
+.RE
+.PP
+You do not need to do this if your application can guarantee that
+only one process will be accessing DB files.
+.PP
+On Windows/NT, sharing of data between processes through the paging file
+does not work correctly, so you should not call
+.IR db_value_set .
+That will allow DB to use the file itself for sharing, which works
+correctly.
 .SH "SEE ALSO"
 .Sa

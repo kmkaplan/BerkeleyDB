@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)mpoolscript.tcl	10.1 (Sleepycat) 4/12/97
+#	@(#)mpoolscript.tcl	10.4 (Sleepycat) 4/10/98
 #
 # Random multiple process mpool tester.
 # Usage: mpoolscript dir id numiters numfiles numpages sleepint seed
@@ -16,13 +16,15 @@
 # numpages: Number of pages per file.
 # sleepint: Maximum sleep interval.
 # seed: Seed for random number generator.  If -1, use pid.
+# envopt: Environment options.
 source ../test/testutils.tcl
 source ./include.tcl
 
-set usage "mpoolscript dir id maxprocs numiters pgsizes numpages sleepint seed"
+set usage \
+   "mpoolscript dir id maxprocs numiters pgsizes numpages sleepint seed envopts"
 
 # Verify usage
-if { $argc != 8 } {
+if { $argc != 9 } {
 	puts stderr $usage
 	puts $argc
 	exit
@@ -37,6 +39,7 @@ set pgsizes [ lindex $argv 4 ]
 set numpages [ lindex $argv 5 ]
 set sleepint [ lindex $argv 6 ]
 set seed [ lindex $argv 7 ]
+set envopts [ lindex $argv 8]
 
 # Initialize seed
 if { $seed == -1 } {
@@ -57,9 +60,10 @@ foreach i $pgsizes {
 	}
 }
 set cache [expr $maxprocs * ([lindex $pgsizes 0] + $max)]
-puts "Requesting cachesize of $cache"
 
-set mp [memp "" 0 0 -cachesize $cache -dbhome $dir]
+set cmd {memp "" 0 0 -dbhome $dir -cachesize $cache}
+set cmd [concat $cmd $envopts]
+set mp [ eval $cmd]
 error_check_bad memp $mp NULL
 error_check_good memp [is_substr $mp mp] 1
 
@@ -76,7 +80,7 @@ foreach psize $pgsizes {
 
 # Now create the lock region
 # We'll use the convention that we lock by fileid:pageno
-set lp [lock_open "" 0 0 -dbhome $dir ]
+set lp [lock_open "" 0 0 -dbhome $dir $envopts]
 error_check_bad lock_open $lp NULL
 error_check_good lock_open [is_substr $lp lockmgr] 1
 

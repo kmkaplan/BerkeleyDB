@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)tcl_dbm.c	10.4 (Sleepycat) 7/27/97";
+static const char sccsid[] = "@(#)tcl_dbm.c	10.8 (Sleepycat) 4/27/98";
 #endif /* not lint */
 
 /*
@@ -19,7 +19,7 @@ static const char sccsid[] = "@(#)tcl_dbm.c	10.4 (Sleepycat) 7/27/97";
 #include <string.h>
 #include <tcl.h>
 
-#define	DB_DBM_HSEARCH
+#define	DB_DBM_HSEARCH	1
 #include <db.h>
 
 #include "dbtest.h"
@@ -76,7 +76,6 @@ dbm_delete_cmd(notused, interp, argc, argv)
 	char *argv[];
 {
 	datum key;
-	int ret;
 
 	USAGE(argc, 2, DBMDEL_USAGE, 0);
 	notused = NULL;
@@ -86,7 +85,7 @@ dbm_delete_cmd(notused, interp, argc, argv)
 
 	debug_check();
 
-	if ((ret = delete(key)) == 0)
+	if (delete(key) == 0)
 		Tcl_SetResult(interp, "0", TCL_STATIC);
 	else
 		Tcl_SetResult(interp, "-1", TCL_STATIC);
@@ -131,7 +130,6 @@ dbm_store_cmd(notused, interp, argc, argv)
 	char *argv[];
 {
 	datum data, key;
-	int ret;
 
 	USAGE_GE(argc, 3, DBMSTORE_USAGE, 0);
 	notused = NULL;
@@ -144,7 +142,7 @@ dbm_store_cmd(notused, interp, argc, argv)
 
 	debug_check();
 
-	if ((ret = store(key, data)) == 0)
+	if (store(key, data) == 0)
 		Tcl_SetResult(interp, "0", TCL_STATIC);
 	else
 		Tcl_SetResult(interp, "-1", TCL_STATIC);
@@ -162,6 +160,7 @@ dbm_first_cmd(notused, interp, argc, argv)
 	datum key;
 
 	USAGE(argc, 1, DBMFIRST_USAGE, 0);
+	argv = argv;
 	notused = NULL;
 
 	key = firstkey();

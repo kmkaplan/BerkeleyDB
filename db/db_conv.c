@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -44,13 +44,14 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)db_conv.c	10.7 (Sleepycat) 9/21/97";
+static const char sccsid[] = "@(#)db_conv.c	10.13 (Sleepycat) 4/26/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
 #include <errno.h>
+#include <string.h>
 #endif
 
 #include "db_int.h"
@@ -94,7 +95,7 @@ __db_pgout(pg, pagesize, pp)
  */
 static int
 __db_convert(pg, pp, pagesize, pgin)
-	db_pgno_t pg;			/* Unused, but left for the future. */
+	db_pgno_t pg;
 	void *pp;
 	size_t pagesize;
 	int pgin;
@@ -106,6 +107,8 @@ __db_convert(pg, pp, pagesize, pgin)
 	RINTERNAL *ri;
 	db_indx_t i, len, tmp;
 	u_int8_t *p, *end;
+
+	COMPQUIET(pg, 0);
 
 	h = pp;
 	if (pgin) {
@@ -157,6 +160,13 @@ __db_convert(pg, pp, pagesize, pgin)
 			}
 
 		}
+
+		/*
+		 * The offsets in the inp array are used to determine
+		 * the size of entries on a page; therefore they
+		 * cannot be converted until we've done all the
+		 * entries.
+		 */
 		if (!pgin)
 			for (i = 0; i < NUM_ENT(h); i++)
 				M_16_SWAP(h->inp[i]);
@@ -176,8 +186,8 @@ __db_convert(pg, pp, pagesize, pgin)
 			case B_DUPLICATE:
 			case B_OVERFLOW:
 				bo = (BOVERFLOW *)bk;
-				M_32_SWAP(bo->tlen);
 				M_32_SWAP(bo->pgno);
+				M_32_SWAP(bo->tlen);
 				break;
 			}
 
@@ -191,17 +201,18 @@ __db_convert(pg, pp, pagesize, pgin)
 				M_16_SWAP(h->inp[i]);
 
 			bi = GET_BINTERNAL(h, i);
+			M_16_SWAP(bi->len);
+			M_32_SWAP(bi->pgno);
+			M_32_SWAP(bi->nrecs);
+
 			switch (B_TYPE(bi->type)) {
 			case B_KEYDATA:
-				M_16_SWAP(bi->len);
-				M_32_SWAP(bi->pgno);
-				M_32_SWAP(bi->nrecs);
 				break;
 			case B_DUPLICATE:
 			case B_OVERFLOW:
-				bo = (BOVERFLOW *)bi;
-				M_32_SWAP(bo->tlen);
+				bo = (BOVERFLOW *)bi->data;
 				M_32_SWAP(bo->pgno);
+				M_32_SWAP(bo->tlen);
 				break;
 			}
 
@@ -221,6 +232,7 @@ __db_convert(pg, pp, pagesize, pgin)
 			if (!pgin)
 				M_16_SWAP(h->inp[i]);
 		}
+		break;
 	case P_OVERFLOW:
 	case P_INVALID:
 		/* Nothing to do. */

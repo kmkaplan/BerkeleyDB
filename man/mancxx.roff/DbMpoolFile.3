@@ -2,18 +2,18 @@
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)DbMpoolFile.sox	10.7 (Sleepycat) 11/25/97
+.\"	@(#)DbMpoolFile.sox	10.12 (Sleepycat) 5/2/98
 .\"
 .\"
 .\" See the file LICENSE for redistribution information.
 .\"
-.\" Copyright (c) 1997
+.\" Copyright (c) 1997, 1998
 .\"	Sleepycat Software.  All rights reserved.
 .\"
-.\"	@(#)macros.so	10.36 (Sleepycat) 11/28/97
+.\"	@(#)macros.so	10.45 (Sleepycat) 5/4/98
 .\"
 .\" We don't want hyphenation for any HTML documents.
 .ie '\*[HTML]'YES'\{\
@@ -54,19 +54,18 @@
 \}
 ..
 .\" Scoped name for Java.
-.\" Produces a.b, for Java, otherwise just b.
-.\" This macro is used for constants that must
-.\" be scoped in Java, but are global otherwise.
+.\" Produces Db.b, for Java, otherwise just b.  This macro is used for
+.\" constants that must be scoped in Java, but are global otherwise.
 .\" This macro takes two arguments:
 .\"	+ the class
 .\"	+ the name within the class or following the prefix
 .de Sj
 .ie '\*[TYPE]'JAVA'\{\
 .TP 5
-\\$1.\\$2\}
+Db.\\$1\}
 .el\{\
 .TP 5
-\\$2\}
+\\$1\}
 ..
 .\" The general information text macro.
 .de Gn
@@ -210,7 +209,9 @@ The default error behavior can be changed, see
 .IR DbLog (3),
 .IR DbLsn (3),
 .IR DbMpool (3),
+.if !'\*[TYPE]'JAVA'\{\
 .IR DbMpoolFile (3),
+\}
 .IR Dbt (3),
 .IR DbTxn (3),
 .IR DbTxnMgr (3)
@@ -360,8 +361,15 @@ based on the
 argument to
 .IR \\$1 ,
 which is a pointer to a structure of type DB_ENV (typedef'd in <db.h>).
-It is expected that applications will use a single DB_ENV structure as the
-argument to all of the subsystems in the DB package.
+Applications will normally use the same DB_ENV structure (initialized
+by
+.IR db_appinit (3)),
+as an argument to all of the subsystems in the DB package.
+.PP
+References to the DB_ENV structure are maintained by DB,
+so it may not be discarded until the last close function,
+corresponding to an open function for which it was an argument,
+has returned.
 In order to ensure compatibility with future releases of DB, all fields of
 the DB_ENV structure that are not explicitly set should be initialized to 0
 before the first time the structure is used.
@@ -432,7 +440,7 @@ appropriate set method, before calling
 ..
 .\" The DB_ENV common fields macros.
 .de Se
-.ie '\*[TYPE]'JAVA'\{\
+.if '\*[TYPE]'JAVA'\{\
 .TP 5
 DbErrcall db_errcall;
 .ns
@@ -444,7 +452,6 @@ int db_verbose;
 The error fields of the DbEnv behave as described for
 .IR DbEnv (3).
 \}
-.el\{\
 .ie '\*[TYPE]'CXX'\{\
 .TP 5
 void *(*db_errcall)(char *db_errpfx, char *buffer);
@@ -476,7 +483,7 @@ const char *db_errpfx;
 int db_verbose;
 The error fields of the DB_ENV behave as described for
 .IR db_appinit (3).
-\}
+.sp
 \}
 ..
 .\" The open flags.
@@ -490,7 +497,7 @@ don't already exist.
 The flags value is specified by
 .BR or 'ing
 together one or more of the following values:
-.Sj Db DB_CREATE
+.Sj DB_CREATE
 Create any underlying files, as necessary.
 If the files do not already exist and the DB_CREATE flag is not specified,
 the call will fail.
@@ -501,12 +508,17 @@ the call will fail.
 .\"	+ the object it returns.
 .de Ft
 .TP 5
-.Sj Db DB_THREAD
+.Sj DB_THREAD
 Cause the \\$2 handle returned by the
 .I \\$1
 .Al function method
 to be useable by multiple threads within a single address space,
 i.e., to be ``free-threaded''.
+.if '\*[TYPE]'JAVA'\{\
+Threading is assumed in the Java API,
+so no special flags are required,
+and DB functions will always behave as if the DB_THREAD flag was specified.
+\}
 ..
 .\" The mode macro.
 .\" This macro takes one argument:
@@ -736,7 +748,7 @@ the region removal will fail.
 In the case of catastrophic or system failure,
 database recovery must be performed (see
 .IR db_recover (1)
-or the DB_RECOVER flags to
+or the DB_RECOVER and DB_RECOVER_FATAL flags to
 .IR \\*(Va (3)).
 Alternatively, if recovery is not required because no database state is
 maintained across failures,
@@ -847,59 +859,34 @@ utility for an example of using
 .I \\$2
 in a UNIX environment.
 ..
-.TH DbMpoolFile 3 "November 25, 1997"
+.TH DbMpoolFile 3 "May 2, 1998"
 .UC 7
 .SH NAME
 DbMpoolFile \- shared memory buffer pool
 .SH SYNOPSIS
 .nf
 .ft B
-.ie '\*[TYPE]'CXX'\{
 #include <db_cxx.h>
 
 static int
-DbMpoolFile::open(DbMpool *mp, char *file, int ftype, int flags,
+DbMpoolFile::open(DbMpool *mp, char *file, u_int32_t flags, int mode,
 .ti +5
-int mode, size_t pagesize, int lsn_offset, Dbt *pgcookie,
-.ti +5
-u_int8_t *uid, DbMpoolFile **mpf);
+size_t pagesize, DbMpoolFinfo *finfop, DbMpoolFile **mpf);
 
 int
 DbMpoolFile::close();
 
 int
-DbMpoolFile::get(db_pgno_t *pgnoaddr, int flags, void **pagep);
+DbMpoolFile::get(db_pgno_t *pgnoaddr, u_int32_t flags, void **pagep);
 
 int
-DbMpoolFile::put(void *pgaddr, int flags);
+DbMpoolFile::put(void *pgaddr, u_int32_t flags);
 
 int
-DbMpoolFile::set(void *pgaddr, int flags);
+DbMpoolFile::set(void *pgaddr, u_int32_t flags);
 
 int
 DbMpoolFile::sync();
-\}
-.el\{\
-import com.sleepycat.db.*;
-
-public void close()
-.ti +5
-throws DbException;
-
-public void sync()
-.ti +5
-throws DbException;
-
-public static DbMpoolFile open(DbMpool mp, String file,
-.ti +5
-int ftype, int flags, int mode,
-.ti +5
-long pagesize, int lsn_offset,
-.ti +5
-Dbt pgcookie, byte[] uid)
-.ti +5
-throws DbException;
-\}
 .ft R
 .fi
 .SH DESCRIPTION
@@ -914,7 +901,6 @@ and
 .IR DbMpoolFile (3)
 classes are the library interface intended to provide general-purpose,
 page-oriented buffer management of one or more files.
-.ie '\*[TYPE]'CXX'\{
 While designed to work with the other Db functions, these functions are
 also useful for more general purposes.
 The memory pools (\c
@@ -936,7 +922,7 @@ method.
 The
 .I DbMpoolFile::open
 method opens a file in the pool specified by the
-.I DbMpool::
+.I DbMpool
 argument,
 copying the DbMpoolFile pointer representing it into the memory
 location referenced by
@@ -951,28 +937,15 @@ is NULL,
 a private file is created that cannot be shared with any other process
 (although it may be shared with other threads).
 .PP
-The
-.I ftype
-argument should be the same as a
-.I ftype
-argument previously specified to the
-.I DbMpool::db_register
-method,
-unless no input or output processing of the file's pages are necessary,
-in which case it should be 0.
-(See the description of the
-.I DbMpool::db_register
-method for more information.)
-.PP
 .Fm
 .TP 5
-DB_NOMMAP
+.Sj DB_NOMMAP
 Always copy this file into the local cache instead of mapping it into
 process memory (see the description of the
 .I mp_mmapsize
 field of the DbEnv object for further information).
 .TP 5
-DB_RDONLY
+.Sj DB_RDONLY
 Open any underlying files for reading only.
 Any attempt to write the file using the pool functions will fail,
 regardless of the actual permissions of the file.
@@ -986,15 +959,49 @@ of the unit of transfer between the application and the pool,
 although it is not necessarily the unit of transfer between the pool and
 the source file.
 .PP
-The
-.I lsn_offset
-argument is the zero-based byte offset in the page of the page's log sequence
-number (LSN),
-or \-1 if no LSN offset is specified.
-(See the description of the
-.I DbMpool::sync
-method for more information.)
+Files opened in the pool may be further configured based on the
+.I finfop
+argument to
+.IR memp_fopen ,
+which is a pointer to a structure of type DB_MPOOL_FINFO (typedef'd
+in <db.h>).
+No references to the
+.I finfop
+structure are maintained by DB, so it may be discarded when the
+.I memp_fopen
+function returns.
+In order to ensure compatibility with future releases of DB, all fields
+of the DB_MPOOL_FINFO structure that are not explicitly set should be
+initialized to 0 before the first time the structure is used.
+Do this by declaring the structure external or static, or by calling the
+C library routine
+.IR bzero (3)
+or
+.IR memset (3).
 .PP
+The fields of the DB_MPOOL_FINFO structure used by
+.I DbMpoolFile::open
+are described  below.
+If
+.I finfop
+is NULL or any of its fields are set to their default value,
+defaults appropriate for the system are used.
+.TP 5
+int ftype;
+The
+.I ftype
+field should be the same as a
+.I ftype
+argument previously specified to the
+.I DbMpool::db_register
+method,
+unless no input or output processing of the file's pages are necessary,
+in which case it should be 0.
+(See the description of the
+.I DbMpool::db_register
+method for more information.)
+.TP 5
+DBT *pgcookie;
 The
 .I pgcookie
 argument contains the byte string that is passed to the
@@ -1002,19 +1009,27 @@ argument contains the byte string that is passed to the
 and
 .I pgout
 functions for this file, if any.
+If no
+.I pgin
+or
+.I pgout
+functions are specified, the
+.I pgcookie
+field should be NULL.
 (See the description of the
 .I DbMpool::db_register
 method for more information.)
-.PP
+.TP 5
+u_int8_t *fileid;
 The
-.I uid
-argument is a unique identifier for the file.
+.I fileid
+field is a unique identifier for the file.
 The mpool
 functions must be able to uniquely identify files in order that multiple
 processes sharing a file will correctly share its underlying pages.
 Normally, the
-.I uid
-argument should be NULL and the mpool functions will use the file's
+.I fileid
+field should be NULL and the mpool functions will use the file's
 device and inode numbers (see
 .IR stat (2))
 for this purpose.
@@ -1029,8 +1044,8 @@ call and each process opening or registering the file must provide the same
 unique identifier.
 .ft R
 If the
-.I uid
-argument is non-NULL,
+.I fileid
+field is non-NULL,
 it must reference a DB_FILE_ID_LEN (as defined in <db_cxx.h>) length array of
 bytes that will be used to uniquely identify the file.
 This should not be necessary for most applications.
@@ -1039,6 +1054,29 @@ each system reboot, the application is using the Db access methods instead of
 calling the pool functions explicitly, or the files in the memory pool are
 stored on filesystems where the file device and inode numbers do not change
 across system reboots.
+.TP 5
+int32_t lsn_offset;
+The
+.I lsn_offset
+argument is the zero-based byte offset in the page of the page's log sequence
+number (LSN),
+or \-1 if no LSN offset is specified.
+(See the description of the
+.I DbMpool::sync
+method for more information.)
+.TP 5
+u_int32_t clear_len;
+The
+.I clear_len
+field is the number of initial bytes in a page that should be set to zero
+when the page is created as a result of the DB_MPOOL_CREATE or DB_MPOOL_NEW
+flags being specified to
+.IR DbMpoolFile::get .
+If
+.I finfop
+is NULL or
+.I clear_len
+is 0, the entire page is cleared.
 .PP
 .Rt DbMpoolFile::open
 .PP
@@ -1086,18 +1124,18 @@ argument is specified by
 .BR or 'ing
 together one or more of the following values:
 .TP 5
-DB_MPOOL_CREATE
+.Sj DB_MPOOL_CREATE
 If the specified page does not exist, create it.
 In this case, the
 .I pgin
 method, if specified, is called.
 .TP 5
-DB_MPOOL_LAST
+.Sj DB_MPOOL_LAST
 Return the last page of the source file and copy its page number
 to the location referenced by
 .IR pgnoaddr .
 .TP 5
-DB_MPOOL_NEW
+.Sj DB_MPOOL_NEW
 Create a new page in the file and copy its page number to the location
 referenced by
 .IR pgnoaddr .
@@ -1108,7 +1146,8 @@ method, if specified, is not called.
 The DB_MPOOL_CREATE, DB_MPOOL_LAST and DB_MPOOL_NEW flags are mutually
 exclusive.
 .PP
-Created pages have all their bytes set to 0.
+Created pages have all their bytes set to 0, unless otherwise specified
+when the file was opened.
 .PP
 All pages returned by
 .I DbMpoolFile::get
@@ -1133,15 +1172,15 @@ argument is specified by
 .BR or 'ing
 together one or more of the following values:
 .TP 5
-DB_MPOOL_CLEAN
+.Sj DB_MPOOL_CLEAN
 Clear any previously set modification information (i.e.,
 don't bother writing the page back to the source file).
 .TP 5
-DB_MPOOL_DIRTY
+.Sj DB_MPOOL_DIRTY
 The page has been modified and must be written to the source file
 before being evicted from the pool.
 .TP 5
-DB_MPOOL_DISCARD
+.Sj DB_MPOOL_DISCARD
 The page is unlikely to be useful in the near future,
 and should be discarded before other pages in the pool.
 .PP
@@ -1388,12 +1427,6 @@ and
 write(2). 
 .Hy
 .ad
-\}
-.el\{\
-The semantics of Mpool files (as used in the C and C++ interfaces)
-are a little hard to reconcile with Java, and they are not often
-used directly.  For now, this class is rather limited.
-\}
 .PP
 .SH "SEE ALSO"
 .Sa

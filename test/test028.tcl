@@ -1,15 +1,16 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test028.tcl	8.1 (Sleepycat) 11/18/97
+#	@(#)test028.tcl	8.6 (Sleepycat) 4/26/98
 #
 # Put after cursor delete test.
 proc test028 { method args } {
 	global dupnum
 	global dupstr
 	global alphabet
+	set omethod $method
 	set method [convert_method $method]
 	puts "Test028: $method put after cursor delete test"
 
@@ -17,10 +18,16 @@ proc test028 { method args } {
 	# any useful equivalent to #defines!
 	source ./include.tcl
 
+	if { [is_rbtree $omethod] == 1 } {
+		puts "Test0028 skipping for method $omethod"
+		return
+	}
 	if { [string compare $method DB_RECNO] == 0 } {
-		set dbflags 0
+		set args [add_to_args 0 $args]
+		set key 10
 	} else {
-		set dbflags $DB_DUP
+		set args [add_to_args $DB_DUP $args]
+		set key "put_after_cursor_del"
 	}
 
 
@@ -29,8 +36,8 @@ proc test028 { method args } {
 	set t1 $testdir/t1
 	cleanup $testdir
 	set db [eval [concat dbopen \
-	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method -flags \
-	    $dbflags $args]]
+	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 
 	set ndups 20
 	set txn 0
@@ -61,7 +68,6 @@ proc test028 { method args } {
 			puts "\tTest028: $i/$b"
 
 			puts "\tTest028.a: Insert key with single data item"
-			set key "put_after_cursor_del"
 			set ret [$db put $txn $key $dupstr $flags]
 			error_check_good db_put $ret 0
 
@@ -97,12 +103,11 @@ proc test028 { method args } {
 
 			# Now repeat the above set of tests with
 			# duplicates (if not RECNO).
-			if { $dbflags == 0 } {
+			if { [string compare $method DB_RECNO] == 0 } {
 				continue;
 			}
 
 			puts "\tTest028.g: Insert key with duplicates"
-			set key "put_after_cursor_del"
 			for { set count 0 } { $count < $ndups } { incr count } {
 				set ret [$db put $txn $key $count$dupstr $flags]
 				error_check_good db_put $ret 0
@@ -171,12 +176,8 @@ proc test028 { method args } {
 proc test028.check { key data } {
 	global dupnum
 	global dupstr
-	if { [string compare $key put_after_cursor_del] != 0 } {
-		error "Test028: key mismatch: |$key| |put_after_cursor_del|"
-	}
-	if { [string compare $data $dupnum$dupstr] != 0 } {
-		error "Test028: data mismatch: |$data| |$dupnum$dupstr|"
-	}
+	error_check_good "Bad key" $key put_after_cursor_del
+	error_check_good "data mismatch for $key" $data $dupnum$dupstr
 	incr dupnum
 }
 

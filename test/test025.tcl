@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test025.tcl	8.1 (Sleepycat) 8/24/97
+#	@(#)test025.tcl	8.4 (Sleepycat) 4/26/98
 #
 # DB Test 25 {method nentries}
 # Test the DB_APPEND flag.
@@ -35,6 +35,7 @@ global kvals
 	cleanup $testdir
 	set db [eval [concat dbopen \
 	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	set did [open $dict]
 
 	puts "\tTest025.a: put/get loop"
@@ -52,9 +53,7 @@ global kvals
 		error_check_good db_put $recno [expr $count + 1]
 
 		set ret [$db get $txn $recno 0]
-		if { [string compare $ret $str] != 0 } {
-			error "Test025: record $recno expected $str got $ret"
-		}
+		error_check_good "get $recno" $ret $str
 		incr count
 	}
 	close $did
@@ -81,7 +80,5 @@ global kvals
 proc test025_check { key data } {
 global kvals
 	error_check_good key"$key"_exists [info exists kvals($key)] 1
-	if { [string compare $kvals($key) $data] != 0 } {
-		error "Test025: key/data mismatch: |$key| got |$data| expected $kvals($key)"
-	}
+	error_check_good " key/data mismatch for |$key|" $data $kvals($key)
 }

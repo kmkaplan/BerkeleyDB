@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997
+# Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test002.tcl	10.3 (Sleepycat) 8/24/97
+#	@(#)test002.tcl	10.6 (Sleepycat) 4/26/98
 #
 # DB Test 2 {access method}
 # Use the first 10,000 entries from the dictionary.
@@ -31,6 +31,7 @@ proc test002 { method {nentries 10000} args } {
 	cleanup $testdir
 	set db [eval [concat dbopen \
 	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 	set did [open $dict]
 
 	set flags 0
@@ -48,11 +49,11 @@ proc test002 { method {nentries 10000} args } {
 			set key $str
 			set put put
 		}
-		$db $put $txn $key $datastr $flags
+		set ret [$db $put $txn $key $datastr $flags]
+		error_check_good put $ret 0
+
 		set ret [$db get $txn $key $flags]
-		if { [string compare $ret $datastr] != 0 } {
-			error "Test002: put $datastr got $ret"
-		}
+		error_check_good get $ret $datastr
 		incr count
 	}
 	close $did
@@ -106,7 +107,5 @@ proc test002 { method {nentries 10000} args } {
 # Check function for test002; data should be fixed are identical
 proc test002.check { key data } {
 	global datastr
-	if { [string compare $data $datastr] != 0 } {
-		puts "Test002: data mismatch for key $key: |$data| |$datastr|"
-	}
+	error_check_good "data mismatch for key $key" $data $datastr
 }

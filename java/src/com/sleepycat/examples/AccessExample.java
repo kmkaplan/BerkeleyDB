@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)AccessExample.java	10.2 (Sleepycat) 11/20/97
+ *	@(#)AccessExample.java	10.5 (Sleepycat) 4/10/98
  */
 
 package com.sleepycat.examples;
@@ -151,12 +151,17 @@ class AccessExample extends DbEnv
         iterator = table.cursor(null);
 
         // Walk through the table, printing the key/data pairs.
+        // We use the DB_DBT_MALLOC flag to ask DB to allocate
+        // byte arrays for the results.
         Dbt key = new Dbt();
+        key.set_flags(Db.DB_DBT_MALLOC);
         Dbt data = new Dbt();
+        data.set_flags(Db.DB_DBT_MALLOC);
         while (iterator.get(key, data, Db.DB_NEXT) == 0)
         {
             String key_string = new String(key.get_data(), 0, key.get_size());
-            String data_string = new String(data.get_data(), 0, key.get_size());
+            String data_string =
+                new String(data.get_data(), 0, data.get_size());
             System.out.println(key_string + " : " + data_string);
         }
         iterator.close();

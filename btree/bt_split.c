@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1996, 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -44,7 +44,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)bt_split.c	10.18 (Sleepycat) 11/23/97";
+static const char sccsid[] = "@(#)bt_split.c	10.21 (Sleepycat) 4/26/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -53,7 +53,6 @@ static const char sccsid[] = "@(#)bt_split.c	10.18 (Sleepycat) 11/23/97";
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #endif
 
@@ -237,12 +236,10 @@ __bam_page(dbp, pp, cp)
 	DB *dbp;
 	EPG *pp, *cp;
 {
-	BTREE *t;
 	DB_LOCK tplock;
 	PAGE *lp, *rp, *tp;
 	int ret;
 
-	t = dbp->internal;
 	lp = rp = tp = NULL;
 	ret = -1;
 
@@ -259,7 +256,7 @@ __bam_page(dbp, pp, cp)
 		ret = ENOMEM;
 		goto err;
 	}
-#ifdef DEBUG
+#ifdef DIAGNOSTIC
 	memset(lp, 0xff, dbp->pgsize);
 #endif
 	P_INIT(lp, dbp->pgsize, cp->page->pgno,
@@ -906,13 +903,13 @@ __bam_copy(dbp, pp, cp, nxt, stop)
 	PAGE *pp, *cp;
 	u_int32_t nxt, stop;
 {
-	db_indx_t dup, nbytes, off;
+	db_indx_t nbytes, off;
 
 	/*
 	 * Copy the rest of the data to the right page.  Nxt is the next
 	 * offset placed on the target page.
 	 */
-	for (dup = off = 0; nxt < stop; ++nxt, ++NUM_ENT(cp), ++off) {
+	for (off = 0; nxt < stop; ++nxt, ++NUM_ENT(cp), ++off) {
 		switch (TYPE(pp)) {
 		case P_IBTREE:
 			if (B_TYPE(GET_BINTERNAL(pp, nxt)->type) == B_KEYDATA)

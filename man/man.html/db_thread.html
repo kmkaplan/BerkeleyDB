@@ -2,9 +2,9 @@
 <HEAD>
 <TITLE>db_thread</TITLE>
 </HEAD>
-<BODY>
+<BODY BGCOLOR=white>
 <H1>db_thread</H1>
-<HR>
+<HR SIZE=1 NOSHADE>
 <PRE>
 <!-- Manpage converted by man2html 3.0.1 -->
        The  DB  library  is  a family of groups of functions that
@@ -30,27 +30,33 @@
        i.e.,  threads may use handles concurrently, by specifying
        the DB_THREAD flag to <B><A HREF="db_appinit.html">db_appinit(3)</A></B> (or, in the  C++  API,
        <B><A HREF="DbEnv.html">DbEnv::appinit(3)</A></B>) and the other subsystem open functions.
-       However, in the Java API,  threading  is  assumed,  so  no
-       special flags are required.
+       Threading is assumed in the Java API, so no special  flags
+       are  required,  and  DB functions will always behave as if
+       the DB_THREAD flag was specified.
 
-       DB  supports  multi-threaded  applications with the caveat
-       that it  loads  and  calls  functions  that  are  commonly
-       available  in  C  language  environments and which may not
-       themselves be thread-safe.  Other than this usage, DB  has
-       no  static  data  and  maintains  no local context between
-       calls to DB functions.  To ensure  that  applications  can
-       safely  use  threads  in the context of DB, porters to new
+       DB supports multi-threaded applications  with  the  caveat
+       that  it  loads  and  calls  functions  that  are commonly
+       available in C language environments  and  which  may  not
+       themselves  be thread-safe.  Other than this usage, DB has
+       no static data and  maintains  no  local  context  between
+       calls  to  DB  functions.  To ensure that applications can
+       safely use threads in the context of DB,  porters  to  new
        operating systems and/or C libraries must confirm that the
-       system  and C library functions used by the DB library are
+       system and C library functions used by the DB library  are
        thread-safe.
 
-       There are some additional caveats about using  threads  to
+       There  are  some additional caveats about using threads to
        access the DB library:
 
-       <B>o</B> The  DB_THREAD flag must be specified for all subsystems
+       <B>o</B> The DB_THREAD flag must be specified for all  subsystems
          either explicitly or via the db_appinit (DbEnv::appinit)
-         function.  Setting the DB_THREAD flag inconsistently may
-         result in database corruption.
+         function in the C and C++ APIs.  Threading is assumed in
+         the  Java  API, so no special flags are required, and DB
+         functions will always behave as if  the  DB_THREAD  flag
+         was specified.
+
+         Setting  the DB_THREAD flag inconsistently may result in
+         database corruption.
 
        <B>o</B> Only a single thread may call the close function  for  a
          returned  database  or subsystem handle.  See <B><A HREF="db_open.html">db_open(3)</A></B>
@@ -117,6 +123,7 @@
 
        On OSF/1, if you are compiling a threaded application, you
        must compile with the -D_REENTRANT flag:
+
             cc -D_REENTRANT ...
 
        On  Solaris,  if you are compiling a threaded application,
@@ -135,7 +142,7 @@
        <B><A HREF="db_txn.html">db_txn(3)</A></B>
 
 </PRE>
-<HR>
+<HR SIZE=1 NOSHADE>
 <ADDRESS>
 Man(1) output converted with
 <a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>

@@ -8,28 +8,27 @@ SSYYNNOOPPSSIISS
 
        iinntt
        mmeemmpp__ooppeenn((cchhaarr **ddiirr,,
-            iinntt ffllaaggss,, iinntt mmooddee,, DDBB__EENNVV **ddbbeennvv,, DDBB__MMPPOOOOLL ****rreeggiioonnpp));;
+            uu__iinntt3322__tt ffllaaggss,, iinntt mmooddee,, DDBB__EENNVV **ddbbeennvv,, DDBB__MMPPOOOOLL ****rreeggiioonnpp));;
 
        iinntt
        mmeemmpp__cclloossee((DDBB__MMPPOOOOLL **mmpp));;
 
        iinntt
-       mmeemmpp__ffooppeenn((DDBB__MMPPOOOOLL **mmpp,, cchhaarr **ffiillee,, iinntt ffttyyppee,, iinntt ffllaaggss,,
-            iinntt mmooddee,, ssiizzee__tt ppaaggeessiizzee,, iinntt llssnn__ooffffsseett,, DDBBTT **ppggccooookkiiee,,
-            uu__iinntt88__tt **uuiidd,, DDBB__MMPPOOOOLLFFIILLEE ****mmppff));;
+       mmeemmpp__ffooppeenn((DDBB__MMPPOOOOLL **mmpp,, cchhaarr **ffiillee,, uu__iinntt3322__tt ffllaaggss,, iinntt mmooddee,,
+            ssiizzee__tt ppaaggeessiizzee,, DDBB__MMPPOOOOLL__FFIINNFFOO **ffiinnffoopp,, DDBB__MMPPOOOOLLFFIILLEE ****mmppff));;
 
        iinntt
        mmeemmpp__ffcclloossee((DDBB__MMPPOOOOLLFFIILLEE **mmppff));;
 
        iinntt
        mmeemmpp__ffggeett((DDBB__MMPPOOOOLLFFIILLEE **mmppff,,
-            ddbb__ppggnnoo__tt **ppggnnooaaddddrr,, iinntt ffllaaggss,, vvooiidd ****ppaaggeepp));;
+            ddbb__ppggnnoo__tt **ppggnnooaaddddrr,, uu__iinntt3322__tt ffllaaggss,, vvooiidd ****ppaaggeepp));;
 
        iinntt
-       mmeemmpp__ffppuutt((DDBB__MMPPOOOOLLFFIILLEE **mmppff,, vvooiidd **ppggaaddddrr,, iinntt ffllaaggss));;
+       mmeemmpp__ffppuutt((DDBB__MMPPOOOOLLFFIILLEE **mmppff,, vvooiidd **ppggaaddddrr,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
-       mmeemmpp__ffsseett((DDBB__MMPPOOOOLLFFIILLEE **mmppff,, vvooiidd **ppggaaddddrr,, iinntt ffllaaggss));;
+       mmeemmpp__ffsseett((DDBB__MMPPOOOOLLFFIILLEE **mmppff,, vvooiidd **ppggaaddddrr,, uu__iinntt3322__tt ffllaaggss));;
 
        iinntt
        mmeemmpp__ffssyynncc((DDBB__MMPPOOOOLLFFIILLEE **mmppff));;
@@ -83,12 +82,12 @@ DDEESSCCRRIIPPTTIIOONN
        default, until they are returned  to  the  pool's  control
        using the _m_e_m_p___f_p_u_t function.
 
-  _m_p_o_o_l___o_p_e_n
-       The  _m_p_o_o_l___o_p_e_n  function  copies a pointer, to the memory
+  _m_e_m_p___o_p_e_n
+       The  _m_e_m_p___o_p_e_n  function  copies  a pointer, to the memory
        pool identified by the  ddiirreeccttoorryy  _d_i_r,  into  the  memory
        location referenced by _r_e_g_i_o_n_p.
 
-       If  the _d_b_e_n_v argument to _m_p_o_o_l___o_p_e_n was initialized using
+       If  the  _d_b_e_n_v argument to _m_e_m_p___o_p_e_n was initialized using
        _d_b___a_p_p_i_n_i_t,   _d_i_r   is   interpreted   as   described   by
        _d_b___a_p_p_i_n_i_t(3).
 
@@ -113,7 +112,6 @@ DDEESSCCRRIIPPTTIIOONN
        opened  and/or created when they don't already exist.  The
        flags value is specified by oorr'ing together one or more of
        the following values:
-
        DB_CREATE
             Create  any  underlying  files, as necessary.  If the
             files do not already exist and the DB_CREATE flag  is
@@ -146,67 +144,72 @@ DDEESSCCRRIIPPTTIIOONN
 
        The memory pool subsystem is configured based on the _d_b_e_n_v
        argument to _m_e_m_p___o_p_e_n, which is a pointer to  a  structure
-       of type DB_ENV (typedef'd in <db.h>).  It is expected that
-       applications will use a single  DB_ENV  structure  as  the
-       argument  to  all of the subsystems in the DB package.  In
-       order to ensure compatibility with future releases of  DB,
-       all fields of the DB_ENV structure that are not explicitly
-       set should be initialized to 0 before the first  time  the
-       structure  is  used.   Do  this by declaring the structure
-       external or static, or by calling the  C  library  routine
-       _b_z_e_r_o(3) or _m_e_m_s_e_t(3).
+       of  type  DB_ENV (typedef'd in <db.h>).  Applications will
+       normally use the same  DB_ENV  structure  (initialized  by
+       _d_b___a_p_p_i_n_i_t(3)), as an argument to all of the subsystems in
+       the DB package.
 
-       The  fields  of the DB_ENV structure used by _m_e_m_p___o_p_e_n are
-       described below.  If _d_b_e_n_v is NULL or any  of  its  fields
+       References to the DB_ENV structure are maintained  by  DB,
+       so  it may not be discarded until the last close function,
+       corresponding to an open function  for  which  it  was  an
+       argument,  has returned.  In order to ensure compatibility
+       with future releases of  DB,  all  fields  of  the  DB_ENV
+       structure  that  are not explicitly set should be initial-
+       ized to 0 before the first time the structure is used.  Do
+       this  by declaring the structure external or static, or by
+       calling the C library routine _b_z_e_r_o(3) or _m_e_m_s_e_t(3).
+
+       The fields of the DB_ENV structure used by  _m_e_m_p___o_p_e_n  are
+       described  below.   If  _d_b_e_n_v is NULL or any of its fields
        are set to 0, defaults appropriate for the system are used
        where possible.
 
-       The following fields in the DB_ENV structure may  be  ini-
+       The  following  fields in the DB_ENV structure may be ini-
        tialized before calling _m_e_m_p___o_p_e_n:
-
        void *(*db_errcall)(char *db_errpfx, char *buffer);
-
        FILE *db_errfile;
        const char *db_errpfx;
        int db_verbose;
-            The  error  fields  of the DB_ENV behave as described
+            The error fields of the DB_ENV  behave  as  described
             for _d_b___a_p_p_i_n_i_t(3).
+
+
 
        size_t mp_mmapsize;
             Files that are opened read-only in the pool (and that
             satisfy a few other criteria) are, by default, mapped
-            into the  process  address  space  instead  of  being
+            into  the  process  address  space  instead  of being
             copied into the local cache.  This can result in bet-
             ter-than-usual performance, as available virtual mem-
             ory is normally much larger than the local cache, and
             page faults are faster than page copying on many sys-
-            tems.   However,  in  the presence of limited virtual
-            memory it can cause resource starvation, and  in  the
+            tems.  However, in the presence  of  limited  virtual
+            memory  it  can cause resource starvation, and in the
             presence of large databases, it can result in immense
             process sizes.  If _m_p___m_m_a_p_s_i_z_e is non-zero, it speci-
-            fies  the  maximum  file size for a file to be mapped
-            into the process address space.  By  default,  it  is
-            set to 10Mb.
+            fies the maximum file size, in bytes, for a  file  to
+            be   mapped  into  the  process  address  space.   By
+            default, it is set to 10Mb.
 
        size_t mp_size;
-            The  suggested  size  of  the  pool,  in bytes.  This
-            should be the size of the normal working data set  of
+            The suggested size  of  the  pool,  in  bytes.   This
+            should  be the size of the normal working data set of
             the application, with some small amount of additional
-            memory for unusual situations.   (Note,  the  working
-            set  is  not the same as the number of simultaneously
-            referenced pages, and should be quite a bit  larger!)
-            The  default  cache  size  is  128K bytes (16 8K byte
+            memory  for  unusual  situations.  (Note, the working
+            set is not the same as the number  of  simultaneously
+            referenced  pages, and should be quite a bit larger!)
+            The default cache size is  128K  bytes  (16  8K  byte
             pages), and may not be less than 20K bytes.
 
        The _m_e_m_p___o_p_e_n function returns the value of _e_r_r_n_o on fail-
        ure and 0 on success.
 
   _m_e_m_p___c_l_o_s_e
-       The  _m_e_m_p___c_l_o_s_e  function closes the pool indicated by the
+       The _m_e_m_p___c_l_o_s_e function closes the pool indicated  by  the
        DB_MPOOL pointer _m_p, as returned by _m_e_m_p___o_p_e_n.  This func-
-       tion   does   not  imply  a  call  to  _m_e_m_p___f_s_y_n_c  (or  to
-       _m_e_m_p___f_c_l_o_s_e) i.e. no pages are written to the source  file
-       as as a result of calling _m_e_m_p___c_l_o_s_e.
+       tion does not imply a call to _m_e_m_p___f_s_y_n_c, but does imply a
+       call  to  _m_e_m_p___f_c_l_o_s_e  for any remaining open DB_MPOOLFILE
+       pointers returned to this process by calls to  _m_e_m_p___f_o_p_e_n.
 
        In addition, if the _d_i_r argument to _m_e_m_p___o_p_e_n was NULL and
        _d_b_e_n_v  was  not  initialized  using  _d_b___a_p_p_i_n_i_t,  or   the
@@ -220,6 +223,7 @@ DDEESSCCRRIIPPTTIIOONN
 
        The  _m_e_m_p___c_l_o_s_e  function  returns  the  value of _e_r_r_n_o on
        failure and 0 on success.
+
   _m_e_m_p___f_o_p_e_n
        The _m_e_m_p___f_o_p_e_n function opens a file in the pool specified
        by the DB_MPOOL argument, copying the DB_MPOOLFILE pointer
@@ -231,130 +235,164 @@ DDEESSCCRRIIPPTTIIOONN
        shared  with  any other process (although it may be shared
        with other threads).
 
-       The _f_t_y_p_e argument should be the same as a _f_t_y_p_e  argument
-       previously specified to the _m_e_m_p___r_e_g_i_s_t_e_r function, unless
-       no input or output processing of the file's pages are nec-
-       essary,  in  which case it should be 0.  (See the descrip-
-       tion of the _m_e_m_p___r_e_g_i_s_t_e_r function for more  information.)
-
-       The  _f_l_a_g_s  and  _m_o_d_e  arguments specify how files will be
-       opened and/or created when they don't already exist.   The
+       The _f_l_a_g_s and _m_o_d_e arguments specify  how  files  will  be
+       opened  and/or created when they don't already exist.  The
        flags value is specified by oorr'ing together one or more of
        the following values:
 
        DB_CREATE
-            Create any underlying files, as  necessary.   If  the
-            files  do not already exist and the DB_CREATE flag is
+            Create  any  underlying  files, as necessary.  If the
+            files do not already exist and the DB_CREATE flag  is
             not specified, the call will fail.
 
        DB_NOMMAP
             Always copy this file into the local cache instead of
-            mapping  it  into process memory (see the description
-            of the _m_p___m_m_a_p_s_i_z_e field of the DB_ENV structure  for
+            mapping it into process memory (see  the  description
+            of  the _m_p___m_m_a_p_s_i_z_e field of the DB_ENV structure for
             further information).
 
        DB_RDONLY
-            Open  any  underlying  files  for  reading only.  Any
-            attempt to write the file using  the  pool  functions
-            will  fail,  regardless  of the actual permissions of
+            Open any underlying  files  for  reading  only.   Any
+            attempt  to  write  the file using the pool functions
+            will fail, regardless of the  actual  permissions  of
             the file.
 
-       All files created by the function _m_e_m_p___f_o_p_e_n  are  created
-       with  mode _m_o_d_e (as described in _c_h_m_o_d(2)) and modified by
-       the process' umask value at  the  time  of  creation  (see
-       _u_m_a_s_k(2)).   The group ownership of created files is based
-       on the system and directory defaults, and is  not  further
+       All  files  created by the function _m_e_m_p___f_o_p_e_n are created
+       with mode _m_o_d_e (as described in _c_h_m_o_d(2)) and modified  by
+       the  process'  umask  value  at  the time of creation (see
+       _u_m_a_s_k(2)).  The group ownership of created files is  based
+       on  the  system and directory defaults, and is not further
        specified by DB.
 
-       The  _p_a_g_e_s_i_z_e  argument is the size, in bytes, of the unit
+       The _p_a_g_e_s_i_z_e argument is the size, in bytes, of  the  unit
        of transfer between the application and the pool, although
-       it  is  not  necessarily  the unit of transfer between the
+       it is not necessarily the unit  of  transfer  between  the
        pool and the source file.
 
-       The _l_s_n___o_f_f_s_e_t argument is the zero-based byte  offset  in
-       the page of the page's log sequence number (LSN), or -1 if
-       no LSN offset is specified.  (See the description  of  the
-       _m_e_m_p___s_y_n_c function for more information.)
+       Files  opened  in the pool may be further configured based
+       on the _f_i_n_f_o_p argument to _m_e_m_p___f_o_p_e_n, which is  a  pointer
+       to  a  structure  of  type  DB_MPOOL_FINFO  (typedef'd  in
+       <db.h>).  No references to the _f_i_n_f_o_p structure are  main-
+       tained  by  DB, so it may be discarded when the _m_e_m_p___f_o_p_e_n
+       function returns.  In order to ensure  compatibility  with
+       future  releases  of  DB, all fields of the DB_MPOOL_FINFO
+       structure that are not explicitly set should  be  initial-
+       ized to 0 before the first time the structure is used.  Do
+       this by declaring the structure external or static, or  by
+       calling the C library routine _b_z_e_r_o(3) or _m_e_m_s_e_t(3).
 
-       The  _p_g_c_o_o_k_i_e  argument  contains  the byte string that is
-       passed to the _p_g_i_n and _p_g_o_u_t functions for this  file,  if
-       any.   (See  the description of the _m_e_m_p___r_e_g_i_s_t_e_r function
-       for more information.)
+       The   fields  of  the  DB_MPOOL_FINFO  structure  used  by
+       _m_e_m_p___f_o_p_e_n are described  below.  If _f_i_n_f_o_p is NULL or any
+       of  its  fields  are  set to their default value, defaults
+       appropriate for the system are used.
 
-       The _u_i_d argument is a unique identifier for the file.  The
-       mpool functions must be able to uniquely identify files in
-       order that multiple processes sharing  a  file  will  cor-
-       rectly  share  its  underlying  pages.   Normally, the _u_i_d
-       argument should be NULL and the mpool functions  will  use
-       the file's device and inode numbers (see _s_t_a_t(2)) for this
-       purpose.  On some filesystems, (e.g.,  FAT  or  NFS)  file
-       device and inode numbers are not necessarily unique across
-       system reboots.  AApppplliiccaattiioonnss wwaannttiinngg ttoo mmaaiinnttaaiinn aa sshhaarreedd
-       mmeemmoorryy  bbuuffffeerr  ppooooll aaccrroossss ssyysstteemm rreebboooottss,, wwhheerree tthhee ppooooll
-       ccoonnttaaiinnss ppaaggeess ffrroomm ffiilleess ssttoorreedd oonn ssuucchh ffiilleessyysstteemmss,, mmuusstt
-       ssppeecciiffyy  aa  uunniiqquuee  ffiillee iiddeennttiiffiieerr ttoo tthhee mmeemmpp__ffooppeenn ccaallll
-       aanndd eeaacchh pprroocceessss ooppeenniinngg oorr rreeggiisstteerriinngg tthhee ffiillee mmuusstt pprroo--
-       vviiddee  tthhee  ssaammee uunniiqquuee iiddeennttiiffiieerr..  If the _u_i_d argument is
-       non-NULL, it must reference a DB_FILE_ID_LEN  (as  defined
-       in  <db.h>)  length  array  of  bytes that will be used to
-       uniquely identify the file.  This should not be  necessary
-       for  most applications.  Specifically, it is not necessary
-       if the memory pool is re-instantiated  after  each  system
-       reboot,  the  application  is  using the DB access methods
-       instead of calling the pool functions explicitly,  or  the
-       files  in  the memory pool are stored on filesystems where
-       the file device and inode numbers  do  not  change  across
-       system reboots.
+       int ftype;
+            The _f_t_y_p_e field should be the same as a  _f_t_y_p_e  argu-
+            ment  previously specified to the _m_e_m_p___r_e_g_i_s_t_e_r func-
+            tion, unless no input or  output  processing  of  the
+            file's  pages  are necessary, in which case it should
+            be 0.  (See  the  description  of  the  _m_e_m_p___r_e_g_i_s_t_e_r
+            function for more information.)
 
-       The  _m_e_m_p___f_o_p_e_n  function  returns  the  value of _e_r_r_n_o on
+       DBT *pgcookie;
+            The  _p_g_c_o_o_k_i_e  field contains the byte string that is
+            passed to the _p_g_i_n and _p_g_o_u_t functions for this file,
+            if any.  If no _p_g_i_n or _p_g_o_u_t functions are specified,
+            the _p_g_c_o_o_k_i_e field should be NULL.  (See the descrip-
+            tion  of the _m_e_m_p___r_e_g_i_s_t_e_r function for more informa-
+            tion.)
+
+       u_int8_t *fileid;
+            The _f_i_l_e_i_d field is a unique identifier for the file.
+            The mpool functions must be able to uniquely identify
+            files in order that multiple processes sharing a file
+            will correctly share its underlying pages.  Normally,
+            the _f_i_l_e_i_d field should be NULL and the  mpool  func-
+            tions  will  use  the file's device and inode numbers
+            (see _s_t_a_t(2)) for this purpose.  On some filesystems,
+            (e.g.,  FAT or NFS) file device and inode numbers are
+            not necessarily unique across system reboots.  AAppppllii--
+            ccaattiioonnss  wwaannttiinngg  ttoo  mmaaiinnttaaiinn aa sshhaarreedd mmeemmoorryy bbuuffffeerr
+            ppooooll aaccrroossss ssyysstteemm rreebboooottss,, wwhheerree tthhee  ppooooll  ccoonnttaaiinnss
+            ppaaggeess  ffrroomm  ffiilleess  ssttoorreedd  oonn ssuucchh ffiilleessyysstteemmss,, mmuusstt
+            ssppeecciiffyy aa uunniiqquuee ffiillee iiddeennttiiffiieerr  ttoo  tthhee  _m_e_m_p___f_o_p_e_n
+            call and each process opening or registering the file
+            must provide the  same  unique  identifier.   If  the
+            _f_i_l_e_i_d   field  is  non-NULL,  it  must  reference  a
+            DB_FILE_ID_LEN (as defined in <db.h>) length array of
+            bytes  that  will  be  used  to uniquely identify the
+            file.  This should not be necessary for most applica-
+            tions.  Specifically, it is not necessary if the mem-
+            ory pool is re-instantiated after each system reboot,
+            the  application  is  using  the  DB  access  methods
+            instead of calling the pool functions explicitly,  or
+            the  files  in the memory pool are stored on filesys-
+            tems where the file device and inode numbers  do  not
+            change across system reboots.
+       int32_t lsn_offset;
+            The _l_s_n___o_f_f_s_e_t field is the zero-based byte offset in
+            the page of the page's log sequence number (LSN),  or
+            -1  if no LSN offset is specified.  (See the descrip-
+            tion of the _m_e_m_p___s_y_n_c function for more information.)
+
+       u_int32_t clear_len;
+            The _c_l_e_a_r___l_e_n field is the number of initial bytes in
+            a page that should be set to zero when  the  page  is
+            created   as  a  result  of  the  DB_MPOOL_CREATE  or
+            DB_MPOOL_NEW flags being specified to _m_e_m_p___f_g_e_t.   If
+            _f_i_n_f_o_p  is NULL or _c_l_e_a_r___l_e_n is 0, the entire page is
+            cleared.
+
+       The _m_e_m_p___f_o_p_e_n function returns  the  value  of  _e_r_r_n_o  on
        failure and 0 on success.
 
   _m_e_m_p___f_c_l_o_s_e
-       The _m_e_m_p___f_c_l_o_s_e function closes the source file  indicated
-       by  the  DB_MPOOLFILE pointer _m_p_f.  This function does not
-       imply a call to _m_e_m_p___f_s_y_n_c, i.e. no pages are  written  to
+       The  _m_e_m_p___f_c_l_o_s_e function closes the source file indicated
+       by the DB_MPOOLFILE pointer _m_p_f.  This function  does  not
+       imply  a  call to _m_e_m_p___f_s_y_n_c, i.e. no pages are written to
        the source file as as a result of calling _m_e_m_p___f_c_l_o_s_e.
 
-       In  addition, if the _f_i_l_e argument to _m_e_m_p___f_o_p_e_n was NULL,
+       In addition, if the _f_i_l_e argument to _m_e_m_p___f_o_p_e_n was  NULL,
        any underlying files created for this DB_MPOOLFILE will be
        removed.
 
-       The  _m_e_m_p___f_c_l_o_s_e  function  returns  the value of _e_r_r_n_o on
+       The _m_e_m_p___f_c_l_o_s_e function returns the  value  of  _e_r_r_n_o  on
        failure and 0 on success.
 
   _m_e_m_p___f_g_e_t
-       The _m_e_m_p___f_g_e_t function copies a pointer to the  page  with
-       the  page  number  specified  by _p_g_n_o_a_d_d_r, from the source
-       file specified by the DB_MPOOLFILE pointer _m_p_f,  into  the
+       The  _m_e_m_p___f_g_e_t  function copies a pointer to the page with
+       the page number specified by  _p_g_n_o_a_d_d_r,  from  the  source
+       file  specified  by the DB_MPOOLFILE pointer _m_p_f, into the
        memory location referenced by _p_a_g_e_p.  If the page does not
        exist or cannot be retrieved, _m_e_m_p___f_g_e_t will fail.
 
        The returned page is size_t type aligned.
 
-       PPaaggee nnuummbbeerrss bbeeggiinn aatt 00,, ee..gg..,, tthhee ffiirrsstt ppaaggee iinn tthhee  ffiillee
+       PPaaggee  nnuummbbeerrss bbeeggiinn aatt 00,, ee..gg..,, tthhee ffiirrsstt ppaaggee iinn tthhee ffiillee
        iiss ppaaggee nnuummbbeerr 00,, nnoott ppaaggee nnuummbbeerr 11..
 
-       The  _f_l_a_g_s argument is specified by oorr'ing together one or
+       The _f_l_a_g_s argument is specified by oorr'ing together one  or
        more of the following values:
 
        DB_MPOOL_CREATE
-            If the specified page does not exist, create it.   In
+            If  the specified page does not exist, create it.  In
             this  case,  the  _p_g_i_n  function,  if  specified,  is
             called.
 
        DB_MPOOL_LAST
-            Return the last page of the source file and copy  its
+            Return  the last page of the source file and copy its
             page number to the location referenced by _p_g_n_o_a_d_d_r.
 
        DB_MPOOL_NEW
-            Create  a new page in the file and copy its page num-
-            ber to the location referenced by _p_g_n_o_a_d_d_r.  In  this
+            Create a new page in the file and copy its page  num-
+            ber  to the location referenced by _p_g_n_o_a_d_d_r.  In this
             case, the _p_g_i_n function, if specified, is not called.
 
-       The DB_MPOOL_CREATE, DB_MPOOL_LAST and DB_MPOOL_NEW  flags
+       The  DB_MPOOL_CREATE, DB_MPOOL_LAST and DB_MPOOL_NEW flags
        are mutually exclusive.
 
-       Created pages have all their bytes set to 0.
+       Created pages have all their bytes set to 0, unless other-
+       wise specified when the file was opened.
 
        All  pages  returned  by  _m_e_m_p___f_g_e_t will be retained (i.e.
        ``pinned'')  in  the  pool  until  a  subsequent  call  to
@@ -399,6 +437,7 @@ DDEESSCCRRIIPPTTIIOONN
        by oorr'ing together one or more of the values specified  as
        flags for the _m_e_m_p___f_p_u_t call.
 
+
        The _m_e_m_p___f_s_e_t function returns the value of _e_r_r_n_o on fail-
        ure and 0 on success.
 
@@ -416,17 +455,17 @@ DDEESSCCRRIIPPTTIIOONN
        to write.
 
 
-  _m_p_o_o_l___u_n_l_i_n_k
-       The _m_p_o_o_l___u_n_l_i_n_k function destroys the memory pool identi-
+  _m_e_m_p___u_n_l_i_n_k
+       The _m_e_m_p___u_n_l_i_n_k function destroys the memory pool  identi-
        fied  by  the  directory  _d_i_r,  removing all files used to
        implement the memory pool.   (The  directory  _d_i_r  is  not
        removed.)    If  there  are  processes  that  have  called
-       _m_p_o_o_l___o_p_e_n without calling _m_p_o_o_l___c_l_o_s_e  (i.e.,  there  are
-       processes  currently  using the memory pool), _m_p_o_o_l___u_n_l_i_n_k
-       will fail without further action, unless the force flag is
-       set, in which case _m_p_o_o_l___u_n_l_i_n_k will attempt to remove the
-       memory pool files regardless of any processes still  using
-       the memory pool.
+       _m_e_m_p___o_p_e_n without calling _m_e_m_p___c_l_o_s_e (i.e., there are pro-
+       cesses  currently using the memory pool), _m_e_m_p___u_n_l_i_n_k will
+       fail without further action, unless the force flag is set,
+       in  which case _m_e_m_p___u_n_l_i_n_k will attempt to remove the mem-
+       ory pool files regardless of any processes still using the
+       memory pool.
 
        The  result  of  attempting to forcibly destroy the region
        when a process has the region open is  unspecified.   Pro-
@@ -442,17 +481,17 @@ DDEESSCCRRIIPPTTIIOONN
 
        In  the  case  of catastrophic or system failure, database
        recovery must  be  performed  (see  _d_b___r_e_c_o_v_e_r(1)  or  the
-       DB_RECOVER  flags  to  _d_b___a_p_p_i_n_i_t(3)).   Alternatively, if
-       recovery is not required  because  no  database  state  is
-       maintained  across  failures, it is possible to clean up a
-       memory pool by removing all of the files in the  directory
-       specified to the _m_p_o_o_l___o_p_e_n function, as memory pool files
-       are never created in any  directory  other  than  the  one
-       specified to _m_p_o_o_l___o_p_e_n.  Note, however, that this has the
-       potential to remove files created by the other DB  subsys-
-       tems in this database environment.
+       DB_RECOVER  and  DB_RECOVER_FATAL flags to _d_b___a_p_p_i_n_i_t(3)).
+       Alternatively, if recovery  is  not  required  because  no
+       database state is maintained across failures, it is possi-
+       ble to clean up a memory pool by removing all of the files
+       in  the  directory specified to the _m_e_m_p___o_p_e_n function, as
+       memory pool files are never created in any directory other
+       than  the one specified to _m_e_m_p___o_p_e_n.  Note, however, that
+       this has the potential to  remove  files  created  by  the
+       other DB subsystems in this database environment.
 
-       The  _m_p_o_o_l___u_n_l_i_n_k  function  returns the value of _e_r_r_n_o on
+       The  _m_e_m_p___u_n_l_i_n_k  function  returns  the value of _e_r_r_n_o on
        failure and 0 on success.
 
   _m_e_m_p___r_e_g_i_s_t_e_r
@@ -561,6 +600,7 @@ DDEESSCCRRIIPPTTIIOONN
        information as to how effective the cache has been.
 
        Statistical structures are created  in  allocated  memory.
+
        If  _d_b___m_a_l_l_o_c  is  non-NULL,  it is called to allocate the
        memory, otherwise, the library function _m_a_l_l_o_c(3) is used.
        The  function _d_b___m_a_l_l_o_c must match the calling conventions
@@ -599,7 +639,6 @@ DDEESSCCRRIIPPTTIIOONN
             Clean pages forced from the cache.
        u_int32_t st_rw_evict;
             Dirty pages forced from the cache.
-
        u_int32_t st_hash_buckets;
             Number of hash buckets in buffer hash table.
        u_int32_t st_hash_searches;
@@ -654,6 +693,7 @@ DDEESSCCRRIIPPTTIIOONN
 
        The _m_e_m_p___s_t_a_t function returns the value of _e_r_r_n_o on fail-
        ure and 0 on success.
+
 EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
        The  following  environment variables affect the execution
        of _d_b___m_p_o_o_l:
@@ -666,11 +706,11 @@ EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
             described in _d_b___a_p_p_i_n_i_t(3).
 
        TMPDIR
-            If the _d_b_e_n_v argument to _m_p_o_o_l___o_p_e_n was NULL  or  not
+            If the _d_b_e_n_v argument to _m_e_m_p___o_p_e_n was  NULL  or  not
             initialized  using  _d_b___a_p_p_i_n_i_t, the environment vari-
             able TMPDIR may be used as the directory in which  to
-            create   the   memory   pool,  as  described  in  the
-            _m_p_o_o_l___o_p_e_n section above.
+            create the memory pool, as described in the _m_e_m_p___o_p_e_n
+            section above.
 
 EERRRROORRSS
        The _m_e_m_p___o_p_e_n function may fail and return _e_r_r_n_o  for  any
@@ -762,6 +802,7 @@ EERRRROORRSS
 
             More than one of DB_MPOOL_CREATE,  DB_MPOOL_LAST  and
             DB_MPOOL_NEW was set.
+
        [ENOMEM]
             The  cache  is full and no more pages will fit in the
             pool.

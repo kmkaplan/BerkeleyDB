@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)ex_btrec.c	10.6 (Sleepycat) 11/10/97
+ *	@(#)ex_btrec.c	10.8 (Sleepycat) 4/11/98
  */
 
 #include "config.h"
@@ -23,10 +23,10 @@
 #define	DATABASE	"access.db"
 #define	WORDLIST	"../test/wordlist"
 
-DB_ENV *db_init(char *);
+DB_ENV *db_init __P((char *));
 int	main __P((int, char *[]));
-void	usage(void);
-void	show(char *, DBT *, DBT *);
+void	show __P((char *, DBT *, DBT *));
+void	usage __P((void));
 
 const char *progname = "ex_btrec";			/* Program name. */
 

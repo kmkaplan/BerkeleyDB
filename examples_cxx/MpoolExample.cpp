@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997
+ * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)MpoolExample.cpp	10.5 (Sleepycat) 11/10/97
+ *	@(#)MpoolExample.cpp	10.7 (Sleepycat) 5/2/98
  */
 
 #include "config.h"
@@ -172,10 +172,9 @@ MpoolExample::run(int hits, int pagesize, int npages)
     DbMpool::open(NULL, DB_CREATE, 0666, this, &dbmp);
 
     // Open the file in the pool.
-    Dbt thunk;
     DbMpoolFile *dbmfp;
 
-    DbMpoolFile::open(dbmp, MPOOL, 0, 0, 0, pagesize, 0, &thunk, 0, &dbmfp);
+    DbMpoolFile::open(dbmp, MPOOL, 0, 0, pagesize, NULL, &dbmfp);
 
     // get explicit error returns rather than exceptions so
     // we can report more information with each error.
