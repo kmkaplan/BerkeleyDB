@@ -1,0 +1,504 @@
+<HTML>
+<HEAD>
+<TITLE>db_appinit</TITLE>
+</HEAD>
+<BODY>
+<H1>db_appinit</H1>
+<HR>
+<PRE>
+
+</PRE>
+<H2>NAME</H2><PRE>
+       db_appinit - initializing the DB environment
+
+
+</PRE>
+<H2>SYNOPSIS</H2><PRE>
+       <STRONG>#include</STRONG> <STRONG>&lt;db.h&gt;</STRONG>
+
+       <STRONG>char</STRONG> <STRONG>*</STRONG>
+       <STRONG>db_version(int</STRONG> <STRONG>*major,</STRONG> <STRONG>int</STRONG> <STRONG>*minor,</STRONG> <STRONG>int</STRONG> <STRONG>*patch);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>db_appinit(char</STRONG> <STRONG>*db_home,</STRONG>
+            <STRONG>char</STRONG> <STRONG>*db_config[],</STRONG> <STRONG>DB_ENV</STRONG> <STRONG>*dbenv,</STRONG> <STRONG>int</STRONG> <STRONG>flags);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>db_appexit(DB_ENV</STRONG> <STRONG>*dbenv);</STRONG>
+
+
+</PRE>
+<H2>DESCRIPTION</H2><PRE>
+       The  DB  library  is  a family of groups of functions that
+       provides a modular programming interface  to  transactions
+       and  record-oriented  file  access.   The library includes
+       support for transactions, locking, logging and  file  page
+       caching,  as well as various indexed access methods.  Many
+       of the functional groups  (e.g.,  the  file  page  caching
+       functions)  are  useful  independent of the other DB func-
+       tions, although  some  functional  groups  are  explicitly
+       based  on  other functional groups (e.g., transactions and
+       logging).  For a general description of  the  DB  package,
+       see <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>.
+
+  <EM>db</EM><STRONG>_</STRONG><EM>version</EM>
+       The <EM>db</EM><STRONG>_</STRONG><EM>version</EM> function returns a pointer to a string con-
+       taining DB version information.  If <EM>major</EM> is non-NULL, the
+       major version of the DB release is stored in the memory it
+       references.  If <EM>minor</EM> is non-NULL, the  minor  version  of
+       the  DB release is stored in the memory it references.  If
+       <EM>patch</EM> is non-NULL, the patch version of the DB release  is
+       stored in the memory it references.
+
+  <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>
+       The  <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM> function provides a simple way to initial-
+       ize and configure the DB environment.  It is not necessary
+       that  it be called, but it provides a method of creating a
+       consistent environment for processes using one or more  of
+       the features of DB.
+
+       The  <EM>db</EM><STRONG>_</STRONG><EM>home</EM>  and  <EM>db</EM><STRONG>_</STRONG><EM>config</EM>  arguments  to <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM> are
+       described in the section below entitled ``FILE NAMING''.
+
+       The <EM>flags</EM> argument specifies the subsystems that are  ini-
+       tialized  and  how the environment affects DB file naming,
+       among other things.   The  flags  value  is  specified  by
+       <STRONG>or</STRONG>'ing together one or more of the following values:
+
+
+            <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG>, as well.
+
+       DB_INIT_LOG
+            Initialize  the  log  subsystem; see <STRONG><A HREF="db_log.html">db_log(3)</A></STRONG>.  This
+            subsystem is used when recovery from  application  or
+            system failure is important.
+
+       DB_INIT_MPOOL
+            Initialize  the  mpool  subsystem;  see  <STRONG><A HREF="db_mpool.html">db_mpool(3)</A></STRONG>.
+            This subsystem is used whenever  the  application  is
+            using the DB access methods for any purpose.
+
+       DB_INIT_TXN
+            Initialize  the transaction subsystem; see <STRONG><A HREF="db_txn.html">db_txn(3)</A></STRONG>.
+            This subsystem is used  when  atomicity  of  multiple
+            operations   and   recovery   are   important.    The
+            DB_INIT_TXN flag implies the DB_INIT_LOG flag.
+
+       DB_MPOOL_PRIVATE
+            Create a private memory  pool  (see  <STRONG><A HREF="db_mpool.html">db_mpool(3)</A></STRONG>  for
+            further  information).   Ignored unless DB_INIT_MPOOL
+            is also specified.
+
+       DB_NOMMAP
+            Do not map any files  within  this  environment  (see
+            <STRONG><A HREF="db_mpool.html">db_mpool(3)</A></STRONG> for further information).  Ignored unless
+            DB_INIT_MPOOL is also specified.
+
+       DB_RECOVER
+            Run normal recovery on this environment before  open-
+            ing  it  for  normal  use.   If this flag is set, the
+            DB_CREATE, DB_INIT_TXN, and  DB_INIT_LOG  flags  must
+            also  be  set  since  the regions will be removed and
+            recreated.  For further information, consult the  man
+            page for <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG>.
+
+       DB_RECOVER_FATAL
+            Run  catastrophic recovery on this environment before
+            opening it for normal use.  If this flag is set,  the
+            DB_CREATE,  DB_INIT_TXN,  and  DB_INIT_LOG flags must
+            also be set since the regions  will  be  removed  and
+            recreated.   For further information, consult the man
+            page for <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG>.
+
+       DB_THREAD
+            Ensure that handles returned by the DB subsystems are
+            useable  by multiple threads within a single process,
+            i.e., that the  system  is  ``free-threaded''.   (See
+            <STRONG><A HREF="db_lock.html">db_lock(3)</A></STRONG>,  <STRONG><A HREF="db_log.html">db_log(3)</A></STRONG>,  <STRONG><A HREF="db_mpool.html">db_mpool(3)</A></STRONG>,  <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG> and
+            <STRONG><A HREF="db_txn.html">db_txn(3)</A></STRONG> for more information.)
+
+       DB_TXN_NOSYNC
+            On transaction commit, do not synchronously flush the
+            log (see <STRONG><A HREF="db_txn.html">db_txn(3)</A></STRONG> for further information).  Ignored
+            The DB process' environment may be permitted to spec-
+            ify information to be used when naming files (see the
+            section entitled ``FILE NAMING'' below).  As  permit-
+            ting users to specify which files are used can create
+            security problems, if the DB_USE_ENVIRON_ROOT flag is
+            set,  environment  information  will be used for file
+            naming only for users with a user-ID matching that of
+            the  superuser  (specifically,  users  for  whom  the
+            <EM>getuid</EM> system call returns the user-ID 0).
+
+       The DB environment is configured based on the <EM>dbenv</EM>  argu-
+       ment  to  <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>, which is a pointer to a structure of
+       type DB_ENV (typedef'd in &lt;db.h&gt;).  It  is  expected  that
+       applications  will  use  a  single DB_ENV structure as the
+       argument to all of the subsystems in the DB  package.   In
+       order  to ensure compatibility with future releases of DB,
+       all fields of the DB_ENV structure that are not explicitly
+       set  should  be initialized to 0 before the first time the
+       structure is used.  Do this  by  declaring  the  structure
+       external  or  static,  or by calling the C library routine
+       <STRONG><A HREF="bzero.html">bzero(3)</A></STRONG> or <STRONG><A HREF="memset.html">memset(3)</A></STRONG>.
+
+       The fields of the DB_ENV structure used by <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>  are
+       described  below.   As  references to the DB_ENV structure
+       may be maintained by <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>, it is necessary that  the
+       DB_ENV  structure  and memory it references be valid until
+       the <EM>db</EM><STRONG>_</STRONG><EM>appexit</EM> function is called.  The <EM>dbenv</EM> argument may
+       not be NULL.  If any of the fields of the <EM>dbenv</EM> are set to
+       0, defaults appropriate for the system are used where pos-
+       sible.
+
+       The  following  fields in the DB_ENV structure may be ini-
+       tialized before calling <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>:
+
+       void (*db_errcall)(char *db_errpfx, char *buffer);
+            When an error occurs in  the  DB  package,  an  <EM>errno</EM>
+            value  is  returned  by the function.  In some cases,
+            however, the <EM>errno</EM> value may be insufficient to  com-
+            pletely describe the cause of the error.
+
+            If  <EM>db</EM><STRONG>_</STRONG><EM>errcall</EM>  is  non-NULL,  it  may be called with
+            additional error information.  The <EM>db</EM><STRONG>_</STRONG><EM>errpfx</EM> argument
+            is  the  current  environment's <EM>db</EM><STRONG>_</STRONG><EM>errpfx</EM> field.  The
+            <EM>buffer</EM> argument contains a nul-terminated string with
+            the additional information.
+
+            This  error  logging  facility should not be required
+            for normal operation, but may be useful in  debugging
+            applications.
+
+       FILE *db_errfile;
+            The   <EM>db</EM><STRONG>_</STRONG><EM>errfile</EM>   field  behaves  similarly  to  the
+            <EM>db</EM><STRONG>_</STRONG><EM>errcall</EM> field, except that the  error  message  is
+            written to the file stream represented by <EM>db</EM><STRONG>_</STRONG><EM>errfile</EM>.
+
+       int db_verbose;
+            Include informational and debugging messages as  well
+            as  error  messages  in the <EM>db</EM><STRONG>_</STRONG><EM>errcall</EM> and <EM>db</EM><STRONG>_</STRONG><EM>errfile</EM>
+            output.
+
+       Each of  the  open  functions  that  <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>  may  call
+       (<EM>lock</EM><STRONG>_</STRONG><EM>open</EM>, <EM>log</EM><STRONG>_</STRONG><EM>open</EM>, <EM>memp</EM><STRONG>_</STRONG><EM>open</EM> and <EM>txn</EM><STRONG>_</STRONG><EM>open</EM>) is called as
+       follows, where the DB_CREATE flag is optional:
+
+            XXX_open(NULL, DB_CREATE,
+               S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, dbenv)
+
+       This call will cause each subsystem to construct pathnames
+       as  described in the section on ``FILE NAMING''.  The sub-
+       system has permission to read and write  underlying  files
+       as  necessary,  and optionally to create files.  (All cre-
+       ated files will be created readable and writeable  by  the
+       owner and the group.  The group ownership of created files
+       is based on the system and directory defaults, and is  not
+       further specified by DB.)
+
+       In  addition,  the  <EM>dbenv</EM>  argument  is passed to the open
+       functions of any  subsystems  initialized  by  <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>.
+       For  this  reason the fields of the DB_ENV structure rele-
+       vant to the subsystems being initialized  must  themselves
+       be  initialized before <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM> is called.  See the man-
+       ual page for each subsystem for a list of these fields and
+       their uses.
+
+       The return value from each of these calls is placed in the
+       appropriate field of the DB_ENV structure:
+
+       DB_LOCKTAB *lk_info;
+            The return value of the <STRONG><A HREF="lock_open.html">lock_open(3)</A></STRONG> call.
+
+       DB_LOG *lg_info;
+            The return value of the <STRONG><A HREF="log_open.html">log_open(3)</A></STRONG> call.
+
+       DB_MPOOL *mp_info;
+            The return value of the <STRONG><A HREF="memp_open.html">memp_open(3)</A></STRONG> call.
+
+       DB_TXNMGR *tx_info;
+            The return value of the <STRONG><A HREF="txn_open.html">txn_open(3)</A></STRONG> call.
+
+       In general, these fields are not directly used by applica-
+       tions;  subsystems of DB that use these fields will simply
+       reference them using the DB_ENV  argument  passed  to  the
+       subsystem.
+
+       For  example,  an  application  using  the  DB hash access
+       method functions to access  a  database  will  first  call
+       <EM>db</EM><STRONG>_</STRONG><EM>open</EM>  passing  it  the DB_ENV argument filled in by the
+       initial call to <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>.  Then, all future calls to the
+       hash  access method functions for that database will auto-
+       The <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM> function returns  the  value  of  <EM>errno</EM>  on
+       failure and 0 on success.
+
+  <EM>db</EM><STRONG>_</STRONG><EM>appexit</EM>
+       The  <EM>db</EM><STRONG>_</STRONG><EM>appexit</EM> function closes the initialized DB subsys-
+       tems, freeing any  allocated  resources  and  closing  any
+       underlying subsystems.
+
+       When  multiple threads are using the DB_ENV handle concur-
+       rently, only a single thread may call the <EM>db</EM><STRONG>_</STRONG><EM>appexit</EM> func-
+       tion.
+
+       The  <EM>db</EM><STRONG>_</STRONG><EM>appexit</EM>  function  returns  the  value of <EM>errno</EM> on
+       failure and 0 on success.
+
+
+</PRE>
+<H2>FILE NAMING</H2><PRE>
+       The most important task of <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM> is to structure file
+       naming within DB.
+
+       Each  of the locking, logging, memory pool and transaction
+       subsystems of DB require shared memory regions, backed  by
+       the  filesystem.   Further,  cooperating  applications (or
+       multiple invocations of the same application)  must  agree
+       on  the  location  of  the shared memory regions and other
+       files used by the DB subsystems, the log files used by the
+       logging subsystem, and, of course, the data files.
+
+       Although  it  is possible to specify full pathnames to all
+       DB functions, this is cumbersome and requires that  appli-
+       cations  be recompiled when database files are moved.  The
+       <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM> function makes it possible  to  place  database
+       files  in  a single directory, or in multiple directories,
+       grouped by their function within the database.
+
+       Applications are normally expected  to  specify  a  single
+       directory  home for their database.  This can be done eas-
+       ily in the call to <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM> by specifying  a  value  for
+       the  <EM>db</EM><STRONG>_</STRONG><EM>home</EM>  argument.  There are more complex configura-
+       tions where it may be desirable  to  override  <EM>db</EM><STRONG>_</STRONG><EM>home</EM>  or
+       provide supplementary path information.
+
+       The  following  describes  the possible ways in which file
+       naming information may be specified  to  the  DB  library.
+       The  specific  circumstances and order in which these ways
+       are applied are described in a subsequent paragraph.
+
+       <EM>db</EM><STRONG>_</STRONG><EM>home</EM>
+            If the <EM>db</EM><STRONG>_</STRONG><EM>home</EM> argument to  <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>  is  non-NULL,
+            its value may be used as the database home, and files
+            named relative to its path.
+
+       DB_HOME
+            If the  DB_HOME  environment  variable  is  set  when
+            <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>  is  called,  its value may be used as the
+            ues will be ignored.  The  <EM>db</EM><STRONG>_</STRONG><EM>config</EM>  array  must  be
+            NULL terminated.
+
+       DB_CONFIG
+            The same information specified to the <EM>db</EM><STRONG>_</STRONG><EM>config</EM> argu-
+            ment to <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM> may be specified using a  configu-
+            ration  file.   If a database home directory has been
+            specified (either by  the  application  specifying  a
+            non-NULL  <EM>db</EM><STRONG>_</STRONG><EM>home</EM>  argument  to <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>, or by the
+            application setting the DB_USE_ENVIRON or DB_USE_ENV-
+            IRON_ROOT  flags and the DB_HOME environment variable
+            being set),  any  file  named  ``DB_CONFIG''  in  the
+            database home directory will be read for lines of the
+            format ``NAME VALUE''.  The whitespace delimiting the
+            two  parts  of the line may be one or more &lt;space&gt; or
+            &lt;tab&gt; characters.  (Leading or trailing  &lt;space&gt;  and
+            &lt;tab&gt;  characters are discarded.)  All empty lines or
+            lines whose first non-whitespace character is a  hash
+            character  (``#'')  will  be ignored.  Each line must
+            specify both the NAME and the VALUE of the pair.  All
+            lines  with unrecognized NAME values will be ignored.
+
+       The following ``NAME VALUE'' pairs in the <EM>db</EM><STRONG>_</STRONG><EM>config</EM>  argu-
+       ment and the DB_CONFIG file are currently supported by DB.
+
+       DB_DATA_DIR
+            The path of a directory to be used as the location of
+            the  access  method data files, e.g., paths specified
+            to the <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG> function will be relative  to  this
+            path.
+
+            The  DB_DATA_DIR  paths  are additive, and specifying
+            more than one will result in each specified directory
+            being  searched for database data files.  If multiple
+            paths are specified, created data files  will  always
+            be created in the <STRONG>first</STRONG> directory specified.
+
+       DB_LOG_DIR
+            The path of a directory to be used as the location of
+            logging files, e.g., files created by  the  <STRONG><A HREF="db_log.html">db_log(3)</A></STRONG>
+            subsystem  will  be  relative  to this directory.  If
+            specified, this is the directory name  that  will  be
+            passed to <STRONG><A HREF="log_open.html">log_open(3)</A></STRONG>.
+
+       DB_TMP_DIR
+            The path of a directory to be used as the location of
+            temporary files, e.g., files created to back  in-mem-
+            ory  access method databases will be created relative
+            to this path.  Note, these temporary files can poten-
+            tially  be  quite large, depending on the size of the
+            database.
+
+            If DB_TMP_DIR is not specified, the  following  envi-
+            ronment  variables  are checked in order: ``TMPDIR'',
+
+       processing proceeds  sequentially  through  the  following
+       steps:
+
+       ``/''
+            If  any file name specified to any DB function begins
+            with a leading slash, that file name is used  without
+            modification by DB.
+
+       DB_CONFIG
+            If    a    relevant   configuration   string   (e.g.,
+            DB_DATA_DIR), is specified in the DB_CONFIG  configu-
+            ration  file,  the VALUE from the ``NAME VALUE'' pair
+            is prepended  to  the  current  file  name.   If  the
+            resulting  file name begins with a leading slash, the
+            file name is used without further modification by DB.
+
+            The  DB_CONFIG configuration file is intended to per-
+            mit systems to customize file location for a database
+            independent of applications using that database.  For
+            example,  a  database  administrator  can  move   the
+            database  log  and data files to a different location
+            without application recompilation.
+
+       <EM>db</EM><STRONG>_</STRONG><EM>config</EM>
+            If   a   relevant   configuration    string    (e.g.,
+            DB_DATA_DIR),  is specified in the <EM>db</EM><STRONG>_</STRONG><EM>config</EM> argument
+            and is not specified in the DB_CONFIG file, the VALUE
+            from the ``NAME VALUE'' pair is prepended to the cur-
+            rent file name.  If the resulting  file  name  begins
+            with  a  leading slash, the file name is used without
+            further modification by DB.
+
+            The <EM>db</EM><STRONG>_</STRONG><EM>config</EM> argument is intended to permit applica-
+            tions to customize file location for a database.  For
+            example, an application writer can place  data  files
+            and  log files in different directories, or instanti-
+            ate a new log directory  each  time  the  application
+            runs.
+       DB_HOME
+            If the DB_HOME environment variable was set, (and the
+            application has set the appropriate DB_USE_ENVIRON or
+            DB_USE_ENVIRON_ROOT  environment variable), its value
+            is prepended  to  the  current  file  name.   If  the
+            resulting  file name begins with a leading slash, the
+            file name is used without further modification by DB.
+
+            The  DB_HOME environment variable is intended to per-
+            mit  users  and  system  administrators  to  override
+            application and installation defaults, e.g.,
+
+                 env DB_HOME=/database/my_home application
+
+            Alternatively,  application writers are encouraged to
+            support the <STRONG>-h</STRONG> option  found  in  the  supporting  DB
+            Finally,  all  file names are interpreted relative to
+            the current working directory of the process.
+
+       The common model for a DB environment is  one  where  only
+       the DB_HOME environment variable, or the <EM>db</EM><STRONG>_</STRONG><EM>home</EM> argument,
+       is specified.  In this case, all data files will  be  pre-
+       sumed to be relative to that directory, and all files cre-
+       ated by the DB subsystems will be created in  that  direc-
+       tory.
+
+       The more complex model for a transaction environment might
+       be one where a database home is  specified,  using  either
+       the  DB_HOME  environment variable or the <EM>db</EM><STRONG>_</STRONG><EM>home</EM> argument
+       to <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>, and then DB_DATA_DIR and DB_LOG_DIR are set
+       to  the  relative path names of directories underneath the
+       home directory using the <EM>db</EM><STRONG>_</STRONG><EM>config</EM> argument to  <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM>
+       or the DB_CONFIG file.
+
+
+</PRE>
+<H2>EXAMPLES</H2><PRE>
+       Store all files in the directory <EM>/a/database</EM>:
+
+              db_appinit("/a/database", NULL, ...);
+
+       Create  temporary  backing  files in <EM>/b/temporary</EM>, and all
+       other files in <EM>/a/database</EM>:
+
+              char *config[] = {
+                  "DB_TMP_DIR /b/temporary",
+                  NULL
+              };
+
+              db_appinit("/a/database", config, ...);
+
+       Store data files  in  <EM>/a/database/datadir</EM>,  log  files  in
+       <EM>/a/database/logdir</EM>,  and  all other files in the directory
+       <EM>/a/database</EM>:
+
+              char *config[] = {
+                  "DB_DATA datadir",
+                  "DB_LOG logdir",
+                  NULL
+              };
+
+              db_appinit("/a/database", config, ...);
+
+       Store data files in <EM>/a/database/data1</EM>  and  <EM>/b/data2</EM>,  and
+       all  other  files  in the directory <EM>/a/database</EM>.  Any data
+       files that are created will be created in <EM>/b/data2</EM>:
+
+              char *config[] = {
+                  "DB_DATA /b/data2",
+                  "DB_DATA data1",
+                  NULL
+              };
+
+       <STRONG><A HREF="lock_open.html">lock_open(3)</A></STRONG>, <STRONG><A HREF="lock_unlink.html">lock_unlink(3)</A></STRONG>, <STRONG><A HREF="log_compare.html">log_compare(3)</A></STRONG>, <STRONG><A HREF="log_get.html">log_get(3)</A></STRONG>,
+       <STRONG><A HREF="log_open.html">log_open(3)</A></STRONG>, <STRONG><A HREF="log_unlink.html">log_unlink(3)</A></STRONG>, <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>, <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>,
+       <STRONG><A HREF="memp_open.html">memp_open(3)</A></STRONG>, <STRONG><A HREF="memp_unlink.html">memp_unlink(3)</A></STRONG>, <STRONG><A HREF="memset.html">memset(3)</A></STRONG>, <STRONG><A HREF="realloc.html">realloc(3)</A></STRONG>,
+       <STRONG><A HREF="stat.html">stat(2)</A></STRONG>, <STRONG><A HREF="strchr.html">strchr(3)</A></STRONG>, <STRONG><A HREF="strcmp.html">strcmp(3)</A></STRONG>, <STRONG><A HREF="strcpy.html">strcpy(3)</A></STRONG>, <STRONG><A HREF="strdup.html">strdup(3)</A></STRONG>,
+       <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>, <STRONG><A HREF="strlen.html">strlen(3)</A></STRONG>, <STRONG><A HREF="strsep.html">strsep(3)</A></STRONG>, <STRONG><A HREF="time.html">time(3)</A></STRONG>,
+       <STRONG><A HREF="txn_checkpoint.html">txn_checkpoint(3)</A></STRONG>, <STRONG><A HREF="txn_open.html">txn_open(3)</A></STRONG>, and <STRONG><A HREF="txn_unlink.html">txn_unlink(3)</A></STRONG>.
+
+       In addition, the <EM>db</EM><STRONG>_</STRONG><EM>appinit</EM> function may fail  and  return
+       <EM>errno</EM> for the following conditions:
+
+       [EINVAL]
+            An invalid flag value or parameter was specified.
+
+            The  DB_THREAD  flag  was specified and spinlocks are
+            not implemented for this architecture.
+
+            The DB_HOME or TMPDIR environment variables were  set
+            but empty.
+
+            An incorrectly formatted ``NAME VALUE'' entry or line
+            was found.
+
+       [ENOSPC]
+            HP-UX only: a previously created DB  environment  for
+            this process still exists.
+
+       The  <EM>db</EM><STRONG>_</STRONG><EM>appexit</EM> function may fail and return <EM>errno</EM> for any
+       of the errors specified for the following DB  and  library
+       functions: <STRONG><A HREF="lock_close.html">lock_close(3)</A></STRONG>, <STRONG><A HREF="log_close.html">log_close(3)</A></STRONG>, <STRONG><A HREF="memp_close.html">memp_close(3)</A></STRONG>, and
+       <STRONG><A HREF="txn_close.html">txn_close(3)</A></STRONG>.
+
+
+</PRE>
+<H2>BUGS</H2><PRE>
+       Due to the constraints of the PA-RISC memory architecture,
+       HP-UX  does not allow a process to map a file into its ad-
+       dress space multiple times.  For this reason, each DB  en-
+       vironment  may  be opened only once by a process on HP-UX,
+       i.e., calls to <EM>appinit</EM> will fail if the specified DB envi-
+       ronment has been opened and not subsequently closed.
+
+
+</PRE>
+<H2>SEE ALSO</H2><PRE>
+       <STRONG><A HREF="db_archive.html">db_archive(1)</A></STRONG>, <STRONG><A HREF="db_checkpoint.html">db_checkpoint(1)</A></STRONG>, <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG>, <STRONG><A HREF="db_dump.html">db_dump(1)</A></STRONG>,
+       <STRONG><A HREF="db_load.html">db_load(1)</A></STRONG>, <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG>, <STRONG><A HREF="db_stat.html">db_stat(1)</A></STRONG>, <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>,
+       <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>, <STRONG><A HREF="db_cursor.html">db_cursor(3)</A></STRONG>, <STRONG><A HREF="db_dbm.html">db_dbm(3)</A></STRONG>, <STRONG><A HREF="db_jump.html">db_jump(3)</A></STRONG>, <STRONG><A HREF="db_lock.html">db_lock(3)</A></STRONG>,
+       <STRONG><A HREF="db_log.html">db_log(3)</A></STRONG>, <STRONG><A HREF="db_mpool.html">db_mpool(3)</A></STRONG>, <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>, <STRONG><A HREF="db_thread.html">db_thread(3)</A></STRONG>, <STRONG><A HREF="db_txn.html">db_txn(3)</A></STRONG>
+</PRE>
+</BODY>
+</HTML>

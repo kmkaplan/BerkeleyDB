@@ -1,0 +1,274 @@
+<HTML>
+<HEAD>
+<TITLE>db_dbm</TITLE>
+</HEAD>
+<BODY>
+<H1>db_dbm</H1>
+<HR>
+<PRE>
+
+</PRE>
+<H2>NAME</H2><PRE>
+       dbm - dbminit, fetch, store, delete, firstkey, nextkey
+
+       ndbm - dbm_open, dbm_close, dbm_fetch, dbm_store, dbm_delete,
+       dbm_firstkey, dbm_nextkey, dbm_error, dbm_clearerr
+
+
+</PRE>
+<H2>SYNOPSIS</H2><PRE>
+       <STRONG>#define</STRONG> <STRONG>DB_DBM_HSEARCH</STRONG>
+       <STRONG>#include</STRONG> <STRONG>&lt;db.h&gt;</STRONG>
+
+       <STRONG>typedef</STRONG> <STRONG>struct</STRONG> <STRONG>{</STRONG>
+            <STRONG>char</STRONG> <STRONG>*dptr;</STRONG>
+            <STRONG>int</STRONG> <STRONG>dsize;</STRONG>
+       <STRONG>}</STRONG> <STRONG>datum;</STRONG>
+
+
+</PRE>
+<H2>DBM FUNCTIONS</H2><PRE>
+       <STRONG>int</STRONG>
+       <STRONG>dbminit(char</STRONG> <STRONG>*file);</STRONG>
+
+       <STRONG>datum</STRONG>
+       <STRONG>fetch(datum</STRONG> <STRONG>key);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>store(datum</STRONG> <STRONG>key,</STRONG> <STRONG>datum</STRONG> <STRONG>content);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>delete(datum</STRONG> <STRONG>key);</STRONG>
+
+       <STRONG>datum</STRONG>
+       <STRONG>firstkey(void);</STRONG>
+
+       <STRONG>datum</STRONG>
+       <STRONG>nextkey(datum</STRONG> <STRONG>key);</STRONG>
+
+
+</PRE>
+<H2>NDBM FUNCTIONS</H2><PRE>
+       <STRONG>DBM</STRONG> <STRONG>*</STRONG>
+       <STRONG>dbm_open(char</STRONG> <STRONG>*file,</STRONG> <STRONG>int</STRONG> <STRONG>flags,</STRONG> <STRONG>int</STRONG> <STRONG>mode);</STRONG>
+
+       <STRONG>void</STRONG>
+       <STRONG>dbm_close(DBM</STRONG> <STRONG>*db);</STRONG>
+
+       <STRONG>datum</STRONG>
+       <STRONG>dbm_fetch(DBM</STRONG> <STRONG>*db,</STRONG> <STRONG>datum</STRONG> <STRONG>key);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>dbm_store(DBM</STRONG> <STRONG>*db,</STRONG> <STRONG>datum</STRONG> <STRONG>key,</STRONG> <STRONG>datum</STRONG> <STRONG>content,</STRONG> <STRONG>int</STRONG> <STRONG>flags);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>dbm_delete(DBM</STRONG> <STRONG>*db,</STRONG> <STRONG>datum</STRONG> <STRONG>key);</STRONG>
+
+       <STRONG>datum</STRONG>
+       <STRONG>dbm_firstkey(DBM</STRONG> <STRONG>*db);</STRONG>
+
+       <STRONG>datum</STRONG>
+       The historic <EM>dbm</EM> and <EM>ndbm</EM>  database  format  is  <STRONG>not</STRONG>  sup-
+       ported,  and databases previously built using the real <EM>dbm</EM>
+       or <EM>ndbm</EM> libraries cannot be read by the DB functions.
+
+       To compile <EM>dbm</EM> or <EM>ndbm</EM> applications, replace the  applica-
+       tion's  <EM>#include</EM>  of  the  dbm or ndbm include file (e.g.,
+       ``#include &lt;dbm.h&gt;'' or ``#include  &lt;ndbm.h&gt;'')  with  the
+       following two lines:
+
+              #define DB_DBM_HSEARCH
+              #include &lt;db.h&gt;
+
+       and  recompile.   If  the  application  attempts  to  load
+       against  a  dbm  library  (e.g.,  ``-ldbm''),  remove  the
+       library from the load line.
+
+       <EM>Key</EM>s  and  <EM>content</EM>s are described by the <EM>datum</EM> typedef.  A
+       <EM>datum</EM> specifies a string of  <EM>dsize</EM>  bytes  pointed  to  by
+       <EM>dptr</EM>.   Arbitrary  binary  data,  as  well  as normal text
+       strings, are allowed.
+
+
+</PRE>
+<H2>DBM FUNCTIONS</H2><PRE>
+       Before a database can be accessed, it must  be  opened  by
+       <EM>dbminit</EM>.   This  will  open  and/or  create  the  database
+       <EM>file</EM>.db.   If  created,  the  database  file  is   created
+       read/write  by  owner  only (as described in <STRONG><A HREF="chmod.html">chmod(2)</A></STRONG>) and
+       modified by the process' umask value at the time  of  cre-
+       ation  (see  <STRONG><A HREF="umask.html">umask(2)</A></STRONG>).   The  group  ownership of created
+       files is based on the system and directory  defaults,  and
+       is not further specified by DB.
+
+       Once  open,  the  data  stored  under a key is accessed by
+       <EM>fetch</EM> and data is placed under a key by <EM>store</EM>.  A key (and
+       its  associated  contents) is deleted by <EM>delete</EM>.  A linear
+       pass through all keys in a database may  be  made,  in  an
+       (apparently) random order, by use of <EM>firstkey</EM> and <EM>nextkey</EM>.
+       <EM>Firstkey</EM> will return the first key in the database.   With
+       any  key <EM>nextkey</EM> will return the next key in the database.
+       This code will traverse the data base:
+
+              for (key = firstkey();
+                   key.dptr != NULL; key = nextkey(key))
+
+</PRE>
+<H2>NDBM FUNCTIONS</H2><PRE>
+       Before a database can be accessed, it must  be  opened  by
+       <EM>dbm</EM><STRONG>_</STRONG><EM>open</EM>.   This will open and/or create the database file
+       <EM>file</EM>.db depending on the flags  parameter  (see  <STRONG><A HREF="open.html">open(2)</A></STRONG>).
+       If  created,  the  database file is created with mode <EM>mode</EM>
+       (as described in <STRONG><A HREF="chmod.html">chmod(2)</A></STRONG>) and modified  by  the  process'
+       umask  value  at the time of creation (see <STRONG><A HREF="umask.html">umask(2)</A></STRONG>).  The
+       group ownership of created files is based  on  the  system
+       and  directory  defaults,  and is not further specified by
+       DB.
+
+       Once open, the data stored under  a  key  is  accessed  by
+
+              for (key = dbm_firstkey(db);
+                   key.dptr != NULL; key = dbm_nextkey(db))
+
+       <EM>Dbm</EM><STRONG>_</STRONG><EM>error</EM> returns non-zero  when  an  error  has  occurred
+       reading  or writing the database.  <EM>Dbm</EM><STRONG>_</STRONG><EM>clearerr</EM> resets the
+       error condition on the named database.
+
+
+</PRE>
+<H2>COMPATIBILITY NOTES</H2><PRE>
+       The historic <EM>dbm</EM> and <EM>ndbm</EM> libraries created two underlying
+       database files, traditionally named <EM>file</EM>.dir and <EM>file</EM>.pag.
+       The DB  library  creates  a  single  database  file  named
+       <EM>file</EM>.db.   Applications  that  are aware of the underlying
+       database file names may  require  additional  source  code
+       modifications.
+
+       The  historic <EM>dbminit</EM> interface required that the underly-
+       ing ``.dir''  and  ``.pag''  files  already  exist  (empty
+       databases  were  created  by creating zero-length ``.dir''
+       and ``.pag'' files).  Applications that expect  to  create
+       databases  using this method may require additional source
+       code modifications.
+
+       The historic <EM>dbm</EM><STRONG>_</STRONG><EM>dirfno</EM> and  <EM>dbm</EM><STRONG>_</STRONG><EM>pagfno</EM>  macros  are  sup-
+       ported,  but  will  return  identical  file descriptors as
+       there is only a single underlying  file  used  by  the  DB
+       hashing  access  method.   Applications  using  both  file
+       descriptors for locking may require additional source code
+       modifications.
+
+
+       If  an  application using the <EM>ndbm</EM> interface exits without
+       closing the database, it may lose updates because  the  DB
+       library   buffers  all  writes.   Such  applications  will
+       require additional source code modifications to work  cor-
+       rectly with the DB library.
+
+
+</PRE>
+<H2>DBM DIAGNOSTICS</H2><PRE>
+       The <EM>dbminit</EM> function returns -1 on failure, setting <EM>errno</EM>,
+       and 0 on success.
+
+       The <EM>fetch</EM> function sets the returned <EM>datum</EM>'s <EM>dptr</EM> field to
+       NULL  on  failure,  setting  <EM>errno</EM>, and returns a non-NULL
+       <EM>dptr</EM> on success.
+
+       The <EM>store</EM> function returns -1 on failure,  setting  <EM>errno</EM>,
+       and 0 on success.
+
+       The  <EM>delete</EM> function returns -1 on failure, setting <EM>errno</EM>,
+       and 0 on success.
+
+       The <EM>firstkey</EM> function sets the returned <EM>datum</EM>'s <EM>dptr</EM> field
+       to  NULL on failure, setting <EM>errno</EM>, and returns a non-NULL
+       <EM>dptr</EM> on success.
+
+       The  <EM>dbm</EM><STRONG>_</STRONG><EM>store</EM>  function  returns  -1  on failure, setting
+       <EM>errno</EM>, 0 on success, and 1 if DBM_INSERT was set  and  the
+       specified key already existed in the database.
+
+       The  <EM>dbm</EM><STRONG>_</STRONG><EM>delete</EM>  function  returns  -1 on failure, setting
+       <EM>errno</EM>, and 0 on success.
+
+       The <EM>dbm</EM><STRONG>_</STRONG><EM>firstkey</EM> function sets the returned  <EM>datum</EM>'s  <EM>dptr</EM>
+       field  to  NULL  on  failure, setting <EM>errno</EM>, and returns a
+       non-NULL <EM>dptr</EM> on success.
+
+       The <EM>dbm</EM><STRONG>_</STRONG><EM>nextkey</EM> function sets the  returned  <EM>datum</EM>'s  <EM>dptr</EM>
+       field  to  NULL  on  failure, setting <EM>errno</EM>, and returns a
+       non-NULL <EM>dptr</EM> on success.
+
+       The <EM>dbm</EM><STRONG>_</STRONG><EM>error</EM> function  returns  -1  on  failure,  setting
+       <EM>errno</EM>, and 0 on success.
+
+
+       The  <EM>dbm</EM><STRONG>_</STRONG><EM>clearerr</EM>  function returns -1 on failure, setting
+       <EM>errno</EM>, and 0 on success.
+
+
+</PRE>
+<H2>ERRORS</H2><PRE>
+       The <EM>dbminit</EM> function may fail and return <EM>errno</EM> for any  of
+       the  errors  specified  for  the  following DB and library
+       functions: <STRONG><A HREF="dbm_close.html">dbm_close(3)</A></STRONG>, and <STRONG><A HREF="dbm_open.html">dbm_open(3)</A></STRONG>.
+
+       The <EM>fetch</EM> function may fail and return <EM>errno</EM>  for  any  of
+       the  errors  specified  for  the  following DB and library
+       functions: <STRONG><A HREF="dbm_fetch.html">dbm_fetch(3)</A></STRONG>.
+
+       The <EM>store</EM> function may fail and return <EM>errno</EM>  for  any  of
+       the  errors  specified  for  the  following DB and library
+       functions: <STRONG><A HREF="dbm_store.html">dbm_store(3)</A></STRONG>.
+
+       The <EM>delete</EM> function may fail and return <EM>errno</EM> for  any  of
+       the  errors  specified  for  the  following DB and library
+       functions: <STRONG><A HREF="dbm_delete.html">dbm_delete(3)</A></STRONG>.
+
+       The <EM>firstkey</EM> function may fail and return <EM>errno</EM> for any of
+       the  errors  specified  for  the  following DB and library
+       functions: <STRONG><A HREF="dbm_firstkey.html">dbm_firstkey(3)</A></STRONG>.
+
+       The <EM>nextkey</EM> function may fail and return <EM>errno</EM> for any  of
+       the  errors  specified  for  the  following DB and library
+       functions: <STRONG><A HREF="dbm_nextkey.html">dbm_nextkey(3)</A></STRONG>.
+
+       The <EM>dbm</EM><STRONG>_</STRONG><EM>open</EM> function may fail and return <EM>errno</EM> for any of
+       the  errors  specified  for  the  following DB and library
+       functions: <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>, and <STRONG><A HREF="memset.html">memset(3)</A></STRONG>.
+
+       The <EM>dbm</EM><STRONG>_</STRONG><EM>close</EM> function may fail and return <EM>errno</EM>  for  any
+       of  the  errors specified for the following DB and library
+       functions: <STRONG><A HREF="memset.html">memset(3)</A></STRONG>.
+
+       The <EM>dbm</EM><STRONG>_</STRONG><EM>firstkey</EM> function may fail and  return  <EM>errno</EM>  for
+       any  of  the errors specified for the following DB and li-
+       brary functions: DB-&gt;<STRONG><A HREF="cursor.html">cursor(3)</A></STRONG>, and <STRONG><A HREF="memset.html">memset(3)</A></STRONG>.
+
+       The <EM>dbm</EM><STRONG>_</STRONG><EM>nextkey</EM> function may fail and return <EM>errno</EM> for any
+       of  the  errors specified for the following DB and library
+       functions: DB-&gt;<STRONG><A HREF="cursor.html">cursor(3)</A></STRONG>, and <STRONG><A HREF="memset.html">memset(3)</A></STRONG>.
+
+
+</PRE>
+<H2>SEE ALSO</H2><PRE>
+       The DB library is a family of  groups  of  functions  that
+       provides  a  modular programming interface to transactions
+       and record-oriented file  access.   The  library  includes
+       support  for  transactions, locking, logging and file page
+       caching, as well as various indexed access methods.   Many
+       of  the  functional  groups  (e.g.,  the file page caching
+       functions) are useful independent of the  other  DB  func-
+       tions,  although  some  functional  groups  are explicitly
+       based on other functional groups (e.g.,  transactions  and
+       logging).   For  a  general description of the DB package,
+       see <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>.
+
+       <STRONG><A HREF="db_archive.html">db_archive(1)</A></STRONG>, <STRONG><A HREF="db_checkpoint.html">db_checkpoint(1)</A></STRONG>, <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG>, <STRONG><A HREF="db_dump.html">db_dump(1)</A></STRONG>,
+       <STRONG><A HREF="db_load.html">db_load(1)</A></STRONG>, <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG>, <STRONG><A HREF="db_stat.html">db_stat(1)</A></STRONG>, <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>,
+       <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>, <STRONG><A HREF="db_cursor.html">db_cursor(3)</A></STRONG>, <STRONG><A HREF="db_dbm.html">db_dbm(3)</A></STRONG>, <STRONG><A HREF="db_jump.html">db_jump(3)</A></STRONG>, <STRONG><A HREF="db_lock.html">db_lock(3)</A></STRONG>,
+       <STRONG><A HREF="db_log.html">db_log(3)</A></STRONG>, <STRONG><A HREF="db_mpool.html">db_mpool(3)</A></STRONG>, <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>, <STRONG><A HREF="db_thread.html">db_thread(3)</A></STRONG>, <STRONG><A HREF="db_txn.html">db_txn(3)</A></STRONG>
+</PRE>
+</BODY>
+</HTML>

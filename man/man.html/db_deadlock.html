@@ -1,0 +1,85 @@
+<HTML>
+<HEAD>
+<TITLE>db_deadlock</TITLE>
+</HEAD>
+<BODY>
+<H1>db_deadlock</H1>
+<HR>
+<PRE>
+
+</PRE>
+<H2>NAME</H2><PRE>
+       db_deadlock - the DB database deadlock detector
+
+
+</PRE>
+<H2>SYNOPSIS</H2><PRE>
+       <STRONG>db_deadlock</STRONG> [<STRONG>-vw</STRONG>] [<STRONG>-a</STRONG> <STRONG>m</STRONG> <STRONG>|</STRONG> <STRONG>o</STRONG> <STRONG>|</STRONG> <STRONG>y</STRONG>] [<STRONG>-h</STRONG> <STRONG>home</STRONG>] [<STRONG>-L</STRONG> <STRONG>file</STRONG> ] [<STRONG>-t</STRONG> <STRONG>sec</STRONG> ]
+
+
+</PRE>
+<H2>DESCRIPTION</H2><PRE>
+       The <EM>db</EM><STRONG>_</STRONG><EM>deadlock</EM> utility traverses the database lock struc-
+       tures and aborts a transaction  each  time  it  detects  a
+       deadlock.  This utility should be run as a background dae-
+       mon whenever multiple threads or processes are using lock-
+       ing.   By  default,  a  random transaction involved in the
+       deadlock is aborted.
+
+       The options are as follows:
+
+       <STRONG>-a</STRONG>   When a deadlock is detected, abort the oldest (``o'')
+            transaction, the youngest (``y'') transaction, or the
+            transaction with the minimum number of locks (``m'').
+
+       <STRONG>-h</STRONG>   Specify a home directory for the database.
+
+       <STRONG>-L</STRONG>   Log  the  execution of the db_deadlock utility to the
+            specified file in the following format, where ``###''
+            is the process ID, and the date is the time the util-
+            ity starting running.
+
+            db_deadlock: ### Wed Jun 15 01:23:45 EDT 1995
+
+            This file will be removed if the db_deadlock  utility
+            exits gracefully.
+
+       <STRONG>-t</STRONG>   Initiate  a  pass  over  the  database locks at least
+            every <EM>sec</EM> seconds.
+
+       <STRONG>-v</STRONG>   Run in verbose mode, generating  messages  each  time
+            the detector runs.
+
+       <STRONG>-w</STRONG>   Make a single pass over the database locks every time
+            a process is forced to wait for a lock.
+
+       At least one of the <STRONG>-t</STRONG> and <STRONG>-w</STRONG> options must be specified.
+
+       The <EM>db</EM><STRONG>_</STRONG><EM>deadlock</EM>  utility  attaches  to  DB  shared  memory
+       regions.   In  order to avoid region corruption, it should
+       always be given the chance to detach and exit  gracefully.
+       To  cause  <EM>db</EM><STRONG>_</STRONG><EM>deadlock</EM>  to clean up after itself and exit,
+       send it an interrupt signal (SIGINT).
+
+       The <EM>db</EM><STRONG>_</STRONG><EM>deadlock</EM> utility exits 0 on success, and &gt;0  if  an
+       error occurs.
+
+
+</PRE>
+<H2>ENVIRONMENT VARIABLES</H2><PRE>
+       The  following  environment variables affect the execution
+       caching, as well as various indexed access methods.   Many
+       of  the  functional  groups  (e.g.,  the file page caching
+       functions) are useful independent of the  other  DB  func-
+       tions,  although  some  functional  groups  are explicitly
+       based on other functional groups (e.g.,  transactions  and
+       logging).   For  a  general description of the DB package,
+       see <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>.
+
+       <STRONG><A HREF="db_archive.html">db_archive(1)</A></STRONG>, <STRONG><A HREF="db_checkpoint.html">db_checkpoint(1)</A></STRONG>, <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG>, <STRONG><A HREF="db_dump.html">db_dump(1)</A></STRONG>,
+       <STRONG><A HREF="db_load.html">db_load(1)</A></STRONG>, <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG>, <STRONG><A HREF="db_stat.html">db_stat(1)</A></STRONG>, <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>,
+       <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>, <STRONG><A HREF="db_cursor.html">db_cursor(3)</A></STRONG>, <STRONG><A HREF="db_dbm.html">db_dbm(3)</A></STRONG>, <STRONG><A HREF="db_jump.html">db_jump(3)</A></STRONG>, <STRONG><A HREF="db_lock.html">db_lock(3)</A></STRONG>,
+       <STRONG><A HREF="db_log.html">db_log(3)</A></STRONG>, <STRONG><A HREF="db_mpool.html">db_mpool(3)</A></STRONG>, <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>, <STRONG><A HREF="db_thread.html">db_thread(3)</A></STRONG>, <STRONG><A HREF="db_txn.html">db_txn(3)</A></STRONG>
+</PRE>
+</BODY>
+</HTML>

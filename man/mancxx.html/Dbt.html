@@ -1,0 +1,213 @@
+<HTML>
+<HEAD>
+<TITLE>Dbt</TITLE>
+</HEAD>
+<BODY>
+<H1>Dbt</H1>
+<HR>
+<PRE>
+
+</PRE>
+<H2>NAME</H2><PRE>
+       Dbt - Db key/data class
+
+
+</PRE>
+<H2>SYNOPSIS</H2><PRE>
+       <STRONG>void</STRONG> <STRONG>*Dbt::get_data()</STRONG> <STRONG>const;</STRONG>
+       <STRONG>void</STRONG> <STRONG>Dbt::set_data(void</STRONG> <STRONG>*);</STRONG>
+
+       <STRONG>u_int32_t</STRONG> <STRONG>Dbt::get_size()</STRONG> <STRONG>const;</STRONG>
+       <STRONG>void</STRONG> <STRONG>Dbt::set_size(u_int32_t);</STRONG>
+
+       <STRONG>u_int32_t</STRONG> <STRONG>Dbt::get_ulen()</STRONG> <STRONG>const;</STRONG>
+       <STRONG>void</STRONG> <STRONG>Dbt::set_ulen(u_int32_t);</STRONG>
+
+       <STRONG>u_int32_t</STRONG> <STRONG>Dbt::get_dlen()</STRONG> <STRONG>const;</STRONG>
+       <STRONG>void</STRONG> <STRONG>Dbt::set_dlen(u_int32_t);</STRONG>
+
+       <STRONG>u_int32_t</STRONG> <STRONG>Dbt::get_doff()</STRONG> <STRONG>const;</STRONG>
+       <STRONG>void</STRONG> <STRONG>Dbt::set_doff(u_int32_t);</STRONG>
+
+       <STRONG>u_int32_t</STRONG> <STRONG>Dbt::get_flags()</STRONG> <STRONG>const;</STRONG>
+       <STRONG>void</STRONG> <STRONG>Dbt::set_flags(u_int32_t);</STRONG>
+
+       <STRONG>Dbt::Dbt(void</STRONG> <STRONG>*data,</STRONG> <STRONG>size_t</STRONG> <STRONG>size);</STRONG>
+       <STRONG>Dbt::Dbt();</STRONG>
+       <STRONG>Dbt::~Dbt();</STRONG>
+       <STRONG>Dbt::Dbt(const</STRONG> <STRONG>Dbt</STRONG> <STRONG>&amp;);</STRONG>
+       <STRONG>Dbt::Dbt</STRONG> <STRONG>&amp;operator</STRONG> <STRONG>=</STRONG> <STRONG>(const</STRONG> <STRONG>Dbt</STRONG> <STRONG>&amp;);</STRONG>
+
+
+</PRE>
+<H2>KEY/DATA PAIRS</H2><PRE>
+       Storage  and retrieval for the Db access methods are based
+       on key/data pairs.  Both key and  data  items  are  repre-
+       sented by Dbt objects.
+
+       Key  and data byte strings may reference strings of essen-
+       tially unlimited length, although any two  keys  must  fit
+       into available memory at the same time so that they may be
+       compared, and any one data item must  fit  into  available
+       memory so that it may be returned.
+
+       The Dbt class provides simple access to an underlying data
+       structure, whose elements can be examined or changed using
+       the  <EM>set</EM><STRONG>_</STRONG>  or  <EM>get</EM><STRONG>_</STRONG>  methods.  The remainder of the manual
+       page sometimes refers to these accesses using the underly-
+       ing  name,  e.g.,  simply  <EM>ulen</EM>  instead  of  <EM>get</EM><STRONG>_</STRONG><EM>ulen</EM> and
+       <EM>set</EM><STRONG>_</STRONG><EM>ulen</EM>.  The constructors set all elements of the under-
+       lying  structure  to zero.  The constructor with two argu-
+       ments has the effect  of  setting  all  elements  to  zero
+       except  for  the specified <EM>data</EM> and <EM>size</EM> elements.  In the
+       case where the <EM>flags</EM> structure element is  0,  when  being
+       provided  a  key  or  data item by the application, the DB
+       package expects the <EM>data</EM> object to point to a byte  string
+       of  <EM>size</EM>  bytes.   When  returning  a key/data item to the
+       application, the DB  package  will  store  into  the  <EM>data</EM>
+       object  a  pointer  to  a  byte  string of <EM>size</EM> bytes.  <STRONG>By</STRONG>
+
+       void *data;
+            A pointer to a byte string.  This element is accessed
+            using <EM>get</EM><STRONG>_</STRONG><EM>data</EM> and <EM>set</EM><STRONG>_</STRONG><EM>data</EM>, and may  be  initialized
+            using the constructor with two arguments.
+
+       u_int32_t size;
+            The  length  of  <EM>data</EM>,  in  bytes.   This  element is
+            accessed using <EM>get</EM><STRONG>_</STRONG><EM>size</EM> and <EM>set</EM><STRONG>_</STRONG><EM>size</EM>, and may be ini-
+            tialized using the constructor with two arguments.
+
+       u_int32_t ulen;
+            The  size  of the user's buffer (referenced by <EM>data</EM>),
+            in bytes.  This location is not  written  by  the  Db
+            functions.   See  the  DB_DBT_USERMEM  flag  for more
+            information.  This element is accessed using <EM>get</EM><STRONG>_</STRONG><EM>ulen</EM>
+            and <EM>set</EM><STRONG>_</STRONG><EM>ulen</EM>.
+
+       u_int32_t dlen;
+            The  length of the partial record being read or writ-
+            ten  by  the  application,   in   bytes.    See   the
+            DB_DBT_PARTIAL  flag for more information.  This ele-
+            ment is accessed using <EM>get</EM><STRONG>_</STRONG><EM>dlen</EM> and <EM>set</EM><STRONG>_</STRONG><EM>dlen</EM>.
+
+       u_int32_t doff;
+            The offset of the partial record being read or  writ-
+            ten   by   the   application,   in  bytes.   See  the
+            DB_DBT_PARTIAL flag for more information.  This  ele-
+            ment is accessed using <EM>get</EM><STRONG>_</STRONG><EM>doff</EM> and <EM>set</EM><STRONG>_</STRONG><EM>doff</EM>.
+
+       u_int32_t flags;
+            This   element   is   accessed  using  <EM>get</EM><STRONG>_</STRONG><EM>flags</EM>  and
+            <EM>set</EM><STRONG>_</STRONG><EM>flags</EM>.  The flags value is  specified  by  <STRONG>or</STRONG>'ing
+            together one or more of the following values:
+
+            DB_DBT_MALLOC
+                 Ignored  except when retrieving information from
+                 a database, e.g., a <EM>Db::get</EM>  or  <EM>Dbc::get</EM>  call.
+                 This  flag  causes Db to allocate memory for the
+                 returned key or data item (using  <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>,  or
+                 the  user-specified  malloc method) and return a
+                 pointer to it in the <EM>data</EM> field of  the  key  or
+                 data  Dbt  object.  The allocated memory becomes
+                 the responsibility of the  calling  application.
+                 It is an error to specify both DB_DBT_MALLOC and
+                 DB_DBT_USERMEM.
+
+            DB_DBT_USERMEM
+                 Ignored except when retrieving information  from
+                 a  database,  e.g.,  a <EM>Db::get</EM> or <EM>Dbc::get</EM> call.
+                 The <EM>data</EM> field of the key or  data  object  must
+                 reference  memory that is at least <EM>ulen</EM> bytes in
+                 length.  If the length of the requested item  is
+                 less  than or equal to that number of bytes, the
+                 starting  <EM>doff</EM>  bytes  from the beginning of the
+                 retrieved data record are returned  as  if  they
+                 comprised  the  entire record.  If any or all of
+                 the specified bytes do not exist in the  record,
+                 the  get is successful and the existing bytes or
+                 0 bytes are returned.
+
+                 For example, if the data portion of a  retrieved
+                 record  was  100  bytes, and a partial retrieval
+                 was done using a Dbt having a <EM>dlen</EM> field  of  20
+                 and  a <EM>doff</EM> field of 85, the get call would suc-
+                 ceed, the <EM>data</EM> field would reference the last 15
+                 bytes of the record, and the <EM>size</EM> field would be
+                 set to 15.
+
+                 If the calling application is doing a  put,  the
+                 <EM>dlen</EM>  bytes  starting <EM>doff</EM> bytes from the begin-
+                 ning of the  specified  key's  data  record  are
+                 replaced  by  the data specified by the <EM>data</EM> and
+                 <EM>size</EM> objects.  If <EM>dlen</EM> is smaller than <EM>size</EM>, the
+                 record  will  grow,  and  if <EM>dlen</EM> is larger than
+                 <EM>size</EM>, the record will shrink.  If the  specified
+                 bytes  do not exist, the record will be extended
+                 using nul bytes as necessary, and the  put  call
+                 will succeed.
+
+                 It  is  an  error to attempt a partial put using
+                 the <EM>Db::put</EM> method in a database  that  supports
+                 duplicate  records.   Partial  puts in databases
+                 supporting duplicate records must be done  using
+                 a  <EM>Db::cursor</EM> method.  It is an error to attempt
+                 a partial put with differing <EM>dlen</EM> and <EM>size</EM>  val-
+                 ues   in  a  recno  database  with  fixed-length
+                 records.
+
+                 For example, if the data portion of a  retrieved
+                 record was 100 bytes, and a partial put was done
+                 using a Dbt having a <EM>dlen</EM> field of  20,  a  <EM>doff</EM>
+                 field of 85, and a <EM>size</EM> field of 30, the result-
+                 ing record would be 115 bytes in  length,  where
+                 the  last  30  bytes would be those specified by
+                 the put call.
+
+       The default algorithm of associating returned key or  data
+       items  with  the  Db  handle  returned by <EM>Db::</EM><STRONG><A HREF="open.html">open(3)</A></STRONG> will
+       obviously not work when Db handles are being used  concur-
+       rently  by  multiple  threads  within a process, i.e, when
+       DB_THREAD was specified  to  <EM>Db::</EM><STRONG><A HREF="open.html">open(3)</A></STRONG>.   <STRONG>When</STRONG>  <STRONG>multiple</STRONG>
+       <STRONG>threads</STRONG>  <STRONG>are</STRONG>  <STRONG>using</STRONG>  <STRONG>the</STRONG>  <STRONG>returned</STRONG> <STRONG>Db</STRONG> <STRONG>handle</STRONG> <STRONG>concurrently,</STRONG>
+       <STRONG>either</STRONG> <STRONG>the</STRONG> <STRONG>DB_DBT_MALLOC</STRONG> <STRONG>or</STRONG> <STRONG>DB_DBT_USERMEM</STRONG> <STRONG>flags</STRONG>  <STRONG>must</STRONG>  <STRONG>be</STRONG>
+       <STRONG>specified</STRONG> <STRONG>for</STRONG> <STRONG>any</STRONG> <STRONG>Dbt</STRONG> <STRONG>used</STRONG> <STRONG>for</STRONG> <STRONG>key</STRONG> <STRONG>or</STRONG> <STRONG>data</STRONG> <STRONG>retrieval.</STRONG>
+
+
+</PRE>
+<H2>LOGICAL RECORD NUMBERS</H2><PRE>
+       In all cases for the recno access method, and when calling
+       first record in the database is record number 1.
+
+
+</PRE>
+<H2>BUGS</H2><PRE>
+       The Db access methods provide  no  guarantees  about  byte
+       string  alignment,  and  applications  are responsible for
+       maintaining any necessary alignment.
+
+       The name Dbt is a mnemonic for ``data  base  thang'',  and
+       was  used  because  noone could think of a reasonable name
+       that wasn't already in use somewhere else.
+
+
+</PRE>
+<H2>SEE ALSO</H2><PRE>
+       The DB library is a family of classes that provides a mod-
+       ular programming interface to transactions and record-ori-
+       ented file  access.   The  library  includes  support  for
+       transactions,  locking,  logging and file page caching, as
+       well as various  indexed  access  methods.   Many  of  the
+       classes  (e.g.,  the  file  page caching class) are useful
+       independent of the other DB classes, although some classes
+       are  explicitly based on other classes (e.g., transactions
+       and logging).  For a general description of the  DB  pack-
+       age, see <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>.
+
+       <STRONG><A HREF="db_archive.html">db_archive(1)</A></STRONG>, <STRONG><A HREF="db_checkpoint.html">db_checkpoint(1)</A></STRONG>, <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG>, <STRONG><A HREF="db_dump.html">db_dump(1)</A></STRONG>,
+       <STRONG><A HREF="db_load.html">db_load(1)</A></STRONG>, <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG>, <STRONG><A HREF="db_stat.html">db_stat(1)</A></STRONG>, <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>, <STRONG><A HREF="db_jump.html">db_jump(3)</A></STRONG>,
+       <STRONG><A HREF="db_thread.html">db_thread(3)</A></STRONG>, <STRONG><A HREF="Db.html">Db(3)</A></STRONG>, <STRONG><A HREF="Dbc.html">Dbc(3)</A></STRONG>, <STRONG><A HREF="DbEnv.html">DbEnv(3)</A></STRONG>, <STRONG><A HREF="DbException.html">DbException(3)</A></STRONG>, <STRONG><A HREF="DbInfo.html">DbInfo(3)</A></STRONG>,
+       <STRONG><A HREF="DbLock.html">DbLock(3)</A></STRONG>, <STRONG><A HREF="DbLocktab.html">DbLocktab(3)</A></STRONG>, <STRONG><A HREF="DbLog.html">DbLog(3)</A></STRONG>, <STRONG><A HREF="DbLsn.html">DbLsn(3)</A></STRONG>, <STRONG><A HREF="DbMpool.html">DbMpool(3)</A></STRONG>,
+       <STRONG><A HREF="DbMpoolFile.html">DbMpoolFile(3)</A></STRONG>, <STRONG><A HREF="Dbt.html">Dbt(3)</A></STRONG>, <STRONG><A HREF="DbTxn.html">DbTxn(3)</A></STRONG>, <STRONG><A HREF="DbTxnMgr.html">DbTxnMgr(3)</A></STRONG>
+</PRE>
+</BODY>
+</HTML>

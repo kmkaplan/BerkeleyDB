@@ -1,0 +1,399 @@
+<HTML>
+<HEAD>
+<TITLE>db_cursor</TITLE>
+</HEAD>
+<BODY>
+<H1>db_cursor</H1>
+<HR>
+<PRE>
+
+</PRE>
+<H2>NAME</H2><PRE>
+       db_cursor - database sequential access functions
+
+
+</PRE>
+<H2>SYNOPSIS</H2><PRE>
+       <STRONG>#include</STRONG> <STRONG>&lt;db.h&gt;</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>DBcursor-&gt;c_close(DBC</STRONG> <STRONG>*cursor);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>DBcursor-&gt;c_del(DBC</STRONG> <STRONG>*cursor,</STRONG> <STRONG>int</STRONG> <STRONG>flags);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>DBcursor-&gt;c_get(DBC</STRONG> <STRONG>*cursor,</STRONG> <STRONG>DBT</STRONG> <STRONG>*key,</STRONG> <STRONG>DBT</STRONG> <STRONG>*data,</STRONG> <STRONG>int</STRONG> <STRONG>flags);</STRONG>
+
+       <STRONG>int</STRONG>
+       <STRONG>DBcursor-&gt;c_put(DBC</STRONG> <STRONG>*,</STRONG> <STRONG>DBT</STRONG> <STRONG>*key,</STRONG> <STRONG>DBT</STRONG> <STRONG>*data,</STRONG> <STRONG>int</STRONG> <STRONG>flags);</STRONG>
+
+
+</PRE>
+<H2>DESCRIPTION</H2><PRE>
+       The  DB  library  is  a family of groups of functions that
+       provides a modular programming interface  to  transactions
+       and  record-oriented  file  access.   The library includes
+       support for transactions, locking, logging and  file  page
+       caching,  as well as various indexed access methods.  Many
+       of the functional groups  (e.g.,  the  file  page  caching
+       functions)  are  useful  independent of the other DB func-
+       tions, although  some  functional  groups  are  explicitly
+       based  on  other functional groups (e.g., transactions and
+       logging).  For a general description of  the  DB  package,
+       see <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>.
+
+       This  manual  page  describes  the specific details of the
+       cursor support for the DB access methods.
+
+       The <EM>db</EM><STRONG>_</STRONG><EM>cursor</EM> functions are the library interface support-
+       ing  sequential access to the records stored by the access
+       methods of the DB library.  Cursors are created by calling
+       the   <EM>cursor</EM>  function  of  a  DB  structure  returned  by
+       <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>, which returns a pointer to a DBC structure.
+
+       Each cursor maintains positioning information within a set
+       of  key/data pairs.  In the presence of transactions, cur-
+       sors are only valid within the context of a single  trans-
+       action, the one specified during the <EM>cursor</EM> call described
+       in <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>.  All cursor operations will be executed  in
+       the  context of that transaction.  Before aborting or com-
+       mitting a transaction, all cursors used within that trans-
+       action  must  be closed.  In the presence of transactions,
+       the application must call <EM>txn</EM><STRONG>_</STRONG><EM>abort</EM> if any of  the  cursor
+       operations  returns  that  a  deadlock  (EAGAIN) or system
+       failure occurred.
+
+       When locking is enabled, page locks are  retained  between
+       consecutive   cursor  calls.   For  this  reason,  in  the
+            A pointer to a function that discards the cursor.  No
+            further references to the cursor should be made.
+
+            The <EM>c</EM><STRONG>_</STRONG><EM>close</EM> function returns the value  of  <EM>errno</EM>  on
+            failure and 0 on success.
+
+       int (*c_del)(DBC *cursor, int flags);
+            A  pointer  to  a  function that deletes the key/data
+            pair currently referenced by the cursor.
+
+            The <EM>flags</EM> parameter is currently unused, and must  be
+            set to 0.
+
+            The  cursor  position is unchanged after a delete and
+            subsequent calls to cursor  functions  expecting  the
+            cursor to reference an existing key will fail.
+
+            The  <EM>c</EM><STRONG>_</STRONG><EM>del</EM>  function  returns  the  value of <EM>errno</EM> on
+            failure, 0 on success, and DB_KEYEMPTY if the element
+            has already been deleted.
+
+       int (*c_get)(DBC *cursor, DBT *key, DBT *data, int flags);
+            A pointer to a function that retrieves key/data pairs
+            from the database.  The address and length of the key
+            are returned  in  the  structure  referenced  by  <EM>key</EM>
+            (except for the case of the DB_SET flag where the <EM>key</EM>
+            structure is unchanged), and the address  and  length
+            of  the data are returned in the structure referenced
+            by <EM>data</EM>.
+
+            Modifications to the  database  during  a  sequential
+            scan  will  be  reflected  in  the scan, i.e. records
+            inserted behind a cursor will not be  returned  while
+            records  inserted  in  front  of  a  cursor  will  be
+            returned.
+
+            In recno databases, missing  entries  (i.e.,  entries
+            that  were never explicitly created or that were cre-
+            ated and then deleted),  will  be  skipped  during  a
+            sequential scan.
+
+            If  multiple  threads  or processes insert items into
+            the same database file  without  using  locking,  the
+            results are undefined.  For more detail, see the sec-
+            tion below on cursor stability.
+
+            The parameter <EM>flags</EM> must be set to exactly one of the
+            following values:
+
+            DB_FIRST
+                 The   cursor  is  set  to  reference  the  first
+                 key/data pair of the database, and that pair  is
+                 returned.  In the presence of duplicate key val-
+                 ues, the first data item in the  set  of  dupli-
+                 If the database is  empty,  the  <EM>c</EM><STRONG>_</STRONG><EM>get</EM>  function
+                 will return DB_NOTFOUND.
+
+            DB_NEXT
+                 If the cursor is not yet initialized, DB_NEXT is
+                 identical to DB_FIRST.
+
+                 Otherwise, move the cursor to the next  key/data
+                 pair of the database, and that pair is returned.
+                 In the presence of duplicate key values, the key
+                 may not change.
+
+                 If  the  cursor is already on the last record in
+                 the database, the  <EM>c</EM><STRONG>_</STRONG><EM>get</EM>  function  will  return
+                 DB_NOTFOUND.
+
+            DB_PREV
+                 If the cursor is not yet initialized, DB_PREV is
+                 identical to DB_LAST.
+
+                 Otherwise,  move  the  cursor  to  the  previous
+                 key/data  pair of the database, and that pair is
+                 returned.  In the presence of duplicate key val-
+                 ues, the key may not change.
+
+                 If  the cursor is already on the first record in
+                 the database, the  <EM>c</EM><STRONG>_</STRONG><EM>get</EM>  function  will  return
+                 DB_NOTFOUND.
+
+
+            DB_CURRENT
+                 Return the key/data pair currently referenced by
+                 the cursor.
+
+                 If the cursor key/data pair  has  been  deleted,
+                 the <EM>c</EM><STRONG>_</STRONG><EM>get</EM> function will return DB_KEYEMPTY.
+
+                 If  the cursor is not yet initialized, the <EM>c</EM><STRONG>_</STRONG><EM>get</EM>
+                 function will return EINVAL.
+
+            DB_SET
+                 Move the cursor to the specified  key/data  pair
+                 of the database, and return the datum associated
+                 with the given key.
+
+                 In the presence of duplicate key  values,  <EM>c</EM><STRONG>_</STRONG><EM>get</EM>
+                 will  return  the  first data item for the given
+                 key.
+
+                 If the database is  a  recno  database  and  the
+                 requested  key  exists, but was never explicitly
+                 created by the application or was later deleted,
+                 the <EM>c</EM><STRONG>_</STRONG><EM>get</EM> function returns DB_KEYEMPTY.
+
+            DB_SET_RECNO
+                 Move the cursor to the specific numbered  record
+                 of  the  database,  and  return  the  associated
+                 key/data pair.  The <EM>data</EM> field of the  specified
+                 <EM>key</EM>  must be a pointer to a memory location from
+                 which a <EM>db</EM><STRONG>_</STRONG><EM>recno</EM><STRONG>_</STRONG><EM>t</EM> may be read, as described  in
+                 <STRONG><A HREF="db_dbt.html">db_dbt(3)</A></STRONG>.  This memory location will be read to
+                 determine the record to be retrieved.
+
+                 For DB_SET_RECNO to be specified, the underlying
+                 database  must be of type btree and it must have
+                 been  created  with  the  DB_RECNUM  flag   (see
+                 <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>).
+
+            DB_GET_RECNO
+                 Return  the  record  number  associated with the
+                 cursor.  The record number will be  returned  in
+                 the data DBT as described in <STRONG><A HREF="db_dbt.html">db_dbt(3)</A></STRONG>.  The <EM>key</EM>
+                 parameter is ignored.
+
+                 For DB_GET_RECNO to be specified, the underlying
+                 database  must be of type btree and it must have
+                 been  created  with  the  DB_RECNUM  flag   (see
+                 <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>).
+
+            Otherwise,  the  <EM>c</EM><STRONG>_</STRONG><EM>get</EM>  function returns the value of
+            <EM>errno</EM> on failure and 0 on success.
+
+            If <EM>c</EM><STRONG>_</STRONG><EM>get</EM> fails for any reason, the state of the  cur-
+            sor will be unchanged.
+
+       int (*c_put)(DBC *, DBT *key, DBT *data, int flags);
+            A  pointer  to  a function that stores key/data pairs
+            into the database.
+
+            The <EM>flags</EM> parameter must be set to exactly one of the
+            following values:
+
+            DB_AFTER
+                 In  the  case of the btree and hash access meth-
+                 ods, insert the data element as a duplicate ele-
+                 ment  of  the key referenced by the cursor.  The
+                 new element appears immediately after  the  cur-
+                 rent cursor position.  It is an error to specify
+                 DB_AFTER  if  the  underlying  btree   or   hash
+                 database  was  not created with the DB_DUP flag.
+                 The <EM>key</EM> parameter is ignored.
+
+                 In the case of the recno access method, it is an
+                 error  to  specify  DB_AFTER  if  the underlying
+                 recno  database  was  not   created   with   the
+                 DB_RENUMBER  flag.   If the DB_RENUMBER flag was
+                 specified, a new key  is  created,  all  records
+                 after the inserted item are automatically renum-
+                 new  element appears immediately before the cur-
+                 rent cursor position.  It is an error to specify
+                 DB_BEFORE   if  the  underlying  btree  or  hash
+                 database was not created with the  DB_DUP  flag.
+                 The <EM>key</EM> parameter is ignored.
+
+
+                 In the case of the recno access method, it is an
+                 error to specify  DB_BEFORE  if  the  underlying
+                 recno   database   was   not  created  with  the
+                 DB_RENUMBER flag.  If the DB_RENUMBER  flag  was
+                 specified,  a  new  key  is created, the current
+                 record and all records after  it  are  automati-
+                 cally  renumbered, and the key of the new record
+                 is returned in the structure referenced  by  the
+                 parameter  <EM>key</EM>.   The  initial  value of the <EM>key</EM>
+                 parameter is ignored.  See <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>  for  more
+                 information.
+
+                 If  the cursor is not yet initialized, the <EM>c</EM><STRONG>_</STRONG><EM>put</EM>
+                 function will return EINVAL.
+
+            DB_CURRENT
+                 Overwrite the data of the key/data  pair  refer-
+                 enced  by  the  cursor  with  the specified data
+                 item.
+
+                 The <EM>key</EM> parameter is ignored.
+
+                 If the cursor is not yet initialized, the  <EM>c</EM><STRONG>_</STRONG><EM>put</EM>
+                 function will return EINVAL.
+
+            DB_KEYFIRST
+                 In  the  case of the btree and hash access meth-
+                 ods, insert the specified key/data pair into the
+                 database.   If  the  key  already  exists in the
+                 database, the inserted data item is added as the
+                 first of the data items for that key.
+
+                 The DB_KEYFIRST flag may not be specified to the
+                 recno access method.
+
+            DB_KEYLAST
+                 Insert the  specified  key/data  pair  into  the
+                 database.   If  the  key  already  exists in the
+                 database, the inserted data item is added as the
+                 last of the data items for that key.
+
+                 The  DB_KEYLAST flag may not be specified to the
+                 recno access method.
+
+            If the cursor record  has  been  deleted,  the  <EM>c</EM><STRONG>_</STRONG><EM>put</EM>
+            function will return DB_KEYEMPTY.
+
+       cursor or non-cursor operations in the same thread of con-
+       trol  (i.e.,  thread  or  single-threaded  process),  will
+       always  return  keys  in  order  and will return each non-
+       deleted key/data pair  exactly  once.   Because  the  hash
+       access  method uses a dynamic hashing algorithm, it cannot
+       guarantee any form of stability in the presence of inserts
+       and deletes unless locking is performed.
+
+       If  locking was specified when the DB file was opened, but
+       transactions are not in effect, the access methods provide
+       repeatable  reads  with respect to the cursor.  That is, a
+       DB_CURRENT call on the cursor is guaranteed to return  the
+       same  record  as was returned on the last call to the cur-
+       sor.
+
+       In the presence of transactions, the access  method  calls
+       between  <EM>txn</EM><STRONG>_</STRONG><EM>begin</EM>  and  <EM>txn</EM><STRONG>_</STRONG><EM>abort</EM>  or  <EM>txn</EM><STRONG>_</STRONG><EM>commit</EM> provide
+       degree 3 consistency.  For all access  methods,  a  cursor
+       scan  of  the  database  performed within the context of a
+       transaction is guaranteed to  return  each  key/data  pair
+       once  and  only  once,  except in the following case.  If,
+       while performing a  cursor  scan  using  the  hash  access
+       method,  the transaction performing the scan inserts a new
+       pair into the database,  it  is  possible  that  duplicate
+       key/data pairs will be returned.
+
+
+</PRE>
+<H2>ERRORS</H2><PRE>
+       The  <EM>DBcursor-&gt;c</EM><STRONG>_</STRONG><EM>close</EM>  function may fail and return <EM>errno</EM>
+       for any of the errors specified for the following  DB  and
+       library functions: <STRONG><A HREF="calloc.html">calloc(3)</A></STRONG>, <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>,
+       <STRONG><A HREF="lock_get.html">lock_get(3)</A></STRONG>, <STRONG><A HREF="lock_id.html">lock_id(3)</A></STRONG>, <STRONG><A HREF="lock_put.html">lock_put(3)</A></STRONG>, <STRONG><A HREF="lock_vec.html">lock_vec(3)</A></STRONG>,
+       <STRONG><A HREF="log_put.html">log_put(3)</A></STRONG>, <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>, <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>, <STRONG><A HREF="memmove.html">memmove(3)</A></STRONG>,
+       <STRONG><A HREF="memp_fget.html">memp_fget(3)</A></STRONG>, <STRONG><A HREF="memp_fput.html">memp_fput(3)</A></STRONG>, <STRONG><A HREF="memp_fset.html">memp_fset(3)</A></STRONG>, <STRONG><A HREF="memset.html">memset(3)</A></STRONG>,
+       <STRONG><A HREF="realloc.html">realloc(3)</A></STRONG>, and <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>.
+
+       In  addition,  the <EM>DBcursor-&gt;c</EM><STRONG>_</STRONG><EM>close</EM> function may fail and
+       return <EM>errno</EM> for the following conditions:
+
+       [EAGAIN]
+            A lock was unavailable.
+
+       [EPERM]
+            Database corruption  was  detected.   All  subsequent
+            database  calls  (other  than  <EM>DB-&gt;close</EM>) will return
+            EPERM.
+
+       The <EM>DBcursor-&gt;c</EM><STRONG>_</STRONG><EM>del</EM> function may fail and return <EM>errno</EM> for
+       any  of  the errors specified for the following DB and li-
+       brary functions: DB-&gt;<STRONG><A HREF="del.html">del(3)</A></STRONG>, <STRONG><A HREF="calloc.html">calloc(3)</A></STRONG>, <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>,
+       <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="lock_get.html">lock_get(3)</A></STRONG>, <STRONG><A HREF="lock_id.html">lock_id(3)</A></STRONG>, <STRONG><A HREF="lock_put.html">lock_put(3)</A></STRONG>,
+       <STRONG><A HREF="lock_vec.html">lock_vec(3)</A></STRONG>, <STRONG><A HREF="log_put.html">log_put(3)</A></STRONG>, <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>, <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>, <STRONG><A HREF="memmove.html">memmove(3)</A></STRONG>,
+       <STRONG><A HREF="memp_fget.html">memp_fget(3)</A></STRONG>, <STRONG><A HREF="memp_fput.html">memp_fput(3)</A></STRONG>, <STRONG><A HREF="memp_fset.html">memp_fset(3)</A></STRONG>, <STRONG><A HREF="memset.html">memset(3)</A></STRONG>,
+       <STRONG><A HREF="realloc.html">realloc(3)</A></STRONG>, and <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>.
+
+            EPERM.
+
+       The <EM>DBcursor-&gt;c</EM><STRONG>_</STRONG><EM>get</EM> function may fail and return <EM>errno</EM> for
+       any of the errors specified for the following DB  and  li-
+       brary functions: DB-&gt;<STRONG><A HREF="get.html">get(3)</A></STRONG>, <STRONG><A HREF="calloc.html">calloc(3)</A></STRONG>, <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>,
+       <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>, <STRONG><A HREF="lock_get.html">lock_get(3)</A></STRONG>, <STRONG><A HREF="lock_id.html">lock_id(3)</A></STRONG>, <STRONG><A HREF="lock_put.html">lock_put(3)</A></STRONG>,
+       <STRONG><A HREF="lock_vec.html">lock_vec(3)</A></STRONG>, <STRONG><A HREF="log_put.html">log_put(3)</A></STRONG>, <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>, <STRONG><A HREF="memcmp.html">memcmp(3)</A></STRONG>, <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>,
+       <STRONG><A HREF="memmove.html">memmove(3)</A></STRONG>, <STRONG><A HREF="memp_fget.html">memp_fget(3)</A></STRONG>, <STRONG><A HREF="memp_fput.html">memp_fput(3)</A></STRONG>, <STRONG><A HREF="memp_fset.html">memp_fset(3)</A></STRONG>,
+       <STRONG><A HREF="memset.html">memset(3)</A></STRONG>, <STRONG><A HREF="realloc.html">realloc(3)</A></STRONG>, and <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>.
+
+       In addition, the <EM>DBcursor-&gt;c</EM><STRONG>_</STRONG><EM>get</EM> function may fail and re-
+       turn <EM>errno</EM> for the following conditions:
+
+       [EAGAIN]
+            A lock was unavailable.
+
+       [EINVAL]
+            An invalid flag value or parameter was specified.
+
+            The DB_THREAD flag was specified  to  the  <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>
+            function    and    neither   the   DB_DBT_MALLOC   or
+            DB_DBT_USERMEM flags were set in the DBT.
+
+       [EPERM]
+            Database corruption  was  detected.   All  subsequent
+            database  calls  (other  than  <EM>DB-&gt;close</EM>) will return
+            EPERM.
+
+       The <EM>DBcursor-&gt;c</EM><STRONG>_</STRONG><EM>put</EM> function may fail and return <EM>errno</EM> for
+       any  of  the errors specified for the following DB and li-
+       brary functions: <STRONG><A HREF="calloc.html">calloc(3)</A></STRONG>, <STRONG><A HREF="fcntl.html">fcntl(2)</A></STRONG>, <STRONG><A HREF="fflush.html">fflush(3)</A></STRONG>,
+       <STRONG><A HREF="lock_get.html">lock_get(3)</A></STRONG>, <STRONG><A HREF="lock_id.html">lock_id(3)</A></STRONG>, <STRONG><A HREF="lock_put.html">lock_put(3)</A></STRONG>, <STRONG><A HREF="lock_vec.html">lock_vec(3)</A></STRONG>,
+       <STRONG><A HREF="log_put.html">log_put(3)</A></STRONG>, <STRONG><A HREF="malloc.html">malloc(3)</A></STRONG>, <STRONG><A HREF="memcmp.html">memcmp(3)</A></STRONG>, <STRONG><A HREF="memcpy.html">memcpy(3)</A></STRONG>, <STRONG><A HREF="memmove.html">memmove(3)</A></STRONG>,
+       <STRONG><A HREF="memp_fget.html">memp_fget(3)</A></STRONG>, <STRONG><A HREF="memp_fput.html">memp_fput(3)</A></STRONG>, <STRONG><A HREF="memp_fset.html">memp_fset(3)</A></STRONG>, <STRONG><A HREF="memset.html">memset(3)</A></STRONG>,
+       <STRONG><A HREF="realloc.html">realloc(3)</A></STRONG>, and <STRONG><A HREF="strerror.html">strerror(3)</A></STRONG>.
+
+       In addition, the <EM>DBcursor-&gt;c</EM><STRONG>_</STRONG><EM>put</EM> function may fail and re-
+       turn <EM>errno</EM> for the following conditions:
+
+       [EACCES]
+            An attempt was made to modify a read-only database.
+
+       [EAGAIN]
+            A lock was unavailable.
+
+       [EINVAL]
+            An invalid flag value or parameter was specified.
+
+       [EPERM]
+            Database  corruption  was  detected.   All subsequent
+            database calls (other  than  <EM>DB-&gt;close</EM>)  will  return
+            EPERM.
+
+
+</PRE>
+<H2>SEE ALSO</H2><PRE>
+</PRE>
+</BODY>
+</HTML>

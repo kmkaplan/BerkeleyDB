@@ -1,0 +1,62 @@
+#	@(#)script	8.23 (Berkeley) 11/3/97
+#
+# Setup
+# setenv VERSION 2.1.0
+setenv VERSION tk
+setenv S /usr/src/db
+
+# Make sure everything's checked in.
+cd $S && allout
+
+# Diff with the last version.
+#cd $S/.. && ~bostic/src/diff/diff -r
+
+# Increment the version numbers and dates.
+setenv X README
+cd $S && sco $X && vi $X && echo "go to $VERSION" | sccs delget $X
+setenv X db.h.src
+cd $S/include && sco $X && vi $X && echo "go to $VERSION" | sccs delget $X
+
+# Build the documents.
+cd $S/man/man.source && make clean
+cd $S/man/man.source && make clean && make check
+cd $S/man/man.source && make && make install_web
+
+# Configure the distribution.
+cd $S/dist && sh ./distrib
+
+# Build a version.
+cd $S && rm -rf build.local && mkdir build.local && cd build.local && \
+    ~bostic/bin/dbconf && (make |& tee mklog)
+make ex_{access,appinit,btrec,lock,mpool,thread,tpcb} thread >>& mklog
+make {err,getcwd,getlong,getopt,memcmp,memcpy,memmove,raise}.o >>& mklog
+make {snprintf,strdup,strerror,strsep,vsnprintf}.o >>& mklog
+vi mklog
+
+# Check the install
+make prefix=`pwd`/INSTALL install
+
+# Check the jump table.
+sh ../ARCHIVE/jump.chk
+
+# Save the SCCS Ids.
+what *.o | egrep Sleepycat | gzip > ../ARCHIVE/history/$VERSION.gz
+chmod 444 ../ARCHIVE/history/$VERSION.gz
+
+# Clean up the tree.
+cd $S
+mv -i ARCHIVE TODO build.local build.margo db_tcl man/man.{error,source} SCCS/
+find . \! -path '*SCCS*' -type d \! -perm 775
+find . \! -path '*SCCS*' \( -name '*.rej' -o -name '*.orig' \)
+find . \! -path '*SCCS*' -type f \( -perm -200 -o -perm -2 -o -perm -20 \)
+find . \! -path '*SCCS*' -type f \! -perm 444
+chown -R bin.wsrc .
+
+# Create the release.
+setenv T /var/spool/ftp/pub
+cd $S/.. && mv -i db db-$VERSION
+tar cFFf - db-$VERSION | gzip --best > $T/db-$VERSION.tar.gz
+chmod 444 $T/db-$VERSION.tar.gz && mv -i db-$VERSION db
+cd $S/SCCS
+mv -i ARCHIVE TODO build.local build.margo db_tcl ../
+mv -i man.{error,source} ../man/

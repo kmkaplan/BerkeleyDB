@@ -1,0 +1,118 @@
+<HTML>
+<HEAD>
+<TITLE>db_load</TITLE>
+</HEAD>
+<BODY>
+<H1>db_load</H1>
+<HR>
+<PRE>
+
+</PRE>
+<H2>NAME</H2><PRE>
+       db_load - the DB database loader
+
+
+</PRE>
+<H2>SYNOPSIS</H2><PRE>
+       <STRONG>db_load</STRONG> [<STRONG>-c</STRONG> <STRONG>name=value</STRONG>]
+            [<STRONG>-f</STRONG> <STRONG>file</STRONG>] [<STRONG>-h</STRONG> <STRONG>home</STRONG>] [<STRONG>-t</STRONG> <STRONG>btree</STRONG> <STRONG>|</STRONG> <STRONG>hash</STRONG>] db_file
+
+
+</PRE>
+<H2>DESCRIPTION</H2><PRE>
+       The  <EM>db</EM><STRONG>_</STRONG><EM>load</EM>  utility  reads  from  the standard input and
+       loads it into the database <EM>db</EM><STRONG>_</STRONG><EM>file</EM>.  The input to  <EM>db</EM><STRONG>_</STRONG><EM>load</EM>
+       must have been created by the <EM>db</EM><STRONG>_</STRONG><EM>dump</EM> or <EM>db</EM><STRONG>_</STRONG><EM>dump185</EM> utili-
+       ties (see <STRONG><A HREF="db_dump.html">db_dump(1)</A></STRONG> for more information).
+
+       The options are as follows:
+
+       <STRONG>-c</STRONG>   Specify configuration options for the DB_INFO  struc-
+            ture  provided to <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>, ignoring any value they
+            may have based on the input.  The command-line format
+            is  ``name=value''.   Supported  keywords  are listed
+            below.
+
+       <STRONG>-f</STRONG>   Read from the specified <EM>input</EM> file  instead  of  from
+            the standard input.
+
+       <STRONG>-h</STRONG>   Specify a home directory for the database.
+
+       <STRONG>-t</STRONG>   Specify  the  underlying  access  method.   If  no <STRONG>-t</STRONG>
+            option is specified, the database will be loaded into
+            a  database  of  the same type as was dumped, e.g., a
+            hash database will be created if a hash database  was
+            dumped.   Btree  and  hash databases may be converted
+            from one to the other.   Recno  databases  cannot  be
+            converted to any other database type.
+
+       The <EM>db</EM><STRONG>_</STRONG><EM>load</EM> utility exits 0 on success, and &gt;0 if an error
+       occurs.
+
+
+</PRE>
+<H2>KEYWORDS</H2><PRE>
+       The following keywords are supported for the  <STRONG>-c</STRONG>  command-
+       line  option.   See  <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>  for further discussion of
+       these keywords and what values should be specified.
+
+       The parenthetical listing specifies how the value part  of
+       the  ``name=value''  pair is interpreted.  Items listed as
+       (boolean) expect value to be ``1'' (set) or ``0'' (unset).
+       Items listed as (number) convert value to a number.  Items
+       listed as (string) use the characters of value directly.
+
+       bt_minkey
+            The minimum number of keys per page (number).
+
+       db_lorder
+            The byte order for integers in  the  stored  database
+            metadata (number).
+
+       re_len
+            Specify fixed-length records of the specified  length
+            (number).
+
+       re_pad
+            Specify   the   fixed-length   record  pad  character
+            (string).
+
+       recnum
+            The value of the DB_RECNUM flag (boolean).
+
+       renumber
+            The value of the DB_RENUMBER flag (boolean).
+
+
+</PRE>
+<H2>ENVIRONMENT VARIABLES</H2><PRE>
+       The following environment variables affect  the  execution
+       of <EM>db</EM><STRONG>_</STRONG><EM>load</EM>:
+
+       DB_HOME
+            If the <STRONG>-h</STRONG> option is not specified and the environment
+            variable <EM>DB</EM><STRONG>_</STRONG><EM>HOME</EM> is set, it is used as  the  path  of
+            the database home, as described in <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>.
+
+
+</PRE>
+<H2>SEE ALSO</H2><PRE>
+       The  DB  library  is  a family of groups of functions that
+       provides a modular programming interface  to  transactions
+       and  record-oriented  file  access.   The library includes
+       support for transactions, locking, logging and  file  page
+       caching,  as well as various indexed access methods.  Many
+       of the functional groups  (e.g.,  the  file  page  caching
+       functions)  are  useful  independent of the other DB func-
+       tions, although  some  functional  groups  are  explicitly
+       based  on  other functional groups (e.g., transactions and
+       logging).  For a general description of  the  DB  package,
+       see <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>.
+
+       <STRONG><A HREF="db_archive.html">db_archive(1)</A></STRONG>, <STRONG><A HREF="db_checkpoint.html">db_checkpoint(1)</A></STRONG>, <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG>, <STRONG><A HREF="db_dump.html">db_dump(1)</A></STRONG>,
+       <STRONG><A HREF="db_load.html">db_load(1)</A></STRONG>, <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG>, <STRONG><A HREF="db_stat.html">db_stat(1)</A></STRONG>, <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>,
+       <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>, <STRONG><A HREF="db_cursor.html">db_cursor(3)</A></STRONG>, <STRONG><A HREF="db_dbm.html">db_dbm(3)</A></STRONG>, <STRONG><A HREF="db_jump.html">db_jump(3)</A></STRONG>, <STRONG><A HREF="db_lock.html">db_lock(3)</A></STRONG>,
+       <STRONG><A HREF="db_log.html">db_log(3)</A></STRONG>, <STRONG><A HREF="db_mpool.html">db_mpool(3)</A></STRONG>, <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>, <STRONG><A HREF="db_thread.html">db_thread(3)</A></STRONG>, <STRONG><A HREF="db_txn.html">db_txn(3)</A></STRONG>
+</PRE>
+</BODY>
+</HTML>
