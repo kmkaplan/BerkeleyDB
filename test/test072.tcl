@@ -1,9 +1,9 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1999
+# Copyright (c) 1999, 2000
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test072.tcl	11.1 (Sleepycat) 10/26/99
+#	$Id: test072.tcl,v 11.6 2000/05/22 12:51:40 bostic Exp $
 #
 # DB Test 72: Test that of cursor stability when duplicates are moved off-page.
 proc test072 { method {pagesize 512} {ndups 20} {tnum 72} args } {
@@ -14,7 +14,15 @@ proc test072 { method {pagesize 512} {ndups 20} {tnum 72} args } {
 	set args [convert_args $method $args]
 
 	cleanup $testdir
-	set testfile ./TESTDIR/test0$tnum.db
+	set eindex [lsearch -exact $args "-env"]
+	#
+	# If we are using an env, then testfile should just be the db name.
+	# Otherwise it is the test directory and the name.
+	if { $eindex == -1 } {
+		set testfile $testdir/test0$tnum.db
+	} else {
+		set testfile test0$tnum.db
+	}
 
 	set key "the key"
 
@@ -29,8 +37,8 @@ proc test072 { method {pagesize 512} {ndups 20} {tnum 72} args } {
 		    duplicates are moved off-page."
 	}
 
-	set db [eval {berkdb \
-	    open -create -truncate -mode 0644} $omethod $args $testfile]
+	set db [eval {berkdb_open \
+	     -create -truncate -mode 0644} $omethod $args $testfile]
 	error_check_good "db open" [is_valid_db $db] TRUE
 
 	puts "\tTest0$tnum.a: Put/create cursor/verify all cursor loop."
@@ -50,15 +58,15 @@ proc test072 { method {pagesize 512} {ndups 20} {tnum 72} args } {
 		    [list [list $key $datum]]
 
 		for { set j 0 } { $j < $i } { incr j } {
-	    	    set dbt [$dbc($j) get -current]
-	    	    set k [lindex [lindex $dbt 0] 0]
-	    	    set d [lindex [lindex $dbt 0] 1]
+		    set dbt [$dbc($j) get -current]
+		    set k [lindex [lindex $dbt 0] 0]
+		    set d [lindex [lindex $dbt 0] 1]
 
 		    #puts "cursor $j after $i: $d"
 
 		    eval {$db sync}
 
-	    	    error_check_good\
+		    error_check_good\
 			"cursor $j key correctness after $i puts" $k $key
 		    error_check_good\
 			"cursor $j data correctness after $i puts" $d $data($j)
