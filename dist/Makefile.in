@@ -1,4 +1,4 @@
-# @(#)Makefile.in	10.37 (Sleepycat) 11/3/97
+# @(#)Makefile.in	10.39 (Sleepycat) 11/25/97
 
 srcdir=	@srcdir@/..
 CC=	@CC@
@@ -26,9 +26,9 @@ OBJS=	bt_close.o bt_compare.o bt_conv.o bt_cursor.o bt_delete.o bt_open.o \
 	lock_util.o log.o log_archive.o log_auto.o log_compare.o log_findckp.o \
 	log_get.o log_put.o log_rec.o log_register.o mp_bh.o mp_fget.o \
 	mp_fopen.o mp_fput.o mp_fset.o mp_open.o mp_pr.o mp_region.o \
-	mp_sync.o mutex.o os_abs.o os_dir.o os_fid.o os_func.o os_fsync.o \
+	mp_sync.o mutex.o os_abs.o os_config.o os_dir.o os_fid.o os_fsync.o \
 	os_map.o os_oflags.o os_open.o os_rpath.o os_rw.o os_seek.o \
-	os_sleep.o os_stat.o os_unlink.o txn.o txn_auto.o txn_rec.o
+	os_sleep.o os_spin.o os_stat.o os_unlink.o txn.o txn_auto.o txn_rec.o
 COBJS=	cxx_app.o cxx_except.o cxx_lock.o cxx_log.o cxx_mpool.o cxx_table.o \
 	cxx_txn.o
 
@@ -156,12 +156,12 @@ man1=	db_archive.1 db_checkpoint.1 db_deadlock.1 db_dump.1 db_load.1 \
 	db_recover.1 db_stat.1
 man10=	db_archive.0 db_checkpoint.0 db_deadlock.0 db_dump.0 db_load.0 \
 	db_recover.0 db_stat.0
-man3=	db_appinit.3 db_cursor.3 db_dbm.3 db_dbt.3 db_hsearch.3 db_intro.3 \
-	db_jump.3 db_lock.3 db_log.3 db_mpool.3 db_open.3 db_thread.3 db_txn.3
+man3=	db_appinit.3 db_cursor.3 db_dbm.3 db_dbt.3 db_hsearch.3 db_internal.3 \
+	db_intro.3 db_lock.3 db_log.3 db_mpool.3 db_open.3 db_thread.3 db_txn.3
 manx3=	Db.3 DbEnv.3 DbException.3 DbInfo.3 DbLock.3 DbLockTab.3 DbLog.3 \
 	DbLsn.3 DbMpool.3 DbMpoolFile.3 DbTxn.3 DbTxnMgr.3 Dbc.3 Dbt.3
-man30=	db_appinit.0 db_cursor.0 db_dbm.0 db_dbt.0 db_hsearch.0 db_intro.0 \
-	db_jump.0 db_lock.0 db_log.0 db_mpool.0 db_open.0 db_thread.0 db_txn.0
+man30=	db_appinit.0 db_cursor.0 db_dbm.0 db_dbt.0 db_hsearch.0 db_internal.0 \
+	db_intro.0 db_lock.0 db_log.0 db_mpool.0 db_open.0 db_thread.0 db_txn.0
 manx30=	Db.0 DbEnv.0 DbException.0 DbInfo.0 DbLock.0 DbLockTab.0 DbLog.0 \
 	DbLsn.0 DbMpool.0 DbMpoolFile.0 DbTxn.0 DbTxnMgr.0 Dbc.0 Dbt.0
 
@@ -454,11 +454,11 @@ db_shash.o: $(srcdir)/common/db_shash.c
 # OS specific source files.
 os_abs.o: $(srcdir)/os/os_abs.c
 	$(CC) $(CFLAGS) $?
+os_config.o: $(srcdir)/os/os_config.c
+	$(CC) $(CFLAGS) $?
 os_dir.o: $(srcdir)/os/os_dir.c
 	$(CC) $(CFLAGS) $?
 os_fid.o: $(srcdir)/os/os_fid.c
-	$(CC) $(CFLAGS) $?
-os_func.o: $(srcdir)/os/os_func.c
 	$(CC) $(CFLAGS) $?
 os_fsync.o: $(srcdir)/os/os_fsync.c
 	$(CC) $(CFLAGS) $?
@@ -475,6 +475,8 @@ os_rw.o: $(srcdir)/os/os_rw.c
 os_seek.o: $(srcdir)/os/os_seek.c
 	$(CC) $(CFLAGS) $?
 os_sleep.o: $(srcdir)/os/os_sleep.c
+	$(CC) $(CFLAGS) $?
+os_spin.o: $(srcdir)/os/os_spin.c
 	$(CC) $(CFLAGS) $?
 os_stat.o: $(srcdir)/os/os_stat.c
 	$(CC) $(CFLAGS) $?

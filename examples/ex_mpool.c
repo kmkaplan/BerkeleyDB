@@ -1,18 +1,13 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1997
  *	Sleepycat Software.  All rights reserved.
+ *
+ *	@(#)ex_mpool.c	10.16 (Sleepycat) 11/10/97
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char copyright[] =
-"@(#) Copyright (c) 1997\n\
-	Sleepycat Software Inc.  All rights reserved.\n";
-static const char sccsid[] = "@(#)ex_mpool.c	10.15 (Sleepycat) 10/28/97";
-#endif
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>

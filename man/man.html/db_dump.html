@@ -6,87 +6,92 @@
 <H1>db_dump</H1>
 <HR>
 <PRE>
-
-</PRE>
-<H2>NAME</H2><PRE>
-       db_dump - the DB database dump utility
-
-
-</PRE>
-<H2>SYNOPSIS</H2><PRE>
-       <STRONG>db_dump</STRONG> [<STRONG>-d</STRONG>] [<STRONG>-f</STRONG> <STRONG>output</STRONG>] db_file
-       <STRONG>db_dump</STRONG> [<STRONG>-p</STRONG>] [<STRONG>-f</STRONG> <STRONG>output</STRONG>] [<STRONG>-h</STRONG> <STRONG>home</STRONG>] db_file
-       <STRONG>db_dump185</STRONG> [<STRONG>-p</STRONG>] [<STRONG>-f</STRONG> <STRONG>output</STRONG>] db_file
+<!-- Manpage converted by man2html 3.0.1 -->
+       <B>db</B>_<B>dump</B> [<B>-d</B>] [<B>-f</B> <B>output</B>] db_file
+       <B>db</B>_<B>dump</B> [<B>-p</B>] [<B>-f</B> <B>output</B>] [<B>-h</B> <B>home</B>] db_file
+       <B>db</B>_<B>dump185</B> [<B>-p</B>] [<B>-f</B> <B>output</B>] db_file
 
 
 </PRE>
 <H2>DESCRIPTION</H2><PRE>
-       The  <EM>db</EM><STRONG>_</STRONG><EM>dump</EM>  utility  reads the database file <EM>db</EM><STRONG>_</STRONG><EM>file</EM> and
+       The  db_dump  utility  reads the database file db_file and
        writes it to the standard output using  a  portable  flat-
-       text  format  understood  by  the <STRONG><A HREF="db_load.html">db_load(1)</A></STRONG> utility.  The
-       argument <EM>db</EM><STRONG>_</STRONG><EM>file</EM> must be a  file  produced  using  the  <EM>DB</EM>
+       text  format  understood  by  the <B><A HREF="db_load.html">db_load(1)</A></B> utility.  The
+       argument db_file must be a  file  produced  using  the  DB
        library functions.
 
-       The  <EM>db</EM><STRONG>_</STRONG><EM>dump185</EM>  utility is similar to the <EM>db</EM><STRONG>_</STRONG><EM>dump</EM> utility
+       The  db_dump185  utility is similar to the db_dump utility
        except that it reads databases in the format  used  by  DB
        version 1.85 and earlier.
 
        The options are as follows:
 
-       <STRONG>-d</STRONG>   Dump  the  specified database in a format helpful for
-            debugging the DB library routines.  <STRONG>The</STRONG> <STRONG>output</STRONG> <STRONG>format</STRONG>
-            <STRONG>of</STRONG>  <STRONG>the</STRONG>  <STRONG>-d</STRONG>  <STRONG>option</STRONG>  <STRONG>is</STRONG>  <STRONG>not</STRONG> <STRONG>standard</STRONG> <STRONG>and</STRONG> <STRONG>may</STRONG> <STRONG>change,</STRONG>
-            <STRONG>without</STRONG> <STRONG>notice,</STRONG> <STRONG>between</STRONG> <STRONG>releases</STRONG> <STRONG>of</STRONG> <STRONG>the</STRONG> <STRONG>DB</STRONG> <STRONG>library.</STRONG>
+       <B>-d</B>   Dump  the  specified database in a format helpful for
+            debugging the DB library routines.  <B>The</B> <B>output</B> <B>format</B>
+            <B>of</B>  <B>the</B>  <B>-d</B>  <B>option</B>  <B>is</B>  <B>not</B> <B>standard</B> <B>and</B> <B>may</B> <B>change,</B>
+            <B>without</B> <B>notice,</B> <B>between</B> <B>releases</B> <B>of</B> <B>the</B> <B>DB</B> <B>library.</B>
 
-       <STRONG>-f</STRONG>   Write to the specified <EM>file</EM> instead of to  the  stan-
-            dard output.
+       <B>-f</B>   Write  to  the  specified  file  instead  of  to  the
+            standard output.
 
-       <STRONG>-h</STRONG>   Specify  a  home  directory  for the database.  As DB
+       <B>-h</B>   Specify  a  home  directory  for the database.  As DB
             versions before 2.0 did not support the concept of  a
-            database  ``home'',  <EM>db</EM><STRONG>_</STRONG><EM>dump185</EM> does not support this
+            database  ``home'',  db_dump185 does not support this
             option.
 
-       <STRONG>-p</STRONG>   If characters in either the key  or  data  items  are
-            printing  characters  (as defined by <STRONG><A HREF="isprint.html">isprint(3)</A></STRONG>), use
-            printing characters in <EM>file</EM> to represent them.   This
+       <B>-p</B>   If characters in either the key  or  data  items  are
+            printing  characters  (as defined by <B>isprint(3)</B>), use
+            printing characters in file to represent them.   This
             option  permits users to use standard text editors to
             modify the contents of databases.
 
             Note, different systems may have different notions as
             to  what  characters are ``printable'', and databases
-            dumped in this manner may be less portable to  exter-
-            nal systems.
+            dumped  in  this  manner  may  be  less  portable  to
+            external systems.
 
        Dumping and reloading hash databases that use user-defined
        hash functions will result in new databases that  use  the
-       default hash function.  While using the default hash func-
-       tion may not be optimal for the new database, it will con-
-       tinue to work correctly.
+       default  hash  function.   While  using  the  default hash
+       function may not be optimal for the new database, it  will
+       continue to work correctly.
 
        Dumping  and  reloading  btree  databases  that  use user-
        defined prefix or comparison functions will result in  new
        databases  that  use  the  default  prefix  and comparison
+       functions.  <B>In</B> <B>this</B> <B>case,</B> <B>it</B>  <B>is</B>  <B>quite</B>  <B>likely</B>  <B>that</B>  <B>the</B>
+       <B>database</B>  <B>will</B> <B>be</B> <B>damaged</B> <B>beyond</B> <B>repair</B> <B>permitting</B> <B>neither</B>
+       <B>record</B> <B>storage</B> <B>or</B> <B>retrieval.</B>
+
+       The only available workaround for either case is to modify
+       the  sources  for  the  <B><A HREF="db_load.html">db_load(3)</A></B>  utility  to  load  the
+       database using the correct  hash,  prefix  and  comparison
+       functions.
+
+       The db_dump185 utility may not be available on your system
+       as it is not always installed when the  DB  libraries  and
+       utilities  are  installed.   If you are unable to find it,
        see your system administrator for further information.
 
-       The <EM>db</EM><STRONG>_</STRONG><EM>dump</EM> utility exits 0 on success, and &gt;0 if an error
-       occurs.  The <EM>db</EM><STRONG>_</STRONG><EM>dump185</EM> utility exits 0 on success, and &gt;0
+       The db_dump utility exits 0 on success, and &gt;0 if an error
+       occurs.  The db_dump185 utility exits 0 on success, and &gt;0
        if an error occurs.
 
 
 </PRE>
 <H2>ENVIRONMENT VARIABLES</H2><PRE>
        The following environment variables affect  the  execution
-       of <EM>db</EM><STRONG>_</STRONG><EM>dump</EM>:
+       of db_dump:
 
        DB_HOME
-            If the <STRONG>-h</STRONG> option is not specified and the environment
-            variable <EM>DB</EM><STRONG>_</STRONG><EM>HOME</EM> is set, it is used as  the  path  of
-            the database home, as described in <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>.
+            If the <B>-h</B> option is not specified and the environment
+            variable DB_HOME is set, it is used as  the  path  of
+            the database home, as described in <B><A HREF="db_appinit.html">db_appinit(3)</A></B>.
 
 
 </PRE>
 <H2>SEE ALSO</H2><PRE>
-       <STRONG><A HREF="isprint.html">isprint(3)</A></STRONG>
+       <B>isprint(3)</B>
 
        The  DB  library  is  a family of groups of functions that
        provides a modular programming interface  to  transactions
@@ -94,16 +99,23 @@
        support for transactions, locking, logging and  file  page
        caching,  as well as various indexed access methods.  Many
        of the functional groups  (e.g.,  the  file  page  caching
-       functions)  are  useful  independent of the other DB func-
-       tions, although  some  functional  groups  are  explicitly
+       functions)   are   useful  independent  of  the  other  DB
+       functions, although some functional groups are  explicitly
        based  on  other functional groups (e.g., transactions and
        logging).  For a general description of  the  DB  package,
-       see <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>.
+       see <B><A HREF="db_intro.html">db_intro(3)</A></B>.
 
-       <STRONG><A HREF="db_archive.html">db_archive(1)</A></STRONG>, <STRONG><A HREF="db_checkpoint.html">db_checkpoint(1)</A></STRONG>, <STRONG><A HREF="db_deadlock.html">db_deadlock(1)</A></STRONG>, <STRONG><A HREF="db_dump.html">db_dump(1)</A></STRONG>,
-       <STRONG><A HREF="db_load.html">db_load(1)</A></STRONG>, <STRONG><A HREF="db_recover.html">db_recover(1)</A></STRONG>, <STRONG><A HREF="db_stat.html">db_stat(1)</A></STRONG>, <STRONG><A HREF="db_intro.html">db_intro(3)</A></STRONG>,
-       <STRONG><A HREF="db_appinit.html">db_appinit(3)</A></STRONG>, <STRONG><A HREF="db_cursor.html">db_cursor(3)</A></STRONG>, <STRONG><A HREF="db_dbm.html">db_dbm(3)</A></STRONG>, <STRONG><A HREF="db_jump.html">db_jump(3)</A></STRONG>, <STRONG><A HREF="db_lock.html">db_lock(3)</A></STRONG>,
-       <STRONG><A HREF="db_log.html">db_log(3)</A></STRONG>, <STRONG><A HREF="db_mpool.html">db_mpool(3)</A></STRONG>, <STRONG><A HREF="db_open.html">db_open(3)</A></STRONG>, <STRONG><A HREF="db_thread.html">db_thread(3)</A></STRONG>, <STRONG><A HREF="db_txn.html">db_txn(3)</A></STRONG>
+       <B><A HREF="db_archive.html">db_archive(1)</A></B>, <B><A HREF="db_checkpoint.html">db_checkpoint(1)</A></B>, <B><A HREF="db_deadlock.html">db_deadlock(1)</A></B>, <B><A HREF="db_dump.html">db_dump(1)</A></B>,
+       <B><A HREF="db_load.html">db_load(1)</A></B>, <B><A HREF="db_recover.html">db_recover(1)</A></B>, <B><A HREF="db_stat.html">db_stat(1)</A></B>, <B><A HREF="db_intro.html">db_intro(3)</A></B>,
+       <B><A HREF="db_appinit.html">db_appinit(3)</A></B>, <B><A HREF="db_cursor.html">db_cursor(3)</A></B>, <B><A HREF="db_dbm.html">db_dbm(3)</A></B>, <B><A HREF="db_internal.html">db_internal(3)</A></B>,
+       <B><A HREF="db_lock.html">db_lock(3)</A></B>, <B><A HREF="db_log.html">db_log(3)</A></B>, <B><A HREF="db_mpool.html">db_mpool(3)</A></B>, <B><A HREF="db_open.html">db_open(3)</A></B>, <B><A HREF="db_thread.html">db_thread(3)</A></B>,
+       <B><A HREF="db_txn.html">db_txn(3)</A></B>
+
 </PRE>
+<HR>
+<ADDRESS>
+Man(1) output converted with
+<a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>
+</ADDRESS>
 </BODY>
 </HTML>

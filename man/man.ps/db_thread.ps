@@ -1,8 +1,8 @@
 %!PS-Adobe-3.0
 %%Creator: groff version 1.10
-%%CreationDate: Mon Nov  3 11:28:45 1997
-%%DocumentNeededResources: font Times-Roman
-%%+ font Times-Bold
+%%CreationDate: Fri Nov 28 16:32:58 1997
+%%DocumentNeededResources: font Times-Bold
+%%+ font Times-Roman
 %%+ font Times-Italic
 %%DocumentSuppliedResources: procset grops 1.10 0
 %%Pages: 2
@@ -166,8 +166,8 @@ pop
 setpacking
 }if
 %%EndResource
-%%IncludeResource: font Times-Roman
 %%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
 %%IncludeResource: font Times-Italic
 grops begin/DEFS 1 dict def DEFS begin/u{.001 mul}bind def end/RES 72
 def/PL 792 def/LS false def/ENC0[/asciicircum/asciitilde/Scaron/Zcaron
@@ -197,130 +197,133 @@ def/PL 792 def/LS false def/ENC0[/asciicircum/asciitilde/Scaron/Zcaron
 /egrave/eacute/ecircumflex/edieresis/igrave/iacute/icircumflex/idieresis
 /eth/ntilde/ograve/oacute/ocircumflex/otilde/odieresis/divide/oslash
 /ugrave/uacute/ucircumflex/udieresis/yacute/thorn/ydieresis]def
-/Times-Italic@0 ENC0/Times-Italic RE/Times-Bold@0 ENC0/Times-Bold RE
-/Times-Roman@0 ENC0/Times-Roman RE
+/Times-Italic@0 ENC0/Times-Italic RE/Times-Roman@0 ENC0/Times-Roman RE
+/Times-Bold@0 ENC0/Times-Bold RE
 %%EndProlog
 %%Page: 1 1
 %%BeginPageSetup
 BP
 %%EndPageSetup
-/F0 10/Times-Roman@0 SF 323.3(DB_THREAD\(3\) DB_THREAD\(3\))72 48 R/F1 9
-/Times-Bold@0 SF -.18(NA)72 84 S(ME).18 E F0
-(db_thread \255 using threads in the DB library)108 96 Q(.)-.65 E F1
-(DESCRIPTION)72 112.8 Q F0 .486(The DB library is a f)108 124.8 R .485
+/F0 9/Times-Bold@0 SF -.18(NA)72 28.8 S(ME).18 E/F1 10/Times-Roman@0 SF
+(db_thread \255 using threads in the DB library)108 40.8 Q(.)-.65 E F0
+(DESCRIPTION)72 57.6 Q F1 .486(The DB library is a f)108 69.6 R .485
 (amily of groups of functions that pro)-.1 F .485
 (vides a modular programming interf)-.15 F .485(ace to trans-)-.1 F .523
-(actions and record-oriented \214le access.)108 136.8 R .523
+(actions and record-oriented \214le access.)108 81.6 R .523
 (The library includes support for transactions, locking, logging and)
-5.523 F .507(\214le page caching, as well as v)108 148.8 R .507
+5.523 F .507(\214le page caching, as well as v)108 93.6 R .507
 (arious inde)-.25 F -.15(xe)-.15 G 3.007(da).15 G .506(ccess methods.)
 -3.007 F(Man)5.506 E 3.006(yo)-.15 G 3.006(ft)-3.006 G .506
 (he functional groups \(e.g., the \214le)-3.006 F .168(page caching functions\) are useful independent of the other DB functions, although some functional groups)
-108 160.8 R .122(are e)108 172.8 R .121(xplicitly based on other functional groups \(e.g., transactions and logging\).)
+108 105.6 R .122(are e)108 117.6 R .121(xplicitly based on other functional groups \(e.g., transactions and logging\).)
 -.15 F -.15(Fo)5.121 G 2.621(rag).15 G .121(eneral description of)-2.621
-F(the DB package, see)108 184.8 Q/F2 10/Times-Italic@0 SF(db_intr)2.5 E
-(o)-.45 E F0(\(3\).).18 E(This manual pages describes the speci\214c details of using DB from within threaded programs.)
-108 201.6 Q 1.57(The DB library is not itself multi-threaded.)108 218.4
+F(the DB package, see)108 129.6 Q/F2 10/Times-Italic@0 SF(db_intr)2.5 E
+(o)-.45 E F1(\(3\).).18 E(This manual pages describes the speci\214c details of using DB from within threaded programs.)
+108 146.4 Q 1.57(The DB library is not itself multi-threaded.)108 163.2
 R 1.571(The library w)6.571 F 1.571
 (as deliberately architected to not use threads)-.1 F .233(internally because of the portability problems that using threads within the library w)
-108 230.4 R .232(ould introduce.)-.1 F(Object)5.232 E .059(handles returned from DB library functions are free-threaded, i.e., threads may use handles concurrently)
-108 242.4 R 2.559(,b)-.65 G(y)-2.559 E .69
-(specifying the DB_THREAD \215ag to)108 254.4 R F2(db_appinit)3.189 E F0
+108 175.2 R .232(ould introduce.)-.1 F(Object)5.232 E .059(handles returned from DB library functions are free-threaded, i.e., threads may use handles concurrently)
+108 187.2 R 2.559(,b)-.65 G(y)-2.559 E .69
+(specifying the DB_THREAD \215ag to)108 199.2 R F2(db_appinit)3.189 E F1
 .689(\(3\) \(or).68 F 3.189(,i)-.4 G 3.189(nt)-3.189 G .689(he C++ API,)
--3.189 F F2(DbEn)3.189 E(v::appinit)-.4 E F0 .689(\(3\)\) and the other)
-.68 F(subsystem open functions.)108 266.4 Q .178
-(DB supports multi-threaded applications with the ca)108 283.2 R -.15
-(ve)-.2 G .178(at that it loads and calls functions that are commonly)
-.15 F -.2(av)108 295.2 S .168(ailable in C language en)-.05 F .168
+-3.189 F F2(DbEn)3.189 E(v::appinit)-.4 E F1 .689(\(3\)\) and the other)
+.68 F 2.533(subsystem open functions.)108 211.2 R(Ho)7.533 E(we)-.25 E
+-.15(ve)-.25 G 3.333 -.4(r, i).15 H 5.033(nt).4 G 2.533(he Ja)-5.033 F
+3.033 -.25(va A)-.2 H 2.534
+(PI, threading is assumed, so no special \215ags are).25 F(required.)108
+223.2 Q .178(DB supports multi-threaded applications with the ca)108 240
+R -.15(ve)-.2 G .178
+(at that it loads and calls functions that are commonly).15 F -.2(av)108
+252 S .168(ailable in C language en)-.05 F .168
 (vironments and which may not themselv)-.4 F .168(es be thread-safe.)
 -.15 F .168(Other than this usage,)5.168 F .044
-(DB has no static data and maintains no local conte)108 307.2 R .044
-(xt between calls to DB functions.)-.15 F 1.644 -.8(To e)5.044 H .044
-(nsure that applica-).8 F .43(tions can safely use threads in the conte)
-108 319.2 R .429(xt of DB, porters to ne)-.15 F 2.929(wo)-.25 G .429
-(perating systems and/or C libraries must)-2.929 F(con\214rm that the system and C library functions used by the DB library are thread-safe.)
-108 331.2 Q(There are some additional ca)108 348 Q -.15(ve)-.2 G
+(DB has no static data and maintains no local conte)108 264 R .044
+(xt between calls to DB functions.)-.15 F 1.644 -.8(To e)5.044 H .043
+(nsure that applica-).8 F .429
+(tions can safely use threads in the conte)108 276 R .429
+(xt of DB, porters to ne)-.15 F 2.93(wo)-.25 G .43
+(perating systems and/or C libraries must)-2.93 F(con\214rm that the system and C library functions used by the DB library are thread-safe.)
+108 288 Q(There are some additional ca)108 304.8 Q -.15(ve)-.2 G
 (ats about using threads to access the DB library:).15 E 6.5<8354>108
-364.8 S 2.06
+321.6 S 2.06
 (he DB_THREAD \215ag must be speci\214ed for all subsystems either e)
--6.5 F 2.06(xplicitly or via the)-.15 F F2(db_appinit)4.56 E F0(\()118
-376.8 Q F2(DbEn)A(v::appinit)-.4 E F0 2.939(\)f).68 G 2.939
-(unction. Setting)-2.939 F .438
+-6.5 F 2.06(xplicitly or via the)-.15 F F2(db_appinit)4.56 E F1(\()118
+333.6 Q F2(DbEn)A(v::appinit)-.4 E F1 2.938(\)f).68 G 2.938
+(unction. Setting)-2.938 F .438
 (the DB_THREAD \215ag inconsistently may result in database corrup-)
-2.938 F(tion.)118 388.8 Q 6.5<834f>108 405.6 S 1.936(nly a single thread may call the close function for a returned database or subsystem handle.)
--6.5 F(See)6.936 E F2(db_open)118 417.6 Q F0(\(3\) \().24 E F2(Db::open)
-A F0(\(3\)\) and the appropriate subsystem manual pages for more information.)
-.24 E 6.5<8345>108 434.4 S 1.096(ither the DB_DBT_MALLOC or DB_DBT_USERMEM \215ags must be set in a DBT used for k)
--6.5 F 1.396 -.15(ey o)-.1 H(r).15 E(data retrie)118 446.4 Q -.25(va)
--.25 G 2.5(l. See).25 F F2(db_dbt)2.5 E F0(\(3\) \().68 E F2(Dbt)A F0
-(\(3\)\) for more information.).68 E 6.5<8354>108 463.2 S .533
+2.938 F(tion.)118 345.6 Q 6.5<834f>108 362.4 S 1.936(nly a single thread may call the close function for a returned database or subsystem handle.)
+-6.5 F(See)6.935 E F2(db_open)118 374.4 Q F1(\(3\) \().24 E F2(Db::open)
+A F1(\(3\)\) and the appropriate subsystem manual pages for more information.)
+.24 E 6.5<8345>108 391.2 S 1.096(ither the DB_DBT_MALLOC or DB_DBT_USERMEM \215ags must be set in a DBT used for k)
+-6.5 F 1.396 -.15(ey o)-.1 H(r).15 E(data retrie)118 403.2 Q -.25(va)
+-.25 G 2.5(l. See).25 F F2(db_dbt)2.5 E F1(\(3\) \().68 E F2(Dbt)A F1
+(\(3\)\) for more information.).68 E 6.5<8354>108 420 S .534
 (he DB_CURRENT)-6.5 F 3.033(,D)-.74 G .533
 (B_NEXT and DB_PREV \215ags to the)-3.033 F F2(lo)3.033 E(g_g)-.1 E(et)
--.1 E F0(\()3.033 E F2(DbLo)A(g::g)-.1 E(et)-.1 E F0 3.033(\)f).68 G
-.533(unction may not be)-3.033 F 1.173(used by a free-threaded handle.)
-118 475.2 R 1.173(If such calls are necessary)6.173 F 3.672(,at)-.65 G
-1.172(hread should e)-3.672 F 1.172(xplicitly create a unique)-.15 F
-.823(DB_LOG handle by calling)118 487.2 R F2(lo)3.323 E(g_open)-.1 E F0
-.824(\(3\) \().24 F F2(DbLo)A(g::open)-.1 E F0 3.324(\). See).24 F F2
-(db_lo)3.324 E(g)-.1 E F0 .824(\(3\) \().22 F F2(DbLo)A(g)-.1 E F0 .824
-(\(3\)\) for more informa-).22 F(tion.)118 499.2 Q 6.5<8345>108 516 S
+-.1 E F1(\()3.033 E F2(DbLo)A(g::g)-.1 E(et)-.1 E F1 3.033(\)f).68 G
+.533(unction may not be)-3.033 F 1.172(used by a free-threaded handle.)
+118 432 R 1.172(If such calls are necessary)6.172 F 3.673(,at)-.65 G
+1.173(hread should e)-3.673 F 1.173(xplicitly create a unique)-.15 F
+.824(DB_LOG handle by calling)118 444 R F2(lo)3.324 E(g_open)-.1 E F1
+.824(\(3\) \().24 F F2(DbLo)A(g::open)-.1 E F1 3.324(\). See).24 F F2
+(db_lo)3.324 E(g)-.1 E F1 .823(\(3\) \().22 F F2(DbLo)A(g)-.1 E F1 .823
+(\(3\)\) for more informa-).22 F(tion.)118 456 Q 6.5<8345>108 472.8 S
 .652(ach database operation \(i.e., an)-6.5 F 3.152(yc)-.15 G .652
 (all to a function underlying the handles returned by)-3.152 F F2
-(db_open)3.152 E F0 .652(\(3\) and).24 F F2(db_cur)118 528 Q(sor)-.1 E
-F0 .532(\(3\)\) \().73 F F2(Db)A F0 .532(\(3\) and).23 F F2(Dbc)3.032 E
-F0 .532(\(3\)\) is normally performed on behalf of a unique lock).31 F
-(er)-.1 E 5.533(.I)-.55 G .533(f, within a sin-)-5.533 F .765
+(db_open)3.152 E F1 .652(\(3\) and).24 F F2(db_cur)118 484.8 Q(sor)-.1 E
+F1 .533(\(3\)\) \().73 F F2(Db)A F1 .533(\(3\) and).23 F F2(Dbc)3.033 E
+F1 .533(\(3\)\) is normally performed on behalf of a unique lock).31 F
+(er)-.1 E 5.532(.I)-.55 G .532(f, within a sin-)-5.532 F .765
 (gle thread of control, multiple calls on behalf of the same lock)118
-540 R .765(er are desired, then transactions must be)-.1 F 2.557
-(used. F)118 552 R .057(or e)-.15 F .058(xample, consider the case where a cursor scan locates a record, and then based on that record,)
--.15 F .113(accesses some other item in the database.)118 564 R .113
-(If these are done using the def)5.113 F .113(ault lock)-.1 F .112
-(ers for the handle, there)-.1 F .241(is no guarantee that these tw)118
-576 R 2.741(oo)-.1 G .241(perations will not con\215ict.)-2.741 F .241
+496.8 R .766(er are desired, then transactions must be)-.1 F 2.558
+(used. F)118 508.8 R .058(or e)-.15 F .058(xample, consider the case where a cursor scan locates a record, and then based on that record,)
+-.15 F .112(accesses some other item in the database.)118 520.8 R .113
+(If these are done using the def)5.113 F .113(ault lock)-.1 F .113
+(ers for the handle, there)-.1 F .242(is no guarantee that these tw)118
+532.8 R 2.741(oo)-.1 G .241(perations will not con\215ict.)-2.741 F .241
 (If the application wishes to guarantee that the)5.241 F .149(operations do not con\215ict, locks must be obtained on behalf of a transaction, instead of the def)
-118 588 R .149(ault lock)-.1 F(er)-.1 E(id, and a transaction must be speci\214ed to the cursor creation and the subsequent db call.)
-118 600 Q 6.5<8354>108 616.8 S .054
+118 544.8 R .15(ault lock)-.1 F(er)-.1 E(id, and a transaction must be speci\214ed to the cursor creation and the subsequent db call.)
+118 556.8 Q 6.5<8354>108 573.6 S .054
 (ransactions may not span threads, i.e., each transaction must be)-6.85
 F .054(gin and end in the same thread, and each)-.15 F
-(transaction may only be used by a single thread.)118 628.8 Q 6.5<8353>
-108 645.6 S .648(pinlocks must ha)-6.5 F .948 -.15(ve b)-.2 H .647
-(een implemented for the compiler/architecture combination.).15 F .647
-(Attempting to spec-)5.647 F(ify the DB_THREAD \215ag will f)118 657.6 Q
+(transaction may only be used by a single thread.)118 585.6 Q 6.5<8353>
+108 602.4 S .647(pinlocks must ha)-6.5 F .947 -.15(ve b)-.2 H .647
+(een implemented for the compiler/architecture combination.).15 F .648
+(Attempting to spec-)5.648 F(ify the DB_THREAD \215ag will f)118 614.4 Q
 (ail if spinlocks are not a)-.1 E -.25(va)-.2 G(ilable.).25 E 6.5<8354>
-108 674.4 S .614(he DB library mak)-6.5 F .615(es a system call to pause for some number of microseconds when it is necessary to)
--.1 F -.1(wa)118 686.4 S .497(it on a lock.).1 F .497
-(This may not be optimal, especially in a thread-only en)5.497 F .496
-(vironment where it will be more)-.4 F(ef)118 698.4 Q .074
-(\214cient to e)-.25 F .074
-(xplicitly yield the processor to another thread.)-.15 F .075
-(It is possible to specify a yield function on an)5.074 F(per)118 710.4
-Q(-application basis, see)-.2 E F2(db_jump)2.5 E F0
-(\(3\) for more information.).19 E(October 25, 1997)271.145 768 Q(1)
-194.145 E EP
+108 631.2 S .615(he DB library mak)-6.5 F .614(es a system call to pause for some number of microseconds when it is necessary to)
+-.1 F -.1(wa)118 643.2 S .496(it on a lock.).1 F .497
+(This may not be optimal, especially in a thread-only en)5.496 F .497
+(vironment where it will be more)-.4 F(ef)118 655.2 Q .075
+(\214cient to e)-.25 F .075
+(xplicitly yield the processor to another thread.)-.15 F .074
+(It is possible to specify a yield function on an)5.074 F(per)118 667.2
+Q(-application basis, see)-.2 E F2(db_jump_set)2.5 E F1
+(\(3\) for more information.).68 E F0(COMPILING THREADED APPLICA)72 684
+Q(TIONS)-.855 E F1 .479(Special compile-time \215ags are required when compiling threaded applications with the UNIX include \214les)
+108 696 R(on some architectures.)108 708 Q .701(On IRIX, if you are compiling a threaded application, you must compile with the -D_SGI_MP_SOURCE)
+108 724.8 R(1)535 768 Q EP
 %%Page: 2 2
 %%BeginPageSetup
 BP
 %%EndPageSetup
-/F0 10/Times-Roman@0 SF 323.3(DB_THREAD\(3\) DB_THREAD\(3\))72 48 R/F1 9
-/Times-Bold@0 SF(COMPILING THREADED APPLICA)72 84 Q(TIONS)-.855 E F0
-.479(Special compile-time \215ags are required when compiling threaded applications with the UNIX include \214les)
-108 96 R(on some architectures.)108 108 Q .701(On IRIX, if you are compiling a threaded application, you must compile with the -D_SGI_MP_SOURCE)
-108 124.8 R(\215ag:)108 136.8 Q(cc -D_SGI_MP_SOURCE ...)158 153.6 Q(On OSF/1, if you are compiling a threaded application, you must compile with the -D_REENTRANT \215ag:)
-108 170.4 Q(cc -D_REENTRANT ...)158 187.2 Q .377(On Solaris, if you are compiling a threaded application, you must compile with the -D_REENTRANT \215ag)
-108 204 R(and link with the -lthread library:)108 216 Q
-(cc -D_REENTRANT ... -lthread)158 232.8 Q F1(SEE ALSO)72 249.6 Q/F2 10
-/Times-Italic@0 SF(db_ar)108 261.6 Q -.15(ch)-.37 G(ive).15 E F0(\(1\),)
-.18 E F2(db_c)2.5 E(hec)-.15 E(kpoint)-.2 E F0(\(1\),).68 E F2
-(db_deadloc)2.5 E(k)-.2 E F0(\(1\),).67 E F2(db_dump)2.5 E F0(\(1\),).19
-E F2(db_load)2.5 E F0(\(1\),).77 E F2(db_r)2.5 E(eco)-.37 E(ver)-.1 E F0
-(\(1\),).73 E F2(db_stat)2.5 E F0(\(1\),).68 E F2(db_intr)108 273.6 Q(o)
--.45 E F0(\(3\),).18 E F2(db_appinit)2.5 E F0(\(3\),).68 E F2(db_cur)2.5
-E(sor)-.1 E F0(\(3\),).73 E F2(db_dbm)2.5 E F0(\(3\),).32 E F2(db_jump)
-2.5 E F0(\(3\),).19 E F2(db_loc)2.5 E(k)-.2 E F0(\(3\),).67 E F2(db_lo)
-2.5 E(g)-.1 E F0(\(3\),).22 E F2(db_mpool)2.5 E F0(\(3\),).51 E F2
-(db_open)108 285.6 Q F0(\(3\),).24 E F2(db_thr)2.5 E(ead)-.37 E F0
-(\(3\),).77 E F2(db_txn)2.5 E F0(\(3\)).24 E(October 25, 1997)271.145
-768 Q(2)194.145 E EP
+/F0 10/Times-Roman@0 SF 323.3(DB_THREAD\(3\) DB_THREAD\(3\))72 48 R
+(\215ag:)108 84 Q(cc -D_SGI_MP_SOURCE ...)158 100.8 Q(On OSF/1, if you are compiling a threaded application, you must compile with the -D_REENTRANT \215ag:)
+108 117.6 Q(cc -D_REENTRANT ...)158 134.4 Q .377(On Solaris, if you are compiling a threaded application, you must compile with the -D_REENTRANT \215ag)
+108 151.2 R(and link with the -lthread library:)108 163.2 Q
+(cc -D_REENTRANT ... -lthread)158 180 Q/F1 9/Times-Bold@0 SF(SEE ALSO)72
+196.8 Q/F2 10/Times-Italic@0 SF(db_ar)108 208.8 Q -.15(ch)-.37 G(ive).15
+E F0(\(1\),).18 E F2(db_c)2.5 E(hec)-.15 E(kpoint)-.2 E F0(\(1\),).68 E
+F2(db_deadloc)2.5 E(k)-.2 E F0(\(1\),).67 E F2(db_dump)2.5 E F0(\(1\),)
+.19 E F2(db_load)2.5 E F0(\(1\),).77 E F2(db_r)2.5 E(eco)-.37 E(ver)-.1
+E F0(\(1\),).73 E F2(db_stat)2.5 E F0(\(1\),).68 E F2(db_intr)108 220.8
+Q(o)-.45 E F0(\(3\),).18 E F2(db_appinit)2.5 E F0(\(3\),).68 E F2
+(db_cur)2.5 E(sor)-.1 E F0(\(3\),).73 E F2(db_dbm)2.5 E F0(\(3\),).32 E
+F2(db_internal)2.5 E F0(\(3\),).51 E F2(db_loc)2.5 E(k)-.2 E F0(\(3\),)
+.67 E F2(db_lo)2.5 E(g)-.1 E F0(\(3\),).22 E F2(db_mpool)2.5 E F0
+(\(3\),).51 E F2(db_open)108 232.8 Q F0(\(3\),).24 E F2(db_thr)2.5 E
+(ead)-.37 E F0(\(3\),).77 E F2(db_txn)2.5 E F0(\(3\)).24 E(No)266.295
+768 Q -.15(ve)-.15 G(mber 25, 1997).15 E(2)189.295 E EP
 %%Trailer
 end
 %%EOF

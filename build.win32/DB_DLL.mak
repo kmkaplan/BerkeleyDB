@@ -31,9 +31,9 @@ NULL=nul
 ################################################################################
 # Begin Project
 # PROP Target_Last_Scanned "DB_DLL - Win32 Debug"
-RSC=rc.exe
 CPP=cl.exe
 MTL=mktyplib.exe
+RSC=rc.exe
 
 !IF  "$(CFG)" == "DB_DLL - Win32 Release"
 
@@ -127,10 +127,10 @@ CLEAN :
 	-@erase "$(INTDIR)\mp_sync.obj"
 	-@erase "$(INTDIR)\mutex.obj"
 	-@erase "$(INTDIR)\os_abs.obj"
+	-@erase "$(INTDIR)\os_config.obj"
 	-@erase "$(INTDIR)\os_dir.obj"
 	-@erase "$(INTDIR)\os_fid.obj"
 	-@erase "$(INTDIR)\os_fsync.obj"
-	-@erase "$(INTDIR)\os_func.obj"
 	-@erase "$(INTDIR)\os_map.obj"
 	-@erase "$(INTDIR)\os_oflags.obj"
 	-@erase "$(INTDIR)\os_open.obj"
@@ -138,6 +138,7 @@ CLEAN :
 	-@erase "$(INTDIR)\os_rw.obj"
 	-@erase "$(INTDIR)\os_seek.obj"
 	-@erase "$(INTDIR)\os_sleep.obj"
+	-@erase "$(INTDIR)\os_spin.obj"
 	-@erase "$(INTDIR)\os_stat.obj"
 	-@erase "$(INTDIR)\os_unlink.obj"
 	-@erase "$(INTDIR)\strsep.obj"
@@ -250,10 +251,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\mp_sync.obj" \
 	"$(INTDIR)\mutex.obj" \
 	"$(INTDIR)\os_abs.obj" \
+	"$(INTDIR)\os_config.obj" \
 	"$(INTDIR)\os_dir.obj" \
 	"$(INTDIR)\os_fid.obj" \
 	"$(INTDIR)\os_fsync.obj" \
-	"$(INTDIR)\os_func.obj" \
 	"$(INTDIR)\os_map.obj" \
 	"$(INTDIR)\os_oflags.obj" \
 	"$(INTDIR)\os_open.obj" \
@@ -261,6 +262,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\os_rw.obj" \
 	"$(INTDIR)\os_seek.obj" \
 	"$(INTDIR)\os_sleep.obj" \
+	"$(INTDIR)\os_spin.obj" \
 	"$(INTDIR)\os_stat.obj" \
 	"$(INTDIR)\os_unlink.obj" \
 	"$(INTDIR)\strsep.obj" \
@@ -365,10 +367,10 @@ CLEAN :
 	-@erase "$(INTDIR)\mp_sync.obj"
 	-@erase "$(INTDIR)\mutex.obj"
 	-@erase "$(INTDIR)\os_abs.obj"
+	-@erase "$(INTDIR)\os_config.obj"
 	-@erase "$(INTDIR)\os_dir.obj"
 	-@erase "$(INTDIR)\os_fid.obj"
 	-@erase "$(INTDIR)\os_fsync.obj"
-	-@erase "$(INTDIR)\os_func.obj"
 	-@erase "$(INTDIR)\os_map.obj"
 	-@erase "$(INTDIR)\os_oflags.obj"
 	-@erase "$(INTDIR)\os_open.obj"
@@ -376,6 +378,7 @@ CLEAN :
 	-@erase "$(INTDIR)\os_rw.obj"
 	-@erase "$(INTDIR)\os_seek.obj"
 	-@erase "$(INTDIR)\os_sleep.obj"
+	-@erase "$(INTDIR)\os_spin.obj"
 	-@erase "$(INTDIR)\os_stat.obj"
 	-@erase "$(INTDIR)\os_unlink.obj"
 	-@erase "$(INTDIR)\strsep.obj"
@@ -492,10 +495,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\mp_sync.obj" \
 	"$(INTDIR)\mutex.obj" \
 	"$(INTDIR)\os_abs.obj" \
+	"$(INTDIR)\os_config.obj" \
 	"$(INTDIR)\os_dir.obj" \
 	"$(INTDIR)\os_fid.obj" \
 	"$(INTDIR)\os_fsync.obj" \
-	"$(INTDIR)\os_func.obj" \
 	"$(INTDIR)\os_map.obj" \
 	"$(INTDIR)\os_oflags.obj" \
 	"$(INTDIR)\os_open.obj" \
@@ -503,6 +506,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\os_rw.obj" \
 	"$(INTDIR)\os_seek.obj" \
 	"$(INTDIR)\os_sleep.obj" \
+	"$(INTDIR)\os_spin.obj" \
 	"$(INTDIR)\os_stat.obj" \
 	"$(INTDIR)\os_unlink.obj" \
 	"$(INTDIR)\strsep.obj" \
@@ -1083,11 +1087,12 @@ SOURCE=\db\cxx\cxx_table.cpp
 DEP_CPP_CXX_TA=\
 	".\../include\cxx_int.h"\
 	".\../include\db_cxx.h"\
+	".\../include\queue.h"\
+	".\../include\shqueue.h"\
+	".\config.h"\
 	".\db.h"\
+	{$(INCLUDE)}"\sys\stat.h"\
 	{$(INCLUDE)}"\sys\types.h"\
-	
-NODEP_CPP_CXX_TA=\
-	"..\cxx\config.h"\
 	
 
 "$(INTDIR)\cxx_table.obj" : $(SOURCE) $(DEP_CPP_CXX_TA) "$(INTDIR)"
@@ -2556,6 +2561,7 @@ DEP_CPP_MP_BH=\
 SOURCE=\db\mutex\mutex.c
 DEP_CPP_MUTEX=\
 	"..\mutex\68020.gcc"\
+	"..\mutex\sco.cc"\
 	"..\mutex\sparc.gcc"\
 	"..\mutex\x86.gcc"\
 	".\../include\common_ext.h"\
@@ -2771,12 +2777,20 @@ DEP_CPP_OS_DI=\
 # Begin Source File
 
 SOURCE=\db\os.win32\os_fid.c
-NODEP_CPP_OS_FI=\
-	"..\os.win32\config.h"\
-	"..\os.win32\db_int.h"\
+DEP_CPP_OS_FI=\
+	".\../include\mutex_ext.h"\
+	".\../include\os_ext.h"\
+	".\../include\os_func.h"\
+	".\../include\queue.h"\
+	".\../include\shqueue.h"\
+	".\config.h"\
+	".\db.h"\
+	".\db_int.h"\
+	{$(INCLUDE)}"\sys\stat.h"\
+	{$(INCLUDE)}"\sys\types.h"\
 	
 
-"$(INTDIR)\os_fid.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\os_fid.obj" : $(SOURCE) $(DEP_CPP_OS_FI) "$(INTDIR)"
    $(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2852,11 +2866,16 @@ DEP_CPP_OS_AB=\
 
 SOURCE=\db\os\os_fsync.c
 DEP_CPP_OS_FS=\
+	".\../include\mutex_ext.h"\
+	".\../include\os_ext.h"\
+	".\../include\os_func.h"\
+	".\../include\queue.h"\
+	".\../include\shqueue.h"\
+	".\config.h"\
+	".\db.h"\
+	".\db_int.h"\
+	{$(INCLUDE)}"\sys\stat.h"\
 	{$(INCLUDE)}"\sys\types.h"\
-	
-NODEP_CPP_OS_FS=\
-	"..\os\config.h"\
-	"..\os\db_int.h"\
 	
 
 "$(INTDIR)\os_fsync.obj" : $(SOURCE) $(DEP_CPP_OS_FS) "$(INTDIR)"
@@ -2867,30 +2886,18 @@ NODEP_CPP_OS_FS=\
 ################################################################################
 # Begin Source File
 
-SOURCE=\db\os\os_func.c
-DEP_CPP_OS_FU=\
-	{$(INCLUDE)}"\sys\types.h"\
-	
-NODEP_CPP_OS_FU=\
-	"..\os\config.h"\
-	"..\os\db_int.h"\
-	
-
-"$(INTDIR)\os_func.obj" : $(SOURCE) $(DEP_CPP_OS_FU) "$(INTDIR)"
-   $(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-# End Source File
-################################################################################
-# Begin Source File
-
 SOURCE=\db\os\os_oflags.c
 DEP_CPP_OS_OF=\
+	".\../include\mutex_ext.h"\
+	".\../include\os_ext.h"\
+	".\../include\os_func.h"\
+	".\../include\queue.h"\
+	".\../include\shqueue.h"\
+	".\config.h"\
+	".\db.h"\
+	".\db_int.h"\
+	{$(INCLUDE)}"\sys\stat.h"\
 	{$(INCLUDE)}"\sys\types.h"\
-	
-NODEP_CPP_OS_OF=\
-	"..\os\config.h"\
-	"..\os\db_int.h"\
 	
 
 "$(INTDIR)\os_oflags.obj" : $(SOURCE) $(DEP_CPP_OS_OF) "$(INTDIR)"
@@ -2903,11 +2910,16 @@ NODEP_CPP_OS_OF=\
 
 SOURCE=\db\os\os_open.c
 DEP_CPP_OS_OP=\
+	".\../include\mutex_ext.h"\
+	".\../include\os_ext.h"\
+	".\../include\os_func.h"\
+	".\../include\queue.h"\
+	".\../include\shqueue.h"\
+	".\config.h"\
+	".\db.h"\
+	".\db_int.h"\
+	{$(INCLUDE)}"\sys\stat.h"\
 	{$(INCLUDE)}"\sys\types.h"\
-	
-NODEP_CPP_OS_OP=\
-	"..\os\config.h"\
-	"..\os\db_int.h"\
 	
 
 "$(INTDIR)\os_open.obj" : $(SOURCE) $(DEP_CPP_OS_OP) "$(INTDIR)"
@@ -2919,12 +2931,20 @@ NODEP_CPP_OS_OP=\
 # Begin Source File
 
 SOURCE=\db\os\os_rpath.c
-NODEP_CPP_OS_RP=\
-	"..\os\config.h"\
-	"..\os\db_int.h"\
+DEP_CPP_OS_RP=\
+	".\../include\mutex_ext.h"\
+	".\../include\os_ext.h"\
+	".\../include\os_func.h"\
+	".\../include\queue.h"\
+	".\../include\shqueue.h"\
+	".\config.h"\
+	".\db.h"\
+	".\db_int.h"\
+	{$(INCLUDE)}"\sys\stat.h"\
+	{$(INCLUDE)}"\sys\types.h"\
 	
 
-"$(INTDIR)\os_rpath.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\os_rpath.obj" : $(SOURCE) $(DEP_CPP_OS_RP) "$(INTDIR)"
    $(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2934,11 +2954,16 @@ NODEP_CPP_OS_RP=\
 
 SOURCE=\db\os\os_rw.c
 DEP_CPP_OS_RW=\
+	".\../include\mutex_ext.h"\
+	".\../include\os_ext.h"\
+	".\../include\os_func.h"\
+	".\../include\queue.h"\
+	".\../include\shqueue.h"\
+	".\config.h"\
+	".\db.h"\
+	".\db_int.h"\
+	{$(INCLUDE)}"\sys\stat.h"\
 	{$(INCLUDE)}"\sys\types.h"\
-	
-NODEP_CPP_OS_RW=\
-	"..\os\config.h"\
-	"..\os\db_int.h"\
 	
 
 "$(INTDIR)\os_rw.obj" : $(SOURCE) $(DEP_CPP_OS_RW) "$(INTDIR)"
@@ -2952,12 +2977,16 @@ NODEP_CPP_OS_RW=\
 SOURCE=\db\os\os_stat.c
 DEP_CPP_OS_ST=\
 	".\../include\common_ext.h"\
+	".\../include\mutex_ext.h"\
+	".\../include\os_ext.h"\
+	".\../include\os_func.h"\
+	".\../include\queue.h"\
+	".\../include\shqueue.h"\
+	".\config.h"\
+	".\db.h"\
+	".\db_int.h"\
 	{$(INCLUDE)}"\sys\stat.h"\
 	{$(INCLUDE)}"\sys\types.h"\
-	
-NODEP_CPP_OS_ST=\
-	"..\os\config.h"\
-	"..\os\db_int.h"\
 	
 
 "$(INTDIR)\os_stat.obj" : $(SOURCE) $(DEP_CPP_OS_ST) "$(INTDIR)"
@@ -2970,14 +2999,58 @@ NODEP_CPP_OS_ST=\
 
 SOURCE=\db\os\os_unlink.c
 DEP_CPP_OS_UN=\
+	".\../include\mutex_ext.h"\
+	".\../include\os_ext.h"\
+	".\../include\os_func.h"\
+	".\../include\queue.h"\
+	".\../include\shqueue.h"\
+	".\config.h"\
+	".\db.h"\
+	".\db_int.h"\
+	{$(INCLUDE)}"\sys\stat.h"\
 	{$(INCLUDE)}"\sys\types.h"\
-	
-NODEP_CPP_OS_UN=\
-	"..\os\config.h"\
-	"..\os\db_int.h"\
 	
 
 "$(INTDIR)\os_unlink.obj" : $(SOURCE) $(DEP_CPP_OS_UN) "$(INTDIR)"
+   $(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+# End Source File
+################################################################################
+# Begin Source File
+
+SOURCE=\db\os\os_config.c
+DEP_CPP_OS_CO=\
+	".\../include\mutex_ext.h"\
+	".\../include\os_ext.h"\
+	".\../include\os_func.h"\
+	".\../include\queue.h"\
+	".\../include\shqueue.h"\
+	".\config.h"\
+	".\db.h"\
+	".\db_int.h"\
+	{$(INCLUDE)}"\sys\stat.h"\
+	{$(INCLUDE)}"\sys\types.h"\
+	
+
+"$(INTDIR)\os_config.obj" : $(SOURCE) $(DEP_CPP_OS_CO) "$(INTDIR)"
+   $(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+# End Source File
+################################################################################
+# Begin Source File
+
+SOURCE=\db\os.win32\os_spin.c
+DEP_CPP_OS_SP=\
+	".\../include\queue.h"\
+	".\../include\shqueue.h"\
+	".\config.h"\
+	{$(INCLUDE)}"\sys\stat.h"\
+	{$(INCLUDE)}"\sys\types.h"\
+	
+
+"$(INTDIR)\os_spin.obj" : $(SOURCE) $(DEP_CPP_OS_SP) "$(INTDIR)"
    $(CPP) $(CPP_PROJ) $(SOURCE)
 
 

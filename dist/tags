@@ -66,6 +66,7 @@ CIRCLEQ_PREV	../include/queue.h	/^#define	CIRCLEQ_PREV(elm, field)	((elm)->field
 CIRCLEQ_REMOVE	../include/queue.h	/^#define	CIRCLEQ_REMOVE(head, elm, field) do {				/
 CLEAR_MAP	../lock/lock_deadlock.c	/^#define	CLEAR_MAP(M, N) {						\\$/
 CLR_MAP	../lock/lock_deadlock.c	/^#define	CLR_MAP(M, B)	(M[(B) \/ 32] &= ~(1 << ((B)/
+CONFIG_NAME	../common/db_appinit.c	/^#define	CONFIG_NAME	"\/DB_CONFIG"$/
 CONFLICTS	../include/lock.h	/^#define CONFLICTS(T, HELD, WANTED) \\$/
 CR_DELETED	../include/btree.h	/^#define	CR_DELETED	0x0001		\/* Record deleted. *\//
 C_DELETED	../include/btree.h	/^#define	C_DELETED	0x0001$/
@@ -76,7 +77,7 @@ DATA_INIT_CNT	../common/db_appinit.c	/^#define	DATA_INIT_CNT	20			\/* Start with
 DBCCLOSE_USAGE	../test/utils.c	/^#define DBCCLOSE_USAGE "dbN.cursorM close"$/
 DBCDEL_USAGE	../test/utils.c	/^#define DBCDEL_USAGE "cursorN del flags"$/
 DBCGETBIN_USAGE	../test/utils.c	/^#define DBCGETBIN_USAGE "cursorN getbin file key f/
-DBCGET_USAGE	../test/utils.c	/^#define DBCGET_USAGE "cursorN get key flags"$/
+DBCGET_USAGE	../test/utils.c	/^#define DBCGET_USAGE "cursorN get key flags [beg l/
 DBCLOSE_USAGE	../test/utils.c	/^#define DBCLOSE_USAGE "dbN close"$/
 DBCPUT_USAGE	../test/utils.c	/^#define DBCPUT_USAGE "cursorN put key data flags"$/
 DBCURSOR_USAGE	../test/utils.c	/^#define DBCURSOR_USAGE "dbN.cursorM ?arg arg ...?"/
@@ -171,7 +172,7 @@ DB_FUNC_READ	../include/db.h.src	/^#define	DB_FUNC_READ	12		\/* POSIX 1003.1 rea
 DB_FUNC_REALLOC	../include/db.h.src	/^#define	DB_FUNC_REALLOC	13		\/* ANSI C realloc. */
 DB_FUNC_SEEK	../include/db.h.src	/^#define	DB_FUNC_SEEK	14		\/* POSIX 1003.1 lseek. */
 DB_FUNC_SLEEP	../include/db.h.src	/^#define	DB_FUNC_SLEEP	15		\/* DB: sleep secs\/usec/
-DB_FUNC_STRDUP	../include/db.h.src	/^#define	DB_FUNC_STRDUP	16		\/* ANSI C strdup. *\/$/
+DB_FUNC_STRDUP	../include/db.h.src	/^#define	DB_FUNC_STRDUP	16		\/* DB: strdup(3). *\/$/
 DB_FUNC_UNLINK	../include/db.h.src	/^#define	DB_FUNC_UNLINK	17		\/* POSIX 1003.1 unlink/
 DB_FUNC_UNMAP	../include/db.h.src	/^#define	DB_FUNC_UNMAP	18		\/* DB: unmap shared mem/
 DB_FUNC_WRITE	../include/db.h.src	/^#define	DB_FUNC_WRITE	19		\/* POSIX 1003.1 write. /
@@ -200,7 +201,7 @@ DB_LOCKMAGIC	../include/db.h.src	/^#define	DB_LOCKMAGIC	0x090193$/
 DB_LOCKVERSION	../include/db.h.src	/^#define	DB_LOCKVERSION	1$/
 DB_LOCK_CONFLICT	../include/db.h.src	/^#define	DB_LOCK_CONFLICT	0x01	\/* Run on any confl/
 DB_LOCK_DEADLOCK	../include/db.h.src	/^#define	DB_LOCK_DEADLOCK	( -4)	\/* Locker killed t/
-DB_LOCK_DEFAULT	../include/db.h.src	/^#define	DB_LOCK_DEFAULT		0x1$/
+DB_LOCK_DEFAULT	../include/db.h.src	/^#define	DB_LOCK_DEFAULT		0x1	\/* Default policy. */
 DB_LOCK_DEFAULT_N	../include/lock.h	/^#define DB_LOCK_DEFAULT_N	5000$/
 DB_LOCK_LOCKER	../include/lock.h	/^#define	DB_LOCK_LOCKER		2$/
 DB_LOCK_MAXID	../include/lock.h	/^#define DB_LOCK_MAXID		0x7fffffff$/
@@ -209,11 +210,11 @@ DB_LOCK_NOTGRANTED	../include/db.h.src	/^#define	DB_LOCK_NOTGRANTED	( -5)	\/* Lo
 DB_LOCK_NOTHELD	../include/db.h.src	/^#define	DB_LOCK_NOTHELD		( -6)	\/* Lock not held b/
 DB_LOCK_NOWAIT	../include/db.h.src	/^#define	DB_LOCK_NOWAIT		0x01	\/* Don't wait on una/
 DB_LOCK_OBJTYPE	../include/lock.h	/^#define	DB_LOCK_OBJTYPE		1$/
-DB_LOCK_OLDEST	../include/db.h.src	/^#define	DB_LOCK_OLDEST		0x2$/
-DB_LOCK_RANDOM	../include/db.h.src	/^#define	DB_LOCK_RANDOM		0x3$/
+DB_LOCK_OLDEST	../include/db.h.src	/^#define	DB_LOCK_OLDEST		0x2	\/* Abort oldest trans/
+DB_LOCK_RANDOM	../include/db.h.src	/^#define	DB_LOCK_RANDOM		0x3	\/* Abort random trans/
 DB_LOCK_RIW_N	../include/db.h.src	/^#define	DB_LOCK_RIW_N	6$/
 DB_LOCK_RW_N	../include/db.h.src	/^#define	DB_LOCK_RW_N	3$/
-DB_LOCK_YOUNGEST	../include/db.h.src	/^#define	DB_LOCK_YOUNGEST	0x4$/
+DB_LOCK_YOUNGEST	../include/db.h.src	/^#define	DB_LOCK_YOUNGEST	0x4	\/* Abort youngest tr/
 DB_LOGGING	../include/db_int.h.src	/^#define	DB_LOGGING(dbp)							\\$/
 DB_LOGMAGIC	../include/db.h.src	/^#define	DB_LOGMAGIC	0x040988$/
 DB_LOGOLDVER	../include/db.h.src	/^#define	DB_LOGOLDVER	2		\/* Oldest log version sup/
@@ -270,6 +271,7 @@ DB_THREAD_LOCK	../include/db_int.h.src	/^#define	DB_THREAD_LOCK(dbp)						\\$/
 DB_THREAD_UNLOCK	../include/db_int.h.src	/^#define	DB_THREAD_UNLOCK(dbp)						\\$/
 DB_TRAIL	../common/db_appinit.c	/^#define	DB_TRAIL	"\/XXXXXX"$/
 DB_TRUNCATE	../include/db.h.src	/^#define	DB_TRUNCATE		0x80000	\/* O_TRUNCATE: repla/
+DB_TSL_SPINS	../include/db.h.src	/^#define	DB_TSL_SPINS	21		\/* DB: initialize spin c/
 DB_TXNMAGIC	../include/db.h.src	/^#define	DB_TXNMAGIC	0x041593$/
 DB_TXNVERSION	../include/db.h.src	/^#define	DB_TXNVERSION	1$/
 DB_TXN_BACKWARD_ROLL	../include/db.h.src	/^#define	DB_TXN_BACKWARD_ROLL	1	\/* Read the log ba/
@@ -290,7 +292,7 @@ DB_USE_ENVIRON	../include/db.h.src	/^#define	DB_USE_ENVIRON		0x01000	\/* Use the
 DB_USE_ENVIRON_ROOT	../include/db.h.src	/^#define	DB_USE_ENVIRON_ROOT	0x02000	\/* Use the en/
 DB_VERSION_MAJOR	../include/db.h.src	/^#define	DB_VERSION_MAJOR	2$/
 DB_VERSION_MINOR	../include/db.h.src	/^#define	DB_VERSION_MINOR	3$/
-DB_VERSION_PATCH	../include/db.h.src	/^#define	DB_VERSION_PATCH	12$/
+DB_VERSION_PATCH	../include/db.h.src	/^#define	DB_VERSION_PATCH	14$/
 DB_VERSION_STRING	../include/db.h.src	/^#define	DB_VERSION_STRING	"Sleepycat Software: DB /
 DB_bam_BEGIN	../include/db_dispatch.h	/^#define	DB_bam_BEGIN		 50$/
 DB_bam_adj	../include/btree_auto.h	/^#define	DB_bam_adj	(DB_bam_BEGIN + 5)$/
@@ -407,6 +409,7 @@ ISDOT	../clib/getcwd.c	/^#define	ISDOT(dp) \\$/
 ISINTERNAL	../include/btree.h	/^#define	ISINTERNAL(p)	(TYPE(p) == P_IBTREE || TYPE/
 ISLEAF	../include/btree.h	/^#define	ISLEAF(p)	(TYPE(p) == P_LBTREE || TYPE(p) /
 ISSET_MAP	../lock/lock_deadlock.c	/^#define	ISSET_MAP(M, N)	(M[(N) \/ 32] & (1 << (N) /
+ISTEMPORARY	../mp/mp_fopen.c	/^#define	ISTEMPORARY	(path == NULL)$/
 IS_VALID	../include/hash.h	/^#define	IS_VALID(C) ((C)->bucket != BUCKET_INVALID/
 IS_ZERO_LSN	../include/db_int.h.src	/^#define	IS_ZERO_LSN(LSN)	((LSN).file == 0)$/
 LEAFLEVEL	../include/db_page.h	/^#define	LEAFLEVEL	  1$/
@@ -499,15 +502,16 @@ MPOOLUNLINK_USAGE	../test/tcl_mpool.c	/^#define MPOOLUNLINK_USAGE "memp_unlink p
 MPOOL_USAGE	../test/tcl_mpool.c	/^#define MPOOL_USAGE "memp path mode flags options /
 MPSTAT_USAGE	../test/tcl_mpool.c	/^#define MPSTAT_USAGE "mpN stat"$/
 MPWIDGET_USAGE	../test/tcl_mpool.c	/^#define MPWIDGET_USAGE "mpN option ?arg arg ...?"$/
+MP_CAN_MMAP	../include/mp.h	/^#define	MP_CAN_MMAP	0x01		\/* If the file can be m/
 MP_ISPRIVATE	../include/mp.h	/^#define	MP_ISPRIVATE	0x01		\/* Private, so local m/
 MP_LOCKHANDLE	../include/mp.h	/^#define	MP_LOCKHANDLE	0x02		\/* Threaded, lock han/
 MP_LOCKREGION	../include/mp.h	/^#define	MP_LOCKREGION	0x04		\/* Concurrent access,/
 MP_LSN_RETRY	../include/mp.h	/^#define	MP_LSN_RETRY	0x01		\/* Retry all BH_WRITE /
-MP_PATH_ALLOC	../include/mp.h	/^#define	MP_PATH_ALLOC	0x001		\/* Path is allocated/
-MP_PATH_TEMP	../include/mp.h	/^#define	MP_PATH_TEMP	0x002		\/* Backing file is a /
-MP_READONLY	../include/mp.h	/^#define	MP_READONLY	0x004		\/* File is readonly. */
-MP_UPGRADE	../include/mp.h	/^#define	MP_UPGRADE	0x008		\/* File descriptor is r/
-MP_UPGRADE_FAIL	../include/mp.h	/^#define	MP_UPGRADE_FAIL	0x010		\/* Upgrade wasn't /
+MP_MALLOC	../include/mp.h	/^#define	MP_MALLOC	0x08		\/* If region in allocated/
+MP_READONLY	../include/mp.h	/^#define	MP_READONLY	0x01		\/* File is readonly. */
+MP_TEMP	../include/mp.h	/^#define	MP_TEMP		0x02		\/* Backing file is a tempo/
+MP_UPGRADE	../include/mp.h	/^#define	MP_UPGRADE	0x02		\/* File descriptor is re/
+MP_UPGRADE_FAIL	../include/mp.h	/^#define	MP_UPGRADE_FAIL	0x04		\/* Upgrade wasn't p/
 MS	../mutex/mutex.c	/^#define	MS(n)		((n) * 1000)	\/* Milliseconds to mi/
 MUTEXCLOSE_USAGE	../test/tcl_mutex.c	/^#define MUTEXCLOSE_USAGE "mutexN close"$/
 MUTEXGR_USAGE	../test/tcl_mutex.c	/^#define MUTEXGR_USAGE "mutexN {get,release} id"$/
@@ -715,10 +719,8 @@ TAILQ_INSERT_HEAD	../include/queue.h	/^#define TAILQ_INSERT_HEAD(head, elm, fiel
 TAILQ_INSERT_TAIL	../include/queue.h	/^#define TAILQ_INSERT_TAIL(head, elm, field) do {		/
 TAILQ_NEXT	../include/queue.h	/^#define	TAILQ_NEXT(elm, field)		((elm)->field.tqe_/
 TAILQ_REMOVE	../include/queue.h	/^#define TAILQ_REMOVE(head, elm, field) do {				\\$/
-TEMPORARY	../include/mp.h	/^#define	TEMPORARY	"<tmp>"		\/* Temporary file name/
 TLOOP	../clib/memcpy.c	/^#define	TLOOP(s) if (t) TLOOP1(s)$/
 TLOOP1	../clib/memcpy.c	/^#define	TLOOP1(s) do { s; } while (--t)$/
-TSL_DEFAULT_SPINS	../mutex/mutex.c	/^#define	TSL_DEFAULT_SPINS	5	\/* Default spins befo/
 TSL_INIT	../mutex/mutex.c	/^#define	TSL_INIT(x)$/
 TSL_SET	../mutex/mutex.c	/^#define	TSL_SET(x)	(!_check_lock(x, 0, 1))$/
 TSL_UNSET	../mutex/mutex.c	/^#define	TSL_UNSET(x)	_clear_lock(x, 0)$/
@@ -813,9 +815,9 @@ __bam_c_next	../btree/bt_cursor.c	/^__bam_c_next(dbp, cp, initial_move)$/
 __bam_c_physdel	../btree/bt_cursor.c	/^__bam_c_physdel(dbp, cp, h)$/
 __bam_c_prev	../btree/bt_cursor.c	/^__bam_c_prev(dbp, cp)$/
 __bam_c_put	../btree/bt_cursor.c	/^__bam_c_put(dbc, key, data, flags)$/
-__bam_c_rget	../btree/bt_cursor.c	/^__bam_c_rget(dbp, cp, key, data, flags)$/
+__bam_c_rget	../btree/bt_cursor.c	/^__bam_c_rget(dbp, cp, data, flags)$/
 __bam_c_search	../btree/bt_cursor.c	/^__bam_c_search(dbp, cp, key, flags, isrecno, exact/
-__bam_ca_delete	../btree/bt_cursor.c	/^__bam_ca_delete(dbp, pgno, indx, curs)$/
+__bam_ca_delete	../btree/bt_cursor.c	/^__bam_ca_delete(dbp, pgno, indx, curs, key_delete)/
 __bam_ca_di	../btree/bt_cursor.c	/^__bam_ca_di(dbp, pgno, indx, value)$/
 __bam_ca_dup	../btree/bt_cursor.c	/^__bam_ca_dup(dbp, fpgno, first, fi, tpgno, ti)$/
 __bam_ca_move	../btree/bt_cursor.c	/^__bam_ca_move(dbp, t, fpgno, tpgno)$/
@@ -846,6 +848,7 @@ __bam_get	../btree/bt_cursor.c	/^__bam_get(argdbp, txn, key, data, flags)$/
 __bam_iitem	../btree/bt_put.c	/^__bam_iitem(dbp, hp, indxp, key, data, op, flags)$/
 __bam_init_print	../btree/btree_auto.c	/^__bam_init_print(dbenv)$/
 __bam_init_recover	../btree/btree_auto.c	/^__bam_init_recover(dbenv)$/
+__bam_isdeleted	../btree/bt_put.c	/^__bam_isdeleted(dbp, h, indx, isdeletedp)$/
 __bam_keyalloc	../btree/bt_open.c	/^__bam_keyalloc(t)$/
 __bam_lget	../btree/bt_page.c	/^__bam_lget(dbp, do_couple, pgno, mode, lockp)$/
 __bam_lookup	../btree/bt_put.c	/^__bam_lookup(dbp, key, exactp)$/
@@ -921,7 +924,7 @@ __db_big_print	../db/db_auto.c	/^__db_big_print(notused1, dbtp, lsnp, notused3, 
 __db_big_read	../db/db_auto.c	/^__db_big_read(recbuf, argpp)$/
 __db_big_recover	../db/db_rec.c	/^__db_big_recover(logp, dbtp, lsnp, redo, info)$/
 __db_byteorder	../common/db_byteorder.c	/^__db_byteorder(dbenv, lorder)$/
-__db_calloc	../include/os_func.h	/^#define	__db_calloc	__db_jump.db_calloc$/
+__db_calloc	../os/os_config.c	/^__db_calloc(num, size)$/
 __db_cdelchk	../common/db_err.c	/^__db_cdelchk(dbp, flags, isrdonly, isvalid)$/
 __db_cgetchk	../common/db_err.c	/^__db_cgetchk(dbp, key, data, flags, isvalid)$/
 __db_close	../os/os_open.c	/^__db_close(fd)$/
@@ -969,7 +972,7 @@ __db_ioinfo	../include/os_func.h	/^#define	__db_ioinfo	__db_jump.db_ioinfo$/
 __db_isbad	../db/db_pr.c	/^__db_isbad(h, die)$/
 __db_loadme	../db/db_pr.c	/^__db_loadme()$/
 __db_log2	../common/db_log2.c	/^__db_log2(num)$/
-__db_malloc	../include/os_func.h	/^#define	__db_malloc	__db_jump.db_malloc$/
+__db_malloc	../os/os_config.c	/^__db_malloc(size)$/
 __db_map	../include/os_func.h	/^#define	__db_map	__db_jump.db_map$/
 __db_moff	../db/db_overflow.c	/^__db_moff(dbp, dbt, pgno)$/
 __db_mutex_init	../mutex/mutex.c	/^__db_mutex_init(mp, off)$/
@@ -1011,7 +1014,7 @@ __db_rclose	../common/db_region.c	/^__db_rclose(dbenv, fd, ptr)$/
 __db_rcreate	../common/db_region.c	/^__db_rcreate(dbenv, appname, path, file, mode, siz/
 __db_rdonly	../common/db_err.c	/^__db_rdonly(dbenv, name)$/
 __db_read	../os/os_rw.c	/^__db_read(fd, addr, len, nrp)$/
-__db_realloc	../include/os_func.h	/^#define	__db_realloc	__db_jump.db_realloc$/
+__db_realloc	../os/os_config.c	/^__db_realloc(ptr, size)$/
 __db_relink	../db/db_dup.c	/^__db_relink(dbp, pagep, new_next, needlock)$/
 __db_relink_log	../db/db_auto.c	/^int __db_relink_log(logp, txnid, ret_lsnp, flags,$/
 __db_relink_print	../db/db_auto.c	/^__db_relink_print(notused1, dbtp, lsnp, notused3, /
@@ -1043,6 +1046,7 @@ __db_strdup	../include/os_func.h	/^#define	__db_strdup	__db_jump.db_strdup$/
 __db_syncchk	../common/db_err.c	/^__db_syncchk(dbp, flags)$/
 __db_tablesize	../common/db_shash.c	/^__db_tablesize(n_buckets)$/
 __db_txnlist_add	../db/db_dispatch.c	/^__db_txnlist_add(listp, txnid)$/
+__db_txnlist_end	../db/db_dispatch.c	/^__db_txnlist_end(listp)$/
 __db_txnlist_find	../db/db_dispatch.c	/^__db_txnlist_find(listp, txnid)$/
 __db_txnlist_init	../db/db_dispatch.c	/^__db_txnlist_init(retp)$/
 __db_txnlist_print	../db/db_dispatch.c	/^__db_txnlist_print(listp)$/
@@ -1175,7 +1179,7 @@ __lock_reset_region	../lock/lock.c	/^__lock_reset_region(lt)$/
 __lock_validate_region	../lock/lock.c	/^__lock_validate_region(lt)$/
 __log_add_logid	../log/log_rec.c	/^__log_add_logid(logp, dbp, ndx)$/
 __log_close_files	../log/log_rec.c	/^__log_close_files(logp)$/
-__log_fill	../log/log_put.c	/^__log_fill(dblp, addr, len)$/
+__log_fill	../log/log_put.c	/^__log_fill(dblp, lsn, addr, len)$/
 __log_find	../log/log.c	/^__log_find(dblp, valp)$/
 __log_findckp	../log/log_findckp.c	/^__log_findckp(lp, lsnp)$/
 __log_flush	../log/log_put.c	/^__log_flush(dblp, lsn)$/
@@ -1186,7 +1190,7 @@ __log_name	../log/log_put.c	/^__log_name(dblp, filenumber, namep)$/
 __log_newfd	../log/log_put.c	/^__log_newfd(dblp)$/
 __log_open_file	../log/log_rec.c	/^__log_open_file(lp, uid, name, ftype, ndx)$/
 __log_put	../log/log_put.c	/^__log_put(dblp, lsn, dbt, flags)$/
-__log_putr	../log/log_put.c	/^__log_putr(dblp, dbt, prev)$/
+__log_putr	../log/log_put.c	/^__log_putr(dblp, lsn, dbt, prev)$/
 __log_recover	../log/log.c	/^__log_recover(dblp)$/
 __log_register_log	../log/log_auto.c	/^int __log_register_log(logp, txnid, ret_lsnp, flag/
 __log_register_print	../log/log_auto.c	/^__log_register_print(notused1, dbtp, lsnp, notused/
@@ -1202,9 +1206,11 @@ __log_write	../log/log_put.c	/^__log_write(dblp, addr, len)$/
 __memp_bhfree	../mp/mp_bh.c	/^__memp_bhfree(dbmp, mfp, bhp, free_mem)$/
 __memp_bhwrite	../mp/mp_bh.c	/^__memp_bhwrite(dbmp, mfp, bhp, restartp, wrotep)$/
 __memp_debug	../mp/mp_pr.c	/^__memp_debug(dbmp, fp, data)$/
-__memp_fopen	../mp/mp_fopen.c	/^__memp_fopen(dbmp, path,$/
+__memp_fn	../mp/mp_pr.c	/^__memp_fn(dbmfp)$/
+__memp_fns	../mp/mp_pr.c	/^__memp_fns(dbmp, mfp)$/
+__memp_fopen	../mp/mp_fopen.c	/^__memp_fopen(dbmp, mfp, path,$/
 __memp_mf_close	../mp/mp_fopen.c	/^__memp_mf_close(dbmp, dbmfp)$/
-__memp_mf_open	../mp/mp_fopen.c	/^__memp_mf_open(dbmp, dbmfp,$/
+__memp_mf_open	../mp/mp_fopen.c	/^__memp_mf_open(dbmp, dbmfp, path,$/
 __memp_pbh	../mp/mp_pr.c	/^__memp_pbh(fp, dbmp, bhp, data)$/
 __memp_pdbmf	../mp/mp_pr.c	/^__memp_pdbmf(fp, dbmfp, data)$/
 __memp_pg	../mp/mp_bh.c	/^__memp_pg(dbmfp, bhp, is_pgin)$/
@@ -1227,6 +1233,7 @@ __os_open	../include/os_func.h	/^#define	__os_open	__db_jump.db_open	\/* __db_op
 __os_read	../include/os_func.h	/^#define	__os_read	__db_jump.db_read	\/* __db_read /
 __os_seek	../os/os_seek.c	/^__os_seek(fd, pgsize, pageno, relative, whence)$/
 __os_sleep	../os/os_sleep.c	/^__os_sleep(secs, usecs)$/
+__os_spin	../os/os_spin.c	/^__os_spin()$/
 __os_unlink	../include/os_func.h	/^#define	__os_unlink	__db_jump.db_unlink	\/* __db_u/
 __os_unmap	../os/os_map.c	/^__os_unmap(addr, len)$/
 __os_write	../include/os_func.h	/^#define	__os_write	__db_jump.db_write	\/* __db_wri/
@@ -1269,7 +1276,7 @@ __txn_regop_read	../txn/txn_auto.c	/^__txn_regop_read(recbuf, argpp)$/
 __txn_regop_recover	../txn/txn_rec.c	/^__txn_regop_recover(logp, dbtp, lsnp, redo, info)$/
 __txn_undo	../txn/txn.c	/^__txn_undo(txnp)$/
 __txn_validate_region	../txn/txn.c	/^__txn_validate_region(tp)$/
-__usermem	../log/log_archive.c	/^__usermem(listp, func)$/
+__usermem	../log/log_archive.c	/^__usermem(listp, cmpfunc)$/
 am_test	../test/thread.c	/^am_test(method)$/
 am_thread	../test/thread.c	/^am_thread(arg)$/
 appinit	../include/db_cxx.h	/^\/\/ call appinit() before any other db activity (/
@@ -1292,10 +1299,11 @@ db_del_cmd	../test/utils.c	/^db_del_cmd(interp, argc, argv, dbp)$/
 db_fd	../db/db.c	/^db_fd(dbp, fdp)$/
 db_get_cmd	../test/utils.c	/^db_get_cmd(interp, argc, argv, dbp)$/
 db_getbin_cmd	../test/utils.c	/^db_getbin_cmd(interp, argc, argv, dbp)$/
-db_jump_set	../os/os_func.c	/^db_jump_set(func, which)$/
+db_jump_set	../os/os_config.c	/^db_jump_set(func, which)$/
 db_open	../db/db.c	/^db_open(fname, type, flags, mode, dbenv, dbinfo, d/
 db_put_cmd	../test/utils.c	/^db_put_cmd(interp, argc, argv, dbp)$/
 db_putbin_cmd	../test/utils.c	/^db_putbin_cmd(interp, argc, argv, dbp)$/
+db_value_set	../os/os_config.c	/^db_value_set(value, which)$/
 db_version	../common/db_appinit.c	/^db_version(majverp, minverp, patchp)$/
 dbc_del_cmd	../test/utils.c	/^dbc_del_cmd(interp, argc, argv, dbc)$/
 dbc_get_cmd	../test/utils.c	/^dbc_get_cmd(interp, argc, argv, dbc)$/
@@ -1339,7 +1347,7 @@ err	../clib/err.c	/^err(eval, fmt, va_alist)$/
 errx	../clib/err.c	/^errx(eval, fmt, va_alist)$/
 fetch	../dbm/dbm.c	/^fetch(key)$/
 firstkey	../dbm/dbm.c	/^firstkey()$/
-fsync	../os/os_func.c	/^#define fsync		_commit$/
+fsync	../os/os_config.c	/^#define fsync		_commit$/
 get_long	../clib/getlong.c	/^get_long(p, min, max, storep)$/
 get_lsn	../test/tcl_log.c	/^get_lsn(interp, str, lsnp)$/
 get_mpf	../test/thread.c	/^get_mpf(n)$/
@@ -1355,7 +1363,7 @@ holders	../include/lock.h	/^#define	holders	dlinks._holders$/
 hsearch	../hsearch/hsearch.c	/^hsearch(item, action)$/
 hsearch_cmd	../test/tcl_hsearch.c	/^hsearch_cmd(notused, interp, argc, argv)$/
 imp	../include/db_cxx.h	/^\/\/ DEFINE_DB_CLASS defines an imp_ data member a/
-imported	../os/os_func.c	/^#define imported	__declspec(dllimport)$/
+imported	../os/os_config.c	/^#define imported	__declspec(dllimport)$/
 init_db	../test/thread.c	/^init_db(method)$/
 int	../db/db_dispatch.c	/^static int (**dispatch_table) __P((DB_LOG *, DBT */
 list_to_numarray	../test/utils.c	/^list_to_numarray(interp, str)$/

@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)tcl_mutex.c	10.9 (Sleepycat) 10/25/97";
+static const char sccsid[] = "@(#)tcl_mutex.c	10.11 (Sleepycat) 11/30/97";
 #endif /* not lint */
 
 /*
@@ -39,7 +39,14 @@ typedef struct _mutex_entry {
 			db_mutex_t	real_m;
 			u_int32_t	real_val;
 		} r;
-		char c[32];
+		/*
+		 * This is here to make sure that each of the mutex structures
+		 * are 16-byte aligned, which is required on HP architectures.
+		 * The db_mutex_t structure might be >32 bytes itself, or the
+		 * real_val might push it over the 32 byte boundary.  The best
+		 * we can do is use a 48 byte boundary.
+		 */
+		char c[48];
 	} u;
 } mutex_entry;
 #define	m	u.r.real_m
@@ -110,7 +117,7 @@ mutex_cmd(notused, interp, argc, argv)
 	errno = 0;
 	if (flags & DB_CREATE &&
 	    (errno =__db_rcreate(env, DB_APP_NONE,
-	        argv[1], MUTEX_FILE, mode, md->size, &fd, &region)) == 0) {
+	        argv[1], MUTEX_FILE, mode, md->size, 0, &fd, &region)) == 0) {
 		/* Initialize the region. */
 		region->n_mutex = nitems;
 		marray = (mutex_entry *)((u_int8_t *)region +

@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)tcl_log.c	10.8 (Sleepycat) 9/28/97";
+static const char sccsid[] = "@(#)tcl_log.c	10.9 (Sleepycat) 11/22/97";
 #endif /* not lint */
 
 /*
@@ -286,6 +286,7 @@ log_flush_cmd(lp, interp, argc, argv)
 	if (ret != 0)
 		return (TCL_ERROR);
 
+	Tcl_SetResult(interp, "0", TCL_STATIC);
 	return (TCL_OK);
 }
 int
@@ -364,7 +365,8 @@ log_put_cmd(lp, interp, argc, argv)
 	data.size = strlen(argv[2]) + 1;
 	if ((ret = log_put(lp, &lsn, &data, flags)) != 0) {
 		errno = ret;
-		Tcl_PosixError(interp);
+		Tcl_SetResult(interp, "ERROR: ", TCL_STATIC);
+		Tcl_AppendResult(interp, Tcl_PosixError(interp), NULL);
 		return (TCL_ERROR);
 	}
 
@@ -399,7 +401,8 @@ log_reg_cmd(lp, interp, argc, argv)
 	ret = log_register(lp, dbp, argv[3], type, &regid);
 	if (ret != 0) {
 		errno = ret;
-		Tcl_PosixError(interp);
+		Tcl_SetResult(interp, "ERROR: ", TCL_STATIC);
+		Tcl_AppendResult(interp, Tcl_PosixError(interp), NULL);
 		return (TCL_ERROR);
 	}
 	sprintf(interp->result, "%lu", (unsigned long)regid);

@@ -3,16 +3,11 @@
  *
  * Copyright (c) 1997
  *	Sleepycat Software.  All rights reserved.
+ *
+ *	@(#)TpcbExample.cpp	10.6 (Sleepycat) 11/10/97
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char copyright[] =
-"@(#) Copyright (c) 1997\n\
-	Sleepycat Software Inc.  All rights reserved.\n";
-static const char sccsid[] = "@(#)TpcbExample.cpp	10.5 (Sleepycat) 10/29/97";
-#endif
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>

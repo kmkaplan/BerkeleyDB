@@ -1,9 +1,5 @@
 
 
-
-DbLog(3)                                                 DbLog(3)
-
-
 NNAAMMEE
        DbLog - log management class
 
@@ -96,11 +92,11 @@ DDEESSCCRRIIPPTTIIOONN
        _/_v_a_r_/_t_m_p, _/_u_s_r_/_t_m_p, _/_t_e_m_p, _/_t_m_p, _C_:_/_t_e_m_p and _C_:_/_t_m_p.
 
        All  files  associated  with  the  log are created in this
-       directory.  This directory  must  already  exist  when  _i_s
-       _c_a_l_l_e_d_.   If the log already exists, the process must have
-       permission to read and write the existing files.   If  the
-       log  does  not already exist, it is optionally created and
-       initialized.
+       directory.   This  directory  must  already   exist   when
+       DbLog::open  is  called.   If  the log already exists, the
+       process must have permission to read and write the  exist-
+       ing  files.   If  the  log  does  not already exist, it is
+       optionally created and initialized.
 
        If the log region is  being  created  and  log  files  are
        already  present, the log files are ``recovered'' and sub-
@@ -123,6 +119,7 @@ DDEESSCCRRIIPPTTIIOONN
             Create  any  underlying  files, as necessary.  If the
             files do not already exist and the DB_CREATE flag  is
             not specified, the call will fail.
+
 
        DB_THREAD
             Cause  the  DbLog  handle returned by the _D_b_L_o_g_:_:_o_p_e_n
@@ -165,7 +162,6 @@ DDEESSCCRRIIPPTTIIOONN
             Because DbLsn file offsets are unsigned  4-byte  val-
             ues,  _l_g___m_a_x  may  not  be  larger  than  the maximum
             unsigned 4-byte value.
-
 
             If _l_g___m_a_x is 0, a default value is used.
 
@@ -213,6 +209,7 @@ DDEESSCCRRIIPPTTIIOONN
        The _f_l_a_g_s parameter must be set to exactly one of the fol-
        lowing values:
 
+
        DB_CHECKPOINT
             The  last  record written with the DB_CHECKPOINT flag
             specified to the _D_b_L_o_g_:_:_p_u_t method is returned in the
@@ -221,10 +218,8 @@ DDEESSCCRRIIPPTTIIOONN
             been  previously  written with the DB_CHECKPOINT flag
             specified, the first record in the log is returned.
 
-
             If the log is empty the _D_b_L_o_g_:_:_g_e_t method will return
             DB_NOTFOUND.
-
        DB_FIRST
             The  first  record from any of the log files found in
             the log directory is returned in the  _d_a_t_a  argument.
@@ -234,6 +229,7 @@ DDEESSCCRRIIPPTTIIOONN
             If the log is empty the _D_b_L_o_g_:_:_g_e_t method will return
             DB_NOTFOUND.
 
+
        DB_LAST
             The  last  record  in the log is returned in the _d_a_t_a
             argument.  The _l_s_n argument is overwritten  with  the
@@ -241,6 +237,7 @@ DDEESSCCRRIIPPTTIIOONN
 
             If  the  log  is  empty,  the  _D_b_L_o_g_:_:_g_e_t method will
             return DB_NOTFOUND.
+
 
        DB_NEXT
             The current log position  is  advanced  to  the  next
@@ -258,6 +255,7 @@ DDEESSCCRRIIPPTTIIOONN
             calls to _D_b_L_o_g_:_:_g_e_t with the DB_NEXT  flag  set  will
             return EINVAL.
 
+
        DB_PREV
             The  current  log  position  is moved to the previous
             record in the log and that record is returned in  the
@@ -274,7 +272,9 @@ DDEESSCCRRIIPPTTIIOONN
             calls  to  _D_b_L_o_g_:_:_g_e_t  with the DB_PREV flag set will
             return EINVAL.
 
+
        DB_CURRENT
+
             Return the log record  currently  referenced  by  the
             log.
 
@@ -323,113 +323,116 @@ DDEESSCCRRIIPPTTIIOONN
        The _f_l_a_g_s parameter may be set to  one  of  the  following
        values:
 
+
        DB_CHECKPOINT
             The  log  should write a checkpoint record, recording
             any information necessary to make the log  structures
             recoverable after a crash.
 
        DB_FLUSH
-            The  log  is  forced  to  disk  after  this record is
-            written, guaranteeing that all  records  with  DbLsns
-            less  than  or equal to the one being put are on disk
-            before this method returns  (this  function  is  most
-            often  used  for a transaction commit, see _D_b_:_:_T_x_n in
-            Db (3)).
+            The  log is forced to disk after this record is writ-
+            ten, guaranteeing that all records with  DbLsns  less
+            than or equal to the one being put are on disk before
+            this method returns (this function is most often used
+            for a transaction commit, see _D_b_:_:_T_x_n in Db (3)).
 
-       The caller is  responsible  for  providing  any  necessary
+       The  caller  is  responsible  for  providing any necessary
        structure to _d_a_t_a.  (For example, in a write-ahead logging
-       protocol, the application must  understand  what  part  of
-       _d_a_t_a  is an operation code, what part is redo information,
-       and what part is  undo  information.   In  addition,  most
-       transaction  managers  will store in _d_a_t_a the DbLsn of the
-       previous log record for the same transaction,  to  support
+       protocol,  the  application  must  understand what part of
+       _d_a_t_a is an operation code, what part is redo  information,
+       and  what  part  is  undo  information.  In addition, most
+       transaction managers will store in _d_a_t_a the DbLsn  of  the
+       previous  log  record for the same transaction, to support
        chaining back through the transaction's log records during
        undo.)
 
-       The _D_b_L_o_g_:_:_p_u_t method throws a _D_b_E_x_c_e_p_t_i_o_n(3)  or  returns
+       The  _D_b_L_o_g_:_:_p_u_t  method throws a _D_b_E_x_c_e_p_t_i_o_n(3) or returns
        the value of _e_r_r_n_o on failure and 0 on success.
 
 
   _D_b_L_o_g_:_:_u_n_l_i_n_k
-       The  _D_b_L_o_g_:_:_u_n_l_i_n_k  method destroys the log region identi-
-       fied by the directory _d_i_r,  removing  all  files  used  to
-       implement  the  log  region.   (The  directory  _d_i_r is not
-       removed.)   If  there  are  processes  that  have   called
-       _D_b_L_o_g_:_:_o_p_e_n  without calling _D_b_L_o_g_:_:_c_l_o_s_e (i.e., there are
-       processes currently using the log  region),  _D_b_L_o_g_:_:_u_n_l_i_n_k
+       The _D_b_L_o_g_:_:_u_n_l_i_n_k method destroys the log  region  identi-
+       fied  by  the  directory  _d_i_r,  removing all files used to
+       implement the log  region.   (The  directory  _d_i_r  is  not
+       removed.)    If  there  are  processes  that  have  called
+       _D_b_L_o_g_:_:_o_p_e_n without calling _D_b_L_o_g_:_:_c_l_o_s_e (i.e., there  are
+       processes  currently  using the log region), _D_b_L_o_g_:_:_u_n_l_i_n_k
        will fail without further action, unless the force flag is
-       set, in which case _D_b_L_o_g_:_:_u_n_l_i_n_k will  attempt  to  remove
-       the  log  region  files  regardless of any processes still
+       set,  in  which  case _D_b_L_o_g_:_:_u_n_l_i_n_k will attempt to remove
+       the log region files regardless  of  any  processes  still
        using the log region.
 
-       The result of attempting to forcibly  destroy  the  region
-       when  a  process has the region open is unspecified.  Pro-
-       cesses using a shared memory region maintain an open  file
-       descriptor  for  it.   On UNIX systems, the region removal
-       should succeed and processes that have already joined  the
-       region  should  continue  to  run  in  the  region without
-       change, however  processes  attempting  to  join  the  log
+       The  result  of  attempting to forcibly destroy the region
+       when a process has the region open is  unspecified.   Pro-
+       cesses  using a shared memory region maintain an open file
+       descriptor for it.  On UNIX systems,  the  region  removal
+       should  succeed and processes that have already joined the
+       region should  continue  to  run  in  the  region  without
+       change,  however  processes  attempting  to  join  the log
        region will either fail or attempt to create a new region.
-       On other systems, e.g., WNT, where  the  _u_n_l_i_n_k(2)  system
-       call  will fail if any process has an open file descriptor
+       On  other  systems,  e.g., WNT, where the _u_n_l_i_n_k(2) system
+       call will fail if any process has an open file  descriptor
        for the file, the region removal will fail.
 
-       In the case of catastrophic or  system  failure,  database
-       recovery  must  be  performed  (see  _d_b___r_e_c_o_v_e_r_y(1) or the
+       In  the  case  of catastrophic or system failure, database
+       recovery must  be  performed  (see  _d_b___r_e_c_o_v_e_r(1)  or  the
        DB_RECOVER flags to _D_b_E_n_v_:_:_a_p_p_i_n_i_t(3)).  Alternatively, if
-       recovery  is  not  required  because  no database state is
-       maintained across failures, it is possible to clean  up  a
-       log  region  by removing all of the files in the directory
-       specified to the _D_b_L_o_g_:_:_o_p_e_n method, as log  region  files
-       are  never  created  in  any  directory other than the one
-       specified to _D_b_L_o_g_:_:_o_p_e_n.  Note, however,  that  this  has
-       the  potential  to  remove  files  created by the other DB
-       subsystems in this database environment.
+       recovery is not required  because  no  database  state  is
+       maintained  across  failures, it is possible to clean up a
+       log region by removing all of the files in  the  directory
+       specified  to  the _D_b_L_o_g_:_:_o_p_e_n method, as log region files
+       are never created in any  directory  other  than  the  one
+       specified  to  _D_b_L_o_g_:_:_o_p_e_n.   Note, however, that this has
+       the potential to remove files created by the other DB sub-
+       systems in this database environment.
 
-       The  _D_b_L_o_g_:_:_u_n_l_i_n_k  method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)   or
+       The   _D_b_L_o_g_:_:_u_n_l_i_n_k  method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)  or
        returns the value of _e_r_r_n_o on failure and 0 on success.
 
   _D_b_L_o_g_:_:_a_r_c_h_i_v_e
-       The  _D_b_L_o_g_:_:_a_r_c_h_i_v_e method creates a NULL-terminated array
+       The _D_b_L_o_g_:_:_a_r_c_h_i_v_e method creates a NULL-terminated  array
        of log or database file names and copies a pointer to them
        into the user-specified memory location _l_i_s_t.
 
        By default, _D_b_L_o_g_:_:_a_r_c_h_i_v_e returns the names of all of the
-       log files that are no  longer  in  use  (e.g.,  no  longer
+       log  files  that  are  no  longer  in use (e.g., no longer
        involved in active transactions), and that may be archived
-       for catastrophic recovery and then removed from  the  sys-
-       tem.   If there were no file names to return, _l_i_s_t will be
+       for  catastrophic  recovery and then removed from the sys-
+       tem.  If there were no file names to return, _l_i_s_t will  be
        set to NULL.
 
-       Arrays of log file names are created in allocated  memory.
-       If  _d_b___m_a_l_l_o_c  is  non-NULL,  it is called to allocate the
+       Arrays  of log file names are created in allocated memory.
+       If _d_b___m_a_l_l_o_c is non-NULL, it is  called  to  allocate  the
        memory, otherwise, the library function _m_a_l_l_o_c(3) is used.
-       The  function _d_b___m_a_l_l_o_c must match the calling conventions
-       of the _m_a_l_l_o_c(3) library routine.  Regardless, the  caller
-       is  responsible  for deallocating the returned memory.  To
-       deallocate the returned memory, free each returned  memory
-       pointer;  pointers  inside  the  memory  do not need to be
+       The function _d_b___m_a_l_l_o_c must match the calling  conventions
+       of  the _m_a_l_l_o_c(3) library routine.  Regardless, the caller
+       is responsible for deallocating the returned  memory.   To
+       deallocate  the returned memory, free each returned memory
+       pointer; pointers inside the memory  do  not  need  to  be
        individually freed.
 
-       The _f_l_a_g_s argument is specified by oorr'ing together one  or
+       The  _f_l_a_g_s argument is specified by oorr'ing together one or
        more of the following values:
 
+
        DB_ARCH_ABS
-            All  pathnames  are  returned  as absolute pathnames,
+            All pathnames are  returned  as  absolute  pathnames,
             instead of relative to the database home directory.
+
 
        DB_ARCH_DATA
             Return the database files that need to be archived in
             order to recover the database from catastrophic fail-
-            ure.  If any of the  database  files  have  not  been
-            accessed  during  the  lifetime  of  the  current log
-            files, _D_b_L_o_g_:_:_a_r_c_h_i_v_e will not include them  in  this
-            list.   It  is  also  possible that some of the files
-            referenced in the log have since  been  deleted  from
+            ure.   If  any  of  the  database files have not been
+            accessed during  the  lifetime  of  the  current  log
+            files,  _D_b_L_o_g_:_:_a_r_c_h_i_v_e  will not include them in this
+            list.  It is also possible that  some  of  the  files
+            referenced  in  the  log have since been deleted from
             the system.
 
+
        DB_ARCH_LOG
-            Return  all  the log file names regardless of whether
+            Return all the log file names regardless  of  whether
             or not they are in use.
 
        The DB_ARCH_DATA and DB_ARCH_LOG flags are mutually exclu-
@@ -438,38 +441,37 @@ DDEESSCCRRIIPPTTIIOONN
        The  _D_b_L_o_g_:_:_a_r_c_h_i_v_e  method  throws  a  _D_b_E_x_c_e_p_t_i_o_n(3)  or
        returns the value of _e_r_r_n_o on failure and 0 on success.
 
-
-       The _D_b_L_o_g_:_:_a_r_c_h_i_v_e method is based on  the  C  _l_o_g___a_r_c_h_i_v_e
-       function,  which  is  the  underlying function used by the
+       The  _D_b_L_o_g_:_:_a_r_c_h_i_v_e  method  is based on the C _l_o_g___a_r_c_h_i_v_e
+       function, which is the underlying  function  used  by  the
        _d_b___a_r_c_h_i_v_e(1)  utility.   See  the  source  code  for  the
-       _d_b___a_r_c_h_i_v_e  utility for an example of using _l_o_g___a_r_c_h_i_v_e in
+       _d_b___a_r_c_h_i_v_e utility for an example of using _l_o_g___a_r_c_h_i_v_e  in
        a UNIX environment.  See the _d_b___a_r_c_h_i_v_e(1) manual page for
        more information on database archival procedures.
 
   _D_b_L_o_g_:_:_d_b___r_e_g_i_s_t_e_r
-       The  _D_b_L_o_g_:_:_d_b___r_e_g_i_s_t_e_r  method registers a file name with
-       the log manager and copies a  file  identification  number
-       into  the  memory  location referenced by _f_i_d_p.  This file
+       The _D_b_L_o_g_:_:_d_b___r_e_g_i_s_t_e_r method registers a file  name  with
+       the  log  manager  and copies a file identification number
+       into the memory location referenced by  _f_i_d_p.   This  file
        identification number should be used in all subsequent log
-       messages  that  refer to operations on this file.  The log
-       manager records all file name to file identification  num-
+       messages that refer to operations on this file.   The  log
+       manager  records all file name to file identification num-
        ber mappings at each checkpoint so that a recovery process
        can identify the file to which a record in the log refers.
 
-       The  _D_b_L_o_g_:_:_d_b___r_e_g_i_s_t_e_r  method  is  called when an access
-       method registers the open of a file.   The  _d_b_p  parameter
-       should  be  a  pointer  to  the  Db  object which is being
+       The _D_b_L_o_g_:_:_d_b___r_e_g_i_s_t_e_r method is  called  when  an  access
+       method  registers  the  open of a file.  The _d_b_p parameter
+       should be a pointer  to  the  Db  object  which  is  being
        returned by the access method.
 
        The _t_y_p_e parameter should be one of the Db types specified
        in _D_b_:_:_o_p_e_n _(_s_e_eDb_(_3_)_)_, e.g., DB_HASH.
 
-       The  _D_b_L_o_g_:_:_d_b___r_e_g_i_s_t_e_r  method throws a _D_b_E_x_c_e_p_t_i_o_n(3) or
+       The _D_b_L_o_g_:_:_d_b___r_e_g_i_s_t_e_r method throws a  _D_b_E_x_c_e_p_t_i_o_n(3)  or
        returns the value of _e_r_r_n_o on failure and 0 on success.
 
   _D_b_L_o_g_:_:_d_b___u_n_r_e_g_i_s_t_e_r
-       The _D_b_L_o_g_:_:_d_b___u_n_r_e_g_i_s_t_e_r  method  disassociates  the  file
-       name  to  file  identification number mapping for the file
+       The  _D_b_L_o_g_:_:_d_b___u_n_r_e_g_i_s_t_e_r  method  disassociates  the file
+       name to file identification number mapping  for  the  file
        identification number specified by the _f_i_d parameter.  The
        file identification number may then be reused.
 
@@ -477,36 +479,36 @@ DDEESSCCRRIIPPTTIIOONN
        returns the value of _e_r_r_n_o on failure and 0 on success.
 
   _D_b_L_o_g_:_:_s_t_a_t
-       The _D_b_L_o_g_:_:_s_t_a_t function creates a  statistical  structure
-       and  copies a pointer to it into the user-specified memory
+       The  _D_b_L_o_g_:_:_s_t_a_t  function creates a statistical structure
+       and copies a pointer to it into the user-specified  memory
        location.
 
-       Statistical structures are created  in  allocated  memory.
-       If  _d_b___m_a_l_l_o_c  is  non-NULL,  it is called to allocate the
+       Statistical  structures  are  created in allocated memory.
+       If _d_b___m_a_l_l_o_c is non-NULL, it is  called  to  allocate  the
        memory, otherwise, the library function _m_a_l_l_o_c(3) is used.
-       The  function _d_b___m_a_l_l_o_c must match the calling conventions
-       of the _m_a_l_l_o_c(3) library routine.  Regardless, the  caller
-       is  responsible  for deallocating the returned memory.  To
-       deallocate the returned memory, free each returned  memory
-       pointer;  pointers  inside  the  memory  do not need to be
-       individually freed.  The log statistics are  stored  in  a
-       structure  of type DB_LOG_STAT (typedef'd in <db.h>).  The
+       The function _d_b___m_a_l_l_o_c must match the calling  conventions
+       of  the _m_a_l_l_o_c(3) library routine.  Regardless, the caller
+       is responsible for deallocating the returned  memory.   To
+       deallocate  the returned memory, free each returned memory
+       pointer; pointers inside the memory  do  not  need  to  be
+       individually  freed.   The  log statistics are stored in a
+       structure of type DB_LOG_STAT (typedef'd in <db.h>).   The
        following DB_LOG_STAT fields will be filled in:
 
        u_long st_magic;
-            The magic number that identifies  a  file  as  a  log
+            The  magic  number  that  identifies  a file as a log
             file.
        u_long st_version;
             The version of the log file type.
        u_long st_mode;
             The mode of any created log files.
        u_long st_lg_max;
-            The  maximum  size  of any individual file comprising
+            The maximum size of any  individual  file  comprising
             the log.
        u_long st_written;
             The total number of bytes written to this log.
        u_long st_written_chkpt;
-            The number of bytes written  since  the  last  check-
+            The  number  of  bytes  written since the last check-
             point.
        u_long st_region_wait;
             The number of times that a process was able to obtain
@@ -516,40 +518,41 @@ DDEESSCCRRIIPPTTIIOONN
             before obtaining the region lock.
 
 EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
-       The  following  environment variables affect the execution
+       The following environment variables affect  the  execution
        of _d_b___l_o_g:
 
        DB_HOME
-            If the _d_b_e_n_v argument to _D_b_L_o_g_:_:_o_p_e_n was  initialized
-            using  _d_b___a_p_p_i_n_i_t,  the  environment variable DB_HOME
-            may be used as the path of the database home for  the
+            If  the _d_b_e_n_v argument to _D_b_L_o_g_:_:_o_p_e_n was initialized
+            using _d_b___a_p_p_i_n_i_t, the  environment  variable  DB_HOME
+            may  be used as the path of the database home for the
             interpretation of the _d_i_r argument to _D_b_L_o_g_:_:_o_p_e_n, as
-            described    in     _d_b___a_p_p_i_n_i_t(3).      Specifically,
-            _D_b_L_o_g_:_:_o_p_e_n  is  affected by the configuration string
+            described     in     _d_b___a_p_p_i_n_i_t(3).     Specifically,
+            _D_b_L_o_g_:_:_o_p_e_n is affected by the  configuration  string
             value of DB_LOG_DIR.
 
        TMPDIR
-            If the _d_b_e_n_v argument to _D_b_L_o_g_:_:_o_p_e_n was NULL or  not
-            initialized  using  _d_b___a_p_p_i_n_i_t, the environment vari-
-            able TMPDIR may be used as the directory in which  to
-            create  the log, as described in the _D_b_L_o_g_:_:_o_p_e_n sec-
+            If  the _d_b_e_n_v argument to _D_b_L_o_g_:_:_o_p_e_n was NULL or not
+            initialized using _d_b___a_p_p_i_n_i_t, the  environment  vari-
+            able  TMPDIR may be used as the directory in which to
+            create the log, as described in the _D_b_L_o_g_:_:_o_p_e_n  sec-
             tion above.
 
 EERRRROORRSS
-       Methods marked as returning _e_r_r_n_o will, by default,  throw
+       Methods  marked as returning _e_r_r_n_o will, by default, throw
        an exception that encapsulates the error information.  The
        default error behavior can be changed, see _D_b_E_x_c_e_p_t_i_o_n(3).
 
        The _D_b_L_o_g_:_:_o_p_e_n method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
-       or return _e_r_r_n_o for any of the errors  specified  for  the
+
+       or  return  _e_r_r_n_o  for any of the errors specified for the
        following DB and library functions: DbLog::close(3),
+
        DbLog::unlink(3), atoi(3), close(2), db_version(3),
-       fcntl(2), fflush(3), lseek(2), malloc(3), memcpy(3),
-       memset(3), mmap(2), munmap(2), open(2), opendir(3),
-       read(2), readdir(3), realloc(3), sigfillset(3),
-       sigprocmask(2), stat(2), strchr(3), strcpy(3), strdup(3),
-       strerror(3), strlen(3), strncmp(3), unlink(2), and
-       write(2).
+       fcntl(2), fflush(3), lseek(2), malloc(3), memcpy(3), mem-
+       set(3), mmap(2), munmap(2), open(2), opendir(3), read(2),
+       readdir(3), realloc(3), sigfillset(3), sigprocmask(2),
+       stat(2), strchr(3), strcpy(3), strdup(3), strerror(3),
+       strlen(3), strncmp(3), unlink(2), and write(2).
 
        In addition, the _D_b_L_o_g_:_:_o_p_e_n method may fail and  throw  a
        _D_b_E_x_c_e_p_t_i_o_n(3)  or  return  _e_r_r_n_o for the following condi-
@@ -568,17 +571,21 @@ EERRRROORRSS
             The specified file size was too large.
 
        The _D_b_L_o_g_:_:_c_l_o_s_e method may  fail  and  throw  a  _D_b_E_x_c_e_p_-
-       _t_i_o_n(3)  or  return  _e_r_r_n_o for any of the errors specified
-       for the following DB and library functions: close(2),
-       fcntl(2), fflush(3), munmap(2), and strerror(3).
+       _t_i_o_n(3)
+
+       or  return  _e_r_r_n_o  for any of the errors specified for the
+       following DB and library functions: close(2), fcntl(2),
+       fflush(3), munmap(2), and strerror(3).
 
        The  _D_b_L_o_g_:_:_f_l_u_s_h  method  may  fail  and throw a _D_b_E_x_c_e_p_-
-       _t_i_o_n(3) or return _e_r_r_n_o for any of  the  errors  specified
-       for the following DB and library functions: close(2),
-       fcntl(2), fflush(3), fsync(2), lseek(2), malloc(3),
-       memcpy(3), memset(3), open(2), sigfillset(3),
-       sigprocmask(2), stat(2), strcpy(3), strdup(3),
-       strerror(3), strlen(3), unlink(2), and write(2).
+       _t_i_o_n(3)
+
+       or return _e_r_r_n_o for any of the errors  specified  for  the
+       following DB and library functions: close(2), fcntl(2),
+       fflush(3), fsync(2), lseek(2), malloc(3), memcpy(3), mem-
+       set(3), open(2), sigfillset(3), sigprocmask(2), stat(2),
+       strcpy(3), strdup(3), strerror(3), strlen(3), unlink(2),
+       and write(2).
 
        In  addition, the _D_b_L_o_g_:_:_f_l_u_s_h method may fail and throw a
        _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for  the  following  condi-
@@ -587,19 +594,19 @@ EERRRROORRSS
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-       The  _D_b_L_o_g_:_:_g_e_t method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
-       or return _e_r_r_n_o for any of the errors  specified  for  the
+       The _D_b_L_o_g_:_:_g_e_t method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
+
+       or  return  _e_r_r_n_o  for any of the errors specified for the
        following DB and library functions: atoi(3), close(2),
-       fcntl(2), fflush(3), lseek(2), malloc(3), memcpy(3),
-       memset(3), open(2), opendir(3), read(2), readdir(3),
-       realloc(3), sigfillset(3), sigprocmask(2), stat(2),
-       strchr(3), strcpy(3), strdup(3), strerror(3), strlen(3),
-       strncmp(3), and unlink(2).
+       fcntl(2), fflush(3), lseek(2), malloc(3), memcpy(3), mem-
+       set(3), open(2), opendir(3), read(2), readdir(3), real-
+       loc(3), sigfillset(3), sigprocmask(2), stat(2), strchr(3),
+       strcpy(3), strdup(3), strerror(3), strlen(3), strncmp(3),
+       and unlink(2).
 
-       In addition, the _D_b_L_o_g_:_:_g_e_t method may fail  and  throw  a
-       _D_b_E_x_c_e_p_t_i_o_n(3)  or  return  _e_r_r_n_o for the following condi-
+       In  addition,  the  _D_b_L_o_g_:_:_g_e_t method may fail and throw a
+       _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for  the  following  condi-
        tions:
-
 
        [EINVAL]
             An invalid flag value or parameter was specified.
@@ -608,27 +615,29 @@ EERRRROORRSS
             found.
 
        The _D_b_L_o_g_:_:_f_i_l_e method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
-       or return _e_r_r_n_o for any of the errors  specified  for  the
-       following DB and library functions: close(2), fcntl(2),
-       fflush(3), malloc(3), memcpy(3), memset(3), open(2),
-       sigfillset(3), sigprocmask(2), stat(2), strcpy(3),
-       strdup(3), strerror(3), strlen(3), and unlink(2).
 
-       In addition, the _D_b_L_o_g_:_:_f_i_l_e method may fail and  throw  a
-       _D_b_E_x_c_e_p_t_i_o_n(3)  or  return  _e_r_r_n_o for the following condi-
+       or  return  _e_r_r_n_o  for any of the errors specified for the
+       following DB and library functions: close(2), fcntl(2),
+       fflush(3), malloc(3), memcpy(3), memset(3), open(2), sig-
+       fillset(3), sigprocmask(2), stat(2), strcpy(3), strdup(3),
+       strerror(3), strlen(3), and unlink(2).
+
+       In  addition,  the _D_b_L_o_g_:_:_f_i_l_e method may fail and throw a
+       _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for  the  following  condi-
        tions:
 
        [ENOMEM]
-            The supplied buffer was too small  to  hold  the  log
+            The  supplied  buffer  was  too small to hold the log
             file name.
 
-       The  _D_b_L_o_g_:_:_p_u_t method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
+       The _D_b_L_o_g_:_:_p_u_t method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
+
        or return _e_r_r_n_o for any of the errors  specified  for  the
        following DB and library functions: close(2), fcntl(2),
-       fflush(3), fsync(2), lseek(2), malloc(3), memcpy(3),
-       memset(3), open(2), sigfillset(3), sigprocmask(2),
-       stat(2), strcpy(3), strdup(3), strerror(3), strlen(3),
-       time(3), unlink(2), and write(2).
+       fflush(3), fsync(2), lseek(2), malloc(3), memcpy(3), mem-
+       set(3), open(2), sigfillset(3), sigprocmask(2), stat(2),
+       strcpy(3), strdup(3), strerror(3), strlen(3), time(3),
+       unlink(2), and write(2).
 
        In  addition,  the  _D_b_L_o_g_:_:_p_u_t method may fail and throw a
        _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for  the  following  condi-
@@ -641,12 +650,14 @@ EERRRROORRSS
             log record.
 
        The _D_b_L_o_g_:_:_u_n_l_i_n_k method may fail  and  throw  a  _D_b_E_x_c_e_p_-
-       _t_i_o_n(3)  or  return  _e_r_r_n_o for any of the errors specified
-       for the following DB and library functions: close(2),
-       fcntl(2), fflush(3), malloc(3), memcpy(3), memset(3),
-       mmap(2), munmap(2), open(2), sigfillset(3),
-       sigprocmask(2), stat(2), strcpy(3), strdup(3),
-       strerror(3), strlen(3), and unlink(2).
+       _t_i_o_n(3)
+
+       or  return  _e_r_r_n_o  for any of the errors specified for the
+       following DB and library functions: close(2), fcntl(2),
+       fflush(3), malloc(3), memcpy(3), memset(3), mmap(2),
+       munmap(2), open(2), sigfillset(3), sigprocmask(2),
+       stat(2), strcpy(3), strdup(3), strerror(3), strlen(3), and
+       unlink(2).
 
        In addition, the _D_b_L_o_g_:_:_u_n_l_i_n_k method may fail and throw a
        _D_b_E_x_c_e_p_t_i_o_n(3)  or  return  _e_r_r_n_o for the following condi-
@@ -657,13 +668,15 @@ EERRRROORRSS
             flag was not set.
 
        The  _D_b_L_o_g_:_:_a_r_c_h_i_v_e  method  may fail and throw a _D_b_E_x_c_e_p_-
-       _t_i_o_n(3) or return _e_r_r_n_o for any of  the  errors  specified
-       for the following DB and library functions:
-       DbLog::compare(3), DbLog::get(3), close(2), fcntl(2),
-       fflush(3), func(3), getcwd(3), malloc(3), memcpy(3),
-       memset(3), open(2), qsort(3), realloc(3), sigfillset(3),
-       sigprocmask(2), stat(2), strchr(3), strcmp(3), strcpy(3),
-       strdup(3), strerror(3), strlen(3), and unlink(2).
+       _t_i_o_n(3)
+
+       or return _e_r_r_n_o for any of the errors  specified  for  the
+       following DB and library functions: DbLog::compare(3),
+       DbLog::get(3), close(2), fcntl(2), fflush(3), getcwd(3),
+       malloc(3), memcpy(3), memset(3), open(2), qsort(3), real-
+       loc(3), sigfillset(3), sigprocmask(2), stat(2), strchr(3),
+       strcmp(3), strcpy(3), strdup(3), strerror(3), strlen(3),
+       and unlink(2).
 
        In addition, the _D_b_L_o_g_:_:_a_r_c_h_i_v_e method may fail and  throw
        a  _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for the following condi-
@@ -675,28 +688,31 @@ EERRRROORRSS
             The log was corrupted.
 
        The _D_b_L_o_g_:_:_d_b___r_e_g_i_s_t_e_r method may fail and throw  a  _D_b_E_x_-
-       _c_e_p_t_i_o_n(3) or return _e_r_r_n_o for any of the errors specified
-       for the following DB and library functions: close(2),
-       fcntl(2), fflush(3), fsync(2), lseek(2), malloc(3),
-       memcmp(3), memcpy(3), memset(3), open(2), realloc(3),
-       sigfillset(3), sigprocmask(2), stat(2), strcpy(3),
-       strdup(3), strerror(3), strlen(3), time(3), unlink(2), and
-       write(2).
+       _c_e_p_t_i_o_n(3)
 
-       In  addition,  the  _D_b_L_o_g_:_:_d_b___r_e_g_i_s_t_e_r method may fail and
-       throw a _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for  the  following
+       or  return  _e_r_r_n_o  for any of the errors specified for the
+       following DB and library functions: close(2), fcntl(2),
+       fflush(3), fsync(2), lseek(2), malloc(3), memcmp(3), mem-
+       cpy(3), memset(3), open(2), realloc(3), sigfillset(3),
+       sigprocmask(2), stat(2), strcpy(3), strdup(3), str-
+       error(3), strlen(3), time(3), unlink(2), and write(2).
+
+       In addition, the _D_b_L_o_g_:_:_d_b___r_e_g_i_s_t_e_r method  may  fail  and
+       throw  a  _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for the following
        conditions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
        The _D_b_L_o_g_:_:_d_b___u_n_r_e_g_i_s_t_e_r method may fail and throw a _D_b_E_x_-
-       _c_e_p_t_i_o_n(3) or return _e_r_r_n_o for any of the errors specified
-       for the following DB and library functions: close(2),
-       fcntl(2), fflush(3), fsync(2), lseek(2), malloc(3),
-       memcpy(3), memset(3), open(2), sigfillset(3),
-       sigprocmask(2), stat(2), strcpy(3), strdup(3),
-       strerror(3),  strlen(3), time(3), unlink(2), and write(2).
+       _c_e_p_t_i_o_n(3)
+
+       or  return  _e_r_r_n_o  for any of the errors specified for the
+       following DB and library functions: close(2), fcntl(2),
+       fflush(3), fsync(2), lseek(2), malloc(3), memcpy(3), mem-
+       set(3), open(2), sigfillset(3), sigprocmask(2), stat(2),
+       strcpy(3), strdup(3), strerror(3), strlen(3), time(3),
+       unlink(2), and write(2).
 
        In addition, the _D_b_L_o_g_:_:_d_b___u_n_r_e_g_i_s_t_e_r method may fail  and
        throw  a  _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for the following
@@ -712,7 +728,8 @@ BBUUGGSS
 
 SSEEEE AALLSSOO
        _d_b___a_r_c_h_i_v_e(1), _d_b___c_h_e_c_k_p_o_i_n_t(1), _d_b___d_e_a_d_l_o_c_k(1), _d_b___d_u_m_p(1),
-       _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3), _d_b___j_u_m_p(3),
-       _d_b___t_h_r_e_a_d(3), _D_b(3), _D_b_c(3), _D_b_E_n_v(3), _D_b_E_x_c_e_p_t_i_o_n(3), _D_b_I_n_f_o(3),
-       _D_b_L_o_c_k(3), _D_b_L_o_c_k_t_a_b(3), _D_b_L_o_g(3), _D_b_L_s_n(3), _D_b_M_p_o_o_l(3),
-       _D_b_M_p_o_o_l_F_i_l_e(3), _D_b_t(3), _D_b_T_x_n(3), _D_b_T_x_n_M_g_r(3)
+       _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3),
+       _d_b___i_n_t_e_r_n_a_l(3), _d_b___t_h_r_e_a_d(3), _D_b(3), _D_b_c(3), _D_b_E_n_v(3),
+       _D_b_E_x_c_e_p_t_i_o_n(3), _D_b_I_n_f_o(3), _D_b_L_o_c_k(3), _D_b_L_o_c_k_T_a_b(3), _D_b_L_o_g(3),
+       _D_b_L_s_n(3), _D_b_M_p_o_o_l(3), _D_b_M_p_o_o_l_F_i_l_e(3), _D_b_t(3), _D_b_T_x_n(3),
+       _D_b_T_x_n_M_g_r(3)

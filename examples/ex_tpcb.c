@@ -1,18 +1,13 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997
+ * Copyright (c) 1997
  *	Sleepycat Software.  All rights reserved.
+ *
+ *	@(#)ex_tpcb.c	10.21 (Sleepycat) 11/25/97
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char copyright[] =
-"@(#) Copyright (c) 1997\n\
-	Sleepycat Software Inc.  All rights reserved.\n";
-static const char sccsid[] = "@(#)ex_tpcb.c	10.18 (Sleepycat) 10/25/97";
-#endif
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
@@ -34,7 +29,7 @@ static const char sccsid[] = "@(#)ex_tpcb.c	10.18 (Sleepycat) 10/25/97";
 
 typedef enum { ACCOUNT, BRANCH, TELLER } FTYPE;
 
-DB_ENV	 *db_init(char *, int, int);
+DB_ENV	 *db_init(char *, int, int, int);
 void	  hpopulate(DB *, unsigned int, u_int32_t, u_int32_t, u_int32_t);
 void	  invarg(int, char *);
 int	  main __P((int, char *[]));
@@ -141,16 +136,17 @@ main(argc, argv)
 	DB_ENV *dbenv;
 	u_long seed;
 	int accounts, branches, tellers, history;
-	int ch, iflag, mpool, ntxns, ret;
+	int ch, iflag, mpool, ntxns, ret, txn_no_sync;
 	char *home, *endarg;
 
 	home = NULL;
 	accounts = branches = history = tellers = 0;
+	txn_no_sync = 0;
 	mpool = ntxns = 0;
 	verbose = 0;
 	iflag = 0;
 	seed = (u_long)getpid();
-	while ((ch = getopt(argc, argv, "a:b:h:im:n:S:s:t:v")) != EOF)
+	while ((ch = getopt(argc, argv, "a:b:fh:im:n:S:s:t:v")) != EOF)
 		switch (ch) {
 		case 'a':			/* Number of account records */
 			if ((accounts = atoi(optarg)) <= 0)
@@ -160,15 +156,18 @@ main(argc, argv)
 			if ((branches = atoi(optarg)) <= 0)
 				invarg(ch, optarg);
 			break;
+		case 'c':			/* Cachesize in bytes */
+			if ((mpool = atoi(optarg)) <= 0)
+				invarg(ch, optarg);
+			break;
+		case 'f':			/* Fast mode: no txn sync. */
+			txn_no_sync = 1;
+			break;
 		case 'h':			/* DB  home. */
 			home = optarg;
 			break;
 		case 'i':			/* Initialize the test. */
 			iflag = 1;
-			break;
-		case 'm':			/* Bytes in buffer pool  */
-			if ((mpool = atoi(optarg)) <= 0)
-				invarg(ch, optarg);
 			break;
 		case 'n':			/* Number of transactions */
 			if ((ntxns = atoi(optarg)) <= 0)
@@ -200,7 +199,7 @@ main(argc, argv)
 	srand((u_int)seed);
 
 	/* Initialize the database environment. */
-	dbenv = db_init(home, mpool, iflag);
+	dbenv = db_init(home, mpool, iflag, txn_no_sync ? DB_TXN_NOSYNC : 0);
 
 	accounts = accounts == 0 ? ACCOUNTS : accounts;
 	branches = branches == 0 ? BRANCHES : branches;
@@ -231,13 +230,14 @@ main(argc, argv)
  *	Initialize the environment.
  */
 DB_ENV *
-db_init(home, mp_size, initializing)
+db_init(home, mp_size, initializing, flags)
 	char *home;
 	int mp_size;
 	int initializing;
+	int flags;
 {
 	DB_ENV *dbenv;
-	u_int flags;
+	u_int lflags;
 
 	/* Rely on calloc to initialize the structure. */
 	if ((dbenv = (DB_ENV *)calloc(sizeof(DB_ENV), 1)) == NULL) {
@@ -253,9 +253,9 @@ db_init(home, mp_size, initializing)
 	dbenv->db_errpfx = "tpcb";
 	dbenv->mp_size = mp_size == 0 ? 4 * 1024 * 1024 : (size_t)mp_size;
 
-	flags = DB_CREATE | (initializing ? DB_INIT_MPOOL :
+	lflags = flags | DB_CREATE | (initializing ? DB_INIT_MPOOL :
 	    DB_INIT_TXN | DB_INIT_LOCK | DB_INIT_LOG | DB_INIT_MPOOL);
-	if ((errno = db_appinit(home, NULL, dbenv, flags)) != 0) {
+	if ((errno = db_appinit(home, NULL, dbenv, lflags)) != 0) {
 		fprintf(stderr, "%s: db_appinit: ", progname);
 		if (errno < 0)
 			fprintf(stderr, "returned %ld\n", (long)errno);
@@ -541,6 +541,15 @@ tp_run(dbenv, n, accounts, branches, tellers)
 	double gtps, itps;
 	int failed, ifailed, ret, txns, gus, ius;
 	struct timeval starttime, curtime, lasttime;
+#ifndef _WIN32
+	pid_t pid;
+
+	pid = getpid();
+#else
+	int pid;
+
+	pid = 0;
+#endif
 
 	/*
 	 * Open the database files.
@@ -609,7 +618,8 @@ tp_run(dbenv, n, accounts, branches, tellers)
 			    ((double)gus / 1000000);
 			itps = (double)(1000 - ifailed) /
 			    ((double)ius / 1000000);
-			printf("%d txns %d failed ", txns, failed);
+			printf("[%d] %d txns %d failed ", (int)pid,
+			    txns, failed);
 			printf("%6.2f TPS (gross) %6.2f TPS (interval)\n",
 			   gtps, itps);
 			lasttime = curtime;

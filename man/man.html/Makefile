@@ -1,10 +1,10 @@
-# @(#)Makefile	10.2 (Sleepycat) 11/3/97
+# @(#)Makefile	10.4 (Sleepycat) 11/13/97
 
 .include <../man.source/Make.include>
 
 .PATH:	../man.source
 
-all: $(MANHTML)
+all: $(MANHTML) $(MANJHTML) $(MANXHTML)
 
 clean:
 	rm -f $(MAN0)

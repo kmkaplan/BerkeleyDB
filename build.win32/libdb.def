@@ -1,4 +1,4 @@
-;	@(#)libdb.def	8.5 (Sleepycat) 7/25/97
+; @(#)libdb.def	8.8 (Sleepycat) 11/20/97
 
 DESCRIPTION     'Berkeley DB 2.0 Library'
 CODE            SHARED READ EXECUTE
@@ -55,6 +55,8 @@ EXPORTS
 	log_archive				@52
 	lock_detect				@53
 	txn_id					@54
+	txn_stat				@55
+	memp_trickle				@56
 ; these are only for testing
 	__db_loadme				@201
 	__db_rclose				@205

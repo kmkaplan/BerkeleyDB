@@ -3,216 +3,188 @@
 # Copyright (c) 1996, 1997
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test028.tcl	10.3 (Sleepycat) 10/4/97
+#	@(#)test028.tcl	8.1 (Sleepycat) 11/18/97
 #
-# DB Test 24 {access method}
-# System integration DB test: verify that locking, recovery, checkpoint,
-# and all the other utilities basically work.
-#
-# The test consists of $nprocs processes operating on $nfiles files.  A
-# transaction consists of adding the same key/data pair to some random
-# number of these files.  We generate a bimodal distribution in key
-# size with 70% of the keys being small (1-10 characters) and the
-# remaining 30% of the keys being large (uniform distribution about
-# mean $key_avg).  If we generate a key, we first check to make sure
-# that the key is not already in the dataset.  If it is, we do a lookup.
-#
-# XXX This test uses grow-only files currently!
+# Put after cursor delete test.
+proc test028 { method args } {
+	global dupnum
+	global dupstr
+	global alphabet
+	set method [convert_method $method]
+	puts "Test028: $method put after cursor delete test"
 
-proc test028 { method {nprocs 5} {nfiles 10} {cont 0} args } {
-source ./include.tcl
+	# Get global declarations since tcl doesn't support
+	# any useful equivalent to #defines!
+	source ./include.tcl
 
-	if { $method != "all" } {
-		set method [convert_method $method]
+	if { [string compare $method DB_RECNO] == 0 } {
+		set dbflags 0
+	} else {
+		set dbflags $DB_DUP
 	}
 
-	puts "Test028: system integration test db $method $nprocs processes \
-	    on $nfiles files"
 
-	# Parse options
-	set otherargs ""
-	set seeds {}
-	set key_avg 10
-	set data_avg 20
-	set do_exit 0
-	for { set i 0 } { $i < [llength $args] } {incr i} {
-		switch -regexp -- [lindex $args $i] {
-			-key_avg { incr i; set key_avg [lindex $args $i] }
-			-data_avg { incr i; set data_avg [lindex $args $i] }
-			-s.* { incr i; set seeds [lindex $args $i] }
-			-testdir { incr i; set testdir [lindex $args $i] }
-			-x.* { set do_exit 1 }
-			default {
-				lappend otherargs [lindex $args $i]
-			}
-		}
-	}
+	# Create the database and open the dictionary
+	set testfile test028.db
+	set t1 $testdir/t1
+	cleanup $testdir
+	set db [eval [concat dbopen \
+	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method -flags \
+	    $dbflags $args]]
 
-	if { $cont == 0 } {
+	set ndups 20
+	set txn 0
+	set flags 0
 
-		if { [file exists $testdir] != 1 } {
-			exec $MKDIR $testdir
-		} elseif { [file isdirectory $testdir ] != 1 } {
-			error "$testdir is not a directory"
-		}
+	set dbc [$db cursor $txn]
+	error_check_good db_cursor [is_substr $dbc $db] 1
 
-		# Create the database and open the dictionary
-		cleanup $testdir
-
-		# Create an environment
-		puts "\tTest028.a: creating environment and $nfiles files"
-		set flags [expr $DB_INIT_MPOOL | $DB_INIT_LOCK \
-		    | $DB_INIT_LOG | $DB_INIT_TXN]
-		set dbenv  \
-		    [eval dbenv -dbflags $flags -dbhome $testdir $otherargs]
-
-		# Create a bunch of files
-		set m $method
-		for { set i 0 } { $i < $nfiles } { incr i } {
-			if { $method == "all" } {
-				switch [random_int 1 2] {
-				1 { set m DB_BTREE }
-				2 { set m DB_HASH }
-				}
-			}
-			set db [eval dbopen \
-			    test028.$i.db $DB_CREATE 0644 $m \
-			    -flags $DB_DUP -dbenv $dbenv $otherargs]
-			error_check_bad db_open $db NULL
-			error_check_good db_open [is_substr $db db] 1
-			error_check_good db_close [$db close] 0
-		}
-	}
-	# Close the environment
-	rename $dbenv {}
-
-	if { $do_exit == 1 } {
-		return
-	}
-
-	# Database is created, now fork off the kids.
-	puts "\tTest028.b: forking off $nprocs processes and utilities"
-	set cycle 1
-	while { 1 } {
-		# Fire off deadlock detector and checkpointer
-		puts "Beginning cycle $cycle"
-		set ddpid [exec ./db_deadlock -h $testdir -t 5 &]
-		set cppid [exec ./db_checkpoint -h $testdir -p 2 &]
-		puts "Deadlock detector: $ddpid Checkpoint daemon $cppid"
-
-		set pidlist {}
-		for { set i 0 } {$i < $nprocs} {incr i} {
-			set s -1
-			if { [llength $seeds] == $nprocs } {
-				set s [lindex $seeds $i]
-			}
-			set p [exec ./dbtest ../test/sysscript.tcl $testdir \
-			    $nfiles $key_avg $data_avg $s > \
-			    $testdir/test028.$i.log & ]
-			lappend pidlist $p
-		}
-		puts "[timestamp] $nprocs processes running $pidlist"
-		exec $SLEEP [random_int 300 600]
-
-		# Now simulate a crash
-		puts "[timestamp] Crashing"
-		exec $KILL -9 $ddpid
-		exec $KILL -9 $cppid
-		foreach p $pidlist {
-			exec $KILL -9 $p
-		}
-
-		# Now run recovery
-		test028_verify $testdir $nfiles
-		incr cycle
-	}
-}
-
-proc test028_usage { } {
-	puts -nonewline "test028 method nentries [-d directory] [-i iterations]"
-	puts " [-p procs] [-s {seeds} ] -x"
-}
-
-proc test028_verify { dir nfiles } {
-source ./include.tcl
-	# Save everything away in case something breaks
-#	for { set f 0 } { $f < $nfiles } {incr f} {
-#		exec $CP $dir/test028.$f.db $dir/test028.$f.save1
-#	}
-#	foreach f [glob $dir/log.*] {
-#		if { [is_substr $f save] == 0 } {
-#			exec $CP $f $f.save1
-#		}
-#	}
-
-	# Run recovery and then read through all the database files to make
-	# sure that they all look good.
-
-	puts "\tTest028.verify: Running recovery and verifying file contents"
-	set stat [catch {exec ./db_recover -v -h $dir} result]
-	if { $stat == 1 && [is_substr $result \
-	    "db_recover: Recovering the log"] == 0 } {
-		error "Recovery error: $result."
-	}
-
-	# Save everything away in case something breaks
-#	for { set f 0 } { $f < $nfiles } {incr f} {
-#		exec $CP $dir/test028.$f.db $dir/test028.$f.save2
-#	}
-#	foreach f [glob $dir/log.*] {
-#		if { [is_substr $f save] == 0 } {
-#			exec $CP $f $f.save2
-#		}
-#	}
-
-	for { set f 0 } { $f < $nfiles } { incr f } {
-		set db($f) \
-		    [eval dbopen test028.$f.db 0 0 DB_UNKNOWN  -dbhome $dir]
-		error_check_bad $f:db_open $db($f) NULL
-		error_check_good $f:db_open [is_substr $db($f) db] 1
-
-		set cursors($f) [$db($f) cursor 0]
-		error_check_bad $f:cursor_open $cursors($f) NULL
-		error_check_good $f:cursor_open [is_substr $cursors($f) $db($f)] 1
-	}
-
-	for { set f 0 } { $f < $nfiles } { incr f } {
-		for {set d [$cursors($f) get 0 $DB_FIRST] } \
-		    { [string length $d] != 0 } \
-		    { set d [$cursors($f) get 0 $DB_NEXT] } {
-
-			set k [lindex $d 0]
-			set d [lindex $d 1]
-
-			set flist [zero_list $nfiles]
-			set r $d
-			while { [set ndx [string first : $r]] != -1 } {
-				set fnum [string range $r 0 [expr $ndx - 1]]
-				if { [lindex $flist $fnum] == 0 } {
-					set fl $DB_SET
+	foreach i { offpage onpage } {
+		foreach b { bigitem smallitem } {
+			if { $i == "onpage" } {
+				if { $b == "bigitem" } {
+					set dupstr [repeat $alphabet 100]
 				} else {
-					set fl $DB_NEXT
+					set dupstr DUP
 				}
-
-				if { $fl != $DB_SET || $fnum != $f } {
-					set full [$cursors($fnum) get $k $fl]
-					set key [lindex $full 0]
-					set rec [lindex $full 1]
-					error_check_good $f:dbget_$fnum:key \
-					    $key $k
-					error_check_good $f:dbget_$fnum:data \
-					    $rec $d
+			} else {
+				if { $b == "bigitem" } {
+					set dupstr [repeat $alphabet 100]
+				} else {
+					set dupstr [repeat $alphabet 50]
 				}
-
-				set flist [lreplace $flist $fnum $fnum 1]
-				incr ndx
-				set r [string range $r $ndx end]
 			}
+
+			if { $b == "bigitem" } {
+				set dupstr [repeat $dupstr 10]
+			}
+			puts "\tTest028: $i/$b"
+
+			puts "\tTest028.a: Insert key with single data item"
+			set key "put_after_cursor_del"
+			set ret [$db put $txn $key $dupstr $flags]
+			error_check_good db_put $ret 0
+
+			# Now let's get the item and make sure its OK.
+			puts "\tTest028.b: Check initial entry"
+			set ret [$db get $txn $key $flags]
+			error_check_good db_get $ret $dupstr
+
+			# Now try a put with NOOVERWRITE SET (should be error)
+			puts "\tTest028.c: No_overwrite test"
+			set ret [$db put $txn $key $dupstr $DB_NOOVERWRITE]
+			error_check_bad db_put $ret 0
+
+			# Now delete the item with a cursor
+			puts "\tTest028.d: Delete test"
+			set ret [$dbc get $key $DB_SET]
+			error_check_bad dbc_get:SET [llength $ret] 0
+
+			set ret [$dbc del $flags]
+			error_check_good dbc_del $ret 0
+
+			puts "\tTest028.e: Reput the item"
+			set ret [$db put $txn $key $dupstr $DB_NOOVERWRITE]
+			error_check_good db_put $ret 0
+
+			puts "\tTest028.f: Retrieve the item"
+			set ret [$db get $txn $key $flags]
+			error_check_good db_get $ret $dupstr
+
+			# Delete the key to set up for next test
+			set ret [$db del $txn $key $flags]
+			error_check_good db_del $ret 0
+
+			# Now repeat the above set of tests with
+			# duplicates (if not RECNO).
+			if { $dbflags == 0 } {
+				continue;
+			}
+
+			puts "\tTest028.g: Insert key with duplicates"
+			set key "put_after_cursor_del"
+			for { set count 0 } { $count < $ndups } { incr count } {
+				set ret [$db put $txn $key $count$dupstr $flags]
+				error_check_good db_put $ret 0
+			}
+
+			puts "\tTest028.h: Check dups"
+			set dupnum 0
+			dump_file $db $txn $t1 test028.check
+
+			# Try no_overwrite
+			puts "\tTest028.i: No_overwrite test"
+			set ret [$db put $txn $key $dupstr $DB_NOOVERWRITE]
+			error_check_bad db_put $ret 0
+
+			# Now delete all the elements with a cursor
+			puts "\tTest028.j: Cursor Deletes"
+			set count 0
+			for { set ret [$dbc get $key $DB_SET] } { 
+			    [string length $ret] != 0 } { 
+			    set ret [$dbc get 0 $DB_NEXT] } {
+				set k [lindex $ret 0]
+				set d [lindex $ret 1]
+				error_check_good db_seq(key) $k $key
+				error_check_good db_seq(data) $d $count$dupstr
+				set ret [$dbc del 0]
+				error_check_good dbc_del $ret 0
+				incr count
+				if { $count == [expr $ndups - 1] } {
+					puts "\tTest028.k:\
+						Duplicate No_Overwrite test"
+					set ret [$db put $txn $key $dupstr \
+					    $DB_NOOVERWRITE]
+					error_check_bad db_put $ret 0
+				}
+			}
+
+			# Make sure all the items are gone
+			puts "\tTest028.l: Get after delete"
+			set ret [$dbc get $key $DB_SET]
+			error_check_good get_after_del [string length $ret] 0
+
+			puts "\tTest028.m: Reput the item"
+			set ret [$db put $txn $key 0$dupstr $DB_NOOVERWRITE]
+			error_check_good db_put $ret 0
+			for { set count 1 } { $count < $ndups } { incr count } {
+				set ret [$db put $txn $key $count$dupstr $flags]
+				error_check_good db_put $ret 0
+			}
+
+			puts "\tTest028.n: Retrieve the item"
+			set dupnum 0
+			dump_file $db $txn $t1 test028.check
+
+			# Clean out in prep for next test
+			set ret [$db del $txn $key 0]
+			error_check_good db_del $ret 0
 		}
 	}
 
-	for { set f 0 } { $f < $nfiles } { incr f } {
-		error_check_good $cursors($f) [$cursors($f) close] 0
-		error_check_good db_close:$f [$db($f) close] 0
+	error_check_good dbc_close [$dbc close] 0
+	error_check_good db_close [$db close] 0
+
+}
+
+# Check function for test028; keys and data are identical
+proc test028.check { key data } {
+	global dupnum
+	global dupstr
+	if { [string compare $key put_after_cursor_del] != 0 } {
+		error "Test028: key mismatch: |$key| |put_after_cursor_del|"
 	}
+	if { [string compare $data $dupnum$dupstr] != 0 } {
+		error "Test028: data mismatch: |$data| |$dupnum$dupstr|"
+	}
+	incr dupnum
+}
+
+proc repeat { str n } {
+	set ret ""
+	while { $n > 0 } {
+		set ret $str$ret
+		incr n -1
+	}
+	return $ret
 }

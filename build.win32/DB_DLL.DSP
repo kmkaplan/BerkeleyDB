@@ -405,6 +405,10 @@ SOURCE=..\os.win32\os_abs.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\os\os_config.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\os.win32\os_dir.c
 # End Source File
 # Begin Source File
@@ -414,10 +418,6 @@ SOURCE=..\os.win32\os_fid.c
 # Begin Source File
 
 SOURCE=..\os\os_fsync.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\os\os_func.c
 # End Source File
 # Begin Source File
 
@@ -446,6 +446,10 @@ SOURCE=..\os.win32\os_seek.c
 # Begin Source File
 
 SOURCE=..\os.win32\os_sleep.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\os.win32\os_spin.c
 # End Source File
 # Begin Source File
 

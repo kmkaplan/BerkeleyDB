@@ -1,9 +1,5 @@
 
 
-
-Dbc(3)                                                     Dbc(3)
-
-
 NNAAMMEE
        Dbc - database sequential access functions
 
@@ -65,7 +61,7 @@ DDEESSCCRRIIPPTTIIOONN
 
        The methods of the Dbc are defined as follows:
 
-       int Dbc::close(void);
+       int Dbc::close();
             A method that discards the cursor.  No further refer-
             ences to the Dbc object should be made.
 
@@ -116,6 +112,7 @@ DDEESSCCRRIIPPTTIIOONN
             The parameter _f_l_a_g_s must be set to exactly one of the
             following values:
 
+
             DB_FIRST
                  The   cursor  is  set  to  reference  the  first
                  key/data pair of the database, and that pair  is
@@ -125,6 +122,7 @@ DDEESSCCRRIIPPTTIIOONN
 
                  If  the  database  is empty, the _D_b_c_:_:_g_e_t method
                  will return DB_NOTFOUND.
+
 
             DB_LAST
                  The cursor is set to reference the last key/data
@@ -136,18 +134,20 @@ DDEESSCCRRIIPPTTIIOONN
                  If the database is empty,  the  _D_b_c_:_:_g_e_t  method
                  will return DB_NOTFOUND.
 
+
             DB_NEXT
                  If the cursor is not yet initialized, DB_NEXT is
                  identical to DB_FIRST.
 
                  Otherwise, move the cursor to the next  key/data
                  pair of the database, and that pair is returned.
-                 In the presence of duplicate key values, the key
-                 may not change.
+                 In the presence of  duplicate  key  values,  the
+                 value of the key may not change.
 
                  If  the  cursor is already on the last record in
                  the database, the _D_b_c_:_:_g_e_t  method  will  return
                  DB_NOTFOUND.
+
 
             DB_PREV
                  If the cursor is not yet initialized, DB_PREV is
@@ -156,21 +156,24 @@ DDEESSCCRRIIPPTTIIOONN
                  Otherwise,  move  the  cursor  to  the  previous
                  key/data  pair of the database, and that pair is
                  returned.  In the presence of duplicate key val-
-                 ues, the key may not change.
+                 ues, the value of the key may not change.
 
                  If  the cursor is already on the first record in
                  the database, the _D_b_c_:_:_g_e_t  method  will  return
                  DB_NOTFOUND.
 
+
             DB_CURRENT
                  Return the key/data pair currently referenced by
                  the cursor.
+
 
                  If the cursor key/data pair  has  been  deleted,
                  the _D_b_c_:_:_g_e_t method will return DB_KEYEMPTY.
 
                  If  the  cursor  is  not  yet  initialized,  the
                  _D_b_c_:_:_g_e_t method will return EINVAL.
+
 
             DB_SET
                  Move the cursor to the specified  key/data  pair
@@ -189,6 +192,7 @@ DDEESSCCRRIIPPTTIIOONN
                  If  no  matching  keys  are  found, the _D_b_c_:_:_g_e_t
                  method will return DB_NOTFOUND.
 
+
             DB_SET_RANGE
                  The DB_SET_RANGE flag is identical to the DB_SET
                  flag, except that the key is returned as well as
@@ -197,6 +201,7 @@ DDEESSCCRRIIPPTTIIOONN
                  smallest key greater than or equal to the speci-
                  fied  key,  permitting  partial  key matches and
                  range searches.
+
 
             DB_SET_RECNO
                  Move the cursor to the specific numbered  record
@@ -211,6 +216,7 @@ DDEESSCCRRIIPPTTIIOONN
                  database  must be of type btree and it must have
                  been  created  with  the  DB_RECNUM  flag   (see
                  _D_b_:_:_o_p_e_n in _D_b(3)).
+
 
             DB_GET_RECNO
                  Return  the  record  number  associated with the
@@ -231,11 +237,12 @@ DDEESSCCRRIIPPTTIIOONN
             cursor will be unchanged.
 
        int Dbc::put(Dbt *key, Dbt *data, int flags);
-            A  method  that  stores  key/data  pairs   into   the
+              A  method  that  stores  key/data  pairs  into  the
             database.
 
             The _f_l_a_g_s parameter must be set to exactly one of the
             following values:
+
 
             DB_AFTER
                  In the case of the btree and hash  access  meth-
@@ -262,6 +269,7 @@ DDEESSCCRRIIPPTTIIOONN
                  If  the  cursor  is  not  yet  initialized,  the
                  _D_b_c_:_:_p_u_t method will return EINVAL.
 
+
             DB_BEFORE
                  In the case of the btree and hash  access  meth-
                  ods, insert the data element as a duplicate ele-
@@ -287,6 +295,7 @@ DDEESSCCRRIIPPTTIIOONN
                  If  the  cursor  is  not  yet  initialized,  the
                  _D_b_c_:_:_p_u_t method will return EINVAL.
 
+
             DB_CURRENT
                  Overwrite the data of the key/data  pair  refer-
                  enced  by  the  cursor  with  the specified data
@@ -297,6 +306,7 @@ DDEESSCCRRIIPPTTIIOONN
                  If  the  cursor  is  not  yet  initialized,  the
                  _D_b_c_:_:_p_u_t method will return EINVAL.
 
+
             DB_KEYFIRST
                  In  the  case of the btree and hash access meth-
                  ods, insert the specified key/data pair into the
@@ -306,6 +316,7 @@ DDEESSCCRRIIPPTTIIOONN
 
                  The DB_KEYFIRST flag may not be specified to the
                  recno access method.
+
 
             DB_KEYLAST
                  Insert the  specified  key/data  pair  into  the
@@ -318,6 +329,7 @@ DDEESSCCRRIIPPTTIIOONN
 
             If the cursor record has been deleted,  the  _D_b_c_:_:_p_u_t
             method will return DB_KEYEMPTY.
+
 
             Otherwise,  the  _D_b_c_:_:_p_u_t  method  throws  a _D_b_E_x_c_e_p_-
             _t_i_o_n(3) or returns the value of _e_r_r_n_o on failure  and
@@ -365,33 +377,35 @@ EERRRROORRSS
        an exception that encapsulates the error information.  The
        default error behavior can be changed, see _D_b_E_x_c_e_p_t_i_o_n(3).
 
-       The _D_b_c_:_:_c_l_o_s_e method may fail and throw a  _D_b_E_x_c_e_p_t_i_o_n(3)
-       or  return  _e_r_r_n_o  for any of the errors specified for the
+       The _D_b_c_:_:_c_l_o_s_e method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
+
+       or return _e_r_r_n_o for any of the errors  specified  for  the
        following DB and library functions: DbLock::get(3),
        DbLock::put(3), DbLockTab::id(3), DbLockTab::vec(3),
        DbLog::put(3), DbMpoolFile::get(3), DbMpoolFile::put(3),
-       DbMpoolFile::set(3), calloc(3), fcntl(2), fflush(3),
-       malloc(3), memcpy(3), memmove(3), memset(3), realloc(3),
-       and strerror(3).
+       DbMpoolFile::set(3), calloc(3), fcntl(2), fflush(3), mal-
+       loc(3), memcpy(3), memmove(3), memset(3), realloc(3), and
+       strerror(3).
 
-       In  addition,  the  _D_b_c_:_:_c_l_o_s_e method may fail and throw a
-       _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for  the  following  condi-
+       In addition, the _D_b_c_:_:_c_l_o_s_e method may fail  and  throw  a
+       _D_b_E_x_c_e_p_t_i_o_n(3)  or  return  _e_r_r_n_o for the following condi-
        tions:
 
        [EAGAIN]
             A lock was unavailable.
 
        [EPERM]
-            Database  corruption  was  detected.   All subsequent
-            database calls (other  than  _D_b_:_:_c_l_o_s_e)  will  return
+            Database corruption  was  detected.   All  subsequent
+            database  calls  (other  than  _D_b_:_:_c_l_o_s_e) will return
             EPERM.
 
-       The _D_b_c_:_:_d_e_l method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3) or
-       return _e_r_r_n_o for any of the errors specified for the  fol-
-       lowing DB and library functions: Db::del(3),
-       DbLock::get(3), DbLock::put(3), DbLockTab::id(3),
-       DbLockTab::vec(3), DbLog::put(3), DbMpoolFile::get(3),
-       DbMpoolFile::put(3), DbMpoolFile::set(3), calloc(3),
+       The _D_b_c_:_:_d_e_l method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
+
+       or return _e_r_r_n_o for any of the errors  specified  for  the
+       following DB and library functions: Db::del(3),
+       DbLock::get(3), DbLock::put(3), DbLockTab::id(3), DbLock-
+       Tab::vec(3), DbLog::put(3), DbMpoolFile::get(3), DbM-
+       poolFile::put(3), DbMpoolFile::set(3), calloc(3),
        fcntl(2), fflush(3), malloc(3), memcpy(3), memmove(3),
        memset(3), realloc(3), and strerror(3).
 
@@ -410,18 +424,20 @@ EERRRROORRSS
             database  calls  (other  than  _D_b_:_:_c_l_o_s_e) will return
             EPERM.
 
-       The _D_b_c_:_:_g_e_t method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3) or
-       return  _e_r_r_n_o for any of the errors specified for the fol-
-       lowing DB and library functions: Db::get(3),
-       DbLock::get(3), DbLock::put(3), DbLockTab::id(3),
-       DbLockTab::vec(3), DbLog::put(3), DbMpoolFile::get(3),
-       DbMpoolFile::put(3), DbMpoolFile::set(3), calloc(3),
-       fcntl(2), fflush(3), malloc(3), memcmp(3), memcpy(3),
-       memmove(3), memset(3), realloc(3), and strerror(3).
+       The _D_b_c_:_:_g_e_t method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
 
-       In  addition,  the  _D_b_c_:_:_g_e_t  method  may fail and throw a
-       _D_b_E_x_c_e_p_t_i_o_n(3) or return _e_r_r_n_o for  the  following  condi-
+       or return _e_r_r_n_o for any of the errors  specified  for  the
+       following DB and library functions: Db::get(3),
+       DbLock::get(3), DbLock::put(3), DbLockTab::id(3), DbLock-
+       Tab::vec(3), DbLog::put(3), DbMpoolFile::get(3), DbM-
+       poolFile::put(3), DbMpoolFile::set(3), calloc(3),
+       fcntl(2), fflush(3), malloc(3), memcmp(3), memcpy(3), mem-
+       move(3), memset(3), realloc(3), and strerror(3).
+
+       In addition, the _D_b_c_:_:_g_e_t method  may  fail  and  throw  a
+       _D_b_E_x_c_e_p_t_i_o_n(3)  or  return  _e_r_r_n_o for the following condi-
        tions:
+
 
        [EAGAIN]
             A lock was unavailable.
@@ -429,23 +445,24 @@ EERRRROORRSS
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-            The  DB_THREAD  flag  was  specified  to the _D_b_:_:_o_p_e_n
+            The DB_THREAD flag  was  specified  to  the  _D_b_:_:_o_p_e_n
             method described in _D_b(3) and neither the DB_DBT_MAL-
             LOC or DB_DBT_USERMEM flags were set in the Dbt.
 
        [EPERM]
-            Database  corruption  was  detected.   All subsequent
-            database calls (other  than  _D_b_:_:_c_l_o_s_e)  will  return
+            Database corruption  was  detected.   All  subsequent
+            database  calls  (other  than  _D_b_:_:_c_l_o_s_e) will return
             EPERM.
 
-       The _D_b_c_:_:_p_u_t method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3) or
-       return _e_r_r_n_o for any of the errors specified for the  fol-
-       lowing DB and library functions: DbLock::get(3),
+       The _D_b_c_:_:_p_u_t method may fail and throw a _D_b_E_x_c_e_p_t_i_o_n(3)
+
+       or return _e_r_r_n_o for any of the errors  specified  for  the
+       following DB and library functions: DbLock::get(3),
        DbLock::put(3), DbLockTab::id(3), DbLockTab::vec(3),
        DbLog::put(3), DbMpoolFile::get(3), DbMpoolFile::put(3),
-       DbMpoolFile::set(3), calloc(3), fcntl(2), fflush(3),
-       malloc(3), memcmp(3), memcpy(3), memmove(3), memset(3),
-       realloc(3), and strerror(3).
+       DbMpoolFile::set(3), calloc(3), fcntl(2), fflush(3), mal-
+       loc(3), memcmp(3), memcpy(3), memmove(3), memset(3), real-
+       loc(3), and strerror(3).
 
        In addition, the _D_b_c_:_:_p_u_t method  may  fail  and  throw  a
        _D_b_E_x_c_e_p_t_i_o_n(3)  or  return  _e_r_r_n_o for the following condi-
@@ -467,7 +484,8 @@ EERRRROORRSS
 
 SSEEEE AALLSSOO
        _d_b___a_r_c_h_i_v_e(1), _d_b___c_h_e_c_k_p_o_i_n_t(1), _d_b___d_e_a_d_l_o_c_k(1), _d_b___d_u_m_p(1),
-       _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3), _d_b___j_u_m_p(3),
-       _d_b___t_h_r_e_a_d(3), _D_b(3), _D_b_c(3), _D_b_E_n_v(3), _D_b_E_x_c_e_p_t_i_o_n(3), _D_b_I_n_f_o(3),
-       _D_b_L_o_c_k(3), _D_b_L_o_c_k_t_a_b(3), _D_b_L_o_g(3), _D_b_L_s_n(3), _D_b_M_p_o_o_l(3),
-       _D_b_M_p_o_o_l_F_i_l_e(3), _D_b_t(3), _D_b_T_x_n(3), _D_b_T_x_n_M_g_r(3)
+       _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3),
+       _d_b___i_n_t_e_r_n_a_l(3), _d_b___t_h_r_e_a_d(3), _D_b(3), _D_b_c(3), _D_b_E_n_v(3),
+       _D_b_E_x_c_e_p_t_i_o_n(3), _D_b_I_n_f_o(3), _D_b_L_o_c_k(3), _D_b_L_o_c_k_T_a_b(3), _D_b_L_o_g(3),
+       _D_b_L_s_n(3), _D_b_M_p_o_o_l(3), _D_b_M_p_o_o_l_F_i_l_e(3), _D_b_t(3), _D_b_T_x_n(3),
+       _D_b_T_x_n_M_g_r(3)

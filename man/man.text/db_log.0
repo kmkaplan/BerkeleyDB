@@ -1,9 +1,5 @@
 
 
-
-DB_LOG(3)                                               DB_LOG(3)
-
-
 NNAAMMEE
        db_log - log management functions
 
@@ -62,6 +58,7 @@ DDEESSCCRRIIPPTTIIOONN
        logging).  For a general description of  the  DB  package,
        see _d_b___i_n_t_r_o(3).
 
+
        This manual page describes the specific details of the log
        manager.
 
@@ -97,69 +94,68 @@ DDEESSCCRRIIPPTTIIOONN
        _/_v_a_r_/_t_m_p, _/_u_s_r_/_t_m_p, _/_t_e_m_p, _/_t_m_p, _C_:_/_t_e_m_p and _C_:_/_t_m_p.
 
        All files associated with the  log  are  created  in  this
-       directory.   This  directory  must  already  exist when _i_s
-       _c_a_l_l_e_d_.  If the log already exists, the process must  have
-       permission  to  read and write the existing files.  If the
-       log does not already exist, it is optionally  created  and
-       initialized.
+       directory.  This directory must already exist when
 
-       If  the  log  region  is  being  created and log files are
-       already present, the log files are ``recovered'' and  sub-
+       log_open  is  called.  If the log already exists, the pro-
+       cess must have permission to read and write  the  existing
+       files.   If  the log does not already exist, it is option-
+       ally created and initialized.
+
+       If the log region is  being  created  and  log  files  are
+       already  present, the log files are ``recovered'' and sub-
        sequent log writes are appended to the end of the log.
 
-       The  log  is  stored in one or more files in the specified
+       The log is stored in one or more files  in  the  specified
        directory.  Each file is named using the format
 
             log.NNNNN
 
-       where ``NNNNN'' is the sequence number of the file  within
+       where  ``NNNNN'' is the sequence number of the file within
        the log.
 
-       The  _f_l_a_g_s  and  _m_o_d_e  arguments specify how files will be
-       opened and/or created when they don't already exist.   The
+
+       The _f_l_a_g_s and _m_o_d_e arguments specify  how  files  will  be
+       opened  and/or created when they don't already exist.  The
        flags value is specified by oorr'ing together one or more of
        the following values:
 
        DB_CREATE
-            Create any underlying files, as  necessary.   If  the
-            files  do not already exist and the DB_CREATE flag is
+            Create  any  underlying  files, as necessary.  If the
+            files do not already exist and the DB_CREATE flag  is
             not specified, the call will fail.
 
-       DB_THREAD
-            Cause the DB_LOG  handle  returned  by  the  _l_o_g___o_p_e_n
-            function  to  be useable by multiple threads within a
-            single address space, i.e., to be  ``free-threaded''.
 
-       All  files  created  by the log subsystem are created with
-       mode _m_o_d_e (as described in _c_h_m_o_d(2)) and modified  by  the
-       process'   umask  value  at  the  time  of  creation  (see
-       _u_m_a_s_k(2)).  The group ownership of created files is  based
-       on  the  system and directory defaults, and is not further
+       DB_THREAD
+            Cause  the  DB_LOG  handle  returned  by the _l_o_g___o_p_e_n
+            function to be useable by multiple threads  within  a
+            single  address space, i.e., to be ``free-threaded''.
+
+       All files created by the log subsystem  are  created  with
+       mode  _m_o_d_e  (as described in _c_h_m_o_d(2)) and modified by the
+       process'  umask  value  at  the  time  of  creation   (see
+       _u_m_a_s_k(2)).   The group ownership of created files is based
+       on the system and directory defaults, and is  not  further
        specified by DB.
 
-       The logging subsystem is configured  based  on  the  _d_b_e_n_v
+       The  logging  subsystem  is  configured based on the _d_b_e_n_v
        argument to _l_o_g___o_p_e_n, which is a pointer to a structure of
-       type DB_ENV (typedef'd in <db.h>).  It  is  expected  that
-       applications  will  use  a  single DB_ENV structure as the
-       argument to all of the subsystems in the DB  package.   In
-       order  to ensure compatibility with future releases of DB,
+       type  DB_ENV  (typedef'd  in <db.h>).  It is expected that
+       applications will use a single  DB_ENV  structure  as  the
+       argument  to  all of the subsystems in the DB package.  In
+       order to ensure compatibility with future releases of  DB,
        all fields of the DB_ENV structure that are not explicitly
-       set  should  be initialized to 0 before the first time the
-       structure is used.  Do this  by  declaring  the  structure
-       external  or  static,  or by calling the C library routine
+       set should be initialized to 0 before the first  time  the
+       structure  is  used.   Do  this by declaring the structure
+       external or static, or by calling the  C  library  routine
        _b_z_e_r_o(3) or _m_e_m_s_e_t(3).
 
-       The fields of the DB_ENV structure used  by  _l_o_g___o_p_e_n  are
-       described  below.   As  references to the DB_ENV structure
-       may be maintained by _l_o_g___o_p_e_n, it is  necessary  that  the
-       DB_ENV  structure  and memory it references be valid until
-       the _l_o_g___c_l_o_s_e function is called.  If _d_b_e_n_v is NULL or any
-       of  its  fields are set to 0, defaults appropriate for the
-       system are used where possible.
+       The  fields  of  the DB_ENV structure used by _l_o_g___o_p_e_n are
+       described below.  If _d_b_e_n_v is NULL or any  of  its  fields
+       are set to 0, defaults appropriate for the system are used
+       where possible.
 
        The following fields in the DB_ENV structure may  be  ini-
        tialized before calling _l_o_g___o_p_e_n:
-
 
        void *(*db_errcall)(char *db_errpfx, char *buffer);
        FILE *db_errfile;
@@ -328,6 +324,7 @@ DDEESSCCRRIIPPTTIIOONN
        DB_LSN of the put record is returned in the _l_s_n parameter.
        The _f_l_a_g_s parameter may be set to  one  of  the  following
        values:
+
        DB_CHECKPOINT
             The  log  should write a checkpoint record, recording
             any information necessary to make the log  structures
@@ -379,7 +376,7 @@ DDEESSCCRRIIPPTTIIOONN
        for the file, the region removal will fail.
 
        In  the  case  of catastrophic or system failure, database
-       recovery must be  performed  (see  _d_b___r_e_c_o_v_e_r_y(1)  or  the
+       recovery must  be  performed  (see  _d_b___r_e_c_o_v_e_r(1)  or  the
        DB_RECOVER  flags  to  _d_b___a_p_p_i_n_i_t(3)).   Alternatively, if
        recovery is not required  because  no  database  state  is
        maintained  across  failures, it is possible to clean up a
@@ -435,7 +432,6 @@ DDEESSCCRRIIPPTTIIOONN
        DB_ARCH_LOG
             Return all the log file names regardless  of  whether
             or not they are in use.
-
 
        The DB_ARCH_DATA and DB_ARCH_LOG flags are mutually exclu-
        sive.
@@ -497,7 +493,6 @@ DDEESSCCRRIIPPTTIIOONN
        The  log  region  statistics  are stored in a structure of
        type DB_LOG_STAT (typedef'd  in  <db.h>).   The  following
        DB_LOG_STAT fields will be filled in:
-
        u_int32_t st_magic;
             The  magic  number  that  identifies  a file as a log
             file.
@@ -545,19 +540,20 @@ EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
             able  TMPDIR may be used as the directory in which to
             create the log, as described in the _l_o_g___o_p_e_n  section
             above.
+
 EERRRROORRSS
        The _l_o_g___o_p_e_n function may fail and return _e_r_r_n_o for any of
        the errors specified for  the  following  DB  and  library
        functions: atoi(3), close(2), db_version(3), fcntl(2),
-       fflush(3), log_close(3), log_unlink(3), lseek(2),
-       malloc(3), memcpy(3), memset(3), mmap(2), munmap(2),
-       open(2), opendir(3), read(2), readdir(3), realloc(3),
-       sigfillset(3), sigprocmask(2), stat(2), strchr(3),
-       strcpy(3), strdup(3), strerror(3), strlen(3), strncmp(3),
-       unlink(2), and write(2).
+       fflush(3), log_close(3), log_unlink(3), lseek(2), mal-
+       loc(3), memcpy(3), memset(3), mmap(2), munmap(2), open(2),
+       opendir(3), read(2), readdir(3), realloc(3), sig-
+       fillset(3), sigprocmask(2), stat(2), strchr(3), strcpy(3),
+       strdup(3), strerror(3), strlen(3), strncmp(3), unlink(2),
+       and write(2).
 
-       In addition, the _l_o_g___o_p_e_n function may fail and return _e_r_-
-       _r_n_o for the following conditions:
+       In  addition,  the  _l_o_g___o_p_e_n  function may fail and return
+       _e_r_r_n_o for the following conditions:
 
        [EAGAIN]
             The shared memory region was locked and  (repeatedly)
@@ -579,29 +575,27 @@ EERRRROORRSS
        The  _l_o_g___f_l_u_s_h  function may fail and return _e_r_r_n_o for any
        of the errors specified for the following DB  and  library
        functions: close(2), fcntl(2), fflush(3), fsync(2),
-       lseek(2), malloc(3), memcpy(3), memset(3), open(2),
-       sigfillset(3), sigprocmask(2), stat(2), strcpy(3),
-       strdup(3), strerror(3), strlen(3), unlink(2), and
-       write(2).
+       lseek(2), malloc(3), memcpy(3), memset(3), open(2), sig-
+       fillset(3), sigprocmask(2), stat(2), strcpy(3), strdup(3),
+       strerror(3), strlen(3), unlink(2), and write(2).
 
-       In  addition,  the  _l_o_g___f_l_u_s_h function may fail and return
+       In addition, the _l_o_g___f_l_u_s_h function may  fail  and  return
        _e_r_r_n_o for the following conditions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-       The _l_o_g___g_e_t function may fail and return _e_r_r_n_o for any  of
-       the  errors  specified  for  the  following DB and library
+       The  _l_o_g___g_e_t function may fail and return _e_r_r_n_o for any of
+       the errors specified for  the  following  DB  and  library
        functions: atoi(3), close(2), fcntl(2), fflush(3),
        lseek(2), malloc(3), memcpy(3), memset(3), open(2),
-       opendir(3), read(2), readdir(3), realloc(3),
-       sigfillset(3), sigprocmask(2), stat(2), strchr(3),
-       strcpy(3), strdup(3), strerror(3), strlen(3), strncmp(3),
-       and unlink(2).
+       opendir(3), read(2), readdir(3), realloc(3), sig-
+       fillset(3), sigprocmask(2), stat(2), strchr(3), strcpy(3),
+       strdup(3), strerror(3), strlen(3), strncmp(3), and
+       unlink(2).
 
-
-       In  addition, the _l_o_g___g_e_t function may fail and return _e_r_-
-       _r_n_o for the following conditions:
+       In addition, the _l_o_g___g_e_t  function  may  fail  and  return
+       _e_r_r_n_o for the following conditions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
@@ -610,59 +604,57 @@ EERRRROORRSS
             found.
 
        The _l_o_g___f_i_l_e function may fail and return _e_r_r_n_o for any of
-       the errors specified for  the  following  DB  and  library
-       functions: close(2), fcntl(2), fflush(3), malloc(3),
-       memcpy(3), memset(3), open(2), sigfillset(3),
-       sigprocmask(2), stat(2), strcpy(3), strdup(3),
-       strerror(3), strlen(3), and unlink(2).
+       the  errors  specified  for  the  following DB and library
+       functions: close(2), fcntl(2), fflush(3), malloc(3), mem-
+       cpy(3), memset(3), open(2), sigfillset(3), sigprocmask(2),
+       stat(2), strcpy(3), strdup(3), strerror(3), strlen(3), and
+       unlink(2).
 
-       In addition, the _l_o_g___f_i_l_e function may fail and return _e_r_-
-       _r_n_o for the following conditions:
+       In  addition,  the  _l_o_g___f_i_l_e  function may fail and return
+       _e_r_r_n_o for the following conditions:
 
        [ENOMEM]
-            The  supplied  buffer  was  too small to hold the log
+            The supplied buffer was too small  to  hold  the  log
             file name.
 
-       The _l_o_g___p_u_t function may fail and return _e_r_r_n_o for any  of
-       the  errors  specified  for  the  following DB and library
+       The  _l_o_g___p_u_t function may fail and return _e_r_r_n_o for any of
+       the errors specified for  the  following  DB  and  library
        functions: close(2), fcntl(2), fflush(3), fsync(2),
-       lseek(2), malloc(3), memcpy(3), memset(3), open(2),
-       sigfillset(3), sigprocmask(2), stat(2), strcpy(3),
-       strdup(3), strerror(3), strlen(3), time(3), unlink(2), and
-       write(2).
+       lseek(2), malloc(3), memcpy(3), memset(3), open(2), sig-
+       fillset(3), sigprocmask(2), stat(2), strcpy(3), strdup(3),
+       strerror(3), strlen(3), time(3), unlink(2), and  write(2).
 
-       In addition, the _l_o_g___p_u_t function may fail and return  _e_r_-
-       _r_n_o for the following conditions:
+       In  addition,  the  _l_o_g___p_u_t  function  may fail and return
+       _e_r_r_n_o for the following conditions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
 
-            The  record  to  be logged is larger than the maximum
+            The record to be logged is larger  than  the  maximum
             log record.
 
-       The _l_o_g___u_n_l_i_n_k function may fail and return _e_r_r_n_o for  any
-       of  the  errors specified for the following DB and library
-       functions: close(2), fcntl(2), fflush(3), malloc(3),
-       memcpy(3), memset(3), mmap(2), munmap(2), open(2),
-       sigfillset(3), sigprocmask(2), stat(2), strcpy(3),
-       strdup(3), strerror(3), strlen(3), and unlink(2).
+       The  _l_o_g___u_n_l_i_n_k function may fail and return _e_r_r_n_o for any
+       of the errors specified for the following DB  and  library
+       functions: close(2), fcntl(2), fflush(3), malloc(3), mem-
+       cpy(3), memset(3), mmap(2), munmap(2), open(2), sig-
+       fillset(3), sigprocmask(2), stat(2), strcpy(3), strdup(3),
+       strerror(3), strlen(3), and unlink(2).
 
-       In  addition,  the _l_o_g___u_n_l_i_n_k function may fail and return
+       In addition, the _l_o_g___u_n_l_i_n_k function may fail  and  return
        _e_r_r_n_o for the following conditions:
 
        [EBUSY]
-            The shared memory region was in  use  and  the  force
+            The  shared  memory  region  was in use and the force
             flag was not set.
 
-
        The _l_o_g___a_r_c_h_i_v_e function may fail and return _e_r_r_n_o for any
-       of the errors specified for the following DB  and  library
-       functions: close(2), fcntl(2), fflush(3), func(3),
-       getcwd(3), log_compare(3), log_get(3), malloc(3),
-       memcpy(3), memset(3), open(2), qsort(3), realloc(3),
-       sigfillset(3), sigprocmask(2), stat(2), strchr(3),
-       strcmp(3), strcpy(3), strdup(3), strerror(3), strlen(3),
-       and unlink(2).
+       of  the  errors specified for the following DB and library
+       functions: close(2), fcntl(2), fflush(3), getcwd(3),
+       log_compare(3), log_get(3), malloc(3), memcpy(3), mem-
+       set(3), open(2), qsort(3), realloc(3), sigfillset(3), sig-
+       procmask(2), stat(2), strchr(3), strcmp(3), strcpy(3),
+       strdup(3), strerror(3), strlen(3), and unlink(2).
+
 
        In addition, the _l_o_g___a_r_c_h_i_v_e function may fail and  return
        _e_r_r_n_o for the following conditions:
@@ -673,12 +665,12 @@ EERRRROORRSS
             The log was corrupted.
 
        The  _l_o_g___r_e_g_i_s_t_e_r  function  may fail and return _e_r_r_n_o for
-       any of the errors specified for the following DB  and  li-
-       brary functions: close(2), fcntl(2), fflush(3), fsync(2),
-       lseek(2), malloc(3), memcmp(3), memcpy(3), memset(3),
-       open(2), realloc(3), sigfillset(3), sigprocmask(2),
-       stat(2), strcpy(3), strdup(3), strerror(3), strlen(3),
-       time(3), unlink(2), and write(2).
+       any of the errors  specified  for  the  following  DB  and
+       library functions: close(2), fcntl(2), fflush(3),
+       fsync(2), lseek(2), malloc(3), memcmp(3), memcpy(3), mem-
+       set(3), open(2), realloc(3), sigfillset(3), sigproc-
+       mask(2), stat(2), strcpy(3), strdup(3), strerror(3),
+       strlen(3), time(3), unlink(2), and write(2).
 
        In addition, the _l_o_g___r_e_g_i_s_t_e_r function may fail and return
        _e_r_r_n_o for the following conditions:
@@ -687,15 +679,15 @@ EERRRROORRSS
             An invalid flag value or parameter was specified.
 
        The _l_o_g___u_n_r_e_g_i_s_t_e_r function may fail and return _e_r_r_n_o  for
-       any  of  the errors specified for the following DB and li-
-       brary functions: close(2), fcntl(2), fflush(3), fsync(2),
-       lseek(2), malloc(3), memcpy(3), memset(3), open(2),
-       sigfillset(3), sigprocmask(2), stat(2), strcpy(3),
-       strdup(3), strerror(3), strlen(3), time(3), unlink(2), and
-       write(2).
+       any  of  the  errors  specified  for  the following DB and
+       library functions: close(2), fcntl(2), fflush(3),
+       fsync(2), lseek(2), malloc(3), memcpy(3), memset(3),
+       open(2), sigfillset(3), sigprocmask(2), stat(2), str-
+       cpy(3), strdup(3), strerror(3), strlen(3), time(3),
+       unlink(2), and write(2).
 
-       In addition, the _l_o_g___u_n_r_e_g_i_s_t_e_r function may fail and  re-
-       turn _e_r_r_n_o for the following conditions:
+       In addition, the  _l_o_g___u_n_r_e_g_i_s_t_e_r  function  may  fail  and
+       return _e_r_r_n_o for the following conditions:
 
        [EINVAL]
             An invalid flag value or parameter was specified.
@@ -712,5 +704,6 @@ BBUUGGSS
 SSEEEE AALLSSOO
        _d_b___a_r_c_h_i_v_e(1), _d_b___c_h_e_c_k_p_o_i_n_t(1), _d_b___d_e_a_d_l_o_c_k(1), _d_b___d_u_m_p(1),
        _d_b___l_o_a_d(1), _d_b___r_e_c_o_v_e_r(1), _d_b___s_t_a_t(1), _d_b___i_n_t_r_o(3),
-       _d_b___a_p_p_i_n_i_t(3), _d_b___c_u_r_s_o_r(3), _d_b___d_b_m(3), _d_b___j_u_m_p(3), _d_b___l_o_c_k(3),
-       _d_b___l_o_g(3), _d_b___m_p_o_o_l(3), _d_b___o_p_e_n(3), _d_b___t_h_r_e_a_d(3), _d_b___t_x_n(3)
+       _d_b___a_p_p_i_n_i_t(3), _d_b___c_u_r_s_o_r(3), _d_b___d_b_m(3), _d_b___i_n_t_e_r_n_a_l(3),
+       _d_b___l_o_c_k(3), _d_b___l_o_g(3), _d_b___m_p_o_o_l(3), _d_b___o_p_e_n(3), _d_b___t_h_r_e_a_d(3),
+       _d_b___t_x_n(3)

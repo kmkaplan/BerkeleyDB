@@ -1,4 +1,4 @@
-# @(#)README	10.10 (Sleepycat) 11/2/97
+# @(#)README	10.13 (Sleepycat) 11/22/97
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 DB Test Suite
@@ -237,8 +237,7 @@ test026:	Small keys/medium data w/duplicates HASH, BTREE
 
 test027:	Call test026 with parameters to force off-page duplicates.
 
-test028:	System integration tests.  Requires proper functioning of
-		the checkpoint daemon, recovery, transactions, etc.
+test028:	Test put operations after deleting through a cursor.
 
 test029:	Get/Put/Delete operation flags (not yet completed).
 
@@ -249,6 +248,9 @@ test030:	Random tester.  Runs a number of random add/delete/retrieve
 test031:	Multi-process random test.  Tests multiple processes running
 		random operations concurrently.  Has the potential for
 		deadlocks.
+
+test032:	System integration tests.  Requires proper functioning of
+		the checkpoint daemon, recovery, transactions, etc.
 
 parmtest:	run access method tests with a combination of parameters.
 
@@ -265,6 +267,8 @@ log001		Specifically checks: open, close, unlink.
 log002		Read/write log records.
 log003		Tests multiple logs, truncation, lsn comparison and file
 		functionality.
+log004		Verify that log_flush is flushing records when we think
+		it should be.
 
 Mpool Tests
 memp001		Randomly updates pages.
@@ -304,6 +308,19 @@ dead001		Use two different configurations to test deadlock detection
 		the processes deadlocked in a ring.  The other has the 
 		processes all deadlocked on a single resource.
 
+dead002		Same test as above, but use "detect on every collision" instead
+		of separate deadlockd detector.
+
+Bug tests
+
+bug001		Cursor maintenance in duplicates.
+bug002		Cursor ops not in duplicates
+bug003		Delete with cursor on a key.
+bug004		Delete cursor key and re-add.
+bug005		Verify that deleting and readding duplicates results in
+		correct ordering.
+bug006		Log prev works across log files.
+bug007		Cursor ops work with a partial length of 0.
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 Planned tests that are not yet written:
 

@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)thread.c	8.20 (Sleepycat) 10/25/97";
+static const char sccsid[] = "@(#)thread.c	8.21 (Sleepycat) 11/28/97";
 #endif /* not lint */
 
 /*
@@ -785,7 +785,7 @@ mutex_test()
 	region_size =
 	    ALIGN(sizeof(RLAYOUT), 32) + npages * sizeof(mu_struct);
 	if ((errno = __db_rcreate(&env, DB_APP_NONE, "TESTDIR", "mutex_file",
-	    0644, region_size, &mutex_fd, &mutex_region)) != 0) {
+	    0644, region_size, 0, &mutex_fd, &mutex_region)) != 0) {
 		fprintf(stderr,
 		    "mutex_test: __db_rcreate failed %s\n", strerror(errno));
 		(void)db_appexit(&env);

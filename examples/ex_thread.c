@@ -3,16 +3,11 @@
  *
  * Copyright (c) 1997
  *	Sleepycat Software.  All rights reserved.
+ *
+ *	@(#)ex_thread.c	10.4 (Sleepycat) 11/25/97
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char copyright[] =
-"@(#) Copyright (c) 1997\n\
-	Sleepycat Software Inc.  All rights reserved.\n";
-static const char sccsid[] = "@(#)ex_thread.c	10.2 (Sleepycat) 11/2/97";
-#endif
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
@@ -514,7 +509,7 @@ deadlock(arg)
 	t.tv_usec = 100000;
 	for (;;) {
 		(void)lock_detect(dbenv->lk_info,
-		    DB_LOCK_DEFAULT, DB_LOCK_CONFLICT);
+		    DB_LOCK_CONFLICT, DB_LOCK_DEFAULT);
 
 		/* Check every 100ms. */
 		(void)select(0, NULL, NULL, NULL, &t);
