@@ -18,9 +18,9 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_Dbc_close
 /*
  * Class:     com_sleepycat_db_Dbc
  * Method:    del
- * Signature: (I)V
+ * Signature: (I)I
  */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_Dbc_del
+JNIEXPORT jint JNICALL Java_com_sleepycat_db_Dbc_del
   (JNIEnv *, jobject, jint);
 
 /*
@@ -42,9 +42,9 @@ JNIEXPORT jint JNICALL Java_com_sleepycat_db_Dbc_get
 /*
  * Class:     com_sleepycat_db_Dbc
  * Method:    put
- * Signature: (Lcom/sleepycat/db/Dbt;Lcom/sleepycat/db/Dbt;I)V
+ * Signature: (Lcom/sleepycat/db/Dbt;Lcom/sleepycat/db/Dbt;I)I
  */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_Dbc_put
+JNIEXPORT jint JNICALL Java_com_sleepycat_db_Dbc_put
   (JNIEnv *, jobject, jobject, jobject, jint);
 
 #ifdef __cplusplus

@@ -3,95 +3,170 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test030.tcl	10.6 (Sleepycat) 4/10/98
+#	@(#)test030.tcl	8.3 (Sleepycat) 9/10/98
 #
-# DB Test 30 Run the random db tester on the specified access method.
-# Options are:
-# -adds <maximum number of keys before you disable adds>
-# -cursors <number of cursors>
-# -dataavg <average data size>
-# -dups <allow duplicates in file>
-# -delete <minimum number of keys before you disable deletes>
-# -errpct <Induce errors errpct of the time>
-# -init <initial number of entries in database>
-# -keyavg <average key size>
-# -seed <Use the specified seed>
+# DB Test 30: Test DB_NEXT_DUP Functionality.
 
-proc test030 { method {nops 10000} args } {
+proc test030 { method {nentries 10000} args } {
 source ./include.tcl
-set usage "\t-adds <maximum number of keys before you disable adds>\
-\t-cursors <number of cursors>\
-\t-dataavg <average data size>\
-\t-dups <allow duplicates in file>\
-\t-delete <minimum number of keys before you disable deletes>\
-\t-errpct <Induce errors errpct of the time>\
-\t-init <initial number of entries in database>\
-\t-keyavg <average key size>\
-\t-seed <Use the specified seed>"
 
+	set omethod $method
 	set method [convert_method $method]
-	if { [string compare $method DB_RECNO] == 0 } {
-		puts "Test$reopen skipping for method RECNO"
+	if { [string compare $method DB_RECNO] == 0 ||
+	    [is_rbtree $omethod] == 1 } {
+		puts "Test030 skipping for method $omethod"
 		return
 	}
-	puts "Test030: Random tester on $method for $nops operations"
-	# Set initial parameters
-	set adds 100000
-	set cursors 5
-	set dataavg 40
-	set delete 10000
-	set dups 0
-	set errpct 0
-	set init 0
-	set keyavg 25
-	set seed -1
+	set args [convert_args $method $args]
 
-	# Process parameters
-	for { set i 0 } { $i < [llength $args] } {incr i} {
-		switch -regexp -- [lindex $args $i] {
-			-a.*  { incr i; set adds [lindex $args $i] }
-			-c.*  { incr i; set cursors [lindex $args $i] }
-			-da.* { incr i; set dataavg [lindex $args $i] }
-			-de.* { incr i; set delete [lindex $args $i] }
-			-du.* { incr i; set dups [lindex $args $i] }
-			-e.*  { incr i; set errpct [lindex $args $i] }
-			-i.*  { incr i; set init [lindex $args $i] }
-			-k.*  { incr i; set keyavg [lindex $args $i] }
-			-s.*  { incr i; set seed [lindex $args $i] }
-			default {
-				puts $usage
-				return
-			}
-		}
-	}
+	puts "Test030: $method ($args) $nentries DB_NEXT_DUP testing"
+	srand 30
 
-	# Create the database and and initialize it.
-	set root $testdir/test030
-	set f $root.db
+	# Create the database and open the dictionary
+	set testfile test030.db
+	set t1 $testdir/t1
+	set t2 $testdir/t2
+	set t3 $testdir/t3
 	cleanup $testdir
+	set args [add_to_args $DB_DUP $args]
+	set db [eval [concat dbopen $testfile \
+	    [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
 
-	# Run the script with 3 times the number of initial elements to
-	# set it up.
-	set db [dbopen $f [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method]
-	error_check_good dbopen:$f [is_valid_db $db] TRUE
+	# Use a second DB to keep track of how many duplicates
+	# we enter per key
 
-	set r [$db close]
-	error_check_good dbclose:$f $r 0
+	set cntdb [dbopen cntfile.db [expr $DB_CREATE | $DB_TRUNCATE] \
+		0644 DB_BTREE]
+	error_check_good dbopen:cntfile [is_valid_db $db] TRUE
 
-	# We redirect standard out, but leave standard error here so we
-	# can see errors.
+	set flags 0
+	set txn 0
+	set count 0
 
-	puts "\tTest030.a: Initializing database"
-	if { $init != 0 } {
-		set n [expr 3 * $init]
-		exec ./dbtest ../test/dbscript.tcl $f $n 1 $init $n $keyavg \
-		    $dataavg $dups 0 -1 > $testdir/test030.init
+	# Here is the loop where we put and get each key/data pair
+	# We will add between 1 and 10 dups with values 1 ... dups
+	# We'll verify each addition.
+
+	set did [open $dict]
+	puts "\tTest030.a: put and get duplicate keys."
+	set dbc [$db cursor $txn]
+
+	while { [gets $did str] != -1 && $count < $nentries } {
+		set ndup [random_int 1 10]
+
+		for { set i 1 } { $i <= $ndup } { incr i 1 } {
+			set ret [$cntdb put $txn $str $ndup $flags]
+			error_check_good put_cnt $ret 0
+			set datastr $i:$str
+			set ret [$db put $txn $str $datastr $flags]
+			error_check_good put $ret 0
+		}
+
+		# Now retrieve all the keys matching this key
+		set x 0
+		for {set ret [$dbc get $str $DB_SET]} \
+		    {[string length $ret] != 0} \
+		    {set ret [$dbc get 0 $DB_NEXT_DUP] } {
+			incr x
+			set k [lindex $ret 0]
+			if { [string compare $k $str] != 0 } {
+				break
+			}
+			set datastr [lindex $ret 1]
+			set d [data_of $datastr]
+
+			if {[string length $d] == 0} {
+				break
+			}
+			error_check_good Test030:put $d $str
+			set id [ id_of $datastr ]
+			error_check_good Test030:dup# $id $x
+		}
+		error_check_good Test030:numdups $x $ndup
+		incr count
+	}
+	close $did
+
+	# Verify on sequential pass of entire file
+	puts "\tTest030.a: sequential check"
+
+	set lastkey ""
+	for {set ret [$dbc get 0 $DB_FIRST]} \
+	    {[string length $ret] != 0} \
+	    {set ret [$dbc get 0 $DB_NEXT] } {
+
+	    	# Outer loop should always get a new key
+
+		set k [lindex $ret 0]
+		error_check_bad outer_get_loop:key $k $lastkey
+
+		set datastr [lindex $ret 1]
+		set d [data_of $datastr]
+		set id [ id_of $datastr ]
+
+		error_check_good outer_get_loop:data $d $k
+		error_check_good outer_get_loop:id $id 1
+
+		set lastkey $k
+		# Figure out how may dups we should have
+		set ndup [$cntdb get $txn $k $flags]
+
+		set howmany 1
+		for { set ret [$dbc get 0 $DB_NEXT_DUP] } \
+		    { [string length $ret] != 0 } \
+		    { set ret [$dbc get 0 $DB_NEXT_DUP] } {
+			incr howmany
+
+			set k [lindex $ret 0]
+			error_check_good inner_get_loop:key $k $lastkey
+
+			set datastr [lindex $ret 1]
+			set d [data_of $datastr]
+			set id [ id_of $datastr ]
+
+			error_check_good inner_get_loop:data $d $k
+			error_check_good inner_get_loop:id $id $howmany
+
+		}
+		error_check_good ndups_found $howmany $ndup
 	}
 
-	puts "\tTest030.b: Now firing off random dbscript, running: "
-	# Now the database is initialized, run a test
-	puts "./dbtest ../test/dbscript.tcl $f $nops $cursors $delete $adds \
-	    $keyavg $dataavg $dups $errpct $seed > $testdir/test030.log"
-	exec ./dbtest ../test/dbscript.tcl $f $nops $cursors $delete $adds \
-	    $keyavg $dataavg $dups $errpct $seed > $testdir/test030.log
+	# Verify on key lookup
+	puts "\tTest030.c: keyed check"
+	set cnt_dbc [$cntdb cursor 0]
+	for {set ret [$cnt_dbc get 0 $DB_FIRST]} \
+	    {[string length $ret] != 0} \
+	    {set ret [$cnt_dbc get 0 $DB_NEXT] } {
+		set k [lindex $ret 0]
+		error_check_bad cnt_seq:key [string length $k] 0
+
+		set howmany [lindex $ret 1]
+		error_check_bad cnt_seq:data [string length $howmany] 0
+
+		set i 0
+
+		for {set ret [$dbc get $k $DB_SET]} \
+		    {[string length $ret] != 0} \
+		    {set ret [$dbc get 0 $DB_NEXT_DUP] } {
+
+			incr i
+
+			set k [lindex $ret 0]
+			error_check_bad keyed_loop:key [string length $k] 0
+
+			set datastr [lindex $ret 1]
+			set d [data_of $datastr]
+			set id [ id_of $datastr ]
+
+			error_check_good inner_get_loop:data $d $k
+			error_check_good inner_get_loop:id $id $i
+		}
+		error_check_good keyed_count $i $howmany
+
+	}
+	error_check_good cnt_curs_close [$cnt_dbc close] 0
+	error_check_good db_curs_close [$dbc close] 0
+	error_check_good cnt_file_close [$cntdb close] 0
+	error_check_good db_file_close [$db close] 0
 }

@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test019.tcl	10.5 (Sleepycat) 4/10/98
+#	@(#)test019.tcl	10.8 (Sleepycat) 12/5/98
 #
 # Test019 { access_method nentries }
 # Test the partial get functionality.
@@ -51,7 +51,7 @@ proc test019 { method {nentries 10000} args } {
 	}
 	close $did
 
-	puts "\tTest019.b partial get loop"
+	puts "\tTest019.b: partial get loop"
 	set did [open $dict]
 	for { set i 0 } {  [gets $did str] != -1 && $i < $nentries } \
 	    { incr i } {
@@ -65,7 +65,7 @@ proc test019 { method {nentries 10000} args } {
 		set beg [random_int 0 [expr $maxndx - 1]]
 		set len [random_int 1 [expr $maxndx - $beg]]
 
-		set ret [$db get $txn $key $DB_DBT_PARTIAL $beg $len]
+		set ret [$db get $txn $key 0 DB_DBT_PARTIAL $beg $len]
 		# In order for tcl to handle this, we have to overwrite the
 		# last character with a NULL.  That makes the length one
 		# less than we expect
@@ -73,4 +73,5 @@ proc test019 { method {nentries 10000} args } {
 		    [string range $realdata $beg [expr $beg + $len - 2]]
 	}
 	error_check_good db_close [$db close] 0
+	close $did
 }

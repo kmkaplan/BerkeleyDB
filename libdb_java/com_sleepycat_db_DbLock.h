@@ -17,27 +17,11 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLock_finalize
 
 /*
  * Class:     com_sleepycat_db_DbLock
- * Method:    get_lock_id
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbLock_get_1lock_1id
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbLock
  * Method:    put
  * Signature: (Lcom/sleepycat/db/DbLockTab;)V
  */
 JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLock_put
   (JNIEnv *, jobject, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbLock
- * Method:    set_lock_id
- * Signature: (I)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLock_set_1lock_1id
-  (JNIEnv *, jobject, jint);
 
 #ifdef __cplusplus
 }

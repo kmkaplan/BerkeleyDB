@@ -7,7 +7,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)java_util.cpp	10.7 (Sleepycat) 5/2/98";
+static const char sccsid[] = "@(#)java_util.cpp	10.13 (Sleepycat) 10/28/98";
 #endif /* not lint */
 
 #include "java_util.h"
@@ -98,7 +98,7 @@ jclass get_class(JNIEnv *jnienv, const char *classname)
 }
 
 /* Set an individual field in a Db* object.
- * The field must be an object type.
+ * The field must be a DB object type.
  */
 void set_object_field(JNIEnv *jnienv, jclass class_of_this,
                       jobject jthis, const char *object_classname,
@@ -115,13 +115,48 @@ void set_object_field(JNIEnv *jnienv, jclass class_of_this,
     jnienv->SetObjectField(jthis, id, obj);
 }
 
+/* Set an individual field in a Db* object.
+ * The field must be an integer type.
+ */
+void set_int_field(JNIEnv *jnienv, jclass class_of_this,
+                   jobject jthis, const char *name_of_field, jint value)
+{
+    jfieldID id  = jnienv->GetFieldID(class_of_this, name_of_field, "I");
+    jnienv->SetIntField(jthis, id, value);
+}
+
+/* Set an individual field in a Db* object.
+ * The field must be an integer type.
+ */
+void set_long_field(JNIEnv *jnienv, jclass class_of_this,
+                   jobject jthis, const char *name_of_field, jlong value)
+{
+    jfieldID id  = jnienv->GetFieldID(class_of_this, name_of_field, "J");
+    jnienv->SetLongField(jthis, id, value);
+}
+
+/* Set an individual field in a Db* object.
+ * The field must be an integer type.
+ */
+void set_lsn_field(JNIEnv *jnienv, jclass class_of_this,
+                   jobject jthis, const char *name_of_field, DB_LSN value)
+{
+    set_object_field(jnienv, class_of_this, jthis, name_DB_LSN,
+                     name_of_field, get_DbLsn(jnienv, value));
+}
 
 /* Report an exception back to the java side.
  */
 void report_exception(JNIEnv *jnienv, const char *text, int err)
 {
     jstring textString = get_java_string(jnienv, text);
-    jclass dbexcept = get_class(jnienv, name_DB_EXCEPTION);
+    jclass dbexcept;
+    if (err == DB_RUNRECOVERY) {
+        dbexcept = get_class(jnienv, name_DB_RUNRECOVERY);
+    }
+    else {
+        dbexcept = get_class(jnienv, name_DB_EXCEPTION);
+    }
     jmethodID constructId = jnienv->GetMethodID(dbexcept, "<init>",
                                              "(Ljava/lang/String;I)V");
     jthrowable obj = (jthrowable)jnienv->AllocObject(dbexcept);
@@ -135,8 +170,25 @@ void report_exception(JNIEnv *jnienv, const char *text, int err)
 int verify_non_null(JNIEnv *jnienv, void *obj)
 {
     if (obj == NULL) {
-        report_exception(jnienv, "null object", 0);
+        report_exception(jnienv, "null object", EINVAL);
         return 0;
+    }
+    return 1;
+}
+
+/* If the DB_ENV* is null or has already been initialized (via appinit),
+ * report an exception and return false (0), otherwise return true (1).
+ * Setting a field in the environment after appinit has been called
+ * will never have any effect, so we raise the error to alert the
+ * user to a potential configuration bug.
+ */
+int verify_dbenv(JNIEnv *jnienv, DB_ENV *env)
+{
+    if (verify_non_null(jnienv, env)) {
+        if ((env->flags & DB_ENV_APPINIT) != 0) {
+            report_exception(jnienv, "DbEnv.appinit already called", EINVAL);
+            return 0;
+        }
     }
     return 1;
 }
@@ -202,6 +254,18 @@ jstring get_java_string(JNIEnv *jnienv, const char* string)
     if (string == 0)
         return 0;
     return jnienv->NewStringUTF(string);
+}
+
+/* Storage allocator
+ */
+void *allocMemory(size_t n)
+{
+    return malloc(n);
+}
+
+void freeMemory(void *p)
+{
+    free(p);
 }
 
 /* Convert a java object to the various C pointers they represent.
@@ -322,7 +386,7 @@ jobject get_DbLogStat(JNIEnv *jnienv, DB_LOG_STAT *dbobj)
 
 // LSNs are different since they are really normally
 // treated as by-value objects.  We actually create
-// a pointer to the LSN as store that, deleting it
+// a pointer to the LSN and store that, deleting it
 // when the LSN is GC'd.
 //
 jobject get_DbLsn(JNIEnv *jnienv, DB_LSN dbobj)
@@ -390,11 +454,11 @@ DBT_info::~DBT_info()
  * Implementation of class LockedDBT
  *
  */
-LockedDBT::LockedDBT(JNIEnv *jnienv, jobject obj, int is_retrieve_op)
+LockedDBT::LockedDBT(JNIEnv *jnienv, jobject obj, OpKind kind)
     : env_(jnienv)
     , obj_(obj)
     , has_error_(0)
-    , is_retrieve_op_(is_retrieve_op)
+    , kind_(kind)
     , java_array_len_(0)
     , java_data_(0)
     /* dbt initialized below */
@@ -405,10 +469,22 @@ LockedDBT::LockedDBT(JNIEnv *jnienv, jobject obj, int is_retrieve_op)
         return;
     }
 
-    if ((dbt->flags & DB_DBT_USERMEM) || !is_retrieve_op_) {
+    if (kind == outOp &&
+        (dbt->flags & (DB_DBT_USERMEM | DB_DBT_MALLOC)) == 0) {
+        report_exception(jnienv,
+                         "Dbt.flags must set DB_DBT_USERMEM or DB_DBT_MALLOC",
+                         0);
+        has_error_ = 1;
+        return;
+    }
 
-        // If writing with DB_DBT_USERMEM or reading, then the data
-        // should point the java array.
+    if ((dbt->flags & DB_DBT_USERMEM) || kind != outOp) {
+
+        // If writing with DB_DBT_USERMEM or it's a set (or get/set)
+        // operation, then the data should point to a java array.
+        // Note that outOp means data is coming out of the database
+        // (it's a get).  inOp means data is going into the database
+        // (either a put, or a key input).
         //
         if (!dbt->array_) {
             report_exception(jnienv, "Dbt.data is null", 0);
@@ -443,6 +519,12 @@ LockedDBT::LockedDBT(JNIEnv *jnienv, jobject obj, int is_retrieve_op)
     }
 }
 
+// The LockedDBT destructor is called when the java handler returns
+// to the user, since that's when the LockedDBT objects go out of scope.
+// Since it is thus called after any call to the underlying database,
+// it copies any information from temporary structures back to user
+// accessible arrays, and of course must free memory and remove references.
+//
 LockedDBT::~LockedDBT()
 {
     // If there was an error in the constructor,
@@ -451,11 +533,11 @@ LockedDBT::~LockedDBT()
     if (has_error_)
         return;
 
-    if ((dbt->flags & DB_DBT_USERMEM) || !is_retrieve_op_) {
+    if ((dbt->flags & DB_DBT_USERMEM) || kind_ == inOp) {
 
-        // If writing with DB_DBT_USERMEM or reading, then the data
-        // may be already in the java array, in which case,
-        // we just need to release it.
+        // If writing with DB_DBT_USERMEM or it's a set (or get/set)
+        // operation, then the data may be already in the java array,
+        // in which case, we just need to release it.
         // If DB didn't put it in the array (indicated by the
         // dbt->data changing), we need to do that
         //
@@ -467,7 +549,7 @@ LockedDBT::~LockedDBT()
         env_->ReleaseByteArrayElements(dbt->array_, java_data_, 0);
         dbt->data = 0;
     }
-    else {
+    if ((dbt->flags & DB_DBT_MALLOC) && kind_ != inOp) {
 
         // If writing with DB_DBT_MALLOC, then the data was allocated
         // by DB.  If dbt->data is zero, it means an error occurred

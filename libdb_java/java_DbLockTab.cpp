@@ -7,7 +7,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)java_DbLockTab.cpp	10.3 (Sleepycat) 4/10/98";
+static const char sccsid[] = "@(#)java_DbLockTab.cpp	10.6 (Sleepycat) 10/24/98";
 #endif /* not lint */
 
 #include <jni.h>
@@ -53,7 +53,7 @@ JNIEXPORT /*DbLock*/ jobject JNICALL Java_com_sleepycat_db_DbLockTab_get
     int err;
     DB_LOCKTAB *dblocktab = get_DB_LOCKTAB(jnienv, jthis);
     DB_LOCK dblock;
-    LockedDBT dbobj(jnienv, obj, 0);
+    LockedDBT dbobj(jnienv, obj, inOp);
     if (dbobj.has_error())
         return 0;
     /*DbLock*/ jobject retval = NULL;
@@ -100,6 +100,63 @@ JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbLockTab_open
             retval = create_default_object(jnienv, name_DB_LOCKTAB);
             set_private_info(jnienv, name_DB_LOCKTAB, retval, dblocktab);
         }
+    }
+    return retval;
+}
+
+JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbLockTab_stat
+  (JNIEnv *jnienv, jobject jthis)
+{
+    int err;
+    DB_LOCKTAB *dblocktab = get_DB_LOCKTAB(jnienv, jthis);
+    DB_LOCK_STAT *statp = NULL;
+    jobject retval = NULL;
+
+    if (!verify_non_null(jnienv, dblocktab))
+        return NULL;
+
+    // We cannot use the default allocator (on Win* platforms anyway)
+    // because it often causes problems when we free storage
+    // in a DLL that was allocated in another DLL.  Using
+    // our own allocator (ours just calls malloc!) ensures
+    // that there is no mismatch.
+    //
+    err = lock_stat(dblocktab, &statp, allocMemory);
+    if (verify_return(jnienv, err)) {
+        retval = create_default_object(jnienv, name_DB_LOCK_STAT);
+        jclass dbclass = get_class(jnienv, name_DB_LOCK_STAT);
+
+        // Set the individual fields
+        set_int_field(jnienv, dbclass, retval,
+                      "st_magic", statp->st_magic);
+	set_int_field(jnienv, dbclass, retval,
+                      "st_version", statp->st_version);
+	set_int_field(jnienv, dbclass, retval,
+                      "st_maxlocks", statp->st_maxlocks);
+	set_int_field(jnienv, dbclass, retval,
+                      "st_nmodes", statp->st_nmodes);
+	set_int_field(jnienv, dbclass, retval,
+                      "st_numobjs", statp->st_numobjs);
+	set_int_field(jnienv, dbclass, retval,
+                      "st_nlockers", statp->st_nlockers);
+	set_int_field(jnienv, dbclass, retval,
+                      "st_nconflicts", statp->st_nconflicts);
+	set_int_field(jnienv, dbclass, retval,
+                      "st_nrequests", statp->st_nrequests);
+	set_int_field(jnienv, dbclass, retval,
+                      "st_nreleases", statp->st_nreleases);
+	set_int_field(jnienv, dbclass, retval,
+                      "st_ndeadlocks", statp->st_ndeadlocks);
+	set_int_field(jnienv, dbclass, retval,
+                      "st_region_wait", statp->st_region_wait);
+	set_int_field(jnienv, dbclass, retval,
+                      "st_region_nowait", statp->st_region_nowait);
+	set_int_field(jnienv, dbclass, retval,
+                      "st_refcnt", statp->st_refcnt);
+	set_int_field(jnienv, dbclass, retval,
+                      "st_regsize", statp->st_regsize);
+
+        freeMemory(statp);
     }
     return retval;
 }

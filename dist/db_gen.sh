@@ -5,7 +5,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)db_gen.sh	10.17 (Sleepycat) 5/2/98
+#	@(#)db_gen.sh	10.21 (Sleepycat) 1/3/99
 #
 
 # This script generates all the log, print, and read routines for the db
@@ -54,7 +54,6 @@ awk  '
 	printf("#include <string.h>\n") >> CFILE
 	printf("#endif\n\n") >> CFILE
 	printf("#include \"db_int.h\"\n") >> CFILE
-	printf("#include \"shqueue.h\"\n") >> CFILE
 	printf("#include \"db_page.h\"\n") >> CFILE
 	printf("#include \"db_dispatch.h\"\n") >> CFILE
 	if (prefix != "db")
@@ -191,7 +190,7 @@ awk  '
 	printf("\trectype = DB_%s;\n", funcname) >> CFILE;
 	printf("\ttxn_num = txnid == NULL ? 0 : txnid->txnid;\n") >> CFILE;
 	printf("\tif (txnid == NULL) {\n") >> CFILE;
-	printf("\t\tnull_lsn.file = 0;\n\t\tnull_lsn.offset = 0;\n") >> CFILE;
+	printf("\t\tZERO_LSN(null_lsn);\n") >> CFILE;
 	printf("\t\tlsnp = &null_lsn;\n") >> CFILE;
 	printf("\t} else\n\t\tlsnp = &txnid->last_lsn;\n") >> CFILE;
 
@@ -200,9 +199,10 @@ awk  '
 	printf("sizeof(txn_num) + sizeof(DB_LSN)") >> CFILE;
 	for (i = 0; i < nvars; i++)
 		printf("\n\t    + %s", sizes[i]) >> CFILE;
-	printf(";\n\tif ((logrec.data = (void *)") >> CFILE;
-	printf("__db_malloc(logrec.size)) == NULL)\n") >> CFILE;
-	printf("\t\treturn (ENOMEM);\n\n") >> CFILE;
+	printf(";\n\tif ((ret = ") >> CFILE;
+	printf("__os_malloc(logrec.size, NULL, &logrec.data)) != 0)\n") \
+	    >> CFILE;
+	printf("\t\treturn (ret);\n\n") >> CFILE;
 
 	# Copy args into buffer
 
@@ -266,7 +266,7 @@ awk  '
 	printf("\t\ttxnid->last_lsn = *ret_lsnp;\n") >> CFILE;
 
 	# Free and return
-	printf("\t__db_free(logrec.data);\n") >> CFILE;
+	printf("\t__os_free(logrec.data, 0);\n") >> CFILE;
 	printf("\treturn (ret);\n}\n\n") >> CFILE;
 
 # Write the print function
@@ -341,7 +341,7 @@ awk  '
 		}
 	}
 	printf("\tprintf(\"\\n\");\n") >> CFILE;
-	printf("\t__db_free(argp);\n") >> CFILE;
+	printf("\t__os_free(argp, 0);\n") >> CFILE;
 	printf("\treturn (0);\n") >> CFILE;
 	printf("}\n\n") >> CFILE;
 
@@ -359,11 +359,12 @@ awk  '
 	# Function body and local decls
 	printf("{\n\t__%s_args *argp;\n", funcname) >> CFILE;
 	printf("\tu_int8_t *bp;\n") >> CFILE;
+	printf("\tint ret;\n") >> CFILE;
 
-	printf("\n\targp = (__%s_args *)__db_malloc(sizeof(", \
+	printf("\n\tret = __os_malloc(sizeof(") >> CFILE;
+	printf("__%s_args) +\n\t    sizeof(DB_TXN), NULL, &argp);\n", \
 	    funcname) >> CFILE;
-	printf("__%s_args) +\n\t    sizeof(DB_TXN));\n", funcname) >> CFILE;
-	printf("\tif (argp == NULL)\n\t\treturn (ENOMEM);\n") >> CFILE;
+	printf("\tif (ret != 0)\n\t\treturn (ret);\n") >> CFILE;
 
 	# Set up the pointers to the txnid and the prev lsn
 	printf("\targp->txnid = (DB_TXN *)&argp[1];\n") >> CFILE;

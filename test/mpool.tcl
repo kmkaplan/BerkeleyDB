@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)mpool.tcl	10.15 (Sleepycat) 6/1/98
+#	@(#)mpool.tcl	10.17 (Sleepycat) 10/22/98
 #
 # Options are:
 # -cachesize <bytes>
@@ -67,6 +67,7 @@ proc mpool { args } {
 		puts "$envopts not supported; test skipped"
 		return
 	}
+	error_check_good "$ri_cmd" [is_valid_widget $mp mp] TRUE
 	error_check_good memp_close [$mp close] 0
 	error_check_good memp_unlink:$testdir [memp_unlink $testdir 1] 0
 
@@ -83,9 +84,9 @@ proc mpool { args } {
 	error_check_good memp_unlink:$testdir [memp_unlink $testdir 1] 0
 	set mp [ eval $cmd]
 	error_check_good memp_open [is_valid_widget $mp mp] TRUE
-	error_check_good memp_close [$mp close] 0
 	memp002 $testdir \
 	    $procs $pagesize $iterations $npages $seeds $dostat $envopts
+	error_check_good memp_close [$mp close] 0
 	error_check_good memp_unlink:$testdir [memp_unlink $testdir 1] 0
 	memp003 $envopts $iterations
 	error_check_good memp_unlink:$testdir [memp_unlink $testdir 1] 0
@@ -203,7 +204,6 @@ proc memp002 { dir procs psizes iterations npages seeds dostat envopts } {
 		return
 	}
 	error_check_good lock_open [is_valid_widget $lp lockmgr] TRUE
-	$lp close
 
 	set pidlist {}
 	for { set i 0 } { $i < $procs } {incr i} {
@@ -227,6 +227,7 @@ proc memp002 { dir procs psizes iterations npages seeds dostat envopts } {
 	for { set i 0 } { $i < $procs } {incr i} {
 		exec $RM $dir/$i.mpoolout
 	}
+	$lp close
 	lock_unlink $dir 1
 }
 

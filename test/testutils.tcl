@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)testutils.tcl	10.12 (Sleepycat) 4/26/98
+#	@(#)testutils.tcl	10.17 (Sleepycat) 1/3/99
 #
 # Test system utilities
 
@@ -250,7 +250,7 @@ global dvals
 	set repl [ replicate [string toupper $s] $n_replace ]
 	set newstr $repl[string range $data $n_replace end]
 
-	set ret [$db $put $txn $key $repl $DB_DBT_PARTIAL 0 $n_replace]
+	set ret [$db $put $txn $key $repl 0 DB_DBT_PARTIAL 0 $n_replace]
 	error_check_good put $ret 0
 
 	set ret [$db get $txn $key 0]
@@ -262,7 +262,7 @@ global dvals
 	set repl [ replicate [string toupper $s] $n_replace ]
 	set newstr [string range $newstr 0 [expr $len - $n_replace - 1 ] ]$repl
 
-	set ret [$db $put $txn $key $repl $DB_DBT_PARTIAL \
+	set ret [$db $put $txn $key $repl 0 DB_DBT_PARTIAL \
 	    [expr $len - $n_replace] $n_replace ]
 	error_check_good put $ret 0
 
@@ -279,7 +279,7 @@ global dvals
 	set repl [ replicate [string toupper $s] $n_replace ]
 	set newstr [string range $newstr 0 [expr $beg - 1 ] ]$repl[string range $newstr [expr $end + 1] end]
 
-	set ret [$db $put $txn $key $repl $DB_DBT_PARTIAL $beg $n_replace]
+	set ret [$db $put $txn $key $repl 0 DB_DBT_PARTIAL $beg $n_replace]
 	error_check_good put $ret 0
 
 	set ret [$db get $txn $key 0]
@@ -474,8 +474,11 @@ global nkeys
 }
 
 proc record { args } {
-	puts $args
-	flush stdout
+# Recording every operation makes tests ridiculously slow on
+# NT, so we are commenting this out; for debugging purposes,
+# it will undoubtedly be useful to uncomment this.
+#	puts $args
+#	flush stdout
 	return [eval $args]
 }
 
@@ -730,12 +733,12 @@ source ./include.tcl
 global recd_debug
 global recd_id
 global recd_op
+global recd_prefix
 	set init_file $dir/t1
 	set afterop_file $dir/t2
 	set final_file $dir/t3
 
 	puts "\t$msg $op"
-
 	# Save the initial file and open the environment and the file
 	catch { exec $CP $dir/$dbfile $dir/$dbfile.init } res
 	set env [eval $env_cmd]
@@ -752,13 +755,20 @@ global recd_op
 	error_check_bad txn_begin $txn NULL
 	error_check_good txn_begin [is_substr $txn $tmgr] 1
 
-	# Now fill in the db and the txnid in the command
-	set i [lsearch $cmd TXNID]
+	# Now fill in the db, tmgr, and the txnid in the command
+	set i [lsearch $cmd TMGR]
 	if { $i != -1 } {
-		set exec_cmd [lreplace $cmd $i $i $txn]
+		set exec_cmd [lreplace $cmd $i $i $tmgr]
 	} else {
 		set exec_cmd $cmd
 	}
+
+	set i [lsearch $cmd TXNID]
+	if { $i != -1 } {
+		set exec_cmd [lreplace $exec_cmd $i $i $txn]
+	} else {
+		set exec_cmd $exec_cmd
+	txn}
 	set i [lsearch $exec_cmd DB]
 	if { $i != -1 } {
 		set exec_cmd [lreplace $exec_cmd $i $i $db]
@@ -820,7 +830,7 @@ global recd_op
 
 	set stat [catch {exec ./db_recover -h $dir -c} result]
 	if { $stat == 1 &&
-	    [is_substr $result "db_recover: Recovering the log"] == 0 } {
+	    [is_substr $result $recd_prefix] == 0 } {
 		error "FAIL: Recovery error: $result."
 	}
 	puts "complete"
@@ -858,7 +868,7 @@ global recd_op
 
 	set stat [catch {exec ./db_recover -h $dir -c} result]
 	if { $stat == 1 &&
-	    [is_substr $result "db_recover: Recovering the log"] == 0 } {
+	    [is_substr $result $recd_prefix] == 0 } {
 		error "FAIL: Recovery error: $result."
 	}
 	puts "complete"
@@ -1108,7 +1118,6 @@ proc is_valid_widget { w expected } {
 	set l [string length $expected]
 	incr l -1
 	if { [string compare [string range $w 0 $l] $expected] != 0 } {
-		puts "case 1"
 		return $w
 	}
 

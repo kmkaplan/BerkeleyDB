@@ -1,4 +1,4 @@
-# @(#)Makefile.in	10.47 (Sleepycat) 4/25/98
+# @(#)Makefile.in	10.62 (Sleepycat) 12/7/98
 
 srcdir=	@srcdir@/..
 CPPFLAGS=-I. -I$(srcdir)/include @CPPFLAGS@
@@ -10,7 +10,7 @@ LDFLAGS=@LDFLAGS@
 LIBS=	@LIBS@
 
 SHELL=	@db_cv_path_sh@
-ar=	@db_cv_path_ar@ cq
+ar=	@db_cv_path_ar@ cr
 chmod=	@db_cv_path_chmod@
 cp=	@db_cv_path_cp@
 mkdir=	@db_cv_path_mkdir@
@@ -18,22 +18,22 @@ ranlib= @db_cv_path_ranlib@
 rm=	@db_cv_path_rm@
 strip=	@db_cv_path_strip@
 
-OBJS=   bt_close.o bt_compare.o bt_conv.o bt_cursor.o bt_delete.o \
+OBJS=   bt_compare.o bt_conv.o bt_curadj.o bt_cursor.o bt_delete.o \
 	bt_open.o bt_page.o bt_put.o bt_rec.o bt_recno.o bt_rsearch.o \
 	bt_search.o bt_split.o bt_stat.o btree_auto.o db.o db_appinit.o \
-	db_apprec.o db_auto.o db_byteorder.o db_conv.o db_dispatch.o \
-	db_dup.o db_err.o db_log2.o db_overflow.o db_pr.o db_rec.o \
-	db_region.o db_ret.o db_salloc.o db_shash.o db_thread.o dbm.o \
-	hash.o hash_auto.o hash_conv.o hash_debug.o hash_dup.o hash_func.o \
-	hash_page.o hash_rec.o hash_stat.o hsearch.o lock.o \
+	db_am.o db_apprec.o db_auto.o db_byteorder.o db_conv.o \
+	db_dispatch.o db_dup.o db_err.o db_iface.o db_join.o db_log2.o \
+	db_overflow.o db_pr.o db_rec.o db_region.o db_ret.o db_salloc.o \
+	db_shash.o dbm.o hash.o hash_auto.o hash_conv.o hash_dup.o \
+	hash_func.o hash_page.o hash_rec.o hash_stat.o hsearch.o lock.o \
 	lock_conflict.o lock_deadlock.o lock_util.o lock_region.o log.o \
 	log_archive.o log_auto.o log_compare.o log_findckp.o log_get.o \
 	log_put.o log_rec.o log_register.o mp_bh.o mp_fget.o mp_fopen.o \
 	mp_fput.o mp_fset.o mp_open.o mp_pr.o mp_region.o mp_sync.o \
 	mutex.o os_abs.o os_alloc.o os_config.o os_dir.o os_fid.o \
 	os_fsync.o os_map.o os_oflags.o os_open.o os_rpath.o os_rw.o \
-	os_seek.o os_sleep.o os_spin.o os_stat.o os_unlink.o txn.o \
-	txn_auto.o txn_rec.o
+	os_seek.o os_sleep.o os_spin.o os_stat.o os_tmpdir.o os_unlink.o \
+	txn.o txn_auto.o txn_rec.o xa.o xa_db.o xa_map.o
 COBJS=	cxx_app.o cxx_except.o cxx_lock.o cxx_log.o cxx_mpool.o cxx_table.o \
 	cxx_txn.o
 
@@ -141,13 +141,11 @@ realclean distclean: clean
 	$(rm) -f confdefs.h db.h db_int.h db_185.h include.tcl
 
 prefix=	@prefix@
-sprefix=@prefix@
-bindir=	@bindir@
-datadir=@datadir@
-exec_prefix=@exec_prefix@
-includedir=@includedir@
-libdir=	@libdir@
-mandir=	@mandir@
+bindir=	$(prefix)/BerkeleyDB/bin
+datadir=$(prefix)/BerkeleyDB/share
+includedir=$(prefix)/BerkeleyDB/include
+libdir=	$(prefix)/BerkeleyDB/lib
+mandir=	$(prefix)/BerkeleyDB/docs
 
 dmode=	755
 emode=	555
@@ -155,84 +153,40 @@ fmode=	444
 
 transform=@program_transform_name@
 
-man1=	db_archive.1 db_checkpoint.1 db_deadlock.1 db_dump.1 db_load.1 \
-	db_recover.1 db_stat.1
-man10=	db_archive.0 db_checkpoint.0 db_deadlock.0 db_dump.0 db_load.0 \
-	db_recover.0 db_stat.0
-man3=	db_appinit.3 db_cursor.3 db_dbm.3 db_dbt.3 db_hsearch.3 db_internal.3 \
-	db_intro.3 db_lock.3 db_log.3 db_mpool.3 db_open.3 db_thread.3 db_txn.3
-manx3=	Db.3 DbEnv.3 DbException.3 DbInfo.3 DbLock.3 DbLockTab.3 DbLog.3 \
-	DbLsn.3 DbMpool.3 DbMpoolFile.3 DbTxn.3 DbTxnMgr.3 Dbc.3 Dbt.3
-man30=	db_appinit.0 db_cursor.0 db_dbm.0 db_dbt.0 db_hsearch.0 db_internal.0 \
-	db_intro.0 db_lock.0 db_log.0 db_mpool.0 db_open.0 db_thread.0 db_txn.0
-manx30=	Db.0 DbEnv.0 DbException.0 DbInfo.0 DbLock.0 DbLockTab.0 DbLog.0 \
-	DbLsn.0 DbMpool.0 DbMpoolFile.0 DbTxn.0 DbTxnMgr.0 Dbc.0 Dbt.0
-
 install: all
 	@test -f $(chmod) || (echo 'chmod not found.'; exit 1)
 	@test -f $(cp) || (echo 'cp not found.'; exit 1)
 	@test -f $(mkdir) || (echo 'mkdir not found.'; exit 1)
 	@test -f $(rm) || (echo 'rm not found.'; exit 1)
-	@test -d $(prefix) || \
-	    ($(mkdir) $(prefix) && $(chmod) $(dmode) $(prefix))
-	@test -d $(exec_prefix) || \
-	    ($(mkdir) $(exec_prefix) && $(chmod) $(dmode) $(exec_prefix))
-	@echo "Installing DB include file: $(includedir) ..."
+	@echo "Installing DB include files: $(includedir) ..."
 	@test -d $(includedir) || \
-	    ($(mkdir) $(includedir) && $(chmod) $(dmode) $(includedir))
+	    ($(mkdir) -p $(includedir) && $(chmod) $(dmode) $(includedir))
 	@cd $(includedir) && $(rm) -f db.h db_185.h db_cxx.h
 	@$(cp) -p db.h db_185.h $(srcdir)/include/db_cxx.h $(includedir)
 	@cd $(includedir) && $(chmod) $(fmode) db.h db_185.h db_cxx.h
 	@echo "Installing DB library: $(libdir) ..."
 	@test -d $(libdir) || \
-	    ($(mkdir) $(libdir) && $(chmod) $(dmode) $(libdir))
+	    ($(mkdir) -p $(libdir) && $(chmod) $(dmode) $(libdir))
 	@cd $(libdir) && $(rm) -f $(libdb)
 	@$(cp) -p $(libdb) $(libdir)
 	@cd $(libdir) && $(chmod) $(fmode) $(libdb)
 	@echo "Installing DB utilities: $(bindir) ..."
 	@test -d $(bindir) || \
-	    ($(mkdir) $(bindir) && $(chmod) $(dmode) $(bindir))
+	    ($(mkdir) -p $(bindir) && $(chmod) $(dmode) $(bindir))
 	@cd $(bindir) && $(rm) -f $(PROGS)
 	@$(cp) -p $(PROGS) $(bindir)
 	@cd $(bindir) && (test ! -f $(strip) || $(strip) $(PROGS))
 	@cd $(bindir) && $(chmod) $(emode) $(PROGS)
+	@echo "Installing documentation: $(mandir) ..."
 	@test -d $(mandir) || \
-	    ($(mkdir) $(mandir) && $(chmod) $(dmode) $(mandir))
-	@echo "Installing formatted man pages: $(mandir)/cat1 ..."
-	@test -d $(mandir)/cat1 || \
-	    ($(mkdir) $(mandir)/cat1 && $(chmod) $(dmode) $(mandir)/cat1)
-	@cd $(mandir)/cat1 && $(rm) -f $(man10)
-	@cd $(srcdir)/man/man.text && $(cp) -p $(man10) $(mandir)/cat1
-	@cd $(mandir)/cat1 && $(chmod) $(fmode) $(man10)
-	@echo "Installing formatted man pages: $(mandir)/cat3 ..."
-	@test -d $(mandir)/cat3 || \
-	    ($(mkdir) $(mandir)/cat3 && $(chmod) $(dmode) $(mandir)/cat3)
-	@cd $(mandir)/cat3 && $(rm) -f $(man30) $(manx30)
-	@cd $(srcdir)/man/man.text && $(cp) -p $(man30) $(mandir)/cat3
-	@cd $(srcdir)/man/mancxx.text && $(cp) -p $(manx30) $(mandir)/cat3
-	@cd $(mandir)/cat3 && $(chmod) $(fmode) $(man30) $(manx30)
-	@echo "Installing unformatted man pages: $(mandir)/man1 ..."
-	@test -d $(mandir)/man1 || \
-	    ($(mkdir) $(mandir)/man1 && $(chmod) $(dmode) $(mandir)/man1)
-	@cd $(mandir)/man1 && $(rm) -f $(man1)
-	@cd $(srcdir)/man/man.roff && $(cp) -p $(man1) $(mandir)/man1
-	@cd $(mandir)/man1 && $(chmod) $(fmode) $(man1)
-	@echo "Installing unformatted man pages: $(mandir)/man3 ..."
-	@test -d $(mandir)/man3 || \
-	    ($(mkdir) $(mandir)/man3 && $(chmod) $(dmode) $(mandir)/man3)
-	@cd $(mandir)/man3 && $(rm) -f $(man3) $(manx3)
-	@cd $(srcdir)/man/man.roff && $(cp) -p $(man3) $(mandir)/man3
-	@cd $(srcdir)/man/mancxx.roff && $(cp) -p $(manx3) $(mandir)/man3
-	@cd $(mandir)/man3 && $(chmod) $(fmode) $(man3) $(manx3)
+	    ($(mkdir) -p $(mandir) && $(chmod) $(dmode) $(mandir))
+	@cd $(srcdir)/docs && $(cp) -pr * $(mandir)/
 
 uninstall:
+	-cd $(bindir) && $(rm) -f $(PROGS)
 	-cd $(includedir) && $(rm) -f db.h db_185.h db_cxx.h
 	-cd $(libdir) && $(rm) -f $(libdb)
-	-cd $(bindir) && $(rm) -f $(PROGS)
-	-cd $(mandir)/man1 && $(rm) -f $(man1)
-	-cd $(mandir)/cat1 && $(rm) -f $(man10)
-	-cd $(mandir)/man3 && $(rm) -f $(man3) $(manx3)
-	-cd $(mandir)/cat3 && $(rm) -f $(man30) $(manx30)
+	-cd $(mandir) && $(rm) -rf docs
 
 # Programs.
 db_archive.o: $(srcdir)/db_archive/db_archive.c
@@ -273,6 +227,8 @@ ex_tpcb.o: $(srcdir)/examples/ex_tpcb.c
 # DB files.
 db.o: $(srcdir)/db/db.c
 	$(CC) $(CFLAGS) $?
+db_am.o: $(srcdir)/db/db_am.c
+	$(CC) $(CFLAGS) $?
 db_auto.o: $(srcdir)/db/db_auto.c
 	$(CC) $(CFLAGS) $?
 db_conv.o: $(srcdir)/db/db_conv.c
@@ -280,6 +236,10 @@ db_conv.o: $(srcdir)/db/db_conv.c
 db_dispatch.o: $(srcdir)/db/db_dispatch.c
 	$(CC) $(CFLAGS) $?
 db_dup.o: $(srcdir)/db/db_dup.c
+	$(CC) $(CFLAGS) $?
+db_iface.o: $(srcdir)/db/db_iface.c
+	$(CC) $(CFLAGS) $?
+db_join.o: $(srcdir)/db/db_join.c
 	$(CC) $(CFLAGS) $?
 db_overflow.o: $(srcdir)/db/db_overflow.c
 	$(CC) $(CFLAGS) $?
@@ -289,15 +249,13 @@ db_rec.o: $(srcdir)/db/db_rec.c
 	$(CC) $(CFLAGS) $?
 db_ret.o: $(srcdir)/db/db_ret.c
 	$(CC) $(CFLAGS) $?
-db_thread.o: $(srcdir)/db/db_thread.c
-	$(CC) $(CFLAGS) $?
 
 # Btree source files.
-bt_close.o: $(srcdir)/btree/bt_close.c
-	$(CC) $(CFLAGS) $?
 bt_compare.o: $(srcdir)/btree/bt_compare.c
 	$(CC) $(CFLAGS) $?
 bt_conv.o: $(srcdir)/btree/bt_conv.c
+	$(CC) $(CFLAGS) $?
+bt_curadj.o: $(srcdir)/btree/bt_curadj.c
 	$(CC) $(CFLAGS) $?
 bt_cursor.o: $(srcdir)/btree/bt_cursor.c
 	$(CC) $(CFLAGS) $?
@@ -348,8 +306,6 @@ hash_auto.o: $(srcdir)/hash/hash_auto.c
 hash.o: $(srcdir)/hash/hash.c
 	$(CC) $(CFLAGS) $?
 hash_conv.o: $(srcdir)/hash/hash_conv.c
-	$(CC) $(CFLAGS) $?
-hash_debug.o: $(srcdir)/hash/hash_debug.c
 	$(CC) $(CFLAGS) $?
 hash_dup.o: $(srcdir)/hash/hash_dup.c
 	$(CC) $(CFLAGS) $?
@@ -419,7 +375,7 @@ mutex.o: $(srcdir)/mutex/mutex.c
 	$(CC) $(CFLAGS) $?
 # XXX
 # UTS4 spinlocks
-uts4.cc.o: $(srcdir)/mutex/uts4.cc.s
+uts4_cc.o: $(srcdir)/mutex/uts4_cc.s
 	$(AS) $(ASFLAGS) -o $@ $?
 
 # Transaction source files.
@@ -428,6 +384,14 @@ txn.o: $(srcdir)/txn/txn.c
 txn_auto.o: $(srcdir)/txn/txn_auto.c
 	$(CC) $(CFLAGS) $?
 txn_rec.o: $(srcdir)/txn/txn_rec.c
+	$(CC) $(CFLAGS) $?
+
+# XA source files.
+xa.o: $(srcdir)/xa/xa.c
+	$(CC) $(CFLAGS) $?
+xa_db.o: $(srcdir)/xa/xa_db.c
+	$(CC) $(CFLAGS) $?
+xa_map.o: $(srcdir)/xa/xa_map.c
 	$(CC) $(CFLAGS) $?
 
 # Historic interfaces.
@@ -487,6 +451,8 @@ os_spin.o: $(srcdir)/os/os_spin.c
 	$(CC) $(CFLAGS) $?
 os_stat.o: $(srcdir)/os/os_stat.c
 	$(CC) $(CFLAGS) $?
+os_tmpdir.o: $(srcdir)/os/os_tmpdir.c
+	$(CC) $(CFLAGS) $?
 os_unlink.o: $(srcdir)/os/os_unlink.c
 	$(CC) $(CFLAGS) $?
 
@@ -526,8 +492,8 @@ getopt.o: $(srcdir)/clib/getopt.c
 	$(CC) $(CFLAGS) $?
 memcmp.o: $(srcdir)/clib/memcmp.c
 	$(CC) $(CFLAGS) $?
-memcpy.o: $(srcdir)/clib/memcpy.c
-	$(CC) -DMEMCOPY $(CFLAGS) $?
+memcpy.o: $(srcdir)/clib/memmove.c
+	$(CC) -DMEMCOPY $(CFLAGS) $? -o $@
 memmove.o: $(srcdir)/clib/memmove.c
 	$(CC) -DMEMMOVE $(CFLAGS) $?
 raise.o: $(srcdir)/clib/raise.c

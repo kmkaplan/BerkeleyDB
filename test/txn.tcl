@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)txn.tcl	10.9 (Sleepycat) 4/22/98
+#	@(#)txn.tcl	10.12 (Sleepycat) 12/11/98
 #
 # Options are:
 # -dir <directory in which to store memp>
@@ -54,6 +54,7 @@ source ./include.tcl
 
 proc txn001 { dir max flags } {
 source ./include.tcl
+global is_windows_test
 puts "Txn001: Open/Close/Create/Unlink test"
 	# Try opening without Create flag should error
 	set tp [ txn "" 0 0 ]
@@ -67,16 +68,22 @@ puts "Txn001: Open/Close/Create/Unlink test"
 	# Make sure that close works.
 	error_check_good txn_close:$tp [$tp close] 0
 
-	# Make sure we can reopen.
-	set tp [ txn "" $flags 0 ]
-	error_check_bad txn:$dir $tp NULL
-	error_check_good txn:$dir [is_substr $tp mgr] 1
+	# Make sure we can reopen -- this doesn't work on Windows
+	# because if there is only one opener, the region disappears
+	# when it is closed.  We can't do a second opener, because
+	# that will fail on HPUX.
 
-	# Try unlinking while we're still attached, should fail.
-	error_check_good txn_unlink:$dir [txn_unlink $testdir 0] -1
+	if { $is_windows_test != 1 } {
+		set tp [ txn "" $flags 0 ]
+		error_check_bad txn:$dir $tp NULL
+		error_check_good txn:$dir [is_substr $tp mgr] 1
 
-	# Now close it and unlink it
-	error_check_good txn_close:$tp [$tp close] 0
+		# Try unlinking while we're still attached, should fail.
+		error_check_good txn_unlink:$dir [txn_unlink $testdir 0] -1
+
+		# Now close it and unlink it
+		error_check_good txn_close:$tp [$tp close] 0
+	}
 	error_check_good txn_unlink:$dir [txn_unlink $testdir 0] 0
 }
 
@@ -152,11 +159,8 @@ source ./include.tcl
 	}
 
 	# Close and unlink the file
-	if { $e == "NULL" } {
-		error_check_good txn_close:$tp [$tp close] 0
-	} else {
-		rename $e ""
-	}
+	error_check_good txn_close:$tp [$tp close] 0
+	reset_env $e
 	error_check_good txn_unlink:$dir [txn_unlink $testdir 0] 0
 }
 

@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)tcl_ndbm.c	10.12 (Sleepycat) 4/27/98";
+static const char sccsid[] = "@(#)tcl_ndbm.c	10.16 (Sleepycat) 12/14/98";
 #endif /* not lint */
 
 /*
@@ -94,7 +94,7 @@ usage:		Tcl_ResetResult(interp);
 
 	/* Create widget command. */
 	/* Create new command name. */
-	sprintf(&dbname[0], "ndbm%d", db_number);
+	snprintf(dbname, sizeof(dbname), "ndbm%d", db_number);
 	db_number++;
 
 	Tcl_CreateCommand(interp, dbname, ndbmwidget_cmd,
@@ -134,7 +134,8 @@ ndbmwidget_cmd(cd_dbm, interp, argc, argv)
 	DBM *dbm;
 	datum data, key;
 	int flags, ret;
-	char *cmd, fdval[16];
+	const char *cmd;
+	char fdval[16];
 
 	COMPQUIET(cmd, NULL);
 
@@ -165,7 +166,7 @@ ndbmwidget_cmd(cd_dbm, interp, argc, argv)
 	} else if (strcmp(argv[1], "dirfno") == 0) {
 		USAGE(argc, 2, NDBMDIRFNO_USAGE, 0);
 		ret = dbm_dirfno(dbm);
-		sprintf(fdval, "%d", ret);
+		snprintf(fdval, sizeof(fdval), "%d", ret);
 		Tcl_SetResult(interp, fdval, TCL_VOLATILE);
 		return (TCL_OK);
 	} else if (strcmp(argv[1], "error") == 0) {
@@ -206,7 +207,7 @@ ndbmwidget_cmd(cd_dbm, interp, argc, argv)
 	} else if (strcmp(argv[1], "pagfno") == 0) {
 		USAGE(argc, 2, NDBMPAGFNO_USAGE, 0);
 		ret = dbm_pagfno(dbm);
-		sprintf(fdval, "%d", ret);
+		snprintf(fdval, sizeof(fdval), "%d", ret);
 		Tcl_SetResult(interp, fdval, TCL_VOLATILE);
 		return (TCL_OK);
 	} else if (strcmp(argv[1], "rdonly") == 0) {
@@ -237,7 +238,7 @@ ndbmwidget_cmd(cd_dbm, interp, argc, argv)
 	else if (ret > 0)
 		Tcl_SetResult(interp, "Not found", TCL_STATIC);
 	else {
-		Tcl_SetResult(interp, cmd, TCL_STATIC);
+		Tcl_SetResult(interp, (char *)cmd, TCL_STATIC);
 		Tcl_AppendResult(interp, Tcl_PosixError(interp), 0);
 	}
 	return (TCL_OK);

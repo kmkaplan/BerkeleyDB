@@ -3,221 +3,177 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test032.tcl	10.8 (Sleepycat) 4/26/98
+#	@(#)test032.tcl	8.3 (Sleepycat) 10/29/98
 #
 # DB Test 32 {access method}
-# System integration DB test: verify that locking, recovery, checkpoint,
-# and all the other utilities basically work.
-#
-# The test consists of $nprocs processes operating on $nfiles files.  A
-# transaction consists of adding the same key/data pair to some random
-# number of these files.  We generate a bimodal distribution in key
-# size with 70% of the keys being small (1-10 characters) and the
-# remaining 30% of the keys being large (uniform distribution about
-# mean $key_avg).  If we generate a key, we first check to make sure
-# that the key is not already in the dataset.  If it is, we do a lookup.
-#
-# XXX This test uses grow-only files currently!
-
-proc test032 { method {nprocs 5} {nfiles 10} {cont 0} args } {
-source ./include.tcl
-
+# Use the first 10,000 entries from the dictionary.
+# Insert each with self as key and "ndups" duplicates
+# For the data field, prepend the letters of the alphabet
+# in a random order so that we force the duplicate sorting
+# code to do something.
+# By setting ndups large, we can make this an off-page test
+# After all are entered; test the DB_GET_BOTH functionality
+# first by retrieving each dup in the file explicitly.  Then
+# test the failure case.
+proc test032 { method {nentries 10000} {ndups 5} {tnum 32} args } {
+global alphabet
+srand 1234
 	set omethod $method
-	if { $method != "all" } {
-		set method [convert_method $method]
-	}
+	set method [convert_method $method]
 	set args [convert_args $method $args]
-	if { [is_rbtree $omethod] == 1 } {
-		puts "Test032 skipping for method $omethod"
+
+	# Get global declarations since tcl doesn't support
+	# any useful equivalent to #defines!
+	source ./include.tcl
+
+	# Create the database and open the dictionary
+	set testfile test0$tnum.db
+	set t1 $testdir/t1
+	set t2 $testdir/t2
+	set t3 $testdir/t3
+	cleanup $testdir
+	set args [add_to_args [expr $DB_DUP | $DB_DUPSORT] $args]
+	puts "Test0$tnum: $method ($args) $nentries small sorted dup key/data pairs"
+	if { [string compare $method DB_RECNO] == 0 || \
+	    [is_rbtree $omethod] == 1 } {
+		puts "Test0$tnum skipping for method $omethod"
 		return
 	}
+	set db [eval [concat dbopen $testfile \
+	    [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	error_check_good dbopen [is_valid_db $db] TRUE
+	set did [open $dict]
 
-	puts "Test032: system integration test db $method $nprocs processes \
-	    on $nfiles files"
+	set check_db [dbopen checkdb.db [expr $DB_CREATE | $DB_TRUNCATE] \
+	    0644 DB_HASH]
+	error_check_good dbopen:check_db [is_valid_db $check_db] TRUE
 
-	# Parse options
-	set otherargs ""
-	set seeds {}
-	set key_avg 10
-	set data_avg 20
-	set do_exit 0
-	for { set i 0 } { $i < [llength $args] } {incr i} {
-		switch -regexp -- [lindex $args $i] {
-			-key_avg { incr i; set key_avg [lindex $args $i] }
-			-data_avg { incr i; set data_avg [lindex $args $i] }
-			-s.* { incr i; set seeds [lindex $args $i] }
-			-testdir { incr i; set testdir [lindex $args $i] }
-			-x.* { set do_exit 1 }
-			default {
-				lappend otherargs [lindex $args $i]
+	set flags 0
+	set txn 0
+	set count 0
+
+	# Here is the loop where we put and get each key/data pair
+	puts "\tTest0$tnum.a: Put/get loop"
+	set dbc [$db cursor $txn]
+	error_check_good cursor_open [is_valid_widget $dbc $db.cursor] TRUE
+	while { [gets $did str] != -1 && $count < $nentries } {
+		set dups ""
+		for { set i 1 } { $i <= $ndups } { incr i } {
+			set pref [string index $alphabet [random_int 0 25]]
+			set dups $dups$pref
+			set datastr $pref:$str
+			set ret [$db put $txn $str $datastr $flags]
+			error_check_good put $ret 0
+		}
+		set ret [$check_db put $txn $str $dups $flags]
+		error_check_good checkdb_put $ret 0
+
+		# Now retrieve all the keys matching this key
+		set x 0
+		set lastdup ""
+		for {set ret [$dbc get $str $DB_SET]} \
+		    {[string length $ret] != 0} \
+		    {set ret [$dbc get 0 $DB_NEXT_DUP] } {
+			set k [lindex $ret 0]
+			if { [string compare $k $str] != 0 } {
+				break
 			}
-		}
-	}
-
-	if { $cont == 0 } {
-
-		if { [file exists $testdir] != 1 } {
-			exec $MKDIR $testdir
-		} elseif { [file isdirectory $testdir ] != 1 } {
-			error "FAIL: $testdir is not a directory"
-		}
-
-		# Create the database and open the dictionary
-		cleanup $testdir
-
-		# Create an environment
-		puts "\tTest032.a: creating environment and $nfiles files"
-		set flags [expr $DB_INIT_MPOOL | $DB_INIT_LOCK \
-		    | $DB_INIT_LOG | $DB_INIT_TXN]
-		set dbenv  \
-		    [eval dbenv -dbflags $flags -dbhome $testdir $otherargs]
-
-		# Create a bunch of files
-		set m $method
-		for { set i 0 } { $i < $nfiles } { incr i } {
-			if { $method == "all" } {
-				switch [random_int 1 2] {
-				1 { set m DB_BTREE }
-				2 { set m DB_HASH }
-				}
+			set datastr [lindex $ret 1]
+			if {[string length $datastr] == 0} {
+				break
 			}
-			set otherargs [add_to_args $DB_DUP $otherargs]
-			set db [eval [concat dbopen \
-			    test032.$i.db $DB_CREATE 0644 $m \
-			    -dbenv $dbenv $otherargs]]
-			error_check_good dbopen [is_valid_db $db] TRUE
-			error_check_good db_close [$db close] 0
-		}
-	}
-	# Close the environment
-	rename $dbenv {}
-
-	if { $do_exit == 1 } {
-		return
-	}
-
-	# Database is created, now fork off the kids.
-	puts "\tTest032.b: forking off $nprocs processes and utilities"
-	set cycle 1
-	while { 1 } {
-		# Fire off deadlock detector and checkpointer
-		puts "Beginning cycle $cycle"
-		set ddpid [exec ./db_deadlock -h $testdir -t 5 &]
-		set cppid [exec ./db_checkpoint -h $testdir -p 2 &]
-		puts "Deadlock detector: $ddpid Checkpoint daemon $cppid"
-
-		set pidlist {}
-		for { set i 0 } {$i < $nprocs} {incr i} {
-			set s -1
-			if { [llength $seeds] == $nprocs } {
-				set s [lindex $seeds $i]
+			if {[string compare $lastdup $datastr] > 0} {
+				error_check_good sorted_dups($lastdup,$datastr)\
+				    0 1
 			}
-			set p [exec ./dbtest ../test/sysscript.tcl $testdir \
-			    $nfiles $key_avg $data_avg $s > \
-			    $testdir/test032.$i.log & ]
-			lappend pidlist $p
+			incr x
+			set lastdup $datastr
 		}
-		puts "[timestamp] $nprocs processes running $pidlist"
-		exec $SLEEP [random_int 300 600]
-
-		# Now simulate a crash
-		puts "[timestamp] Crashing"
-		exec $KILL -9 $ddpid
-		exec $KILL -9 $cppid
-		foreach p $pidlist {
-			exec $KILL -9 $p
-		}
-
-		# Now run recovery
-		test032_verify $testdir $nfiles
-		incr cycle
+		error_check_good "Test0$tnum:ndups:$str" $x $ndups
+		incr count
 	}
-}
+	error_check_good cursor_close [$dbc close] 0
+	close $did
 
-proc test032_usage { } {
-	puts -nonewline "test032 method nentries [-d directory] [-i iterations]"
-	puts " [-p procs] [-s {seeds} ] -x"
-}
+	# Now we will get each key from the DB and compare the results
+	# to the original.
+	puts "\tTest0$tnum.b: Checking file for correct duplicates (no cursor)"
+	set check_c [$check_db cursor $txn]
+	error_check_good check_c_open(2) \
+	    [is_valid_widget $check_c $check_db.cursor] TRUE
 
-proc test032_verify { dir nfiles } {
-source ./include.tcl
-	# Save everything away in case something breaks
-#	for { set f 0 } { $f < $nfiles } {incr f} {
-#		exec $CP $dir/test032.$f.db $dir/test032.$f.save1
-#	}
-#	foreach f [glob $dir/log.*] {
-#		if { [is_substr $f save] == 0 } {
-#			exec $CP $f $f.save1
-#		}
-#	}
+	for {set ndx 0} {$ndx < $ndups} {incr ndx} {
+		for {set ret [$check_c get $str $DB_FIRST]} \
+		    {[string length $ret] != 0} \
+		    {set ret [$check_c get 0 $DB_NEXT] } {
+			set k [lindex $ret 0]
+			set d [lindex $ret 1]
+			error_check_bad key_check:$k [string length $k] 0
+			error_check_bad data_check:$d [string length $d] 0
 
-	# Run recovery and then read through all the database files to make
-	# sure that they all look good.
-
-	puts "\tTest032.verify: Running recovery and verifying file contents"
-	set stat [catch {exec ./db_recover -v -h $dir} result]
-	if { $stat == 1 && [is_substr $result \
-	    "db_recover: Recovering the log"] == 0 } {
-		error "FAIL: Recovery error: $result."
-	}
-
-	# Save everything away in case something breaks
-#	for { set f 0 } { $f < $nfiles } {incr f} {
-#		exec $CP $dir/test032.$f.db $dir/test032.$f.save2
-#	}
-#	foreach f [glob $dir/log.*] {
-#		if { [is_substr $f save] == 0 } {
-#			exec $CP $f $f.save2
-#		}
-#	}
-
-	for { set f 0 } { $f < $nfiles } { incr f } {
-		set db($f) \
-		    [eval dbopen test032.$f.db 0 0 DB_UNKNOWN  -dbhome $dir]
-		error_check_good $f:dbopen [is_valid_db $db($f)] TRUE
-
-		set cursors($f) [$db($f) cursor 0]
-		error_check_bad $f:cursor_open $cursors($f) NULL
-		error_check_good $f:cursor_open [is_substr $cursors($f) $db($f)] 1
-	}
-
-	for { set f 0 } { $f < $nfiles } { incr f } {
-		for {set d [$cursors($f) get 0 $DB_FIRST] } \
-		    { [string length $d] != 0 } \
-		    { set d [$cursors($f) get 0 $DB_NEXT] } {
-
-			set k [lindex $d 0]
-			set d [lindex $d 1]
-
-			set flist [zero_list $nfiles]
-			set r $d
-			while { [set ndx [string first : $r]] != -1 } {
-				set fnum [string range $r 0 [expr $ndx - 1]]
-				if { [lindex $flist $fnum] == 0 } {
-					set fl $DB_SET
-				} else {
-					set fl $DB_NEXT
-				}
-
-				if { $fl != $DB_SET || $fnum != $f } {
-					set full [$cursors($fnum) get $k $fl]
-					set key [lindex $full 0]
-					set rec [lindex $full 1]
-					error_check_good $f:dbget_$fnum:key \
-					    $key $k
-					error_check_good $f:dbget_$fnum:data \
-					    $rec $d
-				}
-
-				set flist [lreplace $flist $fnum $fnum 1]
-				incr ndx
-				set r [string range $r $ndx end]
-			}
+			set pref [string range $d $ndx $ndx]
+			set data $pref:$k
+			set ret [$db bget $txn $k $data $DB_GET_BOTH]
+			error_check_good get_both_data:$k $ret $data
 		}
 	}
 
-	for { set f 0 } { $f < $nfiles } { incr f } {
-		error_check_good $cursors($f) [$cursors($f) close] 0
-		error_check_good db_close:$f [$db($f) close] 0
+	# Now repeat the above test using cursor ops
+	puts "\tTest0$tnum.c: Checking file for correct duplicates (cursor)"
+	set dbc [$db cursor $txn]
+	error_check_good cursor_open [is_valid_widget $dbc $db.cursor] TRUE
+
+	for {set ndx 0} {$ndx < $ndups} {incr ndx} {
+		for {set ret [$check_c get $str $DB_FIRST]} \
+		    {[string length $ret] != 0} \
+		    {set ret [$check_c get 0 $DB_NEXT] } {
+			set k [lindex $ret 0]
+			set d [lindex $ret 1]
+			error_check_bad key_check:$k [string length $k] 0
+			error_check_bad data_check:$d [string length $d] 0
+
+			set pref [string range $d $ndx $ndx]
+			set data $pref:$k
+			set ret [$dbc bget $k $data $DB_GET_BOTH]
+			error_check_good get_both_key:$k [lindex $ret 0] $k
+			error_check_good get_both_data:$k [lindex $ret 1] $data
+		}
 	}
+
+	# Now check the error case
+	puts "\tTest0$tnum.d: Check error case (no cursor)"
+	for {set ret [$check_c get $str $DB_FIRST]} \
+	    {[string length $ret] != 0} \
+	    {set ret [$check_c get 0 $DB_NEXT] } {
+		set k [lindex $ret 0]
+		set d [lindex $ret 1]
+		error_check_bad key_check:$k [string length $k] 0
+		error_check_bad data_check:$d [string length $d] 0
+
+		set data XXX$k
+		set ret [$db bget $txn $k $data $DB_GET_BOTH]
+		set expected "Key $k not found."
+		error_check_good error_case:$k $ret $expected
+	}
+
+	# Now check the error case
+	puts "\tTest0$tnum.e: Check error case (cursor)"
+	for {set ret [$check_c get $str $DB_FIRST]} \
+	    {[string length $ret] != 0} \
+	    {set ret [$check_c get 0 $DB_NEXT] } {
+		set k [lindex $ret 0]
+		set d [lindex $ret 1]
+		error_check_bad key_check:$k [string length $k] 0
+		error_check_bad data_check:$d [string length $d] 0
+
+		set data XXX$k
+		set ret [$dbc bget $k $data $DB_GET_BOTH]
+		error_check_good error_case:$k [string length $ret] 0
+	}
+
+	error_check_good check_c:close [$check_c close] 0
+	error_check_good check_db:close [$check_db close] 0
+
+	error_check_good dbc_close [$dbc close] 0
+	error_check_good db_close [$db close] 0
 }

@@ -4,7 +4,7 @@
  * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)LockExample.cpp	10.5 (Sleepycat) 4/10/98
+ *	@(#)LockExample.cpp	10.6 (Sleepycat) 10/18/98
  */
 
 #include "config.h"
@@ -92,8 +92,10 @@ void LockExample::run()
     long held;
     u_int32_t len, locker;
     int did_get, ret;
+    DbLock *locks = 0;
+    int lockcount = 0;
     char objbuf[1024];
-    unsigned int lockid = 0;
+    int lockid = 0;
 
     DbLockTab *lockTable = get_lk_info();
     if (!lockTable) {
@@ -146,8 +148,20 @@ void LockExample::run()
             DbLock lock;
             ret = lockTable->get(locker,
                                 DB_LOCK_NOWAIT, &dbt, lock_type, &lock);
-            lockid = lock.get_lock_id();
             did_get = 1;
+            lockid = lockcount++;
+            if (locks == 0) {
+                locks = new DbLock[1];
+            }
+            else {
+                DbLock *newlocks = new DbLock[lockcount];
+                for (int lockno = 0; lockno < lockid; lockno++) {
+                    newlocks[lockno] = locks[lockno];
+                }
+                delete locks;
+                locks = newlocks;
+            }
+            locks[lockid] = lock;
         } else {
             // Release a lock.
             do {
@@ -156,16 +170,20 @@ void LockExample::run()
                 cin.getline(objbuf, sizeof(objbuf));
                 if (cin.eof())
                     break;
-            } while ((len = strlen(objbuf)) <= 1);
-            lockid = strtoul(objbuf, NULL, 16);
-            DbLock lock(lockid);
+            } while ((len = strlen(objbuf)) <= 0);
+            lockid = strtol(objbuf, NULL, 16);
+            if (lockid < 0 || lockid >= lockcount) {
+                cout << "Lock #" << lockid << " out of range\n";
+                continue;
+            }
+            DbLock lock = locks[lockid];
             ret = lock.put(lockTable);
             did_get = 0;
         }
 
         switch (ret) {
         case 0:
-            cout << "Lock 0x" << hex << lockid << " "
+            cout << "Lock #" << lockid << " "
                  <<  (did_get ? "granted" : "released")
                  << "\n";
             held += did_get ? 1 : -1;
@@ -188,6 +206,8 @@ void LockExample::run()
     }
     cout << "\n";
     cout << "Closing lock region " << held << " locks held\n";
+    if (locks != 0)
+        delete locks;
 }
 
 static void

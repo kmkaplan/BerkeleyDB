@@ -3,12 +3,13 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)recd005.tcl	8.5 (Sleepycat) 5/3/98
+#	@(#)recd005.tcl	8.6 (Sleepycat) 7/4/98
 #
 # Recovery Test 5.
 # Make sure that we can do catastrophic recovery even if we open
 # files using the same log file id.
 proc recd005 { method {select 0} } {
+global recd_prefix
 	set method [convert_method $method]
 	puts "Recd005: $method catastropic recovery"
 
@@ -69,13 +70,14 @@ proc recd005 { method {select 0} } {
 			reset_env $env
 
 			debug_check
-			puts -nonewline "\tRecd005.$tnum.d: About to run recovery ... "
+			puts -nonewline \
+			    "\tRecd005.$tnum.d: About to run recovery ... "
 			flush stdout
 
 			set stat \
 			    [catch {exec ./db_recover -h $testdir -c} result]
-			if { $stat == 1 && [is_substr $result \
-			    "db_recover: Recovering the log"] == 0 } {
+			if { $stat == 1 &&
+			    [is_substr $result $recd_prefix] == 0 } {
 				error "Recovery error: $result."
 			}
 			puts "complete"
@@ -105,8 +107,7 @@ proc recd005 { method {select 0} } {
 			set stat \
 			    [catch {exec ./db_recover -h $testdir -c} result]
 			if { $stat == 1 &&
-			    [is_substr $result \
-				"db_recover: Recovering the log"] == 0 } {
+			    [is_substr $result $recd_prefix] == 0 } {
 				error "Recovery error: $result."
 			}
 			puts "complete"

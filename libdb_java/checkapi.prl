@@ -49,6 +49,7 @@ nextline:
             if (/^JAVADB_.*_ACCESS/) {
                 s@  *@ @g;
                 s@_ACCESS_STRING\(([^,]*),@_ACCESS(\1,jstring,@;
+                s@_ACCESS_BEFORE_APPINIT@_ACCESS@;
                 s@_ACCESS\(@,normal,@;
                 s@JAVADB_@@;
                 s@\)@,@;

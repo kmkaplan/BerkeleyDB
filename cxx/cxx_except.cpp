@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)cxx_except.cpp	10.6 (Sleepycat) 4/10/98";
+static const char sccsid[] = "@(#)cxx_except.cpp	10.7 (Sleepycat) 10/17/98";
 #endif /* not lint */
 
 #include "db_cxx.h"
@@ -110,8 +110,13 @@ DbException::DbException(const DbException &that)
 
 DbException &DbException::operator = (const DbException &that)
 {
-    err_ = that.err_;
-    what_ = dupString(that.what_);
+    if (this != &that) {
+        err_ = that.err_;
+        if (what_)
+            delete [] what_;
+        what_ = 0;           // in case new throws exception
+        what_ = dupString(that.what_);
+    }
     return *this;
 }
 

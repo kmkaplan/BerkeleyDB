@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)cxx_lock.cpp	10.7 (Sleepycat) 4/10/98";
+static const char sccsid[] = "@(#)cxx_lock.cpp	10.10 (Sleepycat) 10/28/98";
 #endif /* not lint */
 
 #include "db_cxx.h"
@@ -101,6 +101,17 @@ int DbLockTab::id(u_int32_t *idp)
     return err;
 }
 
+int DbLockTab::stat(DB_LOCK_STAT **statp, void *(*db_malloc)(size_t))
+{
+    int err;
+    DB_LOCKTAB *locktab = unwrap(this);
+    if ((err = lock_stat(locktab, statp, db_malloc)) != 0) {
+        DB_ERROR("DbLockTab::stat", err);
+        return err;
+    }
+    return 0;
+}
+
 int DbLockTab::vec(u_int32_t locker, u_int32_t flags,
                    DB_LOCKREQ list[],
                    int nlist, DB_LOCKREQ **elist_returned)
@@ -154,7 +165,7 @@ int DbLockTab::unlink(const char *dir, int force, DbEnv *dbenv)
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
-DbLock::DbLock(unsigned int value)
+DbLock::DbLock(DB_LOCK value)
 :   lock_(value)
 {
 }
@@ -173,16 +184,6 @@ DbLock &DbLock::operator = (const DbLock &that)
 {
     lock_ = that.lock_;
     return *this;
-}
-
-unsigned int DbLock::get_lock_id()
-{
-    return lock_;
-}
-
-void DbLock::set_lock_id(unsigned int value)
-{
-    lock_ = value;
 }
 
 int DbLock::put(DbLockTab *locktab)

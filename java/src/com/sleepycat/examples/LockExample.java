@@ -4,7 +4,7 @@
  * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)LockExample.java	10.3 (Sleepycat) 4/10/98
+ *	@(#)LockExample.java	10.4 (Sleepycat) 10/18/98
  */
 
 package com.sleepycat.examples;
@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Vector;
 
 //
 // An example of a program using DbLock and related classes.
@@ -80,6 +81,7 @@ class LockExample extends DbEnv
         boolean did_get = false;
         int lockid = 0;
         InputStreamReader in = new InputStreamReader(System.in);
+        Vector locks = new Vector();
 
         DbLockTab lockTable = get_lk_info();
         if (lockTable == null) {
@@ -125,10 +127,11 @@ class LockExample extends DbEnv
                     Dbt dbt = new Dbt(objbuf.getBytes());
 
                     DbLock lock;
+                    did_get = true;
                     lock = lockTable.get(locker, Db.DB_LOCK_NOWAIT,
                                          dbt, lock_type);
-                    lockid = lock.get_lock_id();
-                    did_get = true;
+                    lockid = locks.size();
+                    locks.addElement(lock);
                 } else {
                     // Release a lock.
                     String objbuf;
@@ -138,13 +141,15 @@ class LockExample extends DbEnv
                         break;
 
                     lockid = Integer.parseInt(objbuf, 16);
-                    DbLock lock = new DbLock(lockid);
-                    lock.put(lockTable);
+                    if (lockid < 0 || lockid >= locks.size()) {
+                        System.out.println("Lock #" + lockid + " out of range");
+                        continue;
+                    }
                     did_get = false;
+                    DbLock lock = (DbLock)locks.elementAt(lockid);
+                    lock.put(lockTable);
                 }
-                // No errors.
-                System.out.println("Lock 0x" +
-                                   Long.toHexString(lockid) + " " +
+                System.out.println("Lock #" + lockid + " " +
                                    (did_get ? "granted" : "released"));
                 held += did_get ? 1 : -1;
             }

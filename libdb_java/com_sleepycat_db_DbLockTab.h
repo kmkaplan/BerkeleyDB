@@ -57,6 +57,14 @@ JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbLockTab_open
 
 /*
  * Class:     com_sleepycat_db_DbLockTab
+ * Method:    stat
+ * Signature: ()Lcom/sleepycat/db/DbLockStat;
+ */
+JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbLockTab_stat
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sleepycat_db_DbLockTab
  * Method:    unlink
  * Signature: (Ljava/lang/String;ILcom/sleepycat/db/DbEnv;)V
  */

@@ -7,7 +7,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)java_DbLog.cpp	10.5 (Sleepycat) 5/2/98";
+static const char sccsid[] = "@(#)java_DbLog.cpp	10.7 (Sleepycat) 10/24/98";
 #endif /* not lint */
 
 #include <jni.h>
@@ -102,7 +102,7 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLog_get
     int err;
     DB_LOG *dblog = get_DB_LOG(jnienv, jthis);
     DB_LSN *dblsn = get_DB_LSN(jnienv, lsn);
-    LockedDBT dbdata(jnienv, data, 1);
+    LockedDBT dbdata(jnienv, data, outOp);
     if (dbdata.has_error())
         return;
 
@@ -117,7 +117,7 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLog_put
     int err;
     DB_LOG *dblog = get_DB_LOG(jnienv, jthis);
     DB_LSN *dblsn = get_DB_LSN(jnienv, lsn);
-    LockedDBT dbdata(jnienv, data, 0);
+    LockedDBT dbdata(jnienv, data, inOp);
     if (dbdata.has_error())
         return;
 
@@ -155,14 +155,60 @@ JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbLog_stat
 {
     int err;
     DB_LOG *dblog = get_DB_LOG(jnienv, jthis);
-    DB_LOG_STAT *statp = 0;
+    DB_LOG_STAT *statp = NULL;
+    jobject retval = NULL;
 
     if (!verify_non_null(jnienv, dblog))
-        return 0;
+        return NULL;
 
-    err = log_stat(dblog, &statp, 0);
-    verify_return(jnienv, err);
-    return get_DbLogStat(jnienv, statp);
+    // We cannot use the default allocator (on Win* platforms anyway)
+    // because it often causes problems when we free storage
+    // in a DLL that was allocated in another DLL.  Using
+    // our own allocator (ours just calls malloc!) ensures
+    // that there is no mismatch.
+    //
+    err = log_stat(dblog, &statp, allocMemory);
+    if (verify_return(jnienv, err)) {
+        retval = create_default_object(jnienv, name_DB_LOG_STAT);
+        jclass dbclass = get_class(jnienv, name_DB_LOG_STAT);
+
+        // Set the individual fields
+        set_int_field(jnienv, dbclass, retval,
+                      "st_magic", statp->st_magic);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_version", statp->st_version);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_mode", statp->st_mode);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_lg_max", statp->st_lg_max);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_w_bytes", statp->st_w_bytes);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_w_mbytes", statp->st_w_mbytes);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_wc_bytes", statp->st_wc_bytes);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_wc_mbytes", statp->st_wc_mbytes);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_wcount", statp->st_wcount);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_scount", statp->st_scount);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_region_wait", statp->st_region_wait);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_region_nowait", statp->st_region_nowait);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_cur_file", statp->st_cur_file);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_cur_offset", statp->st_cur_offset);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_refcnt", statp->st_refcnt);
+        set_int_field(jnienv, dbclass, retval,
+                      "st_regsize", statp->st_regsize);
+
+        freeMemory(statp);
+    }
+    return retval;
 }
 
 JNIEXPORT /*DbLog*/ jobject JNICALL Java_com_sleepycat_db_DbLog_open

@@ -7,7 +7,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)java_DbEnv.cpp	10.4 (Sleepycat) 4/10/98";
+static const char sccsid[] = "@(#)java_DbEnv.cpp	10.7 (Sleepycat) 10/27/98";
 #endif /* not lint */
 
 #include <jni.h>
@@ -73,21 +73,15 @@ static void java_errcall_callback(const char *prefix, char *message)
     pi->jnienv->CallVoidMethod(pi->dberrcall, id, pre, msg);
 }
 
-JAVADB_RW_ACCESS(DbEnv, jint, lorder, DB_ENV, db_lorder)
-JAVADB_RW_ACCESS(DbEnv, jint, verbose, DB_ENV, db_verbose)
-JAVADB_RW_ACCESS_STRING(DbEnv, home, DB_ENV, db_home, 0)
-JAVADB_RW_ACCESS_STRING(DbEnv, log_1dir, DB_ENV, db_log_dir, 0)
-JAVADB_RW_ACCESS_STRING(DbEnv, tmp_1dir, DB_ENV, db_tmp_dir, 0)
-JAVADB_RW_ACCESS(DbEnv, jint, lk_1modes, DB_ENV, lk_modes)
-JAVADB_RW_ACCESS(DbEnv, jint, lk_1max, DB_ENV, lk_max)
-JAVADB_RW_ACCESS(DbEnv, jint, lk_1detect, DB_ENV, lk_detect)
-JAVADB_RW_ACCESS(DbEnv, jint, data_1cnt, DB_ENV, data_cnt)
-JAVADB_RW_ACCESS(DbEnv, jint, data_1next, DB_ENV, data_next)
-JAVADB_RW_ACCESS(DbEnv, jint, lg_1max, DB_ENV, lg_max)
-JAVADB_RW_ACCESS(DbEnv, jlong, mp_1mmapsize, DB_ENV, mp_mmapsize)
-JAVADB_RW_ACCESS(DbEnv, jlong, mp_1size, DB_ENV, mp_size)
-JAVADB_RW_ACCESS(DbEnv, jint, tx_1max, DB_ENV, tx_max)
-JAVADB_RW_ACCESS(DbEnv, jint, flags, DB_ENV, flags)
+JAVADB_WO_ACCESS_BEFORE_APPINIT(DbEnv, jint, lorder, DB_ENV, db_lorder)
+JAVADB_WO_ACCESS_BEFORE_APPINIT(DbEnv, jint, verbose, DB_ENV, db_verbose)
+JAVADB_WO_ACCESS_BEFORE_APPINIT(DbEnv, jint, lk_1modes, DB_ENV, lk_modes)
+JAVADB_WO_ACCESS_BEFORE_APPINIT(DbEnv, jint, lk_1max, DB_ENV, lk_max)
+JAVADB_WO_ACCESS_BEFORE_APPINIT(DbEnv, jint, lk_1detect, DB_ENV, lk_detect)
+JAVADB_WO_ACCESS_BEFORE_APPINIT(DbEnv, jint, lg_1max, DB_ENV, lg_max)
+JAVADB_WO_ACCESS_BEFORE_APPINIT(DbEnv, jlong, mp_1mmapsize, DB_ENV, mp_mmapsize)
+JAVADB_WO_ACCESS_BEFORE_APPINIT(DbEnv, jlong, mp_1size, DB_ENV, mp_size)
+JAVADB_WO_ACCESS_BEFORE_APPINIT(DbEnv, jint, tx_1max, DB_ENV, tx_max)
 
 JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_init
   (JNIEnv *jnienv, jobject jthis)
@@ -156,30 +150,6 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_appexit
     }
 }
 
-
-// Make a copy of the lk_conflict array to pass back to the user
-// (different semantics from C/C++, where the user gets a real memory
-// array that they can manipulate.
-//
-JNIEXPORT jobjectArray JNICALL Java_com_sleepycat_db_DbEnv_get_1lk_1conflicts
-  (JNIEnv *jnienv, jobject jthis)
-{
-    DB_ENV *dbenv = get_DB_ENV(jnienv, jthis);
-
-    if (!verify_non_null(jnienv, dbenv))
-        return 0;
-
-    // create array of array of bytes
-    jclass bytearray_class = jnienv->FindClass("[B");
-    int len = dbenv->lk_modes;
-    jobjectArray array = jnienv->NewObjectArray(len, bytearray_class, 0);
-    for (int i=0; i<len; i++) {
-        jbyteArray subArray = jnienv->NewByteArray(len);
-        jnienv->SetByteArrayRegion(subArray, 0, len,
-                                   (jbyte *)&dbenv->lk_conflicts[i*len]);
-    }
-    return array;
-}
 
 JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1lk_1conflicts
   (JNIEnv *jnienv, jobject jthis, jobjectArray array)
@@ -256,30 +226,6 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1errcall
             pi->jnienv = 0;
         }
     }
-}
-
-JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbEnv_get_1errcall
-  (JNIEnv *jnienv, jobject jthis)
-{
-    DB_ENV *dbenv = get_DB_ENV(jnienv, jthis);
-
-    if (verify_non_null(jnienv, dbenv)) {
-        prefix_info *pi = (prefix_info*)(dbenv->db_errpfx);
-        return pi->dberrcall;
-    }
-    return 0;
-}
-
-JNIEXPORT jstring JNICALL Java_com_sleepycat_db_DbEnv_get_1errpfx
-  (JNIEnv *jnienv, jobject jthis)
-{
-    DB_ENV *dbenv = get_DB_ENV(jnienv, jthis);
-
-    if (verify_non_null(jnienv, dbenv)) {
-        prefix_info *pi = (prefix_info*)(dbenv->db_errpfx);
-        return get_java_string(jnienv, pi->orig_prefix);
-    }
-    return 0;
 }
 
 JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1errpfx

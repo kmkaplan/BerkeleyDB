@@ -4,7 +4,7 @@
  * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)TpcbExample.cpp	10.8 (Sleepycat) 4/10/98
+ *	@(#)TpcbExample.cpp	10.11 (Sleepycat) 12/7/98
  */
 
 #include "config.h"
@@ -292,13 +292,15 @@ TpcbExample::populate(int num_a, int num_b, int num_h, int num_t)
     u_int32_t balance, idnum;
     u_int32_t end_anum, end_bnum, end_tnum;
     u_int32_t start_anum, start_bnum, start_tnum;
+    u_int32_t h_nelem;
 
     idnum = BEGID;
     balance = 500000;
 
     DbInfo dbi;
 
-    dbi.set_h_nelem((unsigned int)num_a);
+    h_nelem = (unsigned int)num_a;
+    dbi.set_h_nelem(h_nelem);
 
     if ((err = Db::open("account",
          DB_HASH, DB_CREATE | DB_TRUNCATE, 0644, this, &dbi, &dbp)) != 0) {
@@ -306,8 +308,8 @@ TpcbExample::populate(int num_a, int num_b, int num_h, int num_t)
     }
 
     start_anum = idnum;
-    populateTable(dbp, idnum, balance, dbi.get_h_nelem(), "account");
-    idnum += dbi.get_h_nelem();
+    populateTable(dbp, idnum, balance, h_nelem, "account");
+    idnum += h_nelem;
     end_anum = idnum - 1;
     if ((err = dbp->close(0)) != 0) {
         errExit(err, "Account file close failed");
@@ -321,7 +323,8 @@ TpcbExample::populate(int num_a, int num_b, int num_h, int num_t)
     // small pages and only 1 key per page.  This is the poor-man's way
     // of getting key locking instead of page locking.
     //
-    dbi.set_h_nelem((unsigned int)num_b);
+    h_nelem = (unsigned int)num_b;
+    dbi.set_h_nelem(h_nelem);
     dbi.set_h_ffactor(1);
     dbi.set_pagesize(512);
 
@@ -330,8 +333,8 @@ TpcbExample::populate(int num_a, int num_b, int num_h, int num_t)
         errExit(err, "Branch file create failed");
     }
     start_bnum = idnum;
-    populateTable(dbp, idnum, balance, dbi.get_h_nelem(), "branch");
-    idnum += dbi.get_h_nelem();
+    populateTable(dbp, idnum, balance, h_nelem, "branch");
+    idnum += h_nelem;
     end_bnum = idnum - 1;
     if ((err = dbp->close(0)) != 0) {
         errExit(err, "Close of branch file failed");
@@ -345,7 +348,8 @@ TpcbExample::populate(int num_a, int num_b, int num_h, int num_t)
     // In the case of tellers, we also want small pages, but we'll let
     // the fill factor dynamically adjust itself.
     //
-    dbi.set_h_nelem((unsigned int)num_t);
+    h_nelem = (unsigned int)num_t;
+    dbi.set_h_nelem(h_nelem);
     dbi.set_h_ffactor(0);
     dbi.set_pagesize(512);
 
@@ -355,8 +359,8 @@ TpcbExample::populate(int num_a, int num_b, int num_h, int num_t)
     }
 
     start_tnum = idnum;
-    populateTable(dbp, idnum, balance, dbi.get_h_nelem(), "teller");
-    idnum += dbi.get_h_nelem();
+    populateTable(dbp, idnum, balance, h_nelem, "teller");
+    idnum += h_nelem;
     end_tnum = idnum - 1;
     if ((err = dbp->close(0)) != 0) {
         errExit(err, "Close of teller file failed");
@@ -424,7 +428,7 @@ TpcbExample::populateHistory(Db *dbp, unsigned int nrecs,
         hrec.tid = random_id(TELLER, anum, bnum, tnum);
 
         int err;
-        if ((err = dbp->put(NULL, &kdbt, &ddbt, DB_NOOVERWRITE)) != 0) {
+        if ((err = dbp->put(NULL, &kdbt, &ddbt, DB_APPEND)) != 0) {
             errExit(err, "Failure initializing history file");
 	}
     }
@@ -582,10 +586,10 @@ TpcbExample::txn(DbTxnMgr *txmgr,
     if (txmgr->begin(NULL, &t) != 0)
         goto err;
 
-    if (adb->cursor(t, &acurs) != 0 ||
-        bdb->cursor(t, &bcurs) != 0 ||
-        tdb->cursor(t, &tcurs) != 0 ||
-        hdb->cursor(t, &hcurs) != 0)
+    if (adb->cursor(t, &acurs, 0) != 0 ||
+        bdb->cursor(t, &bcurs, 0) != 0 ||
+        tdb->cursor(t, &tcurs, 0) != 0 ||
+        hdb->cursor(t, &hcurs, 0) != 0)
         goto err;
 
     // Account record
