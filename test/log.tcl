@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)log.tcl	10.7 (Sleepycat) 4/21/98
+#	@(#)log.tcl	10.10 (Sleepycat) 10/3/98
 #
 # Options are:
 # -dir <directory in which to store memp>
@@ -45,6 +45,7 @@ proc logtest { args } {
 	cleanup $testdir
 
 	# Now run the various functionality tests
+	srand 13579
 	log001 $testdir $maxfile
 	log002 $testdir $maxfile $iterations
 	log002 $testdir $maxfile $multi_log
@@ -54,6 +55,7 @@ proc logtest { args } {
 
 proc log001 { dir max } {
 source ./include.tcl
+global is_windows_test
 puts "Log001: Open/Close/Create/Unlink test"
 	log_unlink $testdir 1
 	log_cleanup $dir
@@ -70,16 +72,21 @@ puts "Log001: Open/Close/Create/Unlink test"
 	# Make sure that close works.
 	error_check_good log_close:$lp [$lp close] 0
 
-	# Make sure we can reopen.
-	set lp [ log "" 0 0 ]
-	error_check_bad log:$dir $lp NULL
-	error_check_good log:$dir [is_substr $lp log] 1
+	# Make sure we can reopen -- this doesn't work on Windows
+	# because if there is only one opener, the region disappears
+	# when it is closed.  We can't do a second opener, because
+	# that will fail on HPUX.
+	if { $is_windows_test != 1 } {
+		set lp [ log "" 0 0 ]
+		error_check_bad log:$dir $lp NULL
+		error_check_good log:$dir [is_substr $lp log] 1
 
-	# Try unlinking while we're still attached, should fail.
-	error_check_good log_unlink:$dir [log_unlink $testdir 0] -1
+		# Try unlinking while we're still attached, should fail.
+		error_check_good log_unlink:$dir [log_unlink $testdir 0] -1
 
-	# Now close it and unlink it
-	error_check_good log_close:$lp [$lp close] 0
+		# Now close it and unlink it
+		error_check_good log_close:$lp [$lp close] 0
+	}
 	error_check_good log_unlink:$dir [log_unlink $testdir 0] 0
 	log_cleanup $dir
 }

@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test015.tcl	10.6 (Sleepycat) 4/26/98
+#	@(#)test015.tcl	10.7 (Sleepycat) 9/25/98
 #
 # DB Test 15 {access method}
 # Partial put test when item does not exist.
@@ -83,7 +83,7 @@ global dvals
 		# of the number of 0's and the actual data.
 		set off [ random_int $off_low $off_hi ]
 		set dvals($key) [list $off $data]
-		set ret [$db $put $txn $key $data $DB_DBT_PARTIAL $off 0]
+		set ret [$db $put $txn $key $data 0 DB_DBT_PARTIAL $off 0]
 		error_check_good put $ret 0
 		incr count
 	}

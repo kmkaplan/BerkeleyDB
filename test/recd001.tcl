@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)recd001.tcl	10.8 (Sleepycat) 4/10/98
+#	@(#)recd001.tcl	10.9 (Sleepycat) 9/25/98
 #
 # Recovery Test 1.
 # These are the most basic recovery tests.  We do individual recovery
@@ -53,10 +53,10 @@ proc recd001 { method {select 0} } {
 	{ {DB del TXNID $key 0}		"Recd001.g: big data delete"}
 	{ {DB put TXNID $key $data 0}	"Recd001.h: put (change state)"}
 	{ {DB put TXNID $key $newdata 0} "Recd001.i: overwrite"}
-	{ {DB put TXNID $key $partial_grow $DB_DBT_PARTIAL $off $len}
+	{ {DB put TXNID $key $partial_grow 0 DB_DBT_PARTIAL $off $len}
 	  "Recd001.j: partial put growing"}
 	{ {DB put TXNID $key $newdata 0} "Recd001.k: overwrite (fix)"}
-	{ {DB put TXNID $key $partial_shrink $DB_DBT_PARTIAL $off $len}
+	{ {DB put TXNID $key $partial_shrink 0 DB_DBT_PARTIAL $off $len}
 	  "Recd001.l: partial put growing"}
 	}
 

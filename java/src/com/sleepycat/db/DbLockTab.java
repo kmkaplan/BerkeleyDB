@@ -4,7 +4,7 @@
  * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)DbLockTab.java	10.4 (Sleepycat) 4/10/98
+ *	@(#)DbLockTab.java	10.5 (Sleepycat) 10/20/98
  */
 
 package com.sleepycat.db;
@@ -56,6 +56,9 @@ public class DbLockTab
 
     public native static DbLockTab open(String dir, int flags, int mode,
                                         DbEnv dbenv)
+         throws DbException;
+
+    public native DbLockStat stat()
          throws DbException;
 
     public native static void unlink(String dir, int force, DbEnv dbenv)

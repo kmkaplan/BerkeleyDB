@@ -8,18 +8,21 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)snprintf.c	10.3 (Sleepycat) 4/10/98";
+static const char sccsid[] = "@(#)snprintf.c	10.6 (Sleepycat) 12/14/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
 #include <sys/types.h>
 
+#include <stdio.h>
 #ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 #endif
+
+#include "db_int.h"
 
 /*
  * snprintf --
@@ -47,6 +50,8 @@ snprintf(str, n, fmt, va_alist)
 {
 	va_list ap;
 	int rval;
+
+	COMPQUIET(n, 0);
 #ifdef __STDC__
 	va_start(ap, fmt);
 #else

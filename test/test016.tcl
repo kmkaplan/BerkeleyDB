@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test016.tcl	10.6 (Sleepycat) 4/26/98
+#	@(#)test016.tcl	10.7 (Sleepycat) 9/25/98
 #
 # DB Test 16 {access method}
 # Partial put test where partial puts make the record smaller.
@@ -82,7 +82,7 @@ global dvals
 		set s2 [string toupper $key]
 		set s3 [string range $datastr [expr $repl_off + $repl_len] end ]
 		set dvals($key) $s1$s2$s3
-		set ret [ $db $put $txn $key $s2 $DB_DBT_PARTIAL \
+		set ret [ $db $put $txn $key $s2 0 DB_DBT_PARTIAL \
 		    $repl_off $repl_len ]
 		error_check_good put $ret 0
 		set ret [$db get $txn $key $flags]

@@ -40,7 +40,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)getcwd.c	10.7 (Sleepycat) 4/18/98";
+static const char sccsid[] = "@(#)getcwd.c	10.9 (Sleepycat) 9/17/98";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -122,7 +122,7 @@ getcwd(pt, size)
 		}
 		ept = pt + size;
 	} else {
-		if ((pt = (char *)__db_malloc(ptsize = 1024 - 4)) == NULL)
+		if ((errno = __os_malloc(ptsize = 1024 - 4, NULL, &pt)) != 0)
 			return (NULL);
 		ept = pt + ptsize;
 	}
@@ -134,7 +134,7 @@ getcwd(pt, size)
 	 * Should always be enough (it's 340 levels).  If it's not, allocate
 	 * as necessary.  Special case the first stat, it's ".", not "..".
 	 */
-	if ((up = (char *)__db_malloc(upsize = 1024 - 4)) == NULL)
+	if ((errno = __os_malloc(upsize = 1024 - 4, NULL, &up)) != 0)
 		goto err;
 	eup = up + 1024;
 	bup = up;
@@ -167,7 +167,7 @@ getcwd(pt, size)
 			 * been that way and stuff would probably break.
 			 */
 			bcopy(bpt, pt, ept - bpt);
-			__db_free(up);
+			__os_free(up, upsize);
 			return (pt);
 		}
 
@@ -177,8 +177,7 @@ getcwd(pt, size)
 		 * possible component name, plus a trailing NULL.
 		 */
 		if (bup + 3  + MAXNAMLEN + 1 >= eup) {
-			if ((up =
-			    (char *)__db_realloc(up, upsize *= 2)) == NULL)
+			if (__os_realloc(&up, upsize *= 2) != 0)
 				goto err;
 			bup = up;
 			eup = up + upsize;
@@ -239,8 +238,7 @@ getcwd(pt, size)
 			}
 			off = bpt - pt;
 			len = ept - bpt;
-			if ((pt =
-			    (char *)__db_realloc(pt, ptsize *= 2)) == NULL)
+			if (__os_realloc(&pt, ptsize *= 2) != 0)
 				goto err;
 			bpt = pt + off;
 			ept = pt + ptsize;
@@ -268,7 +266,7 @@ notfound:
 	/* FALLTHROUGH */
 err:
 	if (ptsize)
-		__db_free(pt);
-	__db_free(up);
+		__os_free(pt, ptsize);
+	__os_free(up, upsize);
 	return (NULL);
 }

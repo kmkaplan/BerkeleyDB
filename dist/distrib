@@ -1,10 +1,11 @@
 #!/bin/sh -
-#	@(#)distrib	10.26 (Sleepycat) 5/26/98
+#	@(#)distrib	10.30 (Sleepycat) 10/10/98
 
 # Build autoconf structure.
 echo "Running autoheader"
-autoheader 2>&1 | sed '/warning: AC_TRY_RUN called without default/d'
-chmod 444 config.h.in
+(autoheader configure.in > config.hin) 2>&1 | \
+    sed '/warning: AC_TRY_RUN called without default/d'
+chmod 444 config.hin
 echo "Running autoconf"
 autoconf 2>&1 | sed '/warning: AC_TRY_RUN called without default/d'
 chmod 555 configure config.guess config.sub install-sh
@@ -19,7 +20,7 @@ for i in db btree hash log txn; do
 done
 
 # Build the automatically generated function prototype files.
-for i in db btree clib common hash lock log mp mutex os txn; do
+for i in db btree clib common hash lock log mp mutex os txn xa; do
 	f=../include/${i}_ext.h
 	echo "Building $f"
 	(echo "$msgc" &&
@@ -31,7 +32,7 @@ for i in db btree clib common hash lock log mp mutex os txn; do
 done
 
 # Build the Win32 files.
-f=../build.win32/db.h
+f=../build_win32/db.h
 echo "Building $f"
 (echo "$msgc" && sed \
     -e 's/@u_int8_decl@/typedef unsigned char u_int8_t;/' \
@@ -51,10 +52,10 @@ echo "Building $f"
     -e	 	'a\' \
     -e		'#endif' \
     -e '}' \
-    < ../include/db.h.src) > $f
+    < ../include/db.h) > $f
 chmod 444 $f
 
-f=../build.win32/db_int.h
+f=../build_win32/db_int.h
 echo "Building $f"
 (echo "$msgc" && sed \
     -e 's/\(PATH_SEPARATOR[^"]*"\)\/"/\1\\\\\/"/' \
@@ -62,28 +63,28 @@ echo "Building $f"
     -e '/@spin_line2@/d' \
     -e '/@spin_line3@/d' \
     -e 's/@mutex_align@/sizeof(unsigned int)/' \
-    < ../include/db_int.h.src) > $f
+    < ../include/db_int.h) > $f
 chmod 444 $f
 
-f=../build.win32/libdb.rc
+f=../build_win32/libdb.rc
 echo "Building $f"
-major=`egrep DB_VERSION_MAJOR ../include/db.h.src | awk '{print $3}'`
-minor=`egrep DB_VERSION_MINOR ../include/db.h.src | awk '{print $3}'`
-patch=`egrep DB_VERSION_PATCH ../include/db.h.src | awk '{print $3}'`
+major=`egrep DB_VERSION_MAJOR ../include/db.h | awk '{print $3}'`
+minor=`egrep DB_VERSION_MINOR ../include/db.h | awk '{print $3}'`
+patch=`egrep DB_VERSION_PATCH ../include/db.h | awk '{print $3}'`
 sed -e "s/%MAJOR%/$major/" \
     -e "s/%MINOR%/$minor/" \
     -e "s/%PATCH%/$patch/" \
-    < ../build.win32/libdb.rc.src > $f
+    < ../build_win32/libdbrc.src > $f
 chmod 444 $f
 
-f=../build.win32/.dbtestrc
+f=../build_win32/.dbtestrc
 echo "Building $f"
 (echo "$msgsh" && \
  sed -e "s/is_windows_test[	 ]0/is_windows_test 1/" ../test/test.tcl) > $f
 chmod 444 $f
 
 # Build the Win16 files.
-f=../build.win16/db.h
+f=../build_win16/db.h
 echo "Building $f"
 (echo "$msgc" && sed \
     -e 's/@u_int8_decl@/typedef unsigned char u_int8_t;/' \
@@ -121,10 +122,10 @@ echo "Building $f"
     -e 's/(\*\(c_del\))/(DB_CALLBACK *\1)/' \
     -e 's/(\*\(c_get\))/(__cdecl __loadds *\1)/' \
     -e 's/(\*\(c_put\))/(__cdecl __loadds *\1)/' \
-    < ../include/db.h.src) > $f
+    < ../include/db.h) > $f
 chmod 444 $f
 
-f=../build.win16/db_int.h
+f=../build_win16/db_int.h
 echo "Building $f"
 (echo "$msgc" && sed \
     -e 's/\(PATH_SEPARATOR[^"]*"\)\/"/\1\\\\\/"/' \
@@ -133,11 +134,37 @@ echo "Building $f"
     -e '/@spin_line3@/d' \
     -e 's/@mutex_align@/sizeof(unsigned int)/' \
     -e 's/off_t/u_int32_t/' \
-    < ../include/db_int.h.src) > $f
+    < ../include/db_int.h) > $f
+chmod 444 $f
+
+# Build the VMS files.
+f=../build_vms/db.h
+echo "Building $f"
+(echo "$msgc" && sed \
+    -e 's/@u_int8_decl@/typedef unsigned char u_int8_t;/' \
+    -e 's/@int16_decl@/typedef short int16_t;/' \
+    -e 's/@u_int16_decl@/typedef unsigned short u_int16_t;/' \
+    -e 's/@int32_decl@/typedef int int32_t;/' \
+    -e 's/@u_int32_decl@/typedef unsigned int u_int32_t;/' \
+    -e '/@u_char_decl@/d' \
+    -e '/@u_short_decl@/d' \
+    -e '/@u_int_decl@/d' \
+    -e '/@u_long_decl@/d' \
+    < ../include/db.h) > $f
+chmod 444 $f
+
+f=../build_vms/db_int.h
+echo "Building $f"
+(echo "$msgc" && sed \
+    -e 's;@spin_line1@;#include <sys/mman.h>;' \
+    -e 's/@spin_line2@/typedef unsigned char tsl_t;/' \
+    -e '/@spin_line3@/d' \
+    -e 's/@mutex_align@/sizeof(unsigned int)/' \
+    < ../include/db_int.h) > $f
 chmod 444 $f
 
 # Build the MacOS files.
-#f=../build.macos/db.h
+#f=../build_macos/db.h
 #echo "Building $f"
 #(echo "$msgc" && sed \
 #    -e 's/@u_int8_decl@/typedef unsigned char u_int8_t;/' \
@@ -149,18 +176,18 @@ chmod 444 $f
 #    -e '/@u_short_decl@/d' \
 #    -e '/@u_int_decl@/d' \
 #    -e '/@u_long_decl@/d' \
-#    < ../include/db.h.src) > $f
+#    < ../include/db.h) > $f
 #chmod 444 $f
 
-#f=../build.macos/db_int.h
+#f=../build_macos/db_int.h
 #echo "Building $f"
 #(echo "$msgc" && sed \
-#    -e 's/^#include."db.h".*/#include "::build.macintosh:db.h"/' \
+#    -e 's/^#include."db.h".*/#include "::build_macintosh:db.h"/' \
 #    -e 's/\(PATH_SEPARATOR[^"]*"\)\/"/\1:"/' \
 #    -e 's/@spin_line1@/typedef unsigned char tsl_t;/' \
 #    -e '/@spin_line2@/d' \
 #    -e 's/@mutex_align@/sizeof(unsigned char)/' \
-#    < ../include/db_int.h.src) > $f
+#    < ../include/db_int.h) > $f
 #chmod 444 $f
 
 # Build the Java files.
@@ -172,14 +199,14 @@ echo "Building $f"
  echo &&
  echo 'public class DbConstants' &&
  echo '{' &&
- grep '#define.DB_' ../include/db.h.src | \
+ grep '#define.DB_' ../include/db.h | \
  sed -e '/"/d' -e 's/[()]//g' | \
  awk '{ print "\tpublic static final int " $2 " = " $3 ";" }' && \
  echo '}') > $f
 chmod 444 $f
 
 # Build the Tcl test files.
-f=../test/include.tcl.src
+f=../test/include.tcl
 echo "Building $f"
 rm -f $f
 (echo "$msgsh"				&& \
@@ -208,11 +235,11 @@ rm -f $f
  echo 'set DB_LOCK_IREAD 3'		&& \
  echo 'set DB_LOCK_IWRITE 4'		&& \
  echo 'set DB_LOCK_IWR 5'		&& \
- grep '#define.DB_' ../include/db.h.src | sed -e '/"/d' -e 's/[()]//g' | \
+ grep '#define.DB_' ../include/db.h | sed -e '/"/d' -e 's/[()]//g' | \
      awk '{ print "set " $2 " " $3}') > $f
 chmod 444 $f
 
-f=../build.win32/include.tcl
+f=../build_win32/include.tcl
 echo "Building $f"
 rm -f $f
 (echo "$msgsh"				&& \
@@ -241,7 +268,7 @@ rm -f $f
  echo 'set DB_LOCK_IREAD 3'		&& \
  echo 'set DB_LOCK_IWRITE 4'		&& \
  echo 'set DB_LOCK_IWR 5'		&& \
- grep '#define.DB_' ../include/db.h.src | sed -e '/"/d' -e 's/[()]//g' | \
+ grep '#define.DB_' ../include/db.h | sed -e '/"/d' -e 's/[()]//g' | \
      awk '{ print "set " $2 " " $3}') > $f
 chmod 444 $f
 
@@ -250,9 +277,8 @@ f=tags
 echo "Building $f"
 rm -f $f
 ctags -d -w \
-	../include/*.src ../include/*.h ../btree/*.[ch] ../clib/*.[ch] \
-	../common/*.[ch] ../db/*.[ch] ../db185/*.[ch] ../dbm/*.[ch] \
-	../hash/*.[ch] ../hsearch/*.[ch] ../lock/*.[ch] ../log/*.[ch] \
-	../mp/*.[ch] ../mutex/*.[ch] ../os/*.[ch] ../txn/*.[ch] \
-	../test/*.[ch]
+	../include/*.h ../btree/*.[ch] ../clib/*.[ch] ../common/*.[ch] \
+	../db/*.[ch] ../db185/*.[ch] ../dbm/*.[ch] ../hash/*.[ch] \
+	../hsearch/*.[ch] ../lock/*.[ch] ../log/*.[ch] ../mp/*.[ch] \
+	../mutex/*.[ch] ../os/*.[ch] ../txn/*.[ch] ../xa/*.[ch] ../test/*.[ch]
 chmod 444 $f

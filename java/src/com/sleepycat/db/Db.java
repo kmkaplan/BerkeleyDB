@@ -4,7 +4,7 @@
  * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)Db.java	10.5 (Sleepycat) 6/2/98
+ *	@(#)Db.java	10.15 (Sleepycat) 12/8/98
  */
 
 package com.sleepycat.db;
@@ -56,6 +56,7 @@ public class Db
     //
     // Flags used by DbEnv.appinit()
     //
+    public static final int DB_INIT_CDB;         // Concurrent Access Methods.
     public static final int DB_INIT_LOCK;        // Initialize locking.
     public static final int DB_INIT_LOG;         // Initialize logging.
     public static final int DB_INIT_MPOOL;       // Initialize mpool.
@@ -82,6 +83,7 @@ public class Db
     //
     public static final int DB_DELIMITER; // Recno: re_delim set.
     public static final int DB_DUP;       // Btree, Hash: duplicate keys.
+    public static final int DB_DUPSORT;   // Btree, Hash: duplicate keys.
     public static final int DB_FIXEDLEN;  // Recno: fixed-length records.
     public static final int DB_PAD;       // Recno: re_pad set.
     public static final int DB_RECNUM;    // Btree: record numbers.
@@ -94,8 +96,8 @@ public class Db
     public static final int DB_LOCK_NG = 0;	// Not granted.
     public static final int DB_LOCK_READ = 1;	// Shared/read.
     public static final int DB_LOCK_WRITE = 2;	// Exclusive/write.
-    public static final int DB_LOCK_IREAD = 3;	// Intent to share/read.
-    public static final int DB_LOCK_IWRITE = 4;	// Intent exclusive/write.
+    public static final int DB_LOCK_IWRITE = 3;	// Intent exclusive/write.
+    public static final int DB_LOCK_IREAD = 4;	// Intent to share/read.
     public static final int DB_LOCK_IWR = 5;	// Intent to read and write.
 
     // Collectively, these constants are known by the name
@@ -108,10 +110,17 @@ public class Db
     public static final int DB_LOCK_PUT_OBJ = 4;// Release locker's locks on obj.
 
     // Flag values for DbLock.vec()
-    public static final int DB_LOCK_NOWAIT;  // Don't wait on unavailable lock.
+    public static final int DB_LOCK_NOWAIT; // Don't wait on unavailable lock.
+    public static final int DB_LOCK_UPGRADE;// Upgrade an existing lock instead
+                                            // of granting a new one.
 
     // Flag values for DbLock.detect()
     public static final int DB_LOCK_CONFLICT; // Run on any conflict.
+
+    // Size of commonly used conflict matrices.
+    //
+    //
+    public static final int DB_LOCK_RW_N; // standard R/W (or exclusive/shared)
 
     //
     // Flag values for DbLog.archive()
@@ -121,22 +130,26 @@ public class Db
     public static final int DB_ARCH_LOG;      // Log files.
 
     //
-    // DB access method and cursor operation codes.  These are implemented as
-    // bit fields for future flexibility, but currently only a single one may
-    // be specified to any function.
-    ///
+    // DB access method and cursor operation values.
+    // Each value is an operation code to which
+    // additional bit flags are added.
+    //
     public static final int DB_AFTER;      // Dbc.put()
     public static final int DB_APPEND;     // Db.put()
     public static final int DB_BEFORE;     // Dbc.put()
     public static final int DB_CHECKPOINT; // DbLog.put(), DbLog.get()
+    public static final int DB_CURLSN;     // DbLog.put()
     public static final int DB_CURRENT;    // Dbc.get(), Dbc.put(), DbLog.get()
     public static final int DB_FIRST;      // Dbc.get(), DbLog.get()
     public static final int DB_FLUSH;      // DbLog.put()
-    public static final int DB_GET_RECNO;  // Db.get(), Dbc.get()
+    public static final int DB_GET_BOTH;   // Db.get(), Dbc.get()
+    public static final int DB_GET_RECNO;  // Dbc.get()
+    public static final int DB_JOIN_ITEM;  // Dbc.get()
     public static final int DB_KEYFIRST;   // Dbc.put()
     public static final int DB_KEYLAST;    // Dbc.put()
     public static final int DB_LAST;       // Dbc.get(), DbLog.get()
     public static final int DB_NEXT;       // Dbc.get(), DbLog.get()
+    public static final int DB_NEXT_DUP;   // Dbc.get()
     public static final int DB_NOOVERWRITE;// Db.put()
     public static final int DB_NOSYNC;     // Db.close()
     public static final int DB_PREV;       // Dbc.get(), DbLog.get()
@@ -144,6 +157,10 @@ public class Db
     public static final int DB_SET;        // Dbc.get(), DbLog.get()
     public static final int DB_SET_RANGE;  // Dbc.get()
     public static final int DB_SET_RECNO;  // Dbc.get()
+
+    // Another flag that must be added to an operation codes above.
+    //
+    public static final int DB_RMW;        // Acquire write flag immediately.
 
     // Collectively, these values are used for Dbt flags
     //
@@ -167,7 +184,7 @@ public class Db
     public native void close(int flags)
          throws DbException;
 
-    public native Dbc cursor(DbTxn txnid)
+    public native Dbc cursor(DbTxn txnid, int flags)
          throws DbException;
 
     public native void del(DbTxn txnid, Dbt key, int flags)
@@ -180,15 +197,21 @@ public class Db
     public native int get(DbTxn txnid, Dbt key, Dbt data, int flags)
          throws DbException;
 
+    public native Dbc join(Dbc curslist[], int flags)
+         throws DbException;
+
     // returns: 0, DB_KEYEXIST, or throws error
     public native int put(DbTxn txnid, Dbt key, Dbt data, int flags)
          throws DbException;
 
-    public native DbBtreeStat stat(int flags)
+    // returns a DbBtreeStat or DbHashStat
+    public native Object stat(int flags)
          throws DbException;
 
     public native void sync(int flags)
          throws DbException;
+
+    public native boolean get_byteswapped();
 
     public native /*DBTYPE*/ int get_type();
 
@@ -266,6 +289,7 @@ public class Db
         check_constant(DB_LOCK_NOTHELD, DbConstants.DB_LOCK_NOTHELD);
         check_constant(DB_NOTFOUND, DbConstants.DB_NOTFOUND);
 
+        DB_INIT_CDB = DbConstants.DB_INIT_CDB;
         DB_INIT_LOCK = DbConstants.DB_INIT_LOCK;
         DB_INIT_LOG = DbConstants.DB_INIT_LOG;
         DB_INIT_MPOOL = DbConstants.DB_INIT_MPOOL;
@@ -285,6 +309,7 @@ public class Db
 
         DB_DELIMITER = DbConstants.DB_DELIMITER;
         DB_DUP = DbConstants.DB_DUP;
+        DB_DUPSORT = DbConstants.DB_DUPSORT;
         DB_FIXEDLEN = DbConstants.DB_FIXEDLEN;
         DB_PAD = DbConstants.DB_PAD;
         DB_RECNUM = DbConstants.DB_RECNUM;
@@ -292,7 +317,10 @@ public class Db
         DB_SNAPSHOT = DbConstants.DB_SNAPSHOT;
 
         DB_LOCK_NOWAIT = DbConstants.DB_LOCK_NOWAIT;
+        DB_LOCK_UPGRADE = DbConstants.DB_LOCK_UPGRADE;
         DB_LOCK_CONFLICT = DbConstants.DB_LOCK_CONFLICT;
+
+        DB_LOCK_RW_N = DbConstants.DB_LOCK_RW_N;
 
         DB_ARCH_ABS = DbConstants.DB_ARCH_ABS;
         DB_ARCH_DATA = DbConstants.DB_ARCH_DATA;
@@ -302,14 +330,18 @@ public class Db
         DB_APPEND = DbConstants.DB_APPEND;
         DB_BEFORE = DbConstants.DB_BEFORE;
         DB_CHECKPOINT = DbConstants.DB_CHECKPOINT;
+        DB_CURLSN = DbConstants.DB_CURLSN;
         DB_CURRENT = DbConstants.DB_CURRENT;
         DB_FIRST = DbConstants.DB_FIRST;
         DB_FLUSH = DbConstants.DB_FLUSH;
+        DB_GET_BOTH = DbConstants.DB_GET_BOTH;
         DB_GET_RECNO = DbConstants.DB_GET_RECNO;
+        DB_JOIN_ITEM = DbConstants.DB_JOIN_ITEM;
         DB_KEYFIRST = DbConstants.DB_KEYFIRST;
         DB_KEYLAST = DbConstants.DB_KEYLAST;
         DB_LAST = DbConstants.DB_LAST;
         DB_NEXT = DbConstants.DB_NEXT;
+        DB_NEXT_DUP = DbConstants.DB_NEXT_DUP;
         DB_NOOVERWRITE = DbConstants.DB_NOOVERWRITE;
         DB_NOSYNC = DbConstants.DB_NOSYNC;
         DB_PREV = DbConstants.DB_PREV;
@@ -317,6 +349,7 @@ public class Db
         DB_SET = DbConstants.DB_SET;
         DB_SET_RANGE = DbConstants.DB_SET_RANGE;
         DB_SET_RECNO = DbConstants.DB_SET_RECNO;
+        DB_RMW = DbConstants.DB_RMW;
 
         DB_DBT_INTERNAL = DbConstants.DB_DBT_INTERNAL;
         DB_DBT_MALLOC = DbConstants.DB_DBT_MALLOC;

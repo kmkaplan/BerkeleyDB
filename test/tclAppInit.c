@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)tclAppInit.c	10.7 (Sleepycat) 4/27/98";
+static const char sccsid[] = "@(#)tclAppInit.c	10.9 (Sleepycat) 10/5/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES

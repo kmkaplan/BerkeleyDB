@@ -4,7 +4,7 @@
  * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)DbEnv.java	10.3 (Sleepycat) 4/10/98
+ *	@(#)DbEnv.java	10.6 (Sleepycat) 10/27/98
  */
 
 package com.sleepycat.db;
@@ -65,11 +65,9 @@ public class DbEnv
     // use the default constructor along with appinit().
 
     // Byte order.
-    public native int get_lorder();
     public native void set_lorder(int lorder);
 
     // Error message callback.
-    public native DbErrcall get_errcall();
     public native void set_errcall(DbErrcall errcall);
 
     // Error message file stream.
@@ -78,35 +76,10 @@ public class DbEnv
     // Consider using set_errcall() instead.
 
     // Error message prefix.
-    public native String get_errpfx();
     public native void set_errpfx(String errpfx);
 
     // Generate debugging messages.
-    public native int get_verbose();
     public native void set_verbose(int verbose);
-
-    ////////////////////////////////////////////////////////////////
-    // User paths.
-
-    // Database home.
-    public native String get_home();
-    public native void set_home(String home);
-
-    // Database log file directory.
-    public native String get_log_dir();
-    public native void set_log_dir(String log_dir);
-
-    // Database tmp file directory.
-    public native String get_tmp_dir();
-    public native void set_tmp_dir(String tmp_dir);
-
-    // Database data file slots.
-    public native int get_data_cnt();
-    public native void set_data_cnt(int data_cnt);
-
-    // Next Database data file slot.
-    public native int get_data_next();
-    public native void set_data_next(int data_next);
 
 
     ////////////////////////////////////////////////////////////////
@@ -119,29 +92,19 @@ public class DbEnv
     }
 
     // Two dimensional conflict matrix.
-    // Note: get_lk_conflicts() gets a copy of the the underlying array
-    // and set_lk_conflicts() sets the underlying array to a copy.
+    // Note: set_lk_conflicts() sets the underlying array to a copy.
     // You should call set_lk_modes() when calling set_lk_conflicts().
     //
-    public native byte[][] get_lk_conflicts();
     public native void set_lk_conflicts(byte[][] lk_conflicts);
 
     // Number of lock modes in table.
-    public native int get_lk_modes();
     public native void set_lk_modes(int lk_modes);
 
     // Maximum number of locks.
-    public native /*unsigned*/ int get_lk_max();
     public native void set_lk_max(/*unsigned*/ int lk_max);
 
     // Deadlock detect on every conflict.
-    public native /*u_int32_t*/ int get_lk_detect();
     public native void set_lk_detect(/*u_int32_t*/ int lk_detect);
-
-    // Note: this callback is not implemented
-    // Yield function for threads.
-    // public native DbYield get_yield();
-    // public native void set_yield(DbYield db_yield);
 
     ////////////////////////////////////////////////////////////////
     // Logging.
@@ -153,7 +116,6 @@ public class DbEnv
     }
 
     // Maximum file size.
-    public native /*u_int32_t*/ int get_lg_max();
     public native void set_lg_max(/*u_int32_t*/ int lg_max);
 
 
@@ -167,11 +129,9 @@ public class DbEnv
     }
 
     // Maximum file size for mmap.
-    public native /*size_t*/ long get_mp_mmapsize();
     public native void set_mp_mmapsize(/*size_t*/ long mmapsize);
 
     // Bytes in the mpool cache.
-    public native /*size_t*/ long get_mp_size();
     public native void set_mp_size(/*size_t*/ long mp_size);
 
 
@@ -185,39 +145,19 @@ public class DbEnv
     }
 
     // Maximum number of transactions.
-    public native /*unsigned*/ int get_tx_max();
     public native void set_tx_max(/*unsigned*/ int tx_max);
 
-    // Note: this callback is not implemented
-    // Dispatch function for recovery.
-    // public native DbRecover get_tx_recover();
-    // public native void set_tx_recover(DbRecover tx_recover);
-
-    // Flags.
-    public native /*u_int32_t*/ int get_flags();
-    public native void set_flags(/*u_int32_t*/ int flags);
-
+    // Versioning information
     public native static int get_version_major();
     public native static int get_version_minor();
     public native static int get_version_patch();
     public native static String get_version_string();
-
-    public static String get_java_version_string()
-    {
-        return java_version_string_;
-    }
 
     public void set_error_stream(OutputStream s)
     {
         DbOutputStreamErrcall errcall = new DbOutputStreamErrcall(s);
         set_errcall(errcall);
     }
-
-    // get/set methods
-    //
-
-    // private methods
-    //
 
     // private data
     //
@@ -226,9 +166,6 @@ public class DbEnv
     private DbLog lg_info_ = null;
     private DbMpool mp_info_ = null;
     private DbTxnMgr tx_info_ = null;
-
-    private final static String java_version_string_ =
-       "Sleepycat Software: Db.Java 1.1.0: (9/24/97)";
 
     private native void init();
 

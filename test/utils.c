@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)utils.c	10.46 (Sleepycat) 5/31/98";
+static const char sccsid[] = "@(#)utils.c	10.70 (Sleepycat) 12/17/98";
 #endif /* not lint */
 
 /*
@@ -40,6 +40,7 @@ static const char sccsid[] = "@(#)utils.c	10.46 (Sleepycat) 5/31/98";
 int db_del_cmd __P((Tcl_Interp *interp, int argc, char *argv[], DB *dbp));
 int db_get_cmd __P((Tcl_Interp *interp, int argc, char *argv[], DB *dbp));
 int db_getbin_cmd __P((Tcl_Interp *interp, int argc, char *argv[], DB *dbp));
+int db_join_cmd __P((Tcl_Interp *interp, int argc, char *argv[], DB *dbp));
 int db_put_cmd __P((Tcl_Interp *interp, int argc, char *argv[], DB *dbp));
 int db_putbin_cmd __P((Tcl_Interp *interp, int argc, char *argv[], DB *dbp));
 int dbc_del_cmd __P((Tcl_Interp *interp, int argc, char *argv[], DBC *dbc));
@@ -67,8 +68,8 @@ dbopen_cmd(notused, interp, argc, argv)
 	char *argv[];
 {
 	static int db_number = 0;
-	static struct {
-		const char *str;
+	static const struct {
+		char *str;
 		DBTYPE type;
 	} list[] = {
 		{"DB_UNKNOWN",	DB_UNKNOWN},
@@ -152,7 +153,7 @@ usage:		Tcl_AppendResult(interp,
 
 	/* Create widget command. */
 	/* Create new command name. */
-	sprintf(&dbname[0], "db%d", db_number);
+	snprintf(dbname, sizeof(dbname), "db%d", db_number);
 	db_number++;
 
 	Tcl_CreateCommand(interp, dbname, dbwidget_cmd, (ClientData)dbp, NULL);
@@ -181,7 +182,7 @@ process_am_options(interp, argc, argv, openinfo)
 	err = TCL_OK;
 	oi = (DB_INFO *)calloc(sizeof(DB_INFO), 1);
 
-	while (argc > 1) {
+	while (argc >= 1) {
 		if (**argv != '-') {		/* Make sure it's an option */
 			argc--;
 			argv++;
@@ -190,6 +191,9 @@ process_am_options(interp, argc, argv, openinfo)
 		/* Set option to first character after "-" */
 		option = argv[0];
 		option++;
+
+		if (argc == 1)
+			break;
 
 		if (strcmp(option, "flags") == 0) {
 	/* Contains flags for all access methods */
@@ -266,7 +270,7 @@ process_am_options(interp, argc, argv, openinfo)
 				break;
 			oi->re_len = (u_int32_t)tclint;
 		} else if (strcmp(option, "recsrc") == 0)
-			oi->re_source = (char *)strdup(argv[1]);
+			 (void)__os_strdup(argv[1], &oi->re_source);
 
 		argc -= 2;
 		argv += 2;
@@ -298,12 +302,14 @@ process_env_options(interp, argc, argv, envinfo)
 	u_int32_t flags;
 	int err, nconf, tclint;
 	char *option, *db_home, **config;
+	u_int8_t *conflicts;
 
 	COMPQUIET(option, NULL);
 	err = TCL_OK;
 	flags = 0;
 	db_home = Tcl_GetVar(interp, "testdir", 0);
 	config = NULL;
+	conflicts = NULL;
 
 	env = (DB_ENV *)calloc(sizeof(DB_ENV), 1);
 	while (argc > 1) {
@@ -315,6 +321,14 @@ process_env_options(interp, argc, argv, envinfo)
 		/* Set option to first character after "-" */
 		option = argv[0];
 		option++;
+
+		if (argv[1] == NULL || argv[1][0] == '-') {
+			Tcl_SetResult(interp, "Invalid options: ",
+			    TCL_STATIC);
+			Tcl_AppendResult(interp, argv[0],
+			   "requires parameter", 0);
+			return (TCL_ERROR);
+		}
 
 		if (strcmp(option, "dbenv") == 0) {
 	/* environment already set up. */
@@ -363,9 +377,10 @@ process_env_options(interp, argc, argv, envinfo)
 				break;
 			env->lk_detect = (u_int32_t)tclint;
 		} else if (strcmp(option, "conflicts") == 0) {
-			env->lk_conflicts = list_to_numarray(interp, argv[1]);
-			if (env->lk_conflicts == NULL)
+			conflicts = list_to_numarray(interp, argv[1]);
+			if (conflicts == NULL)
 				break;
+			env->lk_conflicts = conflicts;
 		} else if (strcmp(option, "maxsize") == 0) {
 	/* Log flags */
 	    		if ((err =
@@ -445,8 +460,8 @@ process_env_options(interp, argc, argv, envinfo)
 	if (err != TCL_OK) {
 		Tcl_AppendResult(interp, "\nInvalid ", option, " value: ",
 		    argv[1], "\n", NULL);
-		if (env->lk_conflicts)
-			free(env->lk_conflicts);
+		if (conflicts != NULL)
+			free(conflicts);
 		free(env);
 		env = NULL;
 	}
@@ -454,7 +469,6 @@ process_env_options(interp, argc, argv, envinfo)
 	/*
 	 * Set up error stuff.
 	 */
-
 	if (env) {
 		env->db_errfile = stderr;
 		env->db_errpfx = "dbtest";
@@ -462,14 +476,13 @@ process_env_options(interp, argc, argv, envinfo)
 		env->db_verbose = 0;
 
 		if ((errno = db_appinit(db_home, config, env, flags)) != 0) {
-			if (config)
-				free(config);
-			if (env->lk_conflicts)
-				free(env->lk_conflicts);
 			free(env);
 			env = NULL;
 		}
 	}
+
+	if (config)
+		FREE_TCL(config);
 
 	*envinfo = env;
 	return (env ? 0 : 1);
@@ -483,7 +496,7 @@ process_env_options(interp, argc, argv, envinfo)
  */
 #define DBWIDGET_USAGE "dbN option ?arg arg ...?"
 #define DBCLOSE_USAGE "dbN close"
-#define DBCURS_USAGE "dbN cursor txn"
+#define DBCURS_USAGE "dbN cursor txn [flags]"
 #define DBFD_USAGE "dbN fd"
 #define DBSYNC_USAGE "dbN sync flags"
 #define	DBLOCKER_USAGE "dbN locker"
@@ -504,6 +517,7 @@ dbwidget_cmd(cd_dbp, interp, argc, argv)
 	u_int32_t flags;
 	int fd, ret, tclint;
 	char cursname[128];
+	u_int8_t *conflicts;
 
 	dbp = (DB *)cd_dbp;
 
@@ -522,8 +536,9 @@ dbwidget_cmd(cd_dbp, interp, argc, argv)
 		ret = dbp->close(dbp, 0);
 		if (env && !F_ISSET(env, DB_ENV_STANDALONE)) {
 			(void)db_appexit(env);
-			if (env->lk_conflicts)
-				free(env->lk_conflicts);
+			conflicts = (u_int8_t *)env->lk_conflicts;
+			if (conflicts != NULL)
+				free(conflicts);
 			free(env);
 		}
 		(void)Tcl_DeleteCommand(interp, argv[0]);
@@ -537,8 +552,9 @@ dbwidget_cmd(cd_dbp, interp, argc, argv)
 			Tcl_SetResult(interp, "0", TCL_STATIC);
 		return (TCL_OK);
 	} else if (strcmp(argv[1], "cursor") == 0) {
-		USAGE(argc, 3, DBCURS_USAGE, 0);
-		sprintf(&cursname[0], "%s.cursor%d", argv[0], curs_id);
+		USAGE_GE(argc, 3, DBCURS_USAGE, 0);
+		snprintf(cursname,
+		    sizeof(cursname), "%s.cursor%d", argv[0], curs_id);
 		curs_id++;
 		if (argv[2][0] == '0' && argv[2][1] == '\0')
 			txnid = NULL;
@@ -550,10 +566,16 @@ dbwidget_cmd(cd_dbp, interp, argc, argv)
 				    " not a transaction.", 0);
 				return (TCL_ERROR);
 			}
-			txnid = (DB_TXN *)(info.clientData);
+			txnid = (DB_TXN *)info.clientData;
 		}
 		debug_check();
-		if ((ret = dbp->cursor(dbp, txnid, &cursor)) == 0) {
+		if (argc == 4) {
+			if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK)
+				return (TCL_ERROR);
+			flags = (u_int32_t)tclint;
+		} else
+			flags = 0;
+		if ((ret = dbp->cursor(dbp, txnid, &cursor, flags)) == 0) {
 			Tcl_CreateCommand(interp, cursname, dbcursor_cmd,
 			    (ClientData)cursor, NULL);
 			Tcl_SetResult(interp, cursname, TCL_VOLATILE);
@@ -570,9 +592,15 @@ dbwidget_cmd(cd_dbp, interp, argc, argv)
 		Tcl_ResetResult(interp);
 		debug_check();
 		(void)dbp->fd(dbp, &fd);
+		/*
+		 * !!!
+		 * Safe: interp->result is guaranteed to be at least 200 bytes.
+		 */
 		sprintf(interp->result, "%d", fd);
 		return (TCL_OK);
 	} else if (strcmp(argv[1], "get") == 0) {
+		return (db_get_cmd(interp, argc, argv, dbp));
+	} else if (strcmp(argv[1], "bget") == 0) {
 		return (db_get_cmd(interp, argc, argv, dbp));
 	} else if (strcmp(argv[1], "getn") == 0) {
 		return (db_get_cmd(interp, argc, argv, dbp));
@@ -580,11 +608,8 @@ dbwidget_cmd(cd_dbp, interp, argc, argv)
 		return (db_getbin_cmd(interp, argc, argv, dbp));
 	} else if (strcmp(argv[1], "getbinkey") == 0) {
 		return (db_getbin_cmd(interp, argc, argv, dbp));
-	} else if (strcmp(argv[1], "locker") == 0) {
-		USAGE(argc, 2, DBLOCKER_USAGE, 0);
-		sprintf(cursname, "%lu", (u_long)dbp->locker);
-		Tcl_SetResult(interp, cursname, TCL_VOLATILE);
-		return (TCL_OK);
+	} else if (strcmp(argv[1], "join") == 0) {
+		return (db_join_cmd(interp, argc, argv, dbp));
 	} else if (strcmp(argv[1], "put") == 0) {
 		return (db_put_cmd(interp, argc, argv, dbp));
 	} else if (strcmp(argv[1], "putn") == 0) {
@@ -638,6 +663,8 @@ dbcursor_cmd(cd_dbc, interp, argc, argv)
 	} else if (strcmp(argv[1], "del") == 0) {
 		return (dbc_del_cmd(interp, argc, argv, dbc));
 	} else if (strcmp(argv[1], "get") == 0) {
+		return (dbc_get_cmd(interp, argc, argv, dbc));
+	} else if (strcmp(argv[1], "bget") == 0) {
 		return (dbc_get_cmd(interp, argc, argv, dbc));
 	} else if (strcmp(argv[1], "getn") == 0) {
 		return (dbc_get_cmd(interp, argc, argv, dbc));
@@ -703,7 +730,7 @@ db_del_cmd(interp, argc, argv, dbp)
 			    " not a transaction.", 0);
 			return (TCL_ERROR);
 		}
-		txnid = (DB_TXN *)(info.clientData);
+		txnid = (DB_TXN *)info.clientData;
 	}
 
 	debug_check();
@@ -721,6 +748,7 @@ db_del_cmd(interp, argc, argv, dbp)
 }
 
 #define DBGET_USAGE "dbN get txn key flags [beg len]"
+#define DBBGET_USAGE "dbN get txn key data flags [beg len]"
 int
 db_get_cmd(interp, argc, argv, dbp)
 	Tcl_Interp *interp;
@@ -733,11 +761,17 @@ db_get_cmd(interp, argc, argv, dbp)
 	Tcl_CmdInfo info;
 	db_recno_t ikey;
 	u_int32_t flags;
-	int ret, tclint;
+	int arg_off, ret, tclint;
 
-	USAGE_GE(argc, 5, DBGET_USAGE, 0);
+	if (strcmp(argv[1], "bget") == 0) {
+		USAGE(argc, 6, DBBGET_USAGE, 0);
+		arg_off = 5;
+	} else {
+		USAGE_GE(argc, 5, DBGET_USAGE, 0);
+		arg_off = 4;
+	}
 
-	if (Tcl_GetInt(interp, argv[4], &tclint) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[arg_off], &tclint) != TCL_OK) {
 		Tcl_AppendResult(interp, "\n", DBGET_USAGE, NULL);
 		return (TCL_ERROR);
 	}
@@ -756,16 +790,26 @@ db_get_cmd(interp, argc, argv, dbp)
 	}
 
 	memset(&data, 0, sizeof(data));
-	if (flags == DB_DBT_PARTIAL) {
-		USAGE(argc, 7, DBGET_USAGE, 0);
-		if (Tcl_GetInt(interp, argv[5], &tclint) != TCL_OK)
+
+	/*
+	 * If we have "too many" arguments, check for a partial retrieval.
+	 */
+	if (argc > arg_off + 3 &&
+	    strcmp(argv[arg_off + 1], "DB_DBT_PARTIAL") == 0) {
+		/* We have a partial */
+		USAGE(argc, arg_off + 4, DBGET_USAGE, 0);
+		if (Tcl_GetInt(interp, argv[arg_off + 2], &tclint) != TCL_OK)
 			return (TCL_ERROR);
 		data.doff = (size_t)tclint;
-		if (Tcl_GetInt(interp, argv[6], &tclint) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[arg_off + 3], &tclint) != TCL_OK)
 			return (TCL_ERROR);
 		data.dlen = (size_t)tclint;
 		data.flags = DB_DBT_PARTIAL;
 		flags = 0;
+	}
+	if (flags == DB_GET_BOTH) {
+		data.data = argv[4];
+		data.size = strlen(argv[4]) + 1;
 	}
 
 	if (argv[2][0] == '0' && argv[2][1] == '\0')
@@ -778,7 +822,7 @@ db_get_cmd(interp, argc, argv, dbp)
 			    " not a transaction.", 0);
 			return (TCL_ERROR);
 		}
-		txnid = (DB_TXN *)(info.clientData);
+		txnid = (DB_TXN *)info.clientData;
 	}
 
 	debug_check();
@@ -859,7 +903,7 @@ db_getbin_cmd(interp, argc, argv, dbp)
 			    " not a transaction.", 0);
 			return (TCL_ERROR);
 		}
-		txnid = (DB_TXN *)(info.clientData);
+		txnid = (DB_TXN *)info.clientData;
 	}
 
 	debug_check();
@@ -931,12 +975,12 @@ db_put_cmd(interp, argc, argv, dbp)
 	 * If the partial flag is set, then arguments 6 and 7 are the
 	 * offset and length respectively.
 	 */
-	if (flags == DB_DBT_PARTIAL) {
-		USAGE_GE(argc, 8, DBPPUT_USAGE, 0);
-		if (Tcl_GetInt(interp, argv[6], &tclint) != TCL_OK)
+	if (argc > 6 && strcmp(argv[6], "DB_DBT_PARTIAL") == 0) {
+		USAGE_GE(argc, 9, DBPPUT_USAGE, 0);
+		if (Tcl_GetInt(interp, argv[7], &tclint) != TCL_OK)
 			return (TCL_ERROR);
 		data.doff = (size_t)tclint;
-		if (Tcl_GetInt(interp, argv[7], &tclint) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[8], &tclint) != TCL_OK)
 			return (TCL_ERROR);
 		data.dlen = (size_t)tclint;
 		data.flags = DB_DBT_PARTIAL;
@@ -954,7 +998,7 @@ db_put_cmd(interp, argc, argv, dbp)
 			    " not a transaction.", 0);
 			return (TCL_ERROR);
 		}
-		txnid = (DB_TXN *)(info.clientData);
+		txnid = (DB_TXN *)info.clientData;
 	}
 	debug_check();
 
@@ -966,7 +1010,7 @@ db_put_cmd(interp, argc, argv, dbp)
 				return (TCL_ERROR);
 			}
 			memcpy(&ikey, key.data, sizeof(db_recno_t));
-			sprintf(numbuf, "%ld", (long)ikey);
+			snprintf(numbuf, sizeof(numbuf), "%ld", (long)ikey);
 			Tcl_SetResult(interp, numbuf, TCL_VOLATILE);
 		} else {
 			Tcl_SetResult(interp, "0", TCL_STATIC);
@@ -1047,7 +1091,7 @@ db_putbin_cmd(interp, argc, argv, dbp)
 			    " not a transaction.", 0);
 			return (TCL_ERROR);
 		}
-		txnid = (DB_TXN *)(info.clientData);
+		txnid = (DB_TXN *)info.clientData;
 	}
 	debug_check();
 
@@ -1101,6 +1145,7 @@ dbc_del_cmd(interp, argc, argv, dbc)
 }
 
 #define DBCGET_USAGE "cursorN get key flags [beg len]"
+#define DBCBGET_USAGE "cursorN get key data flags [beg len]"
 int
 dbc_get_cmd(interp, argc, argv, dbc)
 	Tcl_Interp *interp;
@@ -1111,12 +1156,18 @@ dbc_get_cmd(interp, argc, argv, dbc)
 	DBT data, key;
 	db_recno_t rkey;
 	u_int32_t flags;
-	int ret, tclint;
+	int arg_off, ret, tclint;
 	char numbuf[16];
 
-	USAGE_GE(argc, 4, DBCGET_USAGE, 0);
+	if (strcmp(argv[1], "bget") == 0) {
+		USAGE(argc, 5, DBCBGET_USAGE, 0);
+		arg_off = 4;
+	} else {
+		USAGE_GE(argc, 4, DBCGET_USAGE, 0);
+		arg_off = 3;
+	}
 
-	if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[arg_off], &tclint) != TCL_OK) {
 		Tcl_AppendResult(interp, "\n", DBCGET_USAGE, NULL);
 		return (TCL_ERROR);
 	}
@@ -1135,16 +1186,23 @@ dbc_get_cmd(interp, argc, argv, dbc)
 	}
 
 	memset(&data, 0, sizeof(data));
-	if (LF_ISSET(DB_DBT_PARTIAL)) {
-		USAGE(argc, 6, DBCGET_USAGE, 0);
-		if (Tcl_GetInt(interp, argv[4], &tclint) != TCL_OK)
+	if (argc > arg_off + 3 &&
+	    strcmp(argv[arg_off + 1], "DB_DBT_PARTIAL") == 0) {
+		/* We have a partial */
+		USAGE(argc, arg_off + 4, DBGET_USAGE, 0);
+		if (Tcl_GetInt(interp, argv[arg_off + 2], &tclint) != TCL_OK)
 			return (TCL_ERROR);
 		data.doff = (size_t)tclint;
-		if (Tcl_GetInt(interp, argv[5], &tclint) != TCL_OK)
+		if (Tcl_GetInt(interp, argv[arg_off + 3], &tclint) != TCL_OK)
 			return (TCL_ERROR);
 		data.dlen = (size_t)tclint;
 		data.flags = DB_DBT_PARTIAL;
-		LF_CLR(DB_DBT_PARTIAL);
+		flags = 0;
+	}
+
+	if (flags == DB_GET_BOTH) {
+		data.data = argv[3];
+		data.size = strlen(argv[3]) + 1;
 	}
 
 	debug_check();
@@ -1163,6 +1221,7 @@ dbc_get_cmd(interp, argc, argv, dbc)
 			F_SET(&key, DB_DBT_MALLOC);
 			break;
 		/* case DB_SET: Do nothing */
+		/* case DB_GET_BOTH: Do nothing */
 		}
 	}
 	if ((ret = dbc->c_get(dbc, &key, &data, flags)) == 0) {
@@ -1177,14 +1236,16 @@ dbc_get_cmd(interp, argc, argv, dbc)
 				return (TCL_ERROR);
 			}
 			memcpy(&rkey, key.data, sizeof(db_recno_t));
-			sprintf(numbuf, "%ld", (long)rkey);
+			snprintf(numbuf, sizeof(numbuf), "%ld", (long)rkey);
 			Tcl_SetResult(interp, numbuf, TCL_VOLATILE);
 		} else
 			Tcl_SetResult(interp, key.data, TCL_VOLATILE);
 
-		Tcl_AppendResult(interp, " {", NULL);
-		set_get_result(interp, &data);
-		Tcl_AppendResult(interp, "} ", NULL);
+		if ((flags & DB_OPFLAGS_MASK) != DB_JOIN_ITEM) {
+			Tcl_AppendResult(interp, " {", NULL);
+			set_get_result(interp, &data);
+			Tcl_AppendResult(interp, "} ", NULL);
+		}
 		if (F_ISSET(&data, DB_DBT_MALLOC))
 			free(&data.data);
 		if (F_ISSET(&key, DB_DBT_MALLOC))
@@ -1259,7 +1320,7 @@ dbc_getbin_cmd(interp, argc, argv, dbc)
 	} else if (dbc->dbp->type == DB_RECNO) {
 		dbt = &data;
 		memcpy(&rkey, key.data, sizeof(db_recno_t));
-		sprintf(nbuf, "%ld", (long)rkey);
+		snprintf(nbuf, sizeof(nbuf), "%ld", (long)rkey);
 		Tcl_SetResult(interp, nbuf, TCL_VOLATILE);
 	} else {
 		dbt = &data;
@@ -1353,15 +1414,7 @@ list_to_numarray(interp, str)
 		}
 		*np = (u_int8_t)tmp;		/* XXX: Possible overflow. */
 	}
-#ifndef _WIN32
-	/*
-	 * XXX
-	 * This currently traps on Windows/NT, probably due to a mismatch of
-	 * malloc/free implementations between the TCL library and this module.
-	 * Sidestep the issue for now.
-	 */
-	free(argv);
-#endif
+	FREE_TCL(argv);
 	return (nums);
 }
 
@@ -1385,7 +1438,7 @@ stamp_cmd(notused, interp, argc, argv)
 	if (now == (time_t)-1)
 		goto err;
 	if (argc > 1 && strcmp(argv[1], "-r") == 0) {
-		sprintf(buf, "%lu", (u_long)now);
+		snprintf(buf, sizeof(buf), "%lu", (u_long)now);
 		Tcl_SetResult(interp, buf, TCL_STATIC);
 		return (TCL_OK);
 	}
@@ -1395,7 +1448,7 @@ stamp_cmd(notused, interp, argc, argv)
 	if (start == 0)
 		start = now;
 	elapsed = now - start;
-	(void)sprintf(buf, "%02d:%02d:%02d (%02d:%02d:%02d)",
+	snprintf(buf, sizeof(buf), "%02d:%02d:%02d (%02d:%02d:%02d)",
 	    tp->tm_hour, tp->tm_min, tp->tm_sec, (int)(elapsed / 3600),
 	    (int)((elapsed % 3600) / 60), (int)(((elapsed % 3600) % 60)));
 	start = now;
@@ -1440,19 +1493,19 @@ dbt_from_file(interp, file, dbt)
 	len = strlen(file) + 1;
 	if ((errno = __db_open(file, DB_RDONLY, DB_RDONLY, 0, &fd)) != 0)
 		goto err;
-	if ((errno = __db_ioinfo(file, fd, &mbytes, &bytes, NULL)) != 0)
+	if ((errno = __os_ioinfo(file, fd, &mbytes, &bytes, NULL)) != 0)
 		goto err;
 	size = mbytes * MEGABYTE + bytes;
 	if ((dbt->data = (void *)malloc(size + len)) == NULL)
 		goto err;
 	if ((errno =
-	    __db_read(fd, ((u_int8_t *)dbt->data) + len, size, &nr)) != 0)
+	    __os_read(fd, ((u_int8_t *)dbt->data) + len, size, &nr)) != 0)
 		goto err;
 	if (nr != (ssize_t)size) {
 		errno = EIO;
 		goto err;
 	}
-	if ((errno =__db_close(fd)) != 0) {
+	if ((errno =__os_close(fd)) != 0) {
 err:		if (fd != -1)
 			close(fd);
 		Tcl_SetResult(interp, Tcl_PosixError(interp), TCL_STATIC);
@@ -1487,13 +1540,13 @@ dbt_to_file(interp, file, dbt)
 	fd = -1;
 	if ((errno = __db_open(file, DB_CREATE | DB_TRUNCATE,
 	    DB_CREATE | DB_TRUNCATE, 0644, &fd)) != 0 ||
-	    (errno = __db_write(fd, p, dbt->size - len, &nw) != 0) ||
+	    (errno = __os_write(fd, p, dbt->size - len, &nw) != 0) ||
 	    nw != (ssize_t)(dbt->size - len) ||
-	    (errno = __db_close(fd)) != 0) {
+	    (errno = __os_close(fd)) != 0) {
 		if (errno == 0)
 			errno = EIO;
 		if (fd == -1)
-			(void)__db_close(fd);
+			(void)__os_close(fd);
 		Tcl_SetResult(interp, Tcl_PosixError(interp), TCL_STATIC);
 		return (TCL_ERROR);
 	}
@@ -1507,7 +1560,7 @@ set_get_result(interp, dbt)
 	Tcl_Interp *interp;
 	DBT *dbt;
 {
-	size_t i;
+	size_t i, len;
 	u_int8_t *p;
 	char numbuf[32], sprbuf[128], *outbuf;
 
@@ -1535,12 +1588,14 @@ set_get_result(interp, dbt)
 		if (outbuf != dbt->data)
 			free(outbuf);
 	} else {
-		sprintf(&numbuf[0], "%lu", (u_long)i);
-		sprintf(&sprbuf[0], " %%.%ds", dbt->size - i);
-		outbuf = (char *)malloc(dbt->size - i + 5);
-		sprintf(outbuf, sprbuf, p);
-		Tcl_AppendResult(interp, numbuf, outbuf, NULL);
-		free(outbuf);
+		snprintf(numbuf, sizeof(numbuf), "%lu", (u_long)i);
+		snprintf(sprbuf, sizeof(sprbuf), " %%.%ds", dbt->size - i);
+		len = dbt->size - i + 5;
+		if ((outbuf = (char *)malloc(len)) != NULL) {
+			snprintf(outbuf, len, sprbuf, p);
+			Tcl_AppendResult(interp, numbuf, outbuf, NULL);
+			free(outbuf);
+		}
 	}
 }
 
@@ -1578,7 +1633,7 @@ rand_cmd(notused, interp, argc, argv)
 	argv = NULL;
 	USAGE(argc, 1, RAND_USAGE, 0);
 
-	sprintf(retbuf, "%ld", (long)rand());
+	snprintf(retbuf, sizeof(retbuf), "%ld", (long)rand());
 	Tcl_SetResult(interp, retbuf, TCL_VOLATILE);
 	return (TCL_OK);
 }
@@ -1609,7 +1664,7 @@ randomint_cmd(notused, interp, argc, argv)
 		printf("Max random is higher than %ld\n", (long)RAND_MAX);
 	ret = (int)(((double)t / ((double)(RAND_MAX) + 1)) * (hi - lo + 1));
 	ret += lo;
-	sprintf(retbuf, "%d", ret);
+	snprintf(retbuf, sizeof(retbuf), "%d", ret);
 	Tcl_SetResult(interp, retbuf, TCL_VOLATILE);
 	return (TCL_OK);
 }
@@ -1668,7 +1723,7 @@ dbenv_cmd(notused, interp, argc, argv)
 	F_SET(env, DB_ENV_STANDALONE);
 
 	/* Create new command name. */
-	sprintf(&envname[0], "env%d", env_number);
+	snprintf(envname, sizeof(envname), "env%d", env_number);
 	env_number++;
 
 	Tcl_CreateCommand(interp, envname, envwidget_cmd, (ClientData)env,
@@ -1682,13 +1737,16 @@ envwidget_delcmd(cd)
 	ClientData cd;
 {
 	DB_ENV *env;
+	u_int8_t *conflicts;
 
 	debug_check();
 	env = (DB_ENV *)cd;
 
+	if (!F_ISSET(env, DB_ENV_CDB) && env->lk_conflicts != NULL) {
+		conflicts = (u_int8_t *)env->lk_conflicts;
+		free(conflicts);
+	}
 	(void)db_appexit(env);
-	if (env->lk_conflicts)
-		free(env->lk_conflicts);
 	free(env);
 }
 
@@ -1735,7 +1793,7 @@ envwidget_cmd(cd, interp, argc, argv)
 		newenv->tx_info = NULL;
 
 		/* Create new command name. */
-		sprintf(&nenvname[0], "nenv%d", nenv_number);
+		snprintf(nenvname, sizeof(nenvname), "nenv%d", nenv_number);
 		nenv_number++;
 
 		Tcl_CreateCommand(interp, nenvname, envwidget_cmd,
@@ -1780,5 +1838,73 @@ debugcheck_cmd(notused1, interp, argc, notused2)
 	notused2 = notused2;
 	debug_check();
 	Tcl_ResetResult(interp);
+	return (TCL_OK);
+}
+
+#define DB_JOIN_USAGE "dbN join {DBC ... DBC} flags"
+int
+db_join_cmd(interp, argc, argv, dbp)
+	Tcl_Interp *interp;
+	int argc;
+	char *argv[];
+	DB *dbp;
+{
+	static int jcurs_id = 0;
+	int i, tclint, ncurs, ret;
+	u_int32_t flags;
+	char **cursnames;
+	char cursname[128];
+	Tcl_CmdInfo info;
+	DBC *dbc, **curs_array;
+
+	USAGE(argc, 4, DB_JOIN_USAGE, 0);
+
+	if (Tcl_GetInt(interp, argv[3], &tclint) != TCL_OK) {
+		Tcl_SetResult(interp, "\nUsage: ", TCL_STATIC);
+		Tcl_AppendResult(interp, DB_JOIN_USAGE, NULL);
+		return (TCL_OK);
+	}
+
+	flags = (u_int32_t)tclint;
+
+	/* Now, split the cursor list into an array. */
+	if (Tcl_SplitList(interp, argv[2], &ncurs, &cursnames) != TCL_OK) {
+		Tcl_SetResult(interp, "dbjoin: Invalid list ", TCL_STATIC);
+		Tcl_AppendResult(interp, argv[2], NULL);
+		return (TCL_OK);
+	}
+
+	/* Malloc the array to pass to join. */
+	curs_array = (DBC **)malloc(sizeof(DBC *) * (ncurs + 1));
+	if (curs_array == NULL) {
+		Tcl_SetResult(interp, "dbjoin: ", TCL_STATIC);
+		Tcl_AppendResult(interp, Tcl_PosixError(interp), NULL);
+		goto end1;
+	}
+	for (i = 0; i < ncurs; i++) {
+		if (Tcl_GetCommandInfo(interp, cursnames[i], &info) == 0) {
+			Tcl_SetResult(interp,
+			    "dbjoin: Invalid cursor ", TCL_STATIC);
+			Tcl_AppendResult(interp, cursnames[i], NULL);
+			goto end2;
+		}
+		curs_array[i] = (DBC *)info.clientData;
+	}
+	curs_array[i] = NULL;
+
+	if ((ret = dbp->join(dbp, curs_array, 0, &dbc)) == 0) {
+		snprintf(cursname, sizeof(cursname), "join.cursor%d", jcurs_id);
+		jcurs_id++;
+		Tcl_CreateCommand(interp, cursname, dbcursor_cmd,
+		    (ClientData)dbc, NULL);
+		Tcl_SetResult(interp, cursname, TCL_VOLATILE);
+	} else {
+		Tcl_SetResult(interp, "db_cursor:", TCL_STATIC);
+		errno = ret;
+		Tcl_AppendResult(interp, Tcl_PosixError(interp), 0);
+	}
+
+end2:	free(curs_array);
+end1:	FREE_TCL(cursnames);
 	return (TCL_OK);
 }

@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)db_rec.c	10.16 (Sleepycat) 4/28/98";
+static const char sccsid[] = "@(#)db_rec.c	10.19 (Sleepycat) 9/27/98";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -40,7 +40,8 @@ __db_addrem_recover(logp, dbtp, lsnp, redo, info)
 	void *info;
 {
 	__db_addrem_args *argp;
-	DB *file_dbp, *mdbp;
+	DB *file_dbp;
+	DBC *dbc;
 	DB_MPOOLFILE *mpf;
 	PAGE *pagep;
 	u_int32_t change;
@@ -57,9 +58,7 @@ __db_addrem_recover(logp, dbtp, lsnp, redo, info)
 			 * would not have to undo anything.  In this case,
 			 * don't bother creating a page.
 			 */
-			*lsnp = argp->prev_lsn;
-			ret = 0;
-			goto out;
+			goto done;
 		} else
 			if ((ret = memp_fget(mpf,
 			    &argp->pgno, DB_MPOOL_CREATE, &pagep)) != 0)
@@ -73,7 +72,7 @@ __db_addrem_recover(logp, dbtp, lsnp, redo, info)
 	    (cmp_n == 0 && !redo && argp->opcode == DB_REM_DUP)) {
 
 		/* Need to redo an add, or undo a delete. */
-		if ((ret = __db_pitem(file_dbp, pagep, argp->indx, argp->nbytes,
+		if ((ret = __db_pitem(dbc, pagep, argp->indx, argp->nbytes,
 		    argp->hdr.size == 0 ? NULL : &argp->hdr,
 		    argp->dbt.size == 0 ? NULL : &argp->dbt)) != 0)
 			goto out;
@@ -83,7 +82,7 @@ __db_addrem_recover(logp, dbtp, lsnp, redo, info)
 	} else if ((cmp_n == 0 && !redo && argp->opcode == DB_ADD_DUP) ||
 	    (cmp_p == 0 && redo && argp->opcode == DB_REM_DUP)) {
 		/* Need to undo an add, or redo a delete. */
-		if ((ret = __db_ditem(file_dbp,
+		if ((ret = __db_ditem(dbc,
 		    pagep, argp->indx, argp->nbytes)) != 0)
 			goto out;
 		change = DB_MPOOL_DIRTY;
@@ -95,8 +94,11 @@ __db_addrem_recover(logp, dbtp, lsnp, redo, info)
 		else
 			LSN(pagep) = argp->pagelsn;
 
-	if ((ret = memp_fput(mpf, pagep, change)) == 0)
-		*lsnp = argp->prev_lsn;
+	if ((ret = memp_fput(mpf, pagep, change)) != 0)
+		goto out;
+
+done:	*lsnp = argp->prev_lsn;
+	ret = 0;
 
 out:	REC_CLOSE;
 }
@@ -113,7 +115,8 @@ __db_split_recover(logp, dbtp, lsnp, redo, info)
 	void *info;
 {
 	__db_split_args *argp;
-	DB *file_dbp, *mdbp;
+	DB *file_dbp;
+	DBC *dbc;
 	DB_MPOOLFILE *mpf;
 	PAGE *pagep;
 	int change, cmp_n, cmp_p, ret;
@@ -121,7 +124,7 @@ __db_split_recover(logp, dbtp, lsnp, redo, info)
 	REC_PRINT(__db_split_print);
 	REC_INTRO(__db_split_read);
 
-	if ((ret = memp_fget(mpf, &argp->pgno, 0, &pagep)) != 0) {
+	if ((ret = memp_fget(mpf, &argp->pgno, 0, &pagep)) != 0)
 		if (!redo) {
 			/*
 			 * We are undoing and the page doesn't exist.  That
@@ -129,14 +132,11 @@ __db_split_recover(logp, dbtp, lsnp, redo, info)
 			 * would not have to undo anything.  In this case,
 			 * don't bother creating a page.
 			 */
-			*lsnp = argp->prev_lsn;
-			ret = 0;
-			goto out;
+			goto done;
 		} else
 			if ((ret = memp_fget(mpf,
 			    &argp->pgno, DB_MPOOL_CREATE, &pagep)) != 0)
 				goto out;
-	}
 
 	/*
 	 * There are two types of log messages here, one for the old page
@@ -168,8 +168,11 @@ __db_split_recover(logp, dbtp, lsnp, redo, info)
 		LSN(pagep) = argp->pagelsn;
 		change = DB_MPOOL_DIRTY;
 	}
-	if ((ret = memp_fput(mpf, pagep, change)) == 0)
-		*lsnp = argp->prev_lsn;
+	if ((ret = memp_fput(mpf, pagep, change)) != 0)
+		goto out;
+
+done:	*lsnp = argp->prev_lsn;
+	ret = 0;
 
 out:	REC_CLOSE;
 }
@@ -186,7 +189,8 @@ __db_big_recover(logp, dbtp, lsnp, redo, info)
 	void *info;
 {
 	__db_big_args *argp;
-	DB *file_dbp, *mdbp;
+	DB *file_dbp;
+	DBC *dbc;
 	DB_MPOOLFILE *mpf;
 	PAGE *pagep;
 	u_int32_t change;
@@ -208,7 +212,7 @@ __db_big_recover(logp, dbtp, lsnp, redo, info)
 		} else
 			if ((ret = memp_fget(mpf,
 			    &argp->pgno, DB_MPOOL_CREATE, &pagep)) != 0)
-			goto out;
+				goto out;
 	}
 
 	/*
@@ -297,9 +301,7 @@ npage:	if (argp->next_pgno != PGNO_INVALID) {
 				 * so we would not have to undo anything.  In
 				 * this case, don't bother creating a page.
 				 */
-				*lsnp = argp->prev_lsn;
-				ret = 0;
-				goto out;
+				goto done;
 			} else
 				if ((ret = memp_fget(mpf, &argp->next_pgno,
 				    DB_MPOOL_CREATE, &pagep)) != 0)
@@ -320,7 +322,8 @@ npage:	if (argp->next_pgno != PGNO_INVALID) {
 			goto out;
 	}
 
-	*lsnp = argp->prev_lsn;
+done:	*lsnp = argp->prev_lsn;
+	ret = 0;
 
 out:	REC_CLOSE;
 }
@@ -340,7 +343,8 @@ __db_ovref_recover(logp, dbtp, lsnp, redo, info)
 	void *info;
 {
 	__db_ovref_args *argp;
-	DB *file_dbp, *mdbp;
+	DB *file_dbp;
+	DBC *dbc;
 	DB_MPOOLFILE *mpf;
 	PAGE *pagep;
 	int modified, ret;
@@ -367,8 +371,11 @@ __db_ovref_recover(logp, dbtp, lsnp, redo, info)
 		pagep->lsn = argp->lsn;
 		modified = 1;
 	}
-	if ((ret = memp_fput(mpf, pagep, modified ? DB_MPOOL_DIRTY : 0)) == 0)
-		*lsnp = argp->prev_lsn;
+	if ((ret = memp_fput(mpf, pagep, modified ? DB_MPOOL_DIRTY : 0)) != 0)
+		goto out;
+
+done:	*lsnp = argp->prev_lsn;
+	ret = 0;
 
 out:	REC_CLOSE;
 }
@@ -389,17 +396,20 @@ __db_relink_recover(logp, dbtp, lsnp, redo, info)
 	void *info;
 {
 	__db_relink_args *argp;
-	DB *file_dbp, *mdbp;
+	DB *file_dbp;
+	DBC *dbc;
 	DB_MPOOLFILE *mpf;
 	PAGE *pagep;
-	int modified, ret;
+	int cmp_n, cmp_p, modified, ret;
 
 	REC_PRINT(__db_relink_print);
 	REC_INTRO(__db_relink_read);
 
 	/*
-	 * There are three pages we need to check -- the page, and the
-	 * previous and next pages, if they existed.
+	 * There are up to three pages we need to check -- the page, and the
+	 * previous and next pages, if they existed.  For a page add operation,
+	 * the current page is the result of a split and is being recovered
+	 * elsewhere, so all we need do is recover the next page.
 	 */
 	if ((ret = memp_fget(mpf, &argp->pgno, 0, &pagep)) != 0) {
 		if (redo) {
@@ -408,6 +418,9 @@ __db_relink_recover(logp, dbtp, lsnp, redo, info)
 		}
 		goto next;
 	}
+	if (argp->opcode == DB_ADD_PAGE)
+		goto next;
+
 	modified = 0;
 	if (log_compare(&LSN(pagep), &argp->lsn) == 0 && redo) {
 		/* Redo the relink. */
@@ -421,10 +434,8 @@ __db_relink_recover(logp, dbtp, lsnp, redo, info)
 		pagep->lsn = argp->lsn;
 		modified = 1;
 	}
-	if ((ret = memp_fput(mpf, pagep, modified ? DB_MPOOL_DIRTY : 0)) != 0) {
-		(void)__db_panic(file_dbp);
+	if ((ret = memp_fput(mpf, pagep, modified ? DB_MPOOL_DIRTY : 0)) != 0)
 		goto out;
-	}
 
 next:	if ((ret = memp_fget(mpf, &argp->next, 0, &pagep)) != 0) {
 		if (redo) {
@@ -434,23 +445,27 @@ next:	if ((ret = memp_fget(mpf, &argp->next, 0, &pagep)) != 0) {
 		goto prev;
 	}
 	modified = 0;
-	if (log_compare(&LSN(pagep), &argp->lsn_next) == 0 && redo) {
-		/* Redo the relink. */
+	cmp_n = log_compare(lsnp, &LSN(pagep));
+	cmp_p = log_compare(&LSN(pagep), &argp->lsn_next);
+	if ((argp->opcode == DB_REM_PAGE && cmp_p == 0 && redo) ||
+	    (argp->opcode == DB_ADD_PAGE && cmp_n == 0 && !redo)) {
+		/* Redo the remove or undo the add. */
 		pagep->prev_pgno = argp->prev;
 
 		pagep->lsn = *lsnp;
 		modified = 1;
-	} else if (log_compare(lsnp, &LSN(pagep)) == 0 && !redo) {
-		/* Undo the relink. */
+	} else if ((argp->opcode == DB_REM_PAGE && cmp_n == 0 && !redo) ||
+	    (argp->opcode == DB_ADD_PAGE && cmp_p == 0 && redo)) {
+		/* Undo the remove or redo the add. */
 		pagep->prev_pgno = argp->pgno;
 
 		pagep->lsn = argp->lsn_next;
 		modified = 1;
 	}
-	if ((ret = memp_fput(mpf, pagep, modified ? DB_MPOOL_DIRTY : 0)) != 0) {
-		(void)__db_panic(file_dbp);
+	if ((ret = memp_fput(mpf, pagep, modified ? DB_MPOOL_DIRTY : 0)) != 0)
 		goto out;
-	}
+	if (argp->opcode == DB_ADD_PAGE)
+		goto done;
 
 prev:	if ((ret = memp_fget(mpf, &argp->prev, 0, &pagep)) != 0) {
 		if (redo) {
@@ -473,10 +488,8 @@ prev:	if ((ret = memp_fget(mpf, &argp->prev, 0, &pagep)) != 0) {
 		pagep->lsn = argp->lsn_prev;
 		modified = 1;
 	}
-	if ((ret = memp_fput(mpf, pagep, modified ? DB_MPOOL_DIRTY : 0)) != 0) {
-		(void) __db_panic(file_dbp);
+	if ((ret = memp_fput(mpf, pagep, modified ? DB_MPOOL_DIRTY : 0)) != 0)
 		goto out;
-	}
 
 done:	*lsnp = argp->prev_lsn;
 	ret = 0;
@@ -497,7 +510,8 @@ __db_addpage_recover(logp, dbtp, lsnp, redo, info)
 	void *info;
 {
 	__db_addpage_args *argp;
-	DB *file_dbp, *mdbp;
+	DB *file_dbp;
+	DBC *dbc;
 	DB_MPOOLFILE *mpf;
 	PAGE *pagep;
 	u_int32_t change;
@@ -538,8 +552,7 @@ __db_addpage_recover(logp, dbtp, lsnp, redo, info)
 			 * would not have to undo anything.  In this case,
 			 * don't bother creating a page.
 			 */
-			ret = 0;
-			goto out;
+			goto done;
 		} else
 			if ((ret = memp_fget(mpf,
 			    &argp->nextpgno, DB_MPOOL_CREATE, &pagep)) != 0)
@@ -559,11 +572,13 @@ __db_addpage_recover(logp, dbtp, lsnp, redo, info)
 		LSN(pagep) = argp->nextlsn;
 		change = DB_MPOOL_DIRTY;
 	}
-	ret = memp_fput(mpf, pagep, change);
+	if ((ret = memp_fput(mpf, pagep, change)) != 0)
+		goto out;
 
-out:	if (ret == 0)
-		*lsnp = argp->prev_lsn;
-	REC_CLOSE;
+done:	*lsnp = argp->prev_lsn;
+	ret = 0;
+
+out:	REC_CLOSE;
 }
 
 /*
@@ -593,47 +608,4 @@ __db_debug_recover(logp, dbtp, lsnp, redo, info)
 	ret = 0;
 
 	REC_NOOP_CLOSE;
-}
-
-/*
- * __db_noop_recover --
- *	Recovery function for noop.
- *
- * PUBLIC: int __db_noop_recover __P((DB_LOG *, DBT *, DB_LSN *, int, void *));
- */
-int
-__db_noop_recover(logp, dbtp, lsnp, redo, info)
-	DB_LOG *logp;
-	DBT *dbtp;
-	DB_LSN *lsnp;
-	int redo;
-	void *info;
-{
-	__db_noop_args *argp;
-	DB *file_dbp, *mdbp;
-	DB_MPOOLFILE *mpf;
-	PAGE *pagep;
-	u_int32_t change;
-	int cmp_n, cmp_p, ret;
-
-	REC_PRINT(__db_noop_print);
-	REC_INTRO(__db_noop_read);
-
-	if ((ret = memp_fget(mpf, &argp->pgno, 0, &pagep)) != 0)
-		goto out;
-
-	cmp_n = log_compare(lsnp, &LSN(pagep));
-	cmp_p = log_compare(&LSN(pagep), &argp->prevlsn);
-	change = 0;
-	if (cmp_p == 0 && redo) {
-		LSN(pagep) = *lsnp;
-		change = DB_MPOOL_DIRTY;
-	} else if (cmp_n == 0 && !redo) {
-		LSN(pagep) = argp->prevlsn;
-		change = DB_MPOOL_DIRTY;
-	}
-	*lsnp = argp->prev_lsn;
-	ret = memp_fput(mpf, pagep, change);
-
-out:	REC_CLOSE;
 }

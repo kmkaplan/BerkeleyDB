@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)lock.tcl	10.6 (Sleepycat) 4/10/98
+#	@(#)lock.tcl	10.8 (Sleepycat) 6/12/98
 #
 # Test driver for lock tests.
 #						General	Multi	Random
@@ -91,6 +91,7 @@ source ./include.tcl
 
 proc lock001 { maxl nmodes conf } {
 source ./include.tcl
+global is_windows_test
 	puts "Lock001: open/close test"
 
 	# Lock without create should fail.
@@ -107,17 +108,22 @@ source ./include.tcl
 	set ret [ $lp close ]
 	error_check_good lock_close $ret 0
 
-	# Try reopening the region
-	set lp [lock_open "" 0 0644 -maxlocks $maxl -nmodes $nmodes \
-	    -conflicts $conf]
-	error_check_bad lock_open $lp NULL
+	# Try reopening the region -- this doesn't work on Windows
+	# because if there is only one opener, the region disappears
+	# when it is closed.  We can't do a second opener, because
+	# that will fail on HPUX.
+	if { $is_windows_test != 1 } {
+		set lp [lock_open "" 0 0644 -maxlocks $maxl -nmodes $nmodes \
+		    -conflicts $conf]
+		error_check_bad lock_open $lp NULL
 
-	# Try unlinking without force (should fail)
-	set ret [ lock_unlink $testdir 0 ]
-	error_check_good lock_unlink $ret -1
+		# Try unlinking without force (should fail)
+		set ret [ lock_unlink $testdir 0 ]
+		error_check_good lock_unlink $ret -1
 
-	# Close the region
-	error_check_good lock_close [$lp close] 0
+		# Close the region
+		error_check_good lock_close [$lp close] 0
+	}
 
 	# Create/open a new region
 	set lp [lock_open "" $DB_CREATE 0644 \

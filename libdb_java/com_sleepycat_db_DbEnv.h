@@ -7,8 +7,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#undef com_sleepycat_db_DbEnv_java_version_string_
-#define com_sleepycat_db_DbEnv_java_version_string_ 61L
 /*
  * Class:     com_sleepycat_db_DbEnv
  * Method:    appexit
@@ -31,150 +29,6 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_appinit
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_finalize
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_data_cnt
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbEnv_get_1data_1cnt
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_data_next
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbEnv_get_1data_1next
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_errcall
- * Signature: ()Lcom/sleepycat/db/DbErrcall;
- */
-JNIEXPORT jobject JNICALL Java_com_sleepycat_db_DbEnv_get_1errcall
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_errpfx
- * Signature: ()Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_com_sleepycat_db_DbEnv_get_1errpfx
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_flags
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbEnv_get_1flags
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_home
- * Signature: ()Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_com_sleepycat_db_DbEnv_get_1home
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_lg_max
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbEnv_get_1lg_1max
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_lk_conflicts
- * Signature: ()[[B
- */
-JNIEXPORT jobjectArray JNICALL Java_com_sleepycat_db_DbEnv_get_1lk_1conflicts
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_lk_detect
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbEnv_get_1lk_1detect
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_lk_max
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbEnv_get_1lk_1max
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_lk_modes
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbEnv_get_1lk_1modes
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_log_dir
- * Signature: ()Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_com_sleepycat_db_DbEnv_get_1log_1dir
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_lorder
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbEnv_get_1lorder
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_mp_mmapsize
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbEnv_get_1mp_1mmapsize
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_mp_size
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_com_sleepycat_db_DbEnv_get_1mp_1size
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_tmp_dir
- * Signature: ()Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_com_sleepycat_db_DbEnv_get_1tmp_1dir
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_tx_max
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbEnv_get_1tx_1max
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    get_verbose
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbEnv_get_1verbose
   (JNIEnv *, jobject);
 
 /*
@@ -219,22 +73,6 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_init
 
 /*
  * Class:     com_sleepycat_db_DbEnv
- * Method:    set_data_cnt
- * Signature: (I)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1data_1cnt
-  (JNIEnv *, jobject, jint);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    set_data_next
- * Signature: (I)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1data_1next
-  (JNIEnv *, jobject, jint);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
  * Method:    set_errcall
  * Signature: (Lcom/sleepycat/db/DbErrcall;)V
  */
@@ -247,22 +85,6 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1errcall
  * Signature: (Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1errpfx
-  (JNIEnv *, jobject, jstring);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    set_flags
- * Signature: (I)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1flags
-  (JNIEnv *, jobject, jint);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    set_home
- * Signature: (Ljava/lang/String;)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1home
   (JNIEnv *, jobject, jstring);
 
 /*
@@ -307,14 +129,6 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1lk_1modes
 
 /*
  * Class:     com_sleepycat_db_DbEnv
- * Method:    set_log_dir
- * Signature: (Ljava/lang/String;)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1log_1dir
-  (JNIEnv *, jobject, jstring);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
  * Method:    set_lorder
  * Signature: (I)V
  */
@@ -336,14 +150,6 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1mp_1mmapsize
  */
 JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1mp_1size
   (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     com_sleepycat_db_DbEnv
- * Method:    set_tmp_dir
- * Signature: (Ljava/lang/String;)V
- */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_set_1tmp_1dir
-  (JNIEnv *, jobject, jstring);
 
 /*
  * Class:     com_sleepycat_db_DbEnv

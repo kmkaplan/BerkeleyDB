@@ -4,73 +4,37 @@
  * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)DbMpoolStat.java	10.2 (Sleepycat) 4/10/98
+ *	@(#)DbMpoolStat.java	10.5 (Sleepycat) 11/2/98
  */
 
 package com.sleepycat.db;
 
-/**
- *
- * Models the DB DB_MPOOL_STAT struct.
- * @author Donald D. Anderson
+/*
+ * This is filled in and returned by the
+ * DbMpool.stat() method.
  */
 public class DbMpoolStat
 {
-    // methods
-    //
-
-    protected native void finalize()
-         throws Throwable;
-
-    // get/set methods
-    //
-
-    // Cache size.
-    public native /*size_t*/ long get_st_cachesize();
-
-    // Pages found in the cache.
-    public native /*unsigned*/ long get_st_cache_hit();
-
-    // Pages not found in the cache.
-    public native /*unsigned*/ long get_st_cache_miss();
-
-    // Pages from mapped files.
-    public native /*unsigned*/ long get_st_map();
-
-    // Pages created in the cache.
-    public native /*unsigned*/ long get_st_page_create();
-
-    // Pages read in.
-    public native /*unsigned*/ long get_st_page_in();
-
-    // Pages written out.
-    public native /*unsigned*/ long get_st_page_out();
-
-    // Read-only pages evicted.
-    public native /*unsigned*/ long get_st_ro_evict();
-
-    // Read-write pages evicted.
-    public native /*unsigned*/ long get_st_rw_evict();
-
-    // Number of hash buckets.
-    public native /*unsigned*/ long get_st_hash_buckets();
-
-    // Total hash chain searches.
-    public native /*unsigned*/ long get_st_hash_searches();
-
-    // Longest hash chain searched.
-    public native /*unsigned*/ long get_st_hash_longest();
-
-    // Total hash entries searched.
-    public native /*unsigned*/ long get_st_hash_examined();
-
-    // private data
-    //
-    private long private_info_ = 0;
-
-    static {
-        Db.load_db();
-    }
+    public int st_cachesize;            // Cache size.
+    public int st_cache_hit;            // Pages found in the cache.
+    public int st_cache_miss;           // Pages not found in the cache.
+    public int st_map;                  // Pages from mapped files.
+    public int st_page_create;          // Pages created in the cache.
+    public int st_page_in;              // Pages read in.
+    public int st_page_out;             // Pages written out.
+    public int st_ro_evict;             // Clean pages forced from the cache.
+    public int st_rw_evict;             // Dirty pages forced from the cache.
+    public int st_hash_buckets;         // Number of hash buckets.
+    public int st_hash_searches;        // Total hash chain searches.
+    public int st_hash_longest;         // Longest hash chain searched.
+    public int st_hash_examined;        // Total hash entries searched.
+    public int st_page_clean;           // Clean pages.
+    public int st_page_dirty;           // Dirty pages.
+    public int st_page_trickle;         // Pages written by memp_trickle.
+    public int st_region_wait;          // Region lock granted after wait.
+    public int st_region_nowait;        // Region lock granted without wait.
+    public int st_refcnt;               // Region reference count.
+    public int st_regsize;              // Region size.
 }
 
 // end of DbMpoolStat.java

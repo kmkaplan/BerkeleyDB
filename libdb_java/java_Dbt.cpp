@@ -7,7 +7,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)java_Dbt.cpp	10.4 (Sleepycat) 4/10/98";
+static const char sccsid[] = "@(#)java_Dbt.cpp	10.5 (Sleepycat) 9/10/98";
 #endif /* not lint */
 
 #include <jni.h>
@@ -86,7 +86,7 @@ JNIEXPORT jint JNICALL Java_com_sleepycat_db_Dbt_get_1offset
 
 JNIEXPORT void JNICALL Java_com_sleepycat_db_Dbt_set_1recno_1key_1data(JNIEnv *jnienv, jobject jthis, jint value)
 {
-    LockedDBT dbt_this(jnienv, jthis, 0);
+    LockedDBT dbt_this(jnienv, jthis, inOp);
     if (dbt_this.has_error())
         return;
 
@@ -109,7 +109,7 @@ JNIEXPORT jint JNICALL Java_com_sleepycat_db_Dbt_get_1recno_1key_1data(JNIEnv *j
     // DB_DBT_MALLOC for this operation, so we tell LockedDBT constructor
     // that is not a retrieve.
     //
-    LockedDBT dbt_this(jnienv, jthis, 0);
+    LockedDBT dbt_this(jnienv, jthis, inOp);
     if (dbt_this.has_error())
         return 0;
 

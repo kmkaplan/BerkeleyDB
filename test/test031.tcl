@@ -3,136 +3,152 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test031.tcl	10.8 (Sleepycat) 4/26/98
+#	@(#)test031.tcl	8.3 (Sleepycat) 10/29/98
 #
 # DB Test 31 {access method}
-# Multiprocess DB test; verify that locking is basically working.
-# Use the first "nentries" words from the dictionary.
-# Insert each with self as key and a fixed, medium length data string.
-# Then fire off multiple processes that bang on the database.  Each
-# one should trey to read and write random keys.  When they rewrite
-# They'll append their pid to the data string (sometimes doing a rewrite
-# sometimes doing a partial put).
-
-set datastr abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz
-
-proc test031 { method {nentries 1000} args } {
-global datastr
-source ./include.tcl
-
+# Use the first 10,000 entries from the dictionary.
+# Insert each with self as key and "ndups" duplicates
+# For the data field, prepend the letters of the alphabet
+# in a random order so that we force the duplicate sorting
+# code to do something.
+# By setting ndups large, we can make this an off-page test
+# After all are entered, retrieve all; verify output.
+# Close file, reopen, do retrieve and re-verify.
+# This does not work for recno
+proc test031 { method {nentries 10000} {ndups 5} {tnum 31} args } {
+global alphabet
+srand 1234
+	set omethod $method
 	set method [convert_method $method]
-	if { [string compare $method DB_RECNO] == 0 } {
-		puts "Test$reopen skipping for method RECNO"
-		return
-	}
-	puts "Test031: multiprocess db $method $nentries items"
+	set args [convert_args $method $args]
 
-	# Parse options
-	set iter 1000
-	set procs 5
-	set seeds {}
-	set do_exit 0
-	for { set i 0 } { $i < [llength $args] } {incr i} {
-		switch -regexp -- [lindex $args $i] {
-			-d.* { incr i; set testdir [lindex $args $i] }
-			-i.* { incr i; set iter [lindex $args $i] }
-			-p.* { incr i; set procs [lindex $args $i] }
-			-s.* { incr i; set seeds [lindex $args $i] }
-			-x.* { set do_exit 1 }
-			default {
-				test031_usage
-				return
-			}
-		}
-	}
-
-	if { [file exists $testdir] != 1 } {
-		exec $MKDIR $testdir
-	} elseif { [file isdirectory $testdir ] != 1 } {
-		error "FAIL: $testdir is not a directory"
-	}
+	# Get global declarations since tcl doesn't support
+	# any useful equivalent to #defines!
+	source ./include.tcl
 
 	# Create the database and open the dictionary
-	set testfile test031.db
+	set testfile test0$tnum.db
 	set t1 $testdir/t1
 	set t2 $testdir/t2
 	set t3 $testdir/t3
 	cleanup $testdir
-	set db [eval [concat dbopen \
-	    $testfile [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
+	set args [add_to_args [expr $DB_DUP | $DB_DUPSORT] $args]
+	puts "Test0$tnum: $method ($args) $nentries small sorted dup key/data pairs"
+	if { [string compare $method DB_RECNO] == 0 || \
+	    [is_rbtree $omethod] == 1 } {
+		puts "Test0$tnum skipping for method $omethod"
+		return
+	}
+	set db [eval [concat dbopen $testfile \
+	    [expr $DB_CREATE | $DB_TRUNCATE] 0644 $method $args]]
 	error_check_good dbopen [is_valid_db $db] TRUE
 	set did [open $dict]
+
+	set check_db [dbopen checkdb.db [expr $DB_CREATE | $DB_TRUNCATE] \
+	    0644 DB_HASH]
+	error_check_good dbopen:check_db [is_valid_db $check_db] TRUE
 
 	set flags 0
 	set txn 0
 	set count 0
 
-	# Here is the loop where we put each key/data pair
-
-	puts "\tTest031.a: put/get loop"
+	# Here is the loop where we put and get each key/data pair
+	puts "\tTest0$tnum.a: Put/get loop"
+	set dbc [$db cursor $txn]
+	error_check_good cursor_open [is_valid_widget $dbc $db.cursor] TRUE
 	while { [gets $did str] != -1 && $count < $nentries } {
-		if { [string compare $method DB_RECNO] == 0 } {
-			set key [expr $count + 1]
-			set put putn
-		} else {
-			set key $str
-			set put put
+		set dups ""
+		for { set i 1 } { $i <= $ndups } { incr i } {
+			set pref [string index $alphabet [random_int 0 25]]
+			set dups $dups$pref
+			set datastr $pref:$str
+			set ret [$db put $txn $str $datastr $flags]
+			error_check_good put $ret 0
 		}
-		set ret [$db $put $txn $key $datastr $flags]
-		error_check_good put:$db $ret 0
+		set ret [$check_db put $txn $str $dups $flags]
+		error_check_good checkdb_put $ret 0
+
+		# Now retrieve all the keys matching this key
+		set x 0
+		set lastdup ""
+		for {set ret [$dbc get $str $DB_SET]} \
+		    {[string length $ret] != 0} \
+		    {set ret [$dbc get 0 $DB_NEXT_DUP] } {
+			set k [lindex $ret 0]
+			if { [string compare $k $str] != 0 } {
+				break
+			}
+			set datastr [lindex $ret 1]
+			if {[string length $datastr] == 0} {
+				break
+			}
+			if {[string compare $lastdup $datastr] > 0} {
+				error_check_good sorted_dups($lastdup,$datastr)\
+				    0 1
+			}
+			incr x
+			set lastdup $datastr
+		}
+		error_check_good "Test0$tnum:ndups:$str" $x $ndups
 		incr count
 	}
+	error_check_good cursor_close [$dbc close] 0
 	close $did
-	error_check_good close:$db [$db close] 0
 
-	# Database is created, now fork off the kids.
-	puts "\tTest031.b: forking off $procs children"
+	# Now we will get each key from the DB and compare the results
+	# to the original.
+	puts "\tTest0$tnum.b: Checking file for correct duplicates"
+	set dbc [$db cursor $txn]
+	error_check_good cursor_open(2) [is_valid_widget $dbc $db.cursor] TRUE
 
-	# Remove old mpools and Open/create the lock and mpool regions
-	# Test is done, blow away lock and mpool region
-	set ret [ lock_unlink $testdir 1 ]
-#	error_check_good lock_unlink $ret 0
-	set ret [ memp_unlink $testdir 1 ]
-#	error_check_good memp_unlink $ret 0
+	set lastkey ""
+	for {set ret [$dbc get $str $DB_FIRST]} \
+	    {[string length $ret] != 0} \
+	    {set ret [$dbc get 0 $DB_NEXT] } {
+		set k [lindex $ret 0]
+		set d [lindex $ret 1]
+		error_check_bad key_check:$k [string length $k] 0
+		error_check_bad data_check:$d [string length $d] 0
 
-	set lp [lock_open "" $DB_CREATE 0644]
-	error_check_bad lock_open $lp NULL
-	error_check_good lock_open [is_substr $lp lockmgr] 1
-	error_check_good lock_close [$lp close] 0
-
-	set mp [ memp $testdir 0644 $DB_CREATE]
-	error_check_bad memp $mp NULL
-	error_check_good memp [is_substr $mp mp] 1
-	error_check_good memp_close [$mp close] 0
-
-	if { $do_exit == 1 } {
-		return
-	}
-
-	# Now spawn off processes
-	set pidlist {}
-	for { set i 0 } {$i < $procs} {incr i} {
-		set s -1
-		if { [llength $seeds] == $procs } {
-			set s [lindex $seeds $i]
+		if { [string compare $k $lastkey] != 0 } {
+			# Remove last key from the checkdb
+			if { [string length $lastkey] != 0 } {
+				error_check_good check_db:del:$lastkey \
+				    [$check_db del $txn $lastkey 0] 0
+			}
+			set lastdup ""
+			set lastkey $k
+			set dups [$check_db get $txn $k 0]
+			error_check_good check_db:get:$k \
+			    [string length $dups] $ndups
 		}
-		puts "exec ./dbtest ../test/mdbscript.tcl $testdir $testfile \
-		    $nentries $iter $i $procs $s > $testdir/test031.$i.log &"
-		set p [exec ./dbtest ../test/mdbscript.tcl $testdir $testfile \
-		    $nentries $iter $i $procs $s > $testdir/test031.$i.log & ]
-		lappend pidlist $p
+
+		if { [string compare $lastdup $d] > 0 } {
+			error_check_good dup_check:$k:$d 0 1
+		}
+		set lastdup $d
+
+		set pref [string range $d 0 0]
+		set ndx [string first $pref $dups]
+		error_check_good valid_duplicate [expr $ndx >= 0] 1
+		set a [string range $dups 0 [expr $ndx - 1]]
+		set b [string range $dups [expr $ndx + 1] end]
+		set dups $a$b
 	}
-	puts "Test031: $procs independent processes now running"
-	watch_procs $pidlist
+	# Remove last key from the checkdb
+	if { [string length $lastkey] != 0 } {
+		error_check_good check_db:del:$lastkey \
+		    [$check_db del $txn $lastkey 0] 0
+	}
 
-	# Test is done, blow away lock and mpool region
-	set ret [ lock_unlink $testdir 0 ]
-#	error_check_good lock_unlink $ret 0
-	set ret [ memp_unlink $testdir 0 ]
-#	error_check_good memp_unlink $ret 0
-}
+	# Make sure there is nothing left in check_db
 
-proc test031_usage { } {
-	puts -nonewline "test031 method nentries [-d directory] [-i iterations]"
-	puts " [-p procs] [-s {seeds} ] -x"
+	set check_c [$check_db cursor $txn]
+	set ret [$check_c get 0 $DB_FIRST]
+	error_check_good check_c:get:$ret [string length $ret] 0
+	error_check_good check_c:close [$check_c close] 0
+	error_check_good check_db:close [$check_db close] 0
+
+	error_check_good dbc_close [$dbc close] 0
+	error_check_good db_close [$db close] 0
 }

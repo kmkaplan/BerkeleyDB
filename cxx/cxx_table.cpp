@@ -8,7 +8,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)cxx_table.cpp	10.11 (Sleepycat) 4/10/98";
+static const char sccsid[] = "@(#)cxx_table.cpp	10.18 (Sleepycat) 11/22/98";
 #endif /* not lint */
 
 #include "db_cxx.h"
@@ -52,7 +52,7 @@ int Db::close(u_int32_t flags)
     return 0;
 }
 
-int Db::cursor(DbTxn *txnid, Dbc **cursorp)
+int Db::cursor(DbTxn *txnid, Dbc **cursorp, u_int32_t flags)
 {
     DB *db = unwrap(this);
     int err;
@@ -62,7 +62,7 @@ int Db::cursor(DbTxn *txnid, Dbc **cursorp)
         return EINVAL;
     }
     DBC *dbc = 0;
-    if ((err = db->cursor(db, unwrap(txnid), &dbc)) != 0) {
+    if ((err = db->cursor(db, unwrap(txnid), &dbc, flags)) != 0) {
         DB_ERROR("Db::cursor", err);
         return err;
     }
@@ -82,8 +82,13 @@ int Db::del(DbTxn *txnid, Dbt *key, u_int32_t flags)
         return EINVAL;
     }
     if ((err = db->del(db, unwrap(txnid), key, flags)) != 0) {
-        DB_ERROR("Db::del", err);
-        return err;
+        // DB_NOTFOUND is a "normal" return, so should not be
+        // thrown as an error
+        //
+        if (err != DB_NOTFOUND) {
+            DB_ERROR("Db::del", err);
+            return err;
+        }
     }
     return 0;
 }
@@ -125,6 +130,26 @@ int Db::get(DbTxn *txnid, Dbt *key, Dbt *value, u_int32_t flags)
     return err;
 }
 
+int Db::join(Dbc **curslist, u_int32_t flags, Dbc **cursorp)
+{
+    // Dbc is a "compatible" subclass of DBC -
+    // that is, no virtual functions or even extra data members,
+    // so this cast, although technically non-portable,
+    // "should" always be okay.
+    //
+    DBC **list = (DBC **)(curslist);
+    DB *db = unwrap(this);
+    DBC *dbc = 0;
+    int err;
+
+    if ((err = db->join(db, list, flags, &dbc)) != 0) {
+        DB_ERROR("Db::join_cursor", err);
+        return err;
+    }
+    *cursorp = (Dbc*)dbc;
+    return 0;
+}
+
 // static method
 int Db::open(const char *fname, DBTYPE type, u_int32_t flags,
              int mode, DbEnv *dbenv, DbInfo *info, Db **table_returned)
@@ -133,6 +158,23 @@ int Db::open(const char *fname, DBTYPE type, u_int32_t flags,
     DB *newtable;
     int err;
     if ((err = db_open(fname, type, flags, mode, dbenv,
+                       info, &newtable)) != 0) {
+        DB_ERROR("Db::open", err);
+        return err;
+    }
+    *table_returned = new Db();
+    (*table_returned)->imp_ = wrap(newtable);
+    return 0;
+}
+
+// static method
+int Db::xa_open(const char *fname, DBTYPE type, u_int32_t flags,
+             int mode, DbInfo *info, Db **table_returned)
+{
+    *table_returned = 0;
+    DB *newtable;
+    int err;
+    if ((err = db_xa_open(fname, type, flags, mode,
                        info, &newtable)) != 0) {
         DB_ERROR("Db::open", err);
         return err;
@@ -194,6 +236,12 @@ int Db::sync(u_int32_t flags)
     return 0;
 }
 
+int Db::get_byteswapped() const
+{
+    const DB *db = unwrapConst(this);
+    return db->byteswapped;
+}
+
 DBTYPE Db::get_type() const
 {
     const DB *db = unwrapConst(this);
@@ -225,24 +273,30 @@ int Dbc::close()
     return 0;
 }
 
-int Dbc::del(u_int32_t flags)
+int Dbc::del(u_int32_t flags_arg)
 {
     DBC *cursor = this;
     int err;
 
-    if ((err = cursor->c_del(cursor, flags)) != 0) {
-        DB_ERROR("Db::del", err);
-        return err;
+    if ((err = cursor->c_del(cursor, flags_arg)) != 0) {
+
+        // DB_KEYEMPTY is a "normal" return, so should not be
+        // thrown as an error
+        //
+        if (err != DB_KEYEMPTY) {
+            DB_ERROR("Db::del", err);
+            return err;
+        }
     }
     return 0;
 }
 
-int Dbc::get(Dbt* key, Dbt *data, u_int32_t flags)
+int Dbc::get(Dbt* key, Dbt *data, u_int32_t flags_arg)
 {
     DBC *cursor = this;
     int err;
 
-    if ((err = cursor->c_get(cursor, key, data, flags)) != 0) {
+    if ((err = cursor->c_get(cursor, key, data, flags_arg)) != 0) {
         if (err != DB_NOTFOUND) {
             DB_ERROR("Db::get", err);
             return err;
@@ -251,14 +305,16 @@ int Dbc::get(Dbt* key, Dbt *data, u_int32_t flags)
     return err;
 }
 
-int Dbc::put(Dbt* key, Dbt *data, u_int32_t flags)
+int Dbc::put(Dbt* key, Dbt *data, u_int32_t flags_arg)
 {
     DBC *cursor = this;
     int err;
 
-    if ((err = cursor->c_put(cursor, key, data, flags)) != 0) {
-        DB_ERROR("Db::put", err);
-        return err;
+    if ((err = cursor->c_put(cursor, key, data, flags_arg)) != 0) {
+        if (err != DB_KEYEXIST) {
+            DB_ERROR("Db::put", err);
+            return err;
+        }
     }
     return 0;
 }
@@ -296,9 +352,11 @@ Dbt::Dbt(const Dbt &that)
 
 Dbt &Dbt::operator = (const Dbt &that)
 {
-    const DBT *from = &that;
-    DBT *to = this;
-    memcpy(to, from, sizeof(DBT));
+    if (this != &that) {
+        const DBT *from = &that;
+        DBT *to = this;
+        memcpy(to, from, sizeof(DBT));
+    }
     return *this;
 }
 

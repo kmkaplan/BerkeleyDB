@@ -7,7 +7,7 @@
 #include "config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)java_DbLock.cpp	10.2 (Sleepycat) 4/10/98";
+static const char sccsid[] = "@(#)java_DbLock.cpp	10.3 (Sleepycat) 10/18/98";
 #endif /* not lint */
 
 #include <jni.h>
@@ -34,18 +34,6 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLock_put
     {
         set_private_info(jnienv, name_DB_LOCK, jthis, 0);
     }
-}
-
-JNIEXPORT jint JNICALL Java_com_sleepycat_db_DbLock_get_1lock_1id
-  (JNIEnv *jnienv, jobject jthis)
-{
-    return get_DB_LOCK(jnienv, jthis);
-}
-
-JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLock_set_1lock_1id
-  (JNIEnv *jnienv, jobject jthis, jint lockid)
-{
-    set_private_long_info(jnienv, name_DB_LOCK, jthis, lockid);
 }
 
 JNIEXPORT void JNICALL Java_com_sleepycat_db_DbLock_finalize

@@ -4,7 +4,7 @@
  * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)java_util.h	10.6 (Sleepycat) 5/2/98
+ *	@(#)java_util.h	10.12 (Sleepycat) 12/16/98
  */
 
 #ifndef _JAVA_UTIL_H_
@@ -88,6 +88,14 @@ public:
 };
 
 /*
+ * Used internally by LockedDBT constructor.
+ */
+enum OpKind { inOp,     // setting data in database (passing data in)
+              outOp,    // getting data from database to user memory
+              inOutOp   // both getting/setting data
+};
+
+/*
  *
  * Declaration of class LockedDBT
  *
@@ -99,7 +107,7 @@ public:
     // After the constructor returns, if has_error() is false,
     // then dbt must be initialized.
     //
-    LockedDBT(JNIEnv *jnienv, jobject obj, int is_retrieve_op);
+    LockedDBT(JNIEnv *jnienv, jobject obj, OpKind kind);
     ~LockedDBT();
     int has_error()     { return has_error_; }
 
@@ -112,7 +120,7 @@ private:
     jobject obj_;
     jbyte *java_data_;
     int has_error_;
-    int is_retrieve_op_;
+    OpKind kind_;
 };
 
 /****************************************************************
@@ -204,11 +212,29 @@ void set_private_info(JNIEnv *jnienv, const char *classname,
 jclass get_class(JNIEnv *jnienv, const char *classname);
 
 /* Set an individual field in a Db* object.
- * The field must be an object type.
+ * The field must be a DB object type.
  */
 void set_object_field(JNIEnv *jnienv, jclass class_of_this,
                       jobject jthis, const char *object_classname,
                       const char *name_of_field, jobject obj);
+
+/* Set an individual field in a Db* object.
+ * The field must be an integer type.
+ */
+void set_int_field(JNIEnv *jnienv, jclass class_of_this,
+                   jobject jthis, const char *name_of_field, jint value);
+
+/* Set an individual field in a Db* object.
+ * The field must be an integer type.
+ */
+void set_long_field(JNIEnv *jnienv, jclass class_of_this,
+                    jobject jthis, const char *name_of_field, jlong value);
+
+/* Set an individual field in a Db* object.
+ * The field must be an DbLsn type.
+ */
+void set_lsn_field(JNIEnv *jnienv, jclass class_of_this,
+                   jobject jthis, const char *name_of_field, DB_LSN value);
 
 /* Report an exception back to the java side.
  */
@@ -218,6 +244,14 @@ void report_exception(JNIEnv *jnienv, const char *text, int err);
  * otherwise return true (1).
  */
 int verify_non_null(JNIEnv *jnienv, void *obj);
+
+/* If the DB_ENV* is null or has already been initialized (via appinit),
+ * report an exception and return false (0), otherwise return true (1).
+ * Setting a field in the environment after appinit has been called
+ * will never have any effect, so we raise the error to alert the
+ * user to a potential configuration bug.
+ */
+int verify_dbenv(JNIEnv *jnienv, DB_ENV *env);
 
 /* If the error code is non-zero, report an exception and return false (0),
  * otherwise return true (1).
@@ -241,6 +275,11 @@ char *dup_string(const char *str);
 /* Create a java string from the given string
  */
 jstring get_java_string(JNIEnv *jnienv, const char* string);
+
+/* Storage allocator
+ */
+void *allocMemory(size_t n);
+void freeMemory(void *p);
 
 
 /* Convert a java object to the various C pointers they represent.
@@ -287,17 +326,23 @@ const char * const name_DB_EXCEPTION   = "DbException";
 const char * const name_DB_INFO        = "DbInfo";
 const char * const name_DB_LOCK        = "DbLock";
 const char * const name_DB_LOCKTAB     = "DbLockTab";
+const char * const name_DB_LOCK_STAT   = "DbLockStat";
 const char * const name_DB_LOG         = "DbLog";
 const char * const name_DB_LOG_STAT    = "DbLogStat";
 const char * const name_DB_LSN         = "DbLsn";
 const char * const name_DB_MPOOL       = "DbMpool";
 const char * const name_DB_MPOOL_FSTAT = "DbMpoolFStat";
 const char * const name_DB_MPOOL_STAT  = "DbMpoolStat";
+const char * const name_DB_RUNRECOVERY = "DbRunRecoveryException";
 const char * const name_DBT            = "Dbt";
 const char * const name_DB_TXN         = "DbTxn";
 const char * const name_DB_TXNMGR      = "DbTxnMgr";
 const char * const name_DB_TXN_STAT    = "DbTxnStat";
+const char * const name_DB_TXN_STAT_ACTIVE = "DbTxnStat$Active";
 const char * const name_DbErrcall      = "DbErrcall";
+
+const char * const string_signature    = "Ljava/lang/String;";
+
 
 #define JAVADB_RO_ACCESS(j_class, j_fieldtype, j_field, c_type, c_field)    \
 extern "C" JNIEXPORT j_fieldtype JNICALL                                    \
@@ -320,6 +365,25 @@ extern "C" JNIEXPORT void JNICALL                                           \
     c_type *db_this = get_##c_type(jnienv, jthis);                          \
                                                                             \
     if (verify_non_null(jnienv, db_this)) {                                 \
+        db_this->c_field = value;                                           \
+    }                                                                       \
+}
+
+// This is a variant of the JAVADB_WO_ACCESS macro to define a simple set_
+// method, but it raises an exception if the environment has already been
+// initialized.  This is considered a configuration error (and thus
+// serious enough for an unconditional exception) because user changes
+// to the environment structure after appinit will have no effect.
+//
+#define JAVADB_WO_ACCESS_BEFORE_APPINIT(j_class, j_fieldtype,               \
+                                        j_field, c_type, c_field)           \
+extern "C" JNIEXPORT void JNICALL                                           \
+  Java_com_sleepycat_db_##j_class##_set_1##j_field                          \
+  (JNIEnv *jnienv, jobject jthis, j_fieldtype value)                        \
+{                                                                           \
+    c_type *db_this = get_##c_type(jnienv, jthis);                          \
+                                                                            \
+    if (verify_dbenv(jnienv, db_this)) {                                    \
         db_this->c_field = value;                                           \
     }                                                                       \
 }

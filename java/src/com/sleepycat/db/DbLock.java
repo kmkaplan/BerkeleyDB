@@ -4,7 +4,7 @@
  * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)DbLock.java	10.2 (Sleepycat) 4/10/98
+ *	@(#)DbLock.java	10.3 (Sleepycat) 10/18/98
  */
 
 package com.sleepycat.db;
@@ -15,35 +15,16 @@ package com.sleepycat.db;
  */
 public class DbLock
 {
-    // NOTE: the type used here is int, the type in DB is unsigned int.
-
     protected native void finalize()
          throws Throwable;
 
     // methods
     //
-    public DbLock(int lockid)
-         throws DbException
-    {
-        set_lock_id(lockid);
-    }
-
-    public DbLock()
-         throws DbException
-    {
-        set_lock_id(0);
-    }
-
     public native void put(DbLockTab locktab)
          throws DbException;
 
     // get/set methods
     //
-    public native int get_lock_id()
-         throws DbException;
-
-    public native void set_lock_id(int lockid)
-         throws DbException;
 
     // private data
     //

@@ -4,7 +4,7 @@
  * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)ex_lock.c	10.14 (Sleepycat) 4/10/98
+ *	@(#)ex_lock.c	10.16 (Sleepycat) 10/28/98
  */
 
 #include "config.h"
@@ -43,10 +43,11 @@ main(argc, argv)
 	DBT lock_dbt;
 	DB_ENV *dbenv;
 	DB_LOCK lock;
+	DB_LOCK *locks;
 	db_lockmode_t lock_type;
 	long held;
 	u_int32_t len, locker, maxlocks;
-	int ch, do_unlink, did_get, i, ret;
+	int ch, do_unlink, did_get, i, lockid, lockcount, ret;
 	char *home, opbuf[16], objbuf[1024], lockbuf[16];
 
 	home = LOCK_HOME;
@@ -77,6 +78,8 @@ main(argc, argv)
 
 	/* Initialize the database environment. */
 	dbenv = db_init(home, maxlocks, do_unlink);
+	lockcount = 0;
+	locks = 0;
 
 	/*
 	 * Accept lock requests.
@@ -122,6 +125,13 @@ main(argc, argv)
 			ret = lock_get(dbenv->lk_info, locker,
 			    DB_LOCK_NOWAIT, &lock_dbt, lock_type, &lock);
 			did_get = 1;
+			lockid = lockcount++;
+			if (locks == NULL)
+				locks = (DB_LOCK *)malloc(sizeof(DB_LOCK));
+			else
+				locks = (DB_LOCK *)realloc(locks,
+				    lockcount * sizeof(DB_LOCK));
+			locks[lockid] = lock;
 		} else {
 			/* Release a lock. */
 			do {
@@ -131,19 +141,24 @@ main(argc, argv)
 				    sizeof(objbuf), stdin) == NULL)
 					break;
 			} while ((len = strlen(objbuf)) <= 1);
-			lock = (DB_LOCK)strtoul(objbuf, NULL, 16);
+			lockid = strtol(objbuf, NULL, 16);
+			if (lockid < 0 || lockid >= lockcount) {
+				printf("Lock #%d out of range\n", lockid);
+				continue;
+			}
+			lock = locks[lockid];
 			ret = lock_put(dbenv->lk_info, lock);
 			did_get = 0;
 		}
 		switch (ret) {
 			case 0:
-				printf("Lock 0x%lx %s\n", (unsigned long)lock,
+				printf("Lock #%d %s\n", lockid,
 				    did_get ? "granted" : "released");
 				held += did_get ? 1 : -1;
 				break;
 			case DB_LOCK_NOTHELD:
-				printf("You do not hold the lock %lu\n",
-				    (unsigned long)lock);
+				printf("You do not hold the lock #%d\n",
+				    lockid);
 				break;
 			case DB_LOCK_NOTGRANTED:
 				printf("Lock not granted\n");
@@ -160,6 +175,8 @@ main(argc, argv)
 	}
 	printf("\n");
 	printf("Closing lock region %ld locks held\n", held);
+	if (locks != NULL)
+		free(locks);
 
 	return (db_appexit(dbenv));
 }

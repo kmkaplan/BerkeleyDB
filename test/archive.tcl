@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)archive.tcl	10.8 (Sleepycat) 6/2/98
+#	@(#)archive.tcl	10.10 (Sleepycat) 10/28/98
 #
 # Options are:
 # -checkrec <checkpoint frequency"
@@ -13,6 +13,16 @@
 proc archive_usage {} {
 	puts "archive -checkrec <checkpt freq> -dir <directory> \
 	    -maxfilesize <max size of log files>"
+}
+proc archive_command { args } {
+	source ./include.tcl
+global is_windows_test
+	if { $is_windows_test != 1 } {
+		eval exec ./db_archive $args
+	} else {
+		# On Windows, convert all filenames to use forward slashes
+		eval exec ./db_archive $args | $TR \\\\ /
+	}
 }
 proc archive { args } {
 	source ./include.tcl
@@ -105,18 +115,18 @@ global alphabet
 			$txn check
 			set ckp_file [lindex [$lp last] 0]
 
-			catch { exec ./db_archive -h $testdir -a } res_log_full
+			catch { archive_command -h $testdir -a } res_log_full
 			if { [string first db_archive $res_log_full] == 0 } {
 				set res_log_full ""
 			}
-			catch { exec ./db_archive -h $testdir } res_log
+			catch { archive_command -h $testdir } res_log
 			if { [string first db_archive $res_log] == 0 } {
 				set res_log ""
 			}
-			catch { exec ./db_archive -h $testdir -l } res_alllog
-			catch { exec ./db_archive -h $testdir -a -s } \
+			catch { archive_command -h $testdir -l } res_alllog
+			catch { archive_command -h $testdir -a -s } \
 			    res_data_full
-			catch { exec ./db_archive -h $testdir -s } res_data
+			catch { archive_command -h $testdir -s } res_data
 
 			error_check_good nlogfiles [llength $res_alllog] \
 			    [lindex [$lp last] 0]

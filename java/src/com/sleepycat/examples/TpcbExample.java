@@ -4,7 +4,7 @@
  * Copyright (c) 1997, 1998
  *	Sleepycat Software.  All rights reserved.
  *
- *	@(#)TpcbExample.java	10.4 (Sleepycat) 4/20/98
+ *	@(#)TpcbExample.java	10.7 (Sleepycat) 12/7/98
  */
 
 package com.sleepycat.examples;
@@ -71,13 +71,15 @@ class TpcbExample extends DbEnv
         int balance, idnum;
         int end_anum, end_bnum, end_tnum;
         int start_anum, start_bnum, start_tnum;
+        int h_nelem;
 
         idnum = BEGID;
         balance = 500000;
 
         DbInfo dbi = new DbInfo();
 
-        dbi.set_h_nelem((int)num_a);
+        h_nelem = num_a;
+        dbi.set_h_nelem(h_nelem);
 
         try {
             dbp = Db.open("account",
@@ -88,8 +90,8 @@ class TpcbExample extends DbEnv
         }
 
         start_anum = idnum;
-        populateTable(dbp, idnum, balance, dbi.get_h_nelem(), "account");
-        idnum += dbi.get_h_nelem();
+        populateTable(dbp, idnum, balance, h_nelem, "account");
+        idnum += h_nelem;
         end_anum = idnum - 1;
         try {
             dbp.close(0);
@@ -107,7 +109,8 @@ class TpcbExample extends DbEnv
         // small pages and only 1 key per page.  This is the poor-man's way
         // of getting key locking instead of page locking.
         //
-        dbi.set_h_nelem((int)num_b);
+        h_nelem = (int)num_b;
+        dbi.set_h_nelem(h_nelem);
         dbi.set_h_ffactor(1);
         dbi.set_pagesize(512);
 
@@ -120,8 +123,8 @@ class TpcbExample extends DbEnv
             errExit(dbe3, "Branch file create failed");
         }
         start_bnum = idnum;
-        populateTable(dbp, idnum, balance, dbi.get_h_nelem(), "branch");
-        idnum += dbi.get_h_nelem();
+        populateTable(dbp, idnum, balance, h_nelem, "branch");
+        idnum += h_nelem;
         end_bnum = idnum - 1;
 
         try {
@@ -139,7 +142,8 @@ class TpcbExample extends DbEnv
         // In the case of tellers, we also want small pages, but we'll let
         // the fill factor dynamically adjust itself.
         //
-        dbi.set_h_nelem((int)num_t);
+        h_nelem = (int)num_t;
+        dbi.set_h_nelem(h_nelem);
         dbi.set_h_ffactor(0);
         dbi.set_pagesize(512);
 
@@ -152,8 +156,8 @@ class TpcbExample extends DbEnv
         }
 
         start_tnum = idnum;
-        populateTable(dbp, idnum, balance, dbi.get_h_nelem(), "teller");
-        idnum += dbi.get_h_nelem();
+        populateTable(dbp, idnum, balance, h_nelem, "teller");
+        idnum += h_nelem;
         end_tnum = idnum - 1;
 
         try {
@@ -240,7 +244,7 @@ class TpcbExample extends DbEnv
                 hrec.set_bid(random_id(BRANCH, anum, bnum, tnum));
                 hrec.set_tid(random_id(TELLER, anum, bnum, tnum));
 
-                dbp.put(null, kdbt, ddbt, Db.DB_NOOVERWRITE);
+                dbp.put(null, kdbt, ddbt, Db.DB_APPEND);
             }
         }
         catch (DbException dbe) {
@@ -410,10 +414,10 @@ class TpcbExample extends DbEnv
         try {
             t = txmgr.begin(null);
 
-            acurs = adb.cursor(t);
-            bcurs = bdb.cursor(t);
-            tcurs = tdb.cursor(t);
-            hcurs = hdb.cursor(t);
+            acurs = adb.cursor(t, 0);
+            bcurs = bdb.cursor(t, 0);
+            tcurs = tdb.cursor(t, 0);
+            hcurs = hdb.cursor(t, 0);
 
             // Account record
             k_dbt.set_recno_key_data(account);

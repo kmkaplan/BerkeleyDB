@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test.tcl	10.28 (Sleepycat) 5/31/98
+#	@(#)test.tcl	10.42 (Sleepycat) 1/2/99
 
 source ./include.tcl
 source ../test/testutils.tcl
@@ -45,14 +45,30 @@ set parms(test026) {2000 5 26}
 set parms(test027) {100}
 set parms(test028) ""
 set parms(test029) 10000
+set parms(test030) 10000
+set parms(test031) {10000 5 31}
+set parms(test032) {10000 5 32}
+set parms(test033) {10000 5 33}
+set parms(test034) 10000
+set parms(test035) 10000
+set parms(test036) 10000
+set parms(test037) 100
+set parms(test038) 10000
+set parms(test039) 10000
+set parms(test040) 10000
+set parms(test041) 100
+set parms(test042) 1000
+set parms(test043) 10000
 
 set dict ../test/wordlist
 set alphabet "abcdefghijklmnopqrstuvwxyz"
-set recd_debug 0
 
-set loadtests 33
-set runtests 29
-set recdtests 5
+set recd_debug	0
+set recd_prefix	"db_recover: Finding last valid log LSN"
+
+set loadtests 46
+set runtests 43
+set recdtests 6
 set deadtests 2
 set bugtests 7
 set rsrctests 1
@@ -80,6 +96,7 @@ for { set i 1 } { $i <= $rsrctests } {incr i} {
 source ../test/archive.tcl
 source ../test/dbm.tcl
 source ../test/hsearch.tcl
+source ../test/join.tcl
 source ../test/lock.tcl
 source ../test/mpool.tcl
 source ../test/mlock.tcl
@@ -118,6 +135,7 @@ proc run_method { method {start 1} {stop 0} args } {
 }
 
 proc r { args } {
+source ./include.tcl
 	global recdtests
 
 	set l [ lindex $args 0 ]
@@ -134,6 +152,9 @@ proc r { args } {
 			eval dead001 [lrange $args 1 end]
 			eval dead002 [lrange $args 1 end]
 		}
+		join1 { eval jointest }
+		join2 { eval jointest 512 }
+		join3 {	eval jointest 8192 $DB_JOIN_ITEM }
 		hsearch { eval htest }
 		lock { eval locktest [lrange $args 1 end] }
 		log { eval logtest [lrange $args 1 end] }
@@ -203,6 +224,15 @@ global recdtests
 		close $o
 	}
 
+	# Run join test
+	foreach i "join1 join2 join3" {
+		if [catch {exec ./dbtest << "r $i" >>& ALL.OUT } res] {
+			set o [open ALL.OUT a]
+			puts $o "FAIL: $i test"
+			close $o
+		}
+	}
+
 	# Run recovery tests
 	foreach method "DB_HASH DB_BTREE DB_RECNO DB_RRECNO" {
 		puts "Running recovery tests for $method"
@@ -217,6 +247,7 @@ global recdtests
 		}
 	}
 
+
 	# Check historic interfaces
 	foreach t "dbm ndbm hsearch"  {
 		if [catch {exec ./dbtest << "r $t"  >>& ALL.OUT} res] {
@@ -227,11 +258,15 @@ global recdtests
 	}
 
 	catch { exec $SED -e /^FAIL/p -e d ALL.OUT } res
+	set o [open ALL.OUT a]
 	if { [string length $res] == 0 } {
 		puts "Regression Tests Succeeded"
+		puts $o "Regression Tests Succeeded"
 	} else {
 		puts "Regression Tests Failed; see ALL.OUT for log"
+		puts $o "Regression Tests Failed"
 	}
+	close $o
 }
 
 proc convert_method { method } {
