@@ -227,6 +227,25 @@ typedef struct _bam_root_args {
 int __bam_root_log __P((DB_ENV *, DB_TXN *, DB_LSN *, u_int32_t, int32_t, db_pgno_t, db_pgno_t, DB_LSN *));
 int __bam_root_print __P((DB_ENV *, DBT *, DB_LSN *, db_recops, void *));
 int __bam_root_read __P((DB_ENV *, void *, __bam_root_args **));
+
+#define	DB_bam_curadj	64
+typedef struct _bam_curadj_args {
+	u_int32_t type;
+	DB_TXN *txnid;
+	DB_LSN prev_lsn;
+	int32_t	fileid;
+	db_ca_mode	mode;
+	db_pgno_t	from_pgno;
+	db_pgno_t	to_pgno;
+	db_pgno_t	left_pgno;
+	u_int32_t	first_indx;
+	u_int32_t	from_indx;
+	u_int32_t	to_indx;
+} __bam_curadj_args;
+
+int __bam_curadj_log __P((DB_ENV *, DB_TXN *, DB_LSN *, u_int32_t, int32_t, db_ca_mode, db_pgno_t, db_pgno_t, db_pgno_t, u_int32_t, u_int32_t, u_int32_t));
+int __bam_curadj_print __P((DB_ENV *, DBT *, DB_LSN *, db_recops, void *));
+int __bam_curadj_read __P((DB_ENV *, void *, __bam_curadj_args **));
 int __bam_init_print __P((DB_ENV *));
 int __bam_init_recover __P((DB_ENV *));
 #endif

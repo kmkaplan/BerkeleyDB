@@ -45,7 +45,6 @@ int __db_c_dup __P((DBC *, DBC **, u_int32_t));
 int __db_c_get __P((DBC *, DBT *, DBT *, u_int32_t));
 int __db_c_put __P((DBC *, DBT *, DBT *, u_int32_t));
 int __db_duperr __P((DB *, u_int32_t));
-int __db_cdb_cdup __P((DBC *, DBC *));
 int __db_pgin __P((DB_ENV *, db_pgno_t, void *, DBT *));
 int __db_pgout __P((DB_ENV *, db_pgno_t, void *, DBT *));
 void __db_metaswap __P((PAGE *));

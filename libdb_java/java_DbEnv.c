@@ -7,7 +7,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: java_DbEnv.c,v 11.15 2000/06/01 16:17:26 dda Exp $";
+static const char revid[] = "$Id: java_DbEnv.c,v 11.15.2.2 2000/07/20 15:13:07 krinsky Exp $";
 #endif /* not lint */
 
 #include <jni.h>
@@ -109,7 +109,7 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv__1notify_1db_1close
 {
 	DB_ENV_JAVAINFO *dbenvinfo;
 
-	set_private_dbobj(jnienv, name_DB, jthis, 0);
+	set_private_dbobj(jnienv, name_DB_ENV, jthis, 0);
 	dbenvinfo = get_DB_ENV_JAVAINFO(jnienv, jthis);
 	if (dbenvinfo != NULL)
 		dbjie_dealloc(dbenvinfo, jnienv);
@@ -173,6 +173,9 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_DbEnv_open
 	JAVADB_ENV_API_BEGIN(dbenv, jthis);
 	if (jstr_lock(&j_home, jnienv, db_home) != 0)
 		goto out;
+
+	/* Java is assumed to be threaded. */
+	flags |= DB_THREAD;
 
 	err = dbenv->open(dbenv, j_home.string, flags, mode);
 	verify_return(jnienv, err, EXCEPTION_FILE_NOT_FOUND);

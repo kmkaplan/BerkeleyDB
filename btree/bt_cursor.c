@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: bt_cursor.c,v 11.75 2000/05/31 16:47:36 bostic Exp $";
+static const char revid[] = "$Id: bt_cursor.c,v 11.75.2.6 2000/07/26 14:14:04 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -180,8 +180,7 @@ static void
 __bam_c_reset(cp)
 	BTREE_CURSOR *cp;
 {
-	cp->sp = cp->csp = cp->stack;
-	cp->esp = cp->stack + sizeof(cp->stack) / sizeof(cp->stack[0]);
+	cp->csp = cp->sp;
 	cp->lock.off = LOCK_INVALID;
 	cp->lock_mode = DB_LOCK_NG;
 	cp->recno = RECNO_OOB;
@@ -213,6 +212,9 @@ __bam_c_init(dbc, dbtype)
 		    sizeof(BTREE_CURSOR), NULL, &cp)) != 0)
 			return (ret);
 		dbc->internal = (DBC_INTERNAL *)cp;
+
+		cp->sp = cp->csp = cp->stack;
+		cp->esp = cp->stack + sizeof(cp->stack) / sizeof(cp->stack[0]);
 	} else
 		cp = (BTREE_CURSOR *)dbc->internal;
 	__bam_c_reset(cp);
@@ -246,23 +248,19 @@ __bam_c_init(dbc, dbtype)
 	 * requirement.  The btree off-page duplicates only require two items,
 	 * to be exact, but requiring four for them as well seems reasonable.
 	 *
-	 * Translate the number of items into the bytes a key/data pair can use
-	 * before being placed on an overflow page.  Assume every item requires
-	 * the maximum alignment for padding, out of sheer paranoia.
-	 *
 	 * Recno uses the btree bt_ovflsize value -- it's close enough.
 	 */
 	t = dbp->bt_internal;
 	minkey = F_ISSET(dbc, DBC_OPD) ? 2 : t->bt_minkey;
-	cp->ovflsize = (dbp->pgsize - P_OVERHEAD) / (minkey * P_INDX)
-	    - (BKEYDATA_PSIZE(0) + ALIGN(1, 4));
+	cp->ovflsize = B_MINKEY_TO_OVFLSIZE(minkey, dbp->pgsize);
 
 	return (0);
 }
 
 /*
  * __bam_c_refresh
- *	When the cursor is reused, set things up properly
+ *	Set things up properly for cursor re-use.
+ *
  * PUBLIC: int __bam_c_refresh __P((DBC *));
  */
 int
@@ -277,9 +275,9 @@ __bam_c_refresh(dbc)
 	__bam_c_reset(cp);
 
 	/*
-	 * If our caller set the root page number, it's because
-	 * the root was known.  This is always the case for off page
-	 * dup cursors.  Otherwise, pull it out of our internal information.
+	 * If our caller set the root page number, it's because the root was
+	 * known.  This is always the case for off page dup cursors.  Else,
+	 * pull it out of our internal information.
 	 */
 	if (cp->root == PGNO_INVALID)
 		cp->root = ((BTREE *)dbp->bt_internal)->bt_root;
@@ -324,9 +322,6 @@ __bam_c_close(dbc, root_pgno, rmroot)
 	cp_opd = (dbc_opd = cp->opd) == NULL ?
 	    NULL : (BTREE_CURSOR *)dbc_opd->internal;
 	cdb_lock = ret = 0;
-
-	if (dbc_opd != NULL)
-		DB_ASSERT(cp_opd->csp == cp_opd->stack);
 
 	/*
 	 * There are 3 ways this function is called:
@@ -531,9 +526,6 @@ delete:	/*
 	if (dbc_c->dbtype == DB_BTREE && (ret = __bam_c_physdel(dbc_c)) != 0)
 		goto err;
 
-	if (dbc_opd != NULL)
-		DB_ASSERT(cp_opd->csp == cp_opd->stack);
-
 	/*
 	 * If we're not working in an off-page duplicate tree, then we're
 	 * done.
@@ -590,12 +582,10 @@ done:	/*
 		DISCARD_CUR(dbc_opd, t_ret);
 		if (t_ret != 0 && ret == 0)
 			ret = t_ret;
-		DB_ASSERT(cp_opd->csp == cp_opd->stack);
 	}
 	DISCARD_CUR(dbc, t_ret);
 	if (t_ret != 0 && ret == 0)
 		ret = t_ret;
-	DB_ASSERT(cp->csp == cp->stack);
 
 	/* Downgrade any CDB lock we acquired. */
 	if (cdb_lock)
@@ -658,7 +648,7 @@ __bam_c_count(dbc, recnop)
 			if (indx == 0 ||
 			    !IS_DUPLICATE(dbc, indx, indx - P_INDX))
 				break;
-		for (recno = 1, top = NUM_ENT(cp->page);
+		for (recno = 1, top = NUM_ENT(cp->page) - P_INDX;
 		    indx < top; ++recno, indx += P_INDX)
 			if (!IS_DUPLICATE(dbc, indx, indx + P_INDX))
 				break;
@@ -1262,6 +1252,10 @@ split:	needkey = ret = stack = 0;
 
 			/* Disallow "sorted" duplicate duplicates. */
 			if (cmp == 0) {
+				if (IS_DELETED(cp->page, cp->indx)) {
+					iiop = DB_CURRENT;
+					break;
+				}
 				ret = __db_duperr(dbp, flags);
 				goto err;
 			}
@@ -1667,6 +1661,7 @@ __bam_c_search(dbc, key, flags, exactp)
 	DB *dbp;
 	PAGE *h;
 	db_indx_t indx;
+	db_pgno_t bt_lpgno;
 	db_recno_t recno;
 	u_int32_t sflags;
 	int cmp, ret;
@@ -1719,17 +1714,28 @@ fast_search:	/*
 			goto search;
 
 		/*
+		 * !!!
+		 * We do not mutex protect the t->bt_lpgno field, which means
+		 * that it can only be used in an advisory manner.  If we find
+		 * page we can use, great.  If we don't, we don't care, we do
+		 * it the slow way instead.  Regardless, copy it into a local
+		 * variable, otherwise we might acquire a lock for a page and
+		 * then read a different page because it changed underfoot.
+		 */
+		bt_lpgno = t->bt_lpgno;
+
+		/*
 		 * If the tree has no history of insertion, do it the slow way.
 		 */
-		if (t->bt_lpgno == PGNO_INVALID)
+		if (bt_lpgno == PGNO_INVALID)
 			goto search;
 
 		/* Lock and retrieve the page on which we last inserted. */
 		h = NULL;
-		ACQUIRE(dbc, DB_LOCK_WRITE,
-		    t->bt_lpgno, cp->lock, t->bt_lpgno, h, ret);
+		ACQUIRE(dbc,
+		    DB_LOCK_WRITE, bt_lpgno, cp->lock, bt_lpgno, h, ret);
 		if (ret != 0)
-			return (ret);
+			goto fast_miss;
 
 		/*
 		 * It's okay if the page type isn't right or it's empty, it
@@ -1926,12 +1932,15 @@ __bam_c_physdel(dbc)
 		if ((ret = __bam_ditem(dbc, cp->page, cp->indx)) != 0)
 			return (ret);
 		if (!empty_page)
-			__bam_ca_di(dbp, PGNO(cp->page), cp->indx, -1);
+			if ((ret = __bam_ca_di(dbc,
+			    PGNO(cp->page), cp->indx, -1)) != 0)
+				return (ret);
 	}
 	if ((ret = __bam_ditem(dbc, cp->page, cp->indx)) != 0)
 		return (ret);
 	if (!empty_page)
-		__bam_ca_di(dbp, PGNO(cp->page), cp->indx, -1);
+		if ((ret = __bam_ca_di(dbc, PGNO(cp->page), cp->indx, -1)) != 0)
+			return (ret);
 
 	/* If we're not going to try and delete the page, we're done. */
 	if (!delete_page)

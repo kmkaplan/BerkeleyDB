@@ -40,7 +40,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: db.c,v 11.95 2000/05/31 16:51:20 margo Exp $";
+static const char revid[] = "$Id: db.c,v 11.95.2.4 2000/07/05 19:44:20 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -133,9 +133,9 @@ __db_open(dbp, name, subdb, type, flags, mode)
 #endif
 	switch (type) {
 	case DB_UNKNOWN:
-		if (LF_ISSET(DB_CREATE)) {
+		if (LF_ISSET(DB_CREATE|DB_TRUNCATE)) {
 			__db_err(dbenv,
-			    "%s: DB_UNKNOWN type specified with DB_CREATE",
+	    "%s: DB_UNKNOWN type specified with DB_CREATE or DB_TRUNCATE",
 			    name);
 			return (EINVAL);
 		}
@@ -1082,7 +1082,7 @@ swap_retry:	switch (magic) {
 
 		/* Let the caller know that we had a 0-length file. */
 		if (!LF_ISSET(DB_CREATE | DB_TRUNCATE))
-			*retflags = DB_FILE_SETUP_ZERO;
+			*retflags |= DB_FILE_SETUP_ZERO;
 
 		/*
 		 * The only way we can reach here with the DB_CREATE flag set
@@ -1492,6 +1492,8 @@ DB_TEST_RECOVERY_LABEL
 	/* FALLTHROUGH */
 
 err_close:
+	if (real_back != NULL)
+		__os_freestr(real_back);
 	if (real_name != NULL)
 		__os_freestr(real_name);
 	if (backup != NULL)
@@ -2016,6 +2018,9 @@ __db_testcopy(dbp, name)
 	    DB_APP_DATA, NULL, name, 0, NULL, &real_name)) != 0)
 		return (ret);
 
+	copy = backup = NULL;
+	namesp = NULL;
+
 	/*
 	 * Maximum size of file, including adding a ".afterop".
 	 */
@@ -2100,7 +2105,13 @@ __db_testcopy(dbp, name)
 		}
 	}
 out:
-	if (real_name)
+	if (backup != NULL)
+		__os_freestr(backup);
+	if (copy != NULL)
+		__os_freestr(copy);
+	if (namesp != NULL)
+		__os_dirfree(namesp, dircnt);
+	if (real_name != NULL)
 		__os_freestr(real_name);
 	return (ret);
 }

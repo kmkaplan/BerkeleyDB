@@ -28,6 +28,7 @@ BEGIN	cadjust	56
 BEGIN	cdel	57
 BEGIN	repl	58
 BEGIN	root	59
+BEGIN	curadj	64
 PREFIX	ham
 BEGIN	insdel	21
 BEGIN	newpage	22

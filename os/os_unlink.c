@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: os_unlink.c,v 11.8 2000/05/08 14:43:17 bostic Exp $";
+static const char revid[] = "$Id: os_unlink.c,v 11.8.2.1 2000/06/27 17:52:57 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -36,7 +36,12 @@ __os_unlink(dbenv, path)
 	int ret;
 
 	ret = __db_jump.j_unlink != NULL ?
-	    __db_jump.j_unlink(path) : unlink(path);
+	    __db_jump.j_unlink(path) :
+#ifdef HAVE_VXWORKS
+	    unlink((char *)path);
+#else
+	    unlink(path);
+#endif
 	if (ret == -1) {
 		ret = __os_get_errno();
 		/*

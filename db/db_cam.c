@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: db_cam.c,v 11.32 2000/05/22 20:35:55 bostic Exp $";
+static const char revid[] = "$Id: db_cam.c,v 11.32.2.1 2000/07/26 21:20:05 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -49,7 +49,7 @@ static int __db_wrlock_err __P((DB_ENV *));
 	}
 #define	CDB_LOCKING_DONE(dbp, dbc)					\
 	/* Release the upgraded lock. */				\
-	if (F_ISSET(dbc, DBC_WRITECURSOR))				\
+	if (F_ISSET(dbc, DBC_WRITECURSOR) && !F_ISSET(dbc, DBC_WRITEDUP))\
 		(void)__lock_downgrade(					\
 		    (dbp)->dbenv, &(dbc)->mylock, DB_LOCK_IWRITE, 0);
 
@@ -425,6 +425,27 @@ __db_c_idup(dbc_orig, dbcp, flags)
 		}
 	}
 
+	/* Now take care of duping the CDB information. */
+	if (CDB_LOCKING(dbp->dbenv) &&
+	    F_ISSET(dbc_orig, DBC_WRITECURSOR | DBC_WRITEDUP)) {
+		memcpy(&dbc_n->mylock, &dbc_orig->mylock,
+		    sizeof(dbc_orig->mylock));
+
+		/*
+		 * dbc_n's locker may be different, since if it's an off-page
+		 * duplicate it may not be an idup'ed copy of dbc_orig.  It's
+		 * not meaningful, though, so overwrite it with dbc_orig's so
+		 * we don't self-deadlock.
+		 */
+		dbc_n->locker = dbc_orig->locker;
+
+		/*
+		 * Flag that this lock isn't ours to put;  just discard it
+		 * in c_close.
+		 */
+		F_SET(dbc_n, DBC_WRITEDUP);
+	}
+
 	*dbcp = dbc_n;
 	return (0);
 
@@ -506,13 +527,6 @@ __db_c_get(dbc_arg, key, data, flags)
 		if ((ret = __db_c_idup(cp->opd, &opd, DB_POSITIONI)) != 0)
 			return (ret);
 
-		/*
-		 * If we're in CDB, the newly dup'ed off-page dup cursor
-		 * may need the original outer cursor's locking info.
-		 */
-		if (CDB_LOCKING(dbp->dbenv))
-			(void)__db_cdb_cdup(dbc_arg, opd);
-
 		switch (ret = opd->c_am_get(
 		    opd, key, data, flags, NULL)) {
 		case 0:
@@ -555,13 +569,6 @@ __db_c_get(dbc_arg, key, data, flags)
 	}
 	if ((ret = __db_c_idup(dbc_arg, &dbc_n, tmp_flags)) != 0)
 		goto err;
-
-	/*
-	 * If we're in CDB, the new cursor may need the old cursor's locking
-	 * info.
-	 */
-	if (CDB_LOCKING(dbp->dbenv))
-		(void)__db_cdb_cdup(dbc_arg, dbc_n);
 
 	if (tmp_rmw)
 		F_SET(dbc_n, DBC_RMW);
@@ -869,55 +876,6 @@ __db_c_cleanup(dbc, dbc_n, failed)
 		ret = t_ret;
 
 	return (ret);
-}
-
-/*
- * __db_cdb_cdup --
- *	Duplicate the internal lock of a CDB write cursor.  The method-
- *	independent cursor get and put code duplicate the cursor before
- *	performing operations on it, using the internal cursor interface, which
- *	does no CDB locking.  Under normal circumstances this is desirable;
- *	there's no need for an additional lock, as the original cursor
- *	is extant--and its lock is held--throughout, and there's never a
- *	need to perform locking operations on the new cursor.
- *
- *	The sole exception to this is in the case of a DBC->c_get with a
- *	write cursor.  Here, the cursor holds only an IWRITE lock when it
- *	is duplicated;  in the common case, there's never a need to
- *	perform a write.  If, however, the cursor moves away from a
- *	deleted item in a btree, the btree close method will attempt to
- *	upgrade the lock to a WRITE.  This close happens on the _duplicated_
- *	cursor, so we use this function to provide it with a copy of the
- *	lock.  (The lock structure itself doesn't change on an
- *	upgrade/downgrade, so simply copying and later discarding is
- *	sufficient.)
- *
- * PUBLIC: int __db_cdb_cdup __P((DBC *, DBC *));
- */
-int
-__db_cdb_cdup(dbc_orig, dbc_n)
-	DBC *dbc_orig, *dbc_n;
-{
-	if (F_ISSET(dbc_orig, DBC_WRITECURSOR | DBC_WRITEDUP)) {
-		memcpy(&dbc_n->mylock, &dbc_orig->mylock,
-		    sizeof(dbc_orig->mylock));
-
-		/*
-		 * dbc_n's locker may be different, since if it's an off-page
-		 * duplicate it may not be an idup'ed copy of dbc_orig.  It's
-		 * not meaningful, though, so overwrite it with dbc_orig's so
-		 * we don't self-deadlock.
-		 */
-		dbc_n->locker = dbc_orig->locker;
-
-		/*
-		 * Flag that this lock isn't ours to put;  just discard it
-		 * in c_close.
-		 */
-		F_SET(dbc_n, DBC_WRITEDUP);
-	}
-
-	return (0);
 }
 
 /*

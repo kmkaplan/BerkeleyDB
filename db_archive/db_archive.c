@@ -11,7 +11,7 @@
 static const char copyright[] =
     "Copyright (c) 1996-2000\nSleepycat Software Inc.  All rights reserved.\n";
 static const char revid[] =
-    "$Id: db_archive.c,v 11.12 2000/05/31 17:39:47 sue Exp $";
+    "$Id: db_archive.c,v 11.12.2.1 2000/07/26 20:43:44 bostic Exp $";
 #endif
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -97,15 +97,13 @@ main(argc, argv)
 		(void)dbenv->set_verbose(dbenv, DB_VERB_CHKPOINT, 1);
 
 	/*
-	 * An environment is required.
-	 *
-	 * XXX
-	 * It just *might* be reasonable for a region to be corrupted, and
-	 * we're getting called to decide what log files to keep.  I don't
-	 * think so, but I'm not positive.
+	 * If attaching to a pre-existing environment fails, create a
+	 * private one and try again.
 	 */
 	if ((ret = dbenv->open(dbenv, home,
-	    DB_CREATE | DB_INIT_LOG | DB_INIT_TXN | DB_USE_ENVIRON, 0)) != 0) {
+	    DB_INIT_LOG | DB_INIT_TXN | DB_USE_ENVIRON, 0)) != 0 &&
+	    (ret = dbenv->open(dbenv, home, DB_CREATE |
+	    DB_INIT_LOG | DB_INIT_TXN | DB_PRIVATE | DB_USE_ENVIRON, 0)) != 0) {
 		dbenv->err(dbenv, ret, "open");
 		goto shutdown;
 	}

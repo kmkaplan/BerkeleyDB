@@ -4,7 +4,7 @@
  * Copyright (c) 1996, 1997, 1998, 1999, 2000
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: db_page.h,v 11.19 2000/05/17 01:17:51 dda Exp $
+ * $Id: db_page.h,v 11.19.2.1 2000/06/30 15:15:17 krinsky Exp $
  */
 
 #ifndef _DB_PAGE_H_
@@ -508,6 +508,16 @@ typedef struct _boverflow {
 	ALIGN(sizeof(BOVERFLOW), 4)
 #define	BOVERFLOW_PSIZE							\
 	(BOVERFLOW_SIZE + sizeof(db_indx_t))
+
+/*
+ * Threshhold value, as a function of bt_minkey, of the number of
+ * bytes a key/data pair can use before being placed on an overflow
+ * page.  Assume every item requires the maximum alignment for
+ * padding, out of sheer paranoia.
+ */
+#define	B_MINKEY_TO_OVFLSIZE(minkey, pgsize)				\
+	((u_int16_t)(((pgsize) - P_OVERHEAD) / ((minkey) * P_INDX) - 	\
+	    (BKEYDATA_SIZE(0) + ALIGN(1, 4))))
 
 /*
  * Btree leaf and hash page layouts group indices in sets of two, one for the

@@ -1,5 +1,5 @@
 #!/bin/sh -
-#	$Id: s_vxworks,v 1.1 2000/03/29 16:41:52 sue Exp $
+#	$Id: s_vxworks,v 1.1.2.1 2000/06/27 16:41:20 bostic Exp $
 #
 # Build the VxWorks files.
 
@@ -38,6 +38,7 @@ f=../build_vxworks/db_int.h
 echo "Building $f"
 rm -f $f
 cat <<ENDOFSEDTEXT > $t
+s/\(PATH_SEPARATOR[^"]*"\)\/"/\1\/\\\\\\\\\\"/
 s/@db_align_t_decl@/typedef unsigned long db_align_t;/
 s/@db_alignp_t_decl@/typedef unsigned long db_alignp_t;/
 ENDOFSEDTEXT

@@ -7,7 +7,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: log_put.c,v 11.19 2000/04/22 03:20:36 ubell Exp $";
+static const char revid[] = "$Id: log_put.c,v 11.19.2.1 2000/06/14 15:20:06 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -310,13 +310,13 @@ __log_flush(dblp, lsn)
 		}
 
 	/*
-	 * If the LSN is less than or equal to the last-sync'd LSN, we're
-	 * done.  Note, the last-sync LSN saved in s_lsn is the LSN of the
-	 * first byte we absolutely know has been written to disk, so the
-	 * test is <=.
+	 * If the LSN is less than or equal to the last-sync'd LSN, we're done.
+	 * Note, the last-sync LSN saved in s_lsn is the LSN of the first byte
+	 * after the byte we absolutely know was written to disk, so the test
+	 * is <, not <=.
 	 */
 	if (lsn->file < lp->s_lsn.file ||
-	    (lsn->file == lp->s_lsn.file && lsn->offset <= lp->s_lsn.offset))
+	    (lsn->file == lp->s_lsn.file && lsn->offset < lp->s_lsn.offset))
 		return (0);
 
 	/*
@@ -354,25 +354,9 @@ __log_flush(dblp, lsn)
 	}
 	++lp->stat.st_scount;
 
-	/*
-	 * Set the last-synced LSN, using the LSN of the current buffer.  If
-	 * the current buffer was flushed, we know the LSN of the first byte
-	 * of the buffer is on disk, otherwise, we only know that the LSN of
-	 * the record before the one beginning the current buffer is on disk.
-	 *
-	 * Check to be sure the saved lsn isn't 0 before decrementing it. If
-	 * DB_CHECKPOINT was called before we wrote any log records, you can
-	 * end up here without ever having written anything to a log file, and
-	 * decrementing s_lsn.file or s_lsn.offset will cause much sadness.
-	 */
-	lp->s_lsn = lp->f_lsn;
-	if (!current && lp->s_lsn.file != 0) {
-		if (lp->s_lsn.offset == 0) {
-			--lp->s_lsn.file;
-			lp->s_lsn.offset = lp->persist.lg_max;
-		} else
-			--lp->s_lsn.offset;
-	}
+	/* Set the last-synced LSN, using the on-disk write offset. */
+	lp->s_lsn.file = lp->f_lsn.file;
+	lp->s_lsn.offset = lp->w_off;
 
 	return (0);
 }

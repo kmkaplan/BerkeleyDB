@@ -3,7 +3,7 @@
 # Copyright (c) 1996, 1997, 1998, 1999, 2000
 #	Sleepycat Software.  All rights reserved.
 #
-#	$Id: test044.tcl,v 11.22 2000/05/22 12:51:39 bostic Exp $
+#	$Id: test044.tcl,v 11.22.2.1 2000/06/28 12:18:46 krinsky Exp $
 #
 # DB Test 44 {access method}
 # System integration DB test: verify that locking, recovery, checkpoint,
@@ -99,7 +99,6 @@ proc test044 { method {nprocs 5} {nfiles 10} {cont 0} args } {
 	while { $cycle <= $ncycles } {
 		set dbenv [berkdb env -create -txn -home $testdir]
 		error_check_good env_open [is_valid_env $dbenv] TRUE
-		error_check_good env_close [$dbenv close] 0
 
 		# Fire off deadlock detector and checkpointer
 		puts "Beginning cycle $cycle"
@@ -122,6 +121,13 @@ proc test044 { method {nprocs 5} {nfiles 10} {cont 0} args } {
 
 		# Now simulate a crash
 		puts "[timestamp] Crashing"
+
+		#
+		# The environment must remain open until this point to get
+		# proper sharing (using the paging file) on Win/9X.  [#2342]
+		#
+		error_check_good env_close [$dbenv close] 0
+
 		exec $KILL -9 $ddpid
 		exec $KILL -9 $cppid
 		#

@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: os_dir.c,v 11.7 2000/05/09 00:08:00 bostic Exp $";
+static const char revid[] = "$Id: os_dir.c,v 11.7.2.1 2000/06/27 17:52:57 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -57,7 +57,11 @@ __os_dirlist(dbenv, dir, namesp, cntp)
 	if (__db_jump.j_dirlist != NULL)
 		return (__db_jump.j_dirlist(dir, namesp, cntp));
 
+#ifdef HAVE_VXWORKS
+	if ((dirp = opendir((char *)dir)) == NULL)
+#else
 	if ((dirp = opendir(dir)) == NULL)
+#endif
 		return (__os_get_errno());
 	names = NULL;
 	for (arraysz = cnt = 0; (dp = readdir(dirp)) != NULL; ++cnt) {

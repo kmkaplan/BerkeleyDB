@@ -43,7 +43,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: bt_put.c,v 11.36 2000/04/22 20:16:18 ubell Exp $";
+static const char revid[] = "$Id: bt_put.c,v 11.36.2.2 2000/07/13 18:56:34 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -246,7 +246,8 @@ len_err:		__db_err(dbp->dbenv,
 			    BKEYDATA_SIZE(key->size), NULL, key)) != 0)
 				return (ret);
 
-		__bam_ca_di(dbp, PGNO(h), indx, 1);
+		if ((ret = __bam_ca_di(dbc, PGNO(h), indx, 1)) != 0)
+			return (ret);
 		++indx;
 		break;
 	case DB_AFTER:			/* 2. Append a new data item. */
@@ -255,7 +256,9 @@ len_err:		__db_err(dbp->dbenv,
 			if ((ret =
 			    __bam_adjindx(dbc, h, indx + P_INDX, indx, 1)) != 0)
 				return (ret);
-			__bam_ca_di(dbp, PGNO(h), indx + P_INDX, 1);
+			if ((ret =
+			    __bam_ca_di(dbc, PGNO(h), indx + P_INDX, 1)) != 0)
+				return (ret);
 
 			indx += 3;
 			dupadjust = 1;
@@ -263,7 +266,8 @@ len_err:		__db_err(dbp->dbenv,
 			cp->indx += 2;
 		} else {
 			++indx;
-			__bam_ca_di(dbp, PGNO(h), indx, 1);
+			if ((ret = __bam_ca_di(dbc, PGNO(h), indx, 1)) != 0)
+				return (ret);
 
 			cp->indx += 1;
 		}
@@ -273,12 +277,14 @@ len_err:		__db_err(dbp->dbenv,
 			/* Copy the key for the duplicate and adjust cursors. */
 			if ((ret = __bam_adjindx(dbc, h, indx, indx, 1)) != 0)
 				return (ret);
-			__bam_ca_di(dbp, PGNO(h), indx, 1);
+			if ((ret = __bam_ca_di(dbc, PGNO(h), indx, 1)) != 0)
+				return (ret);
 
 			++indx;
 			dupadjust = 1;
 		} else
-			__bam_ca_di(dbp, PGNO(h), indx, 1);
+			if ((ret = __bam_ca_di(dbc, PGNO(h), indx, 1)) != 0)
+				return (ret);
 		break;
 	case DB_CURRENT:
 		if (TYPE(h) == P_LBTREE) {
@@ -349,7 +355,8 @@ len_err:		__db_err(dbp->dbenv,
 		(void)__bam_ca_delete(dbp, PGNO(h),
 		    TYPE(h) == P_LBTREE ? indx - O_INDX : indx, 0);
 	else {
-		__bam_ca_di(dbp, PGNO(h), indx, 1);
+		if ((ret = __bam_ca_di(dbc, PGNO(h), indx, 1)) != 0)
+			return (ret);
 		cp->indx = TYPE(h) == P_LBTREE ? indx - O_INDX : indx;
 	}
 
@@ -375,7 +382,7 @@ len_err:		__db_err(dbp->dbenv,
 
 	/* If we've modified a recno file, set the flag. */
 	if (dbc->dbtype == DB_RECNO)
-		F_SET(t, RECNO_MODIFIED);
+		t->re_modified = 1;
 
 	return (ret);
 }
@@ -686,7 +693,7 @@ __bam_dup_convert(dbc, h, indx)
 	DB *dbp;
 	DBT hdr;
 	PAGE *dp;
-	db_indx_t cnt, cpindx, first, sz;
+	db_indx_t cnt, cpindx, dindx, first, sz;
 	int ret;
 
 	dbp = dbc->dbp;
@@ -741,10 +748,13 @@ __bam_dup_convert(dbc, h, indx)
 	 * we're dealing with.
 	 */
 	memset(&hdr, 0, sizeof(hdr));
-	for (indx = first + O_INDX, cpindx = 0;;) {
+	dindx = first;
+	indx = first;
+	cpindx = 0;
+	do {
 		/* Move cursors referencing the old entry to the new entry. */
-		if ((ret = __bam_ca_dup(dbp, first,
-		    PGNO(h), indx - O_INDX, PGNO(dp), cpindx)) != 0)
+		if ((ret = __bam_ca_dup(dbc, first,
+		    PGNO(h), indx, PGNO(dp), cpindx)) != 0)
 			goto err;
 
 		/*
@@ -752,7 +762,7 @@ __bam_dup_convert(dbc, h, indx)
 		 * is a Btree page, deleted entries move normally.  If it's a
 		 * Recno page, deleted entries are discarded.
 		 */
-		bk = GET_BKEYDATA(h, indx);
+		bk = GET_BKEYDATA(h, dindx + 1);
 		hdr.data = bk;
 		hdr.size = B_TYPE(bk->type) == B_KEYDATA ?
 		    BKEYDATA_SIZE(bk->len) : BOVERFLOW_SIZE;
@@ -762,22 +772,28 @@ __bam_dup_convert(dbc, h, indx)
 				goto err;
 			++cpindx;
 		}
+		/* Delete all but the last reference to the key. */
+		if (cnt != 1) {
+			if ((ret = __bam_adjindx(dbc,
+			    h, dindx, first + 1, 0)) != 0)
+				goto err;
+		} else
+			dindx++;
 
 		/* Delete the data item. */
-		if ((ret = __db_ditem(dbc, h, indx, hdr.size)) != 0)
+		if ((ret = __db_ditem(dbc, h, dindx, hdr.size)) != 0)
 			goto err;
-		__bam_ca_di(dbp, PGNO(h), indx, -1);
-
-		/* Delete all but the first reference to the key. */
-		if (--cnt == 0)
-			break;
-		if ((ret = __bam_adjindx(dbc, h, indx, first, 0)) != 0)
-			goto err;
-		__bam_ca_di(dbp, PGNO(h), indx, -1);
-	}
+		indx += P_INDX;
+	} while (--cnt);
 
 	/* Put in a new data item that points to the duplicates page. */
-	if ((ret = __bam_ovput(dbc, B_DUPLICATE, dp->pgno, h, indx, NULL)) != 0)
+	if ((ret = __bam_ovput(dbc,
+	     B_DUPLICATE, dp->pgno, h, first + 1, NULL)) != 0)
+		goto err;
+
+	/* Adjust cursors for all the above movments. */
+	if ((ret = __bam_ca_di(dbc,
+	    PGNO(h), first + P_INDX, first + P_INDX - indx)) != 0)
 		goto err;
 
 	return (memp_fput(dbp->mpf, dp, DB_MPOOL_DIRTY));

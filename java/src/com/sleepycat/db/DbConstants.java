@@ -201,5 +201,5 @@ public class DbConstants
 	public static final int DB_DBM_HSEARCH = 0;
 	public static final int DB_VERSION_MAJOR = 3;
 	public static final int DB_VERSION_MINOR = 1;
-	public static final int DB_VERSION_PATCH = 14;
+	public static final int DB_VERSION_PATCH = 17;
 }

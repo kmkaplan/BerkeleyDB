@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: qam_rec.c,v 11.18 2000/05/24 23:00:07 ubell Exp $";
+static const char revid[] = "$Id: qam_rec.c,v 11.18.2.2 2000/07/15 18:43:04 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -308,7 +308,7 @@ __qam_del_recover(dbenv, dbtp, lsnp, op, info)
 		F_CLR(qp, QAM_VALID);
 		LSN(pagep) = *lsnp;
 		modified = 1;
-	} else if (cmp_n <= 0 && DB_UNDO(op)) {
+	} else if (DB_UNDO(op)) {
 		/* make sure first is behind us */
 		metapg = ((QUEUE *)file_dbp->q_internal)->q_meta;
 		if ((ret = __db_lget(dbc,
@@ -360,7 +360,7 @@ __qam_add_recover(dbenv, dbtp, lsnp, op, info)
 	DB_MPOOLFILE *mpf;
 	QAMDATA *qp;
 	QPAGE *pagep;
-	int cmp_n, cmp_p, modified, ret;
+	int cmp_n, modified, ret;
 
 	COMPQUIET(info, NULL);
 	REC_PRINT(__qam_add_print);
@@ -371,22 +371,24 @@ __qam_add_recover(dbenv, dbtp, lsnp, op, info)
 		if ((ret = memp_fget(mpf,
 		    &argp->pgno, DB_MPOOL_CREATE, &pagep)) != 0)
 			goto out;
+	}
+
+	if (pagep->pgno == PGNO_INVALID) {
 		pagep->pgno = argp->pgno;
 		pagep->type = P_QAMDATA;
 		modified = 1;
 	}
 
 	cmp_n = log_compare(lsnp, &LSN(pagep));
-	cmp_p = log_compare(&LSN(pagep), &argp->lsn);
 
-	if (cmp_p <= 0 && DB_REDO(op)) {
+	if (cmp_n > 0 && DB_REDO(op)) {
 		/* Need to redo add - put the record on page */
 		if ((ret = __qam_pitem(dbc, pagep, argp->indx, argp->recno,
 				&argp->data)) != 0)
 			goto err;
 		LSN(pagep) = *lsnp;
 		modified = 1;
-	} else if (cmp_n >= 0 && DB_UNDO(op)) {
+	} else if (DB_UNDO(op)) {
 		/*
 		 * Need to undo add
 		 *	If this was an overwrite, put old record back.

@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: env_region.c,v 11.17 2000/05/26 15:13:32 bostic Exp $";
+static const char revid[] = "$Id: env_region.c,v 11.17.2.1 2000/07/05 13:43:13 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -645,10 +645,23 @@ restart:	for (rp = SH_LIST_FIRST(&renv->regionq, __db_region);
 
 			reginfo.id = rp->id;
 			reginfo.flags = REGION_CREATE_OK;
-			if (__db_r_attach(dbenv, &reginfo, 0) == 0) {
-				R_UNLOCK(dbenv, &reginfo);
-				(void)__db_r_detach(dbenv, &reginfo, 1);
+			if ((ret = __db_r_attach(dbenv, &reginfo, 0)) != 0) {
+				__db_err(dbenv,
+				    "region %s attach: %s", db_strerror(ret));
+				continue;
 			}
+			R_UNLOCK(dbenv, &reginfo);
+			if ((ret = __db_r_detach(dbenv, &reginfo, 1)) != 0) {
+				__db_err(dbenv,
+				    "region detach: %s", db_strerror(ret));
+				continue;
+			}
+			/*
+			 * If we have an error, we continue so we eventually
+			 * reach the end of the list.  If we succeed, restart
+			 * the list because it was relinked when we destroyed
+			 * the entry.
+			 */
 			goto restart;
 		}
 

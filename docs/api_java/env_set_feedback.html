@@ -1,5 +1,5 @@
  
-<!--$Id: env_set_feedback.so,v 10.17 2000/06/01 12:30:51 bostic Exp $-->
+<!--$Id: env_set_feedback.so,v 10.17.2.1 2000/06/09 16:47:34 krinsky Exp $-->
 <!--Copyright 1997, 1998, 1999, 2000 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <html>
@@ -41,7 +41,7 @@ applications to monitor progress within these operations.
 <b>db_feedback_fcn</b> method.  This method must be declared
 with three arguments: the first will be a reference to the enclosing
 environment, the second a flag value, and the third the percent of
-the operation remaining to be completed, specified as an integer value
+the operation that has been completed, specified as an integer value
 between 0 and 100.  It is up to the <b>db_feedback_fcn</b> method
 to display this information in an appropriate manner.
 <p>The <b>opcode</b> argument may take on any of the following values:
@@ -56,6 +56,8 @@ during the life of the application.
 <a href="../api_java/env_close.html">DbEnv.close</a>,
 <a href="../api_java/env_open.html">DbEnv.open</a>,
 <a href="../api_java/env_remove.html">DbEnv.remove</a>,
+<a href="../api_java/env_strerror.html">DbEnv.strerror</a>,
+<a href="../api_java/env_version.html">DbEnv.get_version_string</a>
 <a href="../api_java/env_set_cachesize.html">DbEnv.set_cachesize</a>,
 <a href="../api_java/env_set_errcall.html">DbEnv.set_errcall</a>,
 <a href="../api_java/env_set_error_stream.html">DbEnv.set_error_stream</a>,

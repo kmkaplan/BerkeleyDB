@@ -1,5 +1,5 @@
  
-<!--$Id: notes.so,v 10.13 2000/06/06 19:57:56 dda Exp $-->
+<!--$Id: notes.so,v 10.13.2.1 2000/06/29 17:36:18 bostic Exp $-->
 <!--Copyright 1997, 1998, 1999, 2000 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
 <html>
@@ -28,11 +28,17 @@ with an obvious race.
 <p>Practically speaking, however, these efforts would be largely meaningless
 on FAT, the most common file system, which only has a "readable" and
 "writeable" flag, applying to all users.
-<p><dl compact>
-<p><dt>Windows/9X note:<dd>On Windows/9X, files that are opened by multiple processes do not share
-data correctly.  For this reason, the <a href="../../api_c/env_open.html#DB_SYSTEM_MEM">DB_SYSTEM_MEM</a> flag is implied
-for any application that does not specify the <a href="../../api_c/env_open.html#DB_PRIVATE">DB_PRIVATE</a> flag.
-</dl>
+<p>On Windows/9X, files opened by multiple processes do not share data
+correctly.  For this reason, the <a href="../../api_c/env_open.html#DB_SYSTEM_MEM">DB_SYSTEM_MEM</a> flag is implied
+for any application that does not specify the <a href="../../api_c/env_open.html#DB_PRIVATE">DB_PRIVATE</a> flag,
+causing the system paging file to be used for sharing data.  However,
+paging file memory is freed on last close, implying that multiple
+processes sharing an environment must arrange for at least one process
+to always have the environment open, or, alternatively, that any process
+joining the environment be prepared to re-create it.  If a shared
+environment is closed by all processes, a subsequent open without
+specifying the <a href="../../api_c/env_open.html#DB_CREATE">DB_CREATE</a> flag will result in the return of a
+system EAGAIN error code.
 <table><tr><td><br></td><td width="1%"><a href="../../ref/build_win/test.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../ref/toc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/build_win/faq.html"><img src="../../images/next.gif" alt="Next"></a>
 </td></tr></table>
 <p><font size=1><a href="http://www.sleepycat.com">Copyright Sleepycat Software</a></font>

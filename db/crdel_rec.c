@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: crdel_rec.c,v 11.36 2000/05/17 19:18:07 bostic Exp $";
+static const char revid[] = "$Id: crdel_rec.c,v 11.36.2.1 2000/06/26 20:13:04 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -511,6 +511,9 @@ __crdel_rename_recover(dbenv, dbtp, lsnp, op, info)
 	COMPQUIET(info, NULL);
 
 	REC_PRINT(__crdel_rename_print);
+
+	new_name = real_name = NULL;
+
 	if ((ret = __crdel_rename_read(dbenv, dbtp->data, &argp)) != 0)
 		goto out;
 
@@ -590,5 +593,12 @@ __crdel_rename_recover(dbenv, dbtp, lsnp, op, info)
 
 out:	if (argp != NULL)
 		__os_free(argp, sizeof(*argp));
+
+	if (new_name != NULL)
+		__os_free(new_name, 0);
+
+	if (real_name != NULL)
+		__os_free(real_name, 0);
+
 	return (ret);
 }

@@ -7,7 +7,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: java_Db.c,v 11.17 2000/06/05 13:31:08 dda Exp $";
+static const char revid[] = "$Id: java_Db.c,v 11.17.2.2 2000/07/20 15:13:07 krinsky Exp $";
 #endif /* not lint */
 
 #include <jni.h>
@@ -133,7 +133,7 @@ JNIEXPORT jobject JNICALL Java_com_sleepycat_db_Db_cursor
 	return get_Dbc(jnienv, dbc);
 }
 
-JNIEXPORT void JNICALL Java_com_sleepycat_db_Db_del
+JNIEXPORT jint JNICALL Java_com_sleepycat_db_Db_del
   (JNIEnv *jnienv, /*Db*/ jobject jthis, /*DbTxn*/ jobject txnid,
    /*Dbt*/ jobject key, jint dbflags)
 {
@@ -142,9 +142,10 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_Db_del
 	DB *db;
 	JDBT dbkey;
 
+	err = 0;
 	db = get_DB(jnienv, jthis);
 	if (!verify_non_null(jnienv, db))
-		return;
+		return 0;
 
 	JAVADB_API_BEGIN(db, jthis);
 	dbtxnid = get_DB_TXN(jnienv, txnid);
@@ -159,6 +160,7 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_Db_del
  out:
 	jdbt_unlock(&dbkey, jnienv);
 	JAVADB_API_END(db);
+	return err;
 }
 
 JNIEXPORT void JNICALL Java_com_sleepycat_db_Db_err
@@ -747,6 +749,9 @@ JNIEXPORT void JNICALL Java_com_sleepycat_db_Db__1open
 	DB *db;
 	JSTR dbfile;
 	JSTR dbdatabase;
+
+	/* Java is assumed to be threaded. */
+	flags |= DB_THREAD;
 
 	db = get_DB(jnienv, jthis);
 	if (jstr_lock(&dbfile, jnienv, file) != 0)

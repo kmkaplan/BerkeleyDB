@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: db_err.c,v 11.27 2000/05/22 20:35:56 bostic Exp $";
+static const char revid[] = "$Id: db_err.c,v 11.27.2.1 2000/07/16 18:59:49 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -353,15 +353,21 @@ __db_real_err(dbenv, error, error_set, stderr_default, fmt, ap)
 	const char *fmt;
 	va_list ap;
 {
+	/* Call the user's callback function, if specified. */
 	if (dbenv != NULL && dbenv->db_errcall != NULL)
 		__db_errcall(dbenv, error, error_set, fmt, ap);
 
+	/* Write to the user's file descriptor, if specified. */
 	if (dbenv != NULL && dbenv->db_errfile != NULL)
 		__db_errfile(dbenv, error, error_set, fmt, ap);
 
+	/*
+	 * If we have a default and we didn't do either of the above, write
+	 * to the default.
+	 */
 	if (stderr_default && (dbenv == NULL ||
 	    (dbenv->db_errcall == NULL && dbenv->db_errfile == NULL)))
-		__db_errfile(NULL, error, error_set, fmt, ap);
+		__db_errfile(dbenv, error, error_set, fmt, ap);
 }
 
 /*

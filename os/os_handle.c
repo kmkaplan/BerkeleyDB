@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: os_handle.c,v 11.17 2000/05/17 19:30:15 bostic Exp $";
+static const char revid[] = "$Id: os_handle.c,v 11.17.2.1 2000/06/29 16:43:52 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -36,7 +36,7 @@ __os_openhandle(dbenv, name, flags, mode, fhp)
 	int flags, mode;
 	DB_FH *fhp;
 {
-	int ret, try;
+	int ret, nrepeat;
 #ifdef HAVE_VXWORKS
 	int newflags;
 #endif
@@ -51,7 +51,7 @@ __os_openhandle(dbenv, name, flags, mode, fhp)
 		return (0);
 	}
 
-	for (ret = 0, try = 1; try < 4; ++try) {
+	for (ret = 0, nrepeat = 1; nrepeat < 4; ++nrepeat) {
 #ifdef	HAVE_VXWORKS
 		/*
 		 * VxWorks does not support O_CREAT on open, you have to use
@@ -116,7 +116,7 @@ __os_openhandle(dbenv, name, flags, mode, fhp)
 			 */
 			ret = __os_get_errno();
 			if (ret == ENFILE || ret == EMFILE || ret == ENOSPC) {
-				(void)__os_sleep(dbenv, try * 2, 0);
+				(void)__os_sleep(dbenv, nrepeat * 2, 0);
 				continue;
 			}
 		} else {

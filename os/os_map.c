@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: os_map.c,v 11.24 2000/05/30 02:32:06 bostic Exp $";
+static const char revid[] = "$Id: os_map.c,v 11.24.2.1 2000/07/05 13:57:56 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -72,17 +72,6 @@ __os_r_sysattach(dbenv, infop, rp)
 		int id, ret;
 
 		/*
-		 * We require that the application provide use with a base
-		 * System V IPC key value.
-		 */
-		if (dbenv->shm_key == INVALID_REGION_SEGID) {
-			__db_err(dbenv,
-			    "no base system shared memory ID specified");
-			return (EINVAL);
-		}
-		segid = (key_t)dbenv->shm_key;
-
-		/*
 		 * We could potentially create based on REGION_CREATE_OK, but
 		 * that's dangerous -- we might get crammed in sideways if
 		 * some of the expected regions exist but others do not.  Also,
@@ -92,6 +81,19 @@ __os_r_sysattach(dbenv, infop, rp)
 		 * recovery will get us straightened out.
 		 */
 		if (F_ISSET(infop, REGION_CREATE)) {
+			/*
+			 * The application must give us a base System V IPC key
+			 * value.  Adjust that value based on the regions ID,
+			 * and correct so the user's original value appears in
+			 * the ipcs output.
+			 */
+			if (dbenv->shm_key == INVALID_REGION_SEGID) {
+				__db_err(dbenv,
+			    "no base system shared memory ID specified");
+				return (EINVAL);
+			}
+			segid = (key_t)(dbenv->shm_key + (infop->id - 1));
+
 			/*
 			 * If map to an existing region, assume the application
 			 * crashed and we're restarting.  Delete the old region
@@ -108,7 +110,7 @@ __os_r_sysattach(dbenv, infop, rp)
 					return (EAGAIN);
 				}
 			}
-			if ((rp->segid =
+			if ((id =
 			    shmget(segid, rp->size, IPC_CREAT | 0600)) == -1) {
 				ret = __os_get_errno();
 				__db_err(dbenv,
@@ -116,20 +118,16 @@ __os_r_sysattach(dbenv, infop, rp)
 				    (long)segid, strerror(ret));
 				return (ret);
 			}
+			rp->segid = id;
+		} else
+			id = rp->segid;
 
-			/*
-			 * Increment the base segment value to identify a new
-			 * segment.
-			 */
-			++dbenv->shm_key;
-		}
-
-		if ((infop->addr = shmat(rp->segid, NULL, 0)) == (void *)-1) {
+		if ((infop->addr = shmat(id, NULL, 0)) == (void *)-1) {
 			infop->addr = NULL;
 			ret = __os_get_errno();
 			__db_err(dbenv,
-	"shmat: id %ld: unable to attach to shared system memory region: %s",
-			    rp->segid, strerror(ret));
+	"shmat: id %d: unable to attach to shared system memory region: %s",
+			    id, strerror(ret));
 			return (ret);
 		}
 

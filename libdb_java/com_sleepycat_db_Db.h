@@ -42,9 +42,9 @@ JNIEXPORT jobject JNICALL Java_com_sleepycat_db_Db_cursor
 /*
  * Class:     com_sleepycat_db_Db
  * Method:    del
- * Signature: (Lcom/sleepycat/db/DbTxn;Lcom/sleepycat/db/Dbt;I)V
+ * Signature: (Lcom/sleepycat/db/DbTxn;Lcom/sleepycat/db/Dbt;I)I
  */
-JNIEXPORT void JNICALL Java_com_sleepycat_db_Db_del
+JNIEXPORT jint JNICALL Java_com_sleepycat_db_Db_del
   (JNIEnv *, jobject, jobject, jobject, jint);
 
 /*

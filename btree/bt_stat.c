@@ -8,7 +8,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: bt_stat.c,v 11.25 2000/05/31 16:47:37 bostic Exp $";
+static const char revid[] = "$Id: bt_stat.c,v 11.25.2.1 2000/07/05 17:58:51 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -41,7 +41,7 @@ __bam_stat(dbp, spp, db_malloc, flags)
 	BTREE_CURSOR *cp;
 	DBC *dbc;
 	DB_BTREE_STAT *sp;
-	DB_LOCK lock;
+	DB_LOCK lock, metalock;
 	PAGE *h;
 	db_pgno_t pgno;
 	int ret, t_ret;
@@ -52,7 +52,7 @@ __bam_stat(dbp, spp, db_malloc, flags)
 	meta = NULL;
 	t = dbp->bt_internal;
 	sp = NULL;
-	lock.off = LOCK_INVALID;
+	metalock.off = lock.off = LOCK_INVALID;
 	h = NULL;
 	ret = 0;
 
@@ -100,7 +100,7 @@ __bam_stat(dbp, spp, db_malloc, flags)
 
 	/* Get the metadata page for the entire database. */
 	pgno = PGNO_BASE_MD;
-	if ((ret = __db_lget(dbc, 0, pgno, DB_LOCK_READ, 0, &lock)) != 0)
+	if ((ret = __db_lget(dbc, 0, pgno, DB_LOCK_READ, 0, &metalock)) != 0)
 		goto err;
 	if ((ret = memp_fget(dbp->mpf, &pgno, 0, (PAGE **)&meta)) != 0)
 		goto err;
@@ -147,11 +147,11 @@ __bam_stat(dbp, spp, db_malloc, flags)
 		if ((ret = memp_fput(dbp->mpf, meta, 0)) != 0)
 			goto err;
 		meta = NULL;
-		__LPUT(dbc, lock);
+		__LPUT(dbc, metalock);
 
 		if ((ret = __db_lget(dbc,
 		    0, t->bt_meta, F_ISSET(dbp, DB_AM_RDONLY) ?
-		    DB_LOCK_READ : DB_LOCK_WRITE, 0, &lock)) != 0)
+		    DB_LOCK_READ : DB_LOCK_WRITE, 0, &metalock)) != 0)
 			goto err;
 		if ((ret =
 		    memp_fget(dbp->mpf, &t->bt_meta, 0, (PAGE **)&meta)) != 0)
@@ -177,7 +177,7 @@ __bam_stat(dbp, spp, db_malloc, flags)
 	    meta, F_ISSET(dbp, DB_AM_RDONLY) ? 0 : DB_MPOOL_DIRTY)) != 0)
 		goto err;
 	meta = NULL;
-	__LPUT(dbc, lock);
+	__LPUT(dbc, metalock);
 
 done:	*(DB_BTREE_STAT **)spp = sp;
 

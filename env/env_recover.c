@@ -11,7 +11,7 @@
 static const char copyright[] =
     "Copyright (c) 1996-2000\nSleepycat Software Inc.  All rights reserved.\n";
 static const char revid[] =
-    "$Id: env_recover.c,v 11.25 2000/06/07 14:06:22 bostic Exp $";
+    "$Id: env_recover.c,v 11.25.2.1 2000/07/05 20:05:21 bostic Exp $";
 #endif
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -141,6 +141,7 @@ __db_apprec(dbenv, flags)
 	 * of the amount of log traversed to figure out how much of the
 	 * pass we've accomplished.
 	 */
+	memset(&data, 0, sizeof(data));
 	if (dbenv->db_feedback != NULL &&
 	    (ret = log_get(dbenv, &last_lsn, &data, DB_LAST)) != 0)
 		goto out;
@@ -150,7 +151,6 @@ __db_apprec(dbenv, flags)
 	 * Find the second to last checkpoint in the log.  This is the point
 	 * from which we want to begin pass #1 (the open files pass).
 	 */
-	memset(&data, 0, sizeof(data));
 	ckp_args = NULL;
 
 	if (LF_ISSET(DB_RECOVER_FATAL)) {
