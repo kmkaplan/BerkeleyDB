@@ -1172,6 +1172,7 @@
 #define	__txn_force_abort __txn_force_abort@DB_VERSION_UNIQUE_NAME@
 #define	__txn_preclose __txn_preclose@DB_VERSION_UNIQUE_NAME@
 #define	__txn_reset __txn_reset@DB_VERSION_UNIQUE_NAME@
+#define	__txn_updateckp __txn_updateckp@DB_VERSION_UNIQUE_NAME@
 #define	__txn_regop_log __txn_regop_log@DB_VERSION_UNIQUE_NAME@
 #define	__txn_regop_getpgnos __txn_regop_getpgnos@DB_VERSION_UNIQUE_NAME@
 #define	__txn_regop_print __txn_regop_print@DB_VERSION_UNIQUE_NAME@

@@ -299,10 +299,7 @@ typedef unsigned int tsl_t;
 #define	MUTEX_FIELDS							\
 	LONG tas;							\
 	LONG nwaiters;							\
-	union {								\
-		HANDLE event;	/* Windows event HANDLE for wakeups */	\
-		u_int32_t id;	/* ID used for shared mutexes */	\
-	} /* anonymous */;
+	u_int32_t id;	/* ID used for creating events */		\
 
 #if defined(LOAD_ACTUAL_MUTEX_CODE)
 #define	MUTEX_SET(tsl)		(!InterlockedExchange((PLONG)tsl, 1))
