@@ -1,16 +1,17 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996-2001
+# Copyright (c) 1996-2002
 #	Sleepycat Software.  All rights reserved.
 #
-# $Id: test093.tcl,v 11.11 2001/07/12 16:31:47 sue Exp $
+# $Id: test093.tcl,v 11.20 2002/06/20 19:01:02 sue Exp $
 #
-# DB Test 93 {access method}
-# Test bt comparison proc.
-# Use the first 10,000 entries from the dictionary.
-# Insert each with self as key and data; retrieve each.
-# After all are entered, retrieve all; compare output to original.
-# Close file, reopen, do retrieve and re-verify.
+# TEST	test093
+# TEST	Test using set_bt_compare.
+# TEST
+# TEST	Use the first 10,000 entries from the dictionary.
+# TEST	Insert each with self as key and data; retrieve each.
+# TEST	After all are entered, retrieve all; compare output to original.
+# TEST	Close file, reopen, do retrieve and re-verify.
 proc test093 { method {nentries 10000} {tnum "93"} args} {
 	source ./include.tcl
 	global btvals
@@ -20,40 +21,33 @@ proc test093 { method {nentries 10000} {tnum "93"} args} {
 	set dbargs [convert_args $method $args]
 	set omethod [convert_method $method]
 
-	puts "Test0$tnum: $method ($args) $nentries using btcompare"
-
 	if { [is_btree $method] != 1 } {
-		puts "Skipping for method $method."
+		puts "Test0$tnum: skipping for method $method."
 		return
 	}
-	# 
-	# We need to determine if we are using RPC and skip correctly.
-	# The only way to tell that though, is by attempting to open
-	# the db with bt_compare and checking the error.
-	#
+	set txnenv 0
 	set eindex [lsearch -exact $dbargs "-env"]
 	if { $eindex != -1 } {
 		set testfile test0$tnum.db
 		incr eindex
 		set env [lindex $dbargs $eindex]
-		cleanup $testdir $env
-	        set stat [catch {eval {berkdb_open_noerr -btcompare \
-		    test093_sort1 -create -truncate -mode 0644} \
-		    $omethod $dbargs $testfile} db]
-		if { $stat == 1 } {
-			#
-			# Only failure we expect is for RPC.   We want to skip
-			# for RPC, but we cannot tell if we are using RPC except
-			# by the error message.
-			#
-			error_check_good dbopen \
-			    [is_substr $errorInfo "meaningless in RPC env"] 1
-			puts "Skipping for RPC"
+		set rpcenv [is_rpcenv $env]
+		if { $rpcenv == 1 } {
+			puts "Test0$tnum: skipping for RPC"
 			return
-		} else {
-			error_check_good dbclose:rpc [$db close] 0
 		}
+		set txnenv [is_txnenv $env]
+		if { $txnenv == 1 } {
+			append dbargs " -auto_commit "
+			if { $nentries == 10000 } {
+				set nentries 100
+			}
+		}
+		set testdir [get_home $env]
+		cleanup $testdir $env
 	}
+	puts "Test0$tnum: $method ($args) $nentries using btcompare"
+
 
 	test093_run $omethod $dbargs $nentries $tnum test093_cmp1 test093_sort1
 	test093_runbig $omethod $dbargs $nentries $tnum \
@@ -73,6 +67,7 @@ proc test093 { method {nentries 10000} {tnum "93"} args} {
 	} else {
 		incr eindex
 		set env [lindex $dbargs $eindex]
+		set testdir [get_home $env]
 	}
 	cleanup $testdir $env
 }
@@ -87,6 +82,7 @@ proc test093_run { method dbargs nentries tnum cmpfunc sortfunc } {
 	#
 	# If we are using an env, then testfile should just be the db name.
 	# Otherwise it is the test directory and the name.
+	set txnenv 0
 	if { $eindex == -1 } {
 		set testfile $testdir/test0$tnum.db
 		set env NULL
@@ -94,11 +90,13 @@ proc test093_run { method dbargs nentries tnum cmpfunc sortfunc } {
 		set testfile test0$tnum.db
 		incr eindex
 		set env [lindex $dbargs $eindex]
+		set txnenv [is_txnenv $env]
+		set testdir [get_home $env]
 	}
 	cleanup $testdir $env
 
 	set db [eval {berkdb_open -btcompare $cmpfunc \
-	     -create -truncate -mode 0644} $method $dbargs $testfile]
+	     -create -mode 0644} $method $dbargs $testfile]
 	error_check_good dbopen [is_valid_db $db] TRUE
 	set did [open $dict]
 
@@ -117,9 +115,17 @@ proc test093_run { method dbargs nentries tnum cmpfunc sortfunc } {
 	while { [gets $did str] != -1 && $count < $nentries } {
 		set key $str
 		set str [reverse $str]
+		if { $txnenv == 1 } {
+			set t [$env txn]
+			error_check_good txn [is_valid_txn $t $env] TRUE
+			set txn "-txn $t"
+		}
 		set ret [eval \
 		    {$db put} $txn $pflags {$key [chop_data $method $str]}]
 		error_check_good put $ret 0
+		if { $txnenv == 1 } {
+			error_check_good txn [$t commit] 0
+		}
 
 		lappend btvals $key
 
@@ -133,7 +139,15 @@ proc test093_run { method dbargs nentries tnum cmpfunc sortfunc } {
 	# Now we will get each key from the DB and compare the results
 	# to the original.
 	puts "\tTest0$tnum.b: dump file"
+	if { $txnenv == 1 } {
+		set t [$env txn]
+		error_check_good txn [is_valid_txn $t $env] TRUE
+		set txn "-txn $t"
+	}
 	dump_file $db $txn $t1 $checkfunc
+	if { $txnenv == 1 } {
+		error_check_good txn [$t commit] 0
+	}
 	error_check_good db_close [$db close] 0
 
 	# Now compare the keys to see if they match the dictionary (or ints)
@@ -155,7 +169,15 @@ proc test093_run { method dbargs nentries tnum cmpfunc sortfunc } {
 	set db [eval {berkdb_open -btcompare $cmpfunc -rdonly} \
 	     $dbargs $method $testfile]
 	error_check_good dbopen [is_valid_db $db] TRUE
+	if { $txnenv == 1 } {
+		set t [$env txn]
+		error_check_good txn [is_valid_txn $t $env] TRUE
+		set txn "-txn $t"
+	}
 	dump_file_direction $db $txn $t1 $checkfunc "-first" "-next"
+	if { $txnenv == 1 } {
+		error_check_good txn [$t commit] 0
+	}
 	error_check_good db_close [$db close] 0
 
 	#
@@ -182,6 +204,7 @@ proc test093_runbig { method dbargs nentries tnum cmpfunc sortfunc } {
 	#
 	# If we are using an env, then testfile should just be the db name.
 	# Otherwise it is the test directory and the name.
+	set txnenv 0
 	if { $eindex == -1 } {
 		set testfile $testdir/test0$tnum.db
 		set env NULL
@@ -189,11 +212,13 @@ proc test093_runbig { method dbargs nentries tnum cmpfunc sortfunc } {
 		set testfile test0$tnum.db
 		incr eindex
 		set env [lindex $dbargs $eindex]
+		set txnenv [is_txnenv $env]
+		set testdir [get_home $env]
 	}
 	cleanup $testdir $env
 
 	set db [eval {berkdb_open -btcompare $cmpfunc \
-	     -create -truncate -mode 0644} $method $dbargs $testfile]
+	     -create -mode 0644} $method $dbargs $testfile]
 	error_check_good dbopen [is_valid_db $db] TRUE
 
 	set t1 $testdir/t1
@@ -227,9 +252,17 @@ proc test093_runbig { method dbargs nentries tnum cmpfunc sortfunc } {
 		puts -nonewline $fcopy $key
 		close $fcopy
 
+		if { $txnenv == 1 } {
+			set t [$env txn]
+			error_check_good txn [is_valid_txn $t $env] TRUE
+			set txn "-txn $t"
+		}
 		set ret [eval {$db put} $txn $pflags {$key \
 		    [chop_data $method $f]}]
 		error_check_good put_file $ret 0
+		if { $txnenv == 1 } {
+			error_check_good txn [$t commit] 0
+		}
 
 		lappend btvals $key
 
@@ -253,7 +286,15 @@ proc test093_runbig { method dbargs nentries tnum cmpfunc sortfunc } {
 	# Now we will get each key from the DB and compare the results
 	# to the original.
 	puts "\tTest0$tnum.f: big dump file"
+	if { $txnenv == 1 } {
+		set t [$env txn]
+		error_check_good txn [is_valid_txn $t $env] TRUE
+		set txn "-txn $t"
+	}
 	dump_file $db $txn $t1 $checkfunc
+	if { $txnenv == 1 } {
+		error_check_good txn [$t commit] 0
+	}
 	error_check_good db_close [$db close] 0
 
 	puts "\tTest0$tnum.g: dump file in order"
@@ -266,7 +307,15 @@ proc test093_runbig { method dbargs nentries tnum cmpfunc sortfunc } {
 	set db [eval {berkdb_open -btcompare $cmpfunc -rdonly} \
 	     $dbargs $method $testfile]
 	error_check_good dbopen [is_valid_db $db] TRUE
+	if { $txnenv == 1 } {
+		set t [$env txn]
+		error_check_good txn [is_valid_txn $t $env] TRUE
+		set txn "-txn $t"
+	}
 	dump_file_direction $db $txn $t1 $checkfunc "-first" "-next"
+	if { $txnenv == 1 } {
+		error_check_good txn [$t commit] 0
+	}
 	error_check_good db_close [$db close] 0
 
 	#

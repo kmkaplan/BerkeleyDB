@@ -1,19 +1,27 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996-2001
+# Copyright (c) 1996-2002
 #	Sleepycat Software.  All rights reserved.
 #
-# $Id: recd001.tcl,v 11.35 2001/07/02 01:08:46 bostic Exp $
+# $Id: recd001.tcl,v 11.40 2002/05/08 19:36:18 sandstro Exp $
 #
-# Recovery Test 1.
-# These are the most basic recovery tests.  We do individual recovery
-# tests for each operation in the access method interface.  First we
-# create a file and capture the state of the database (i.e., we copy
-# it.  Then we run a transaction containing a single operation.  In
-# one test, we abort the transaction and compare the outcome to the
-# original copy of the file.  In the second test, we restore the
-# original copy of the database and then run recovery and compare
-# this against the actual database.
+# TEST	recd001
+# TEST	Per-operation recovery tests for non-duplicate, non-split
+# TEST	messages.  Makes sure that we exercise redo, undo, and do-nothing
+# TEST	condition.  Any test that appears with the message (change state)
+# TEST	indicates that we've already run the particular test, but we are
+# TEST	running it again so that we can change the state of the data base
+# TEST	to prepare for the next test (this applies to all other recovery
+# TEST	tests as well).
+# TEST
+# TEST	These are the most basic recovery tests.  We do individual recovery
+# TEST	tests for each operation in the access method interface.  First we
+# TEST	create a file and capture the state of the database (i.e., we copy
+# TEST	it.  Then we run a transaction containing a single operation.  In
+# TEST	one test, we abort the transaction and compare the outcome to the
+# TEST	original copy of the file.  In the second test, we restore the
+# TEST	original copy of the database and then run recovery and compare
+# TEST	this against the actual database.
 proc recd001 { method {select 0} args} {
 	global fixed_len
 	source ./include.tcl
@@ -43,7 +51,7 @@ proc recd001 { method {select 0} args} {
 	set flags "-create -txn -home $testdir"
 
 	puts "\tRecd001.a.0: creating environment"
-	set env_cmd "berkdb env $flags"
+	set env_cmd "berkdb_env $flags"
 	set dbenv [eval $env_cmd]
 	error_check_good dbenv [is_valid_env $dbenv] TRUE
 
@@ -207,27 +215,24 @@ proc recd001 { method {select 0} args} {
 
 		set dbenv [eval $env_cmd]
 		error_check_good dbenv [is_valid_env $dbenv] TRUE
+		set t [$dbenv txn]
+		error_check_good txn_begin [is_valid_txn $t $dbenv] TRUE
 		set oflags "-create $omethod -mode 0644 \
-		    -env $dbenv $opts $testfile"
+		    -env $dbenv -txn $t $opts $testfile"
 		set db [eval {berkdb_open} $oflags]
 		error_check_good db_open [is_valid_db $db] TRUE
 		set oflags "-create $omethod -mode 0644 \
-		    -env $dbenv $opts $testfile2"
+		    -env $dbenv -txn $t $opts $testfile2"
 		set db2 [eval {berkdb_open} $oflags]
 		error_check_good db_open [is_valid_db $db2] TRUE
 
-		set t [$dbenv txn]
-		error_check_good txn_begin [is_valid_txn $t $dbenv] TRUE
 		set ret [$db put -txn $t -partial $p $key $data]
 		error_check_good dbput $ret 0
-		error_check_good txncommit [$t commit] 0
-		error_check_good dbclose [$db close] 0
 
-		set t [$dbenv txn]
-		error_check_good txn_begin [is_valid_txn $t $dbenv] TRUE
 		set ret [$db2 put -txn $t -partial $p $key $data]
 		error_check_good dbput $ret 0
 		error_check_good txncommit [$t commit] 0
+		error_check_good dbclose [$db close] 0
 		error_check_good dbclose [$db2 close] 0
 		error_check_good dbenvclose [$dbenv close] 0
 

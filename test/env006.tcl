@@ -1,14 +1,12 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1999-2001
+# Copyright (c) 1999-2002
 #	Sleepycat Software.  All rights reserved.
 #
-# $Id: env006.tcl,v 11.6 2001/01/25 18:23:04 bostic Exp $
+# $Id: env006.tcl,v 11.8 2002/01/11 15:53:23 bostic Exp $
 #
-# Env Test 6
-# DB Utility Check
-# Make sure that all the utilities exist and run.
-#
+# TEST	env006
+# TEST	Make sure that all the utilities exist and run.
 proc env006 { } {
 	source ./include.tcl
 
@@ -23,6 +21,8 @@ proc env006 { } {
 	{ "db_printlog"			"Env006.f"}
 	{ "db_recover"			"Env006.g"}
 	{ "db_stat"			"Env006.h"}
+	{ "db_upgrade"			"Env006.h"}
+	{ "db_verify"			"Env006.h"}
 	}
 	foreach pair $rlist {
 		set cmd [lindex $pair 0]

@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996-2001
+ * Copyright (c) 1996-2002
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: ex_env.c,v 11.22 2001/05/10 17:14:04 bostic Exp $
+ * $Id: ex_env.c,v 11.27 2002/08/15 14:34:11 bostic Exp $
  */
 
 #include <sys/types.h>
@@ -23,40 +23,23 @@
 #define	DATABASE_HOME	"\\tmp\\database"
 #define	CONFIG_DATA_DIR	"\\database\\files"
 #else
-#ifdef HAVE_VXWORKS
-#define	DATABASE_HOME	"/ata0/vxtmp/database"
-#define	CONFIG_DATA_DIR	"/vxtmp/vxtmp/database/files"
-#else
 #define	DATABASE_HOME	"/tmp/database"
 #define	CONFIG_DATA_DIR	"/database/files"
 #endif
 #endif
-#endif
 
-int	db_setup __P((char *, char *, FILE *, char *));
-int	db_teardown __P((char *, char *, FILE *, char *));
-#ifdef HAVE_VXWORKS
-int	ex_env __P((void));
-#define	ERROR_RETURN	ERROR
-#define	VXSHM_KEY	11
-#else
+int	db_setup __P((const char *, const char *, FILE *, const char *));
+int	db_teardown __P((const char *, const char *, FILE *, const char *));
 int	main __P((void));
-#define	ERROR_RETURN	1
-#endif
 
 /*
  * An example of a program creating/configuring a Berkeley DB environment.
  */
 int
-#ifdef HAVE_VXWORKS
-ex_env()
-#else
 main()
-#endif
 {
-	int ret;
-	char *data_dir, *home;
-	char *progname = "ex_env";		/* Program name. */
+	const char *data_dir, *home;
+	const char *progname = "ex_env";		/* Program name. */
 
 	/*
 	 * All of the shared database files live in DATABASE_HOME, but
@@ -66,11 +49,11 @@ main()
 	data_dir = CONFIG_DATA_DIR;
 
 	printf("Setup env\n");
-	if ((ret = db_setup(home, data_dir, stderr, progname)) != 0)
+	if (db_setup(home, data_dir, stderr, progname) != 0)
 		return (EXIT_FAILURE);
 
 	printf("Teardown env\n");
-	if ((ret = db_teardown(home, data_dir, stderr, progname)) != 0)
+	if (db_teardown(home, data_dir, stderr, progname) != 0)
 		return (EXIT_FAILURE);
 
 	return (EXIT_SUCCESS);
@@ -78,7 +61,7 @@ main()
 
 int
 db_setup(home, data_dir, errfp, progname)
-	char *home, *data_dir, *progname;
+	const char *home, *data_dir, *progname;
 	FILE *errfp;
 {
 	DB_ENV *dbenv;
@@ -90,18 +73,10 @@ db_setup(home, data_dir, errfp, progname)
 	 */
 	if ((ret = db_env_create(&dbenv, 0)) != 0) {
 		fprintf(errfp, "%s: %s\n", progname, db_strerror(ret));
-		return (ERROR_RETURN);
+		return (1);
 	}
 	dbenv->set_errfile(dbenv, errfp);
 	dbenv->set_errpfx(dbenv, progname);
-
-#ifdef HAVE_VXWORKS
-	/* VxWorks needs to specify a base segment ID. */
-	if ((ret = dbenv->set_shm_key(dbenv, VXSHM_KEY)) != 0) {
-		fprintf(errfp, "%s: %s\n", progname, db_strerror(ret));
-		return (ERROR_RETURN);
-	}
-#endif
 
 	/*
 	 * We want to specify the shared memory buffer pool cachesize,
@@ -110,7 +85,7 @@ db_setup(home, data_dir, errfp, progname)
 	if ((ret = dbenv->set_cachesize(dbenv, 0, 64 * 1024, 0)) != 0) {
 		dbenv->err(dbenv, ret, "set_cachesize");
 		dbenv->close(dbenv, 0);
-		return (ERROR_RETURN);
+		return (1);
 	}
 
 	/* Databases are in a subdirectory. */
@@ -122,22 +97,22 @@ db_setup(home, data_dir, errfp, progname)
 	    0)) != 0) {
 		dbenv->err(dbenv, ret, "environment open: %s", home);
 		dbenv->close(dbenv, 0);
-		return (ERROR_RETURN);
+		return (1);
 	}
 
 	/* Do something interesting... */
 
 	/* Close the handle. */
 	if ((ret = dbenv->close(dbenv, 0)) != 0) {
-		fprintf(stderr, "DBENV->close: %s\n", db_strerror(ret));
-		return (ERROR_RETURN);
+		fprintf(stderr, "DB_ENV->close: %s\n", db_strerror(ret));
+		return (1);
 	}
 	return (0);
 }
 
 int
 db_teardown(home, data_dir, errfp, progname)
-	char *home, *data_dir, *progname;
+	const char *home, *data_dir, *progname;
 	FILE *errfp;
 {
 	DB_ENV *dbenv;
@@ -146,21 +121,15 @@ db_teardown(home, data_dir, errfp, progname)
 	/* Remove the shared database regions. */
 	if ((ret = db_env_create(&dbenv, 0)) != 0) {
 		fprintf(errfp, "%s: %s\n", progname, db_strerror(ret));
-		return (ERROR_RETURN);
+		return (1);
 	}
 	dbenv->set_errfile(dbenv, errfp);
 	dbenv->set_errpfx(dbenv, progname);
-#ifdef HAVE_VXWORKS
-	if ((ret = dbenv->set_shm_key(dbenv, VXSHM_KEY)) != 0) {
-		fprintf(errfp, "%s: %s\n", progname, db_strerror(ret));
-		return (ERROR_RETURN);
-	}
-#endif
 
 	(void)dbenv->set_data_dir(dbenv, data_dir);
 	if ((ret = dbenv->remove(dbenv, home, 0)) != 0) {
-		fprintf(stderr, "DBENV->remove: %s\n", db_strerror(ret));
-		return (ERROR_RETURN);
+		fprintf(stderr, "DB_ENV->remove: %s\n", db_strerror(ret));
+		return (1);
 	}
 	return (0);
 }

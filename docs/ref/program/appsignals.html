@@ -1,9 +1,10 @@
-<!--$Id: appsignals.so,v 10.26 2001/03/05 19:15:08 bostic Exp $-->
-<!--Copyright 1997-2001 by Sleepycat Software, Inc.-->
+<!--$Id: appsignals.so,v 10.28 2002/02/23 20:05:24 bostic Exp $-->
+<!--Copyright 1997-2002 by Sleepycat Software, Inc.-->
 <!--All rights reserved.-->
+<!--See the file LICENSE for redistribution information.-->
 <html>
 <head>
-<title>Berkeley DB Reference Guide: Application signal handling</title>
+<title>Berkeley DB Reference Guide: Signal handling</title>
 <meta name="description" content="Berkeley DB: An embedded database programmatic toolkit.">
 <meta name="keywords" content="embedded,database,programmatic,toolkit,b+tree,btree,hash,hashing,transaction,transactions,locking,logging,access method,access methods,java,C,C++">
 </head>
@@ -11,10 +12,10 @@
 <a name="2"><!--meow--></a>
 <table width="100%"><tr valign=top>
 <td><h3><dl><dt>Berkeley DB Reference Guide:<dd>Programmer Notes</dl></h3></td>
-<td align=right><a href="../../ref/xa/faq.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/program/errorret.html"><img src="../../images/next.gif" alt="Next"></a>
+<td align=right><a href="../../ref/apprec/config.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/program/errorret.html"><img src="../../images/next.gif" alt="Next"></a>
 </td></tr></table>
 <p>
-<h1 align=center>Application signal handling</h1>
+<h1 align=center>Signal handling</h1>
 <p>When applications using Berkeley DB receive signals, it is important that they
 exit gracefully, discarding any Berkeley DB locks that they may hold.  This is
 normally done by setting a flag when a signal arrives and then checking
@@ -28,7 +29,10 @@ the database environment must be shut down, and then recovery must be
 performed.  If this is not done,  databases may be left in an
 inconsistent state, or locks the application held may cause unresolvable
 deadlocks inside the environment, causing applications to hang.
-<table width="100%"><tr><td><br></td><td align=right><a href="../../ref/xa/faq.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/program/errorret.html"><img src="../../images/next.gif" alt="Next"></a>
+<p>Berkeley DB restarts all system calls interrupted by signals, that is, any
+underlying system calls that return failure with errno set to EINTR will
+be restarted rather than failing.
+<table width="100%"><tr><td><br></td><td align=right><a href="../../ref/apprec/config.html"><img src="../../images/prev.gif" alt="Prev"></a><a href="../../reftoc.html"><img src="../../images/ref.gif" alt="Ref"></a><a href="../../ref/program/errorret.html"><img src="../../images/next.gif" alt="Next"></a>
 </td></tr></table>
 <p><font size=1><a href="http://www.sleepycat.com">Copyright Sleepycat Software</a></font>
 </body>

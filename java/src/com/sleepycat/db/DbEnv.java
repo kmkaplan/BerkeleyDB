@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997-2001
+ * Copyright (c) 1997-2002
  *      Sleepycat Software.  All rights reserved.
  *
- * $Id: DbEnv.java,v 11.33 2001/07/02 01:03:22 bostic Exp $
+ * $Id: DbEnv.java,v 11.58 2002/08/29 14:22:22 margo Exp $
  */
 
 package com.sleepycat.db;
@@ -29,7 +29,7 @@ public class DbEnv
     // the set_* access methods below, and finally open
     // the environment by calling open().
     //
-    public DbEnv(int flags)
+    public DbEnv(int flags) throws DbException
     {
         constructor_flags_ = flags;
         _init(errstream_, constructor_flags_);
@@ -100,6 +100,14 @@ public class DbEnv
     private native void _close(int flags)
         throws DbException;
 
+    public native void dbremove(DbTxn txn, String name, String subdb,
+                                int flags)
+        throws DbException;
+
+    public native void dbrename(DbTxn txn, String name, String subdb,
+                                String newname, int flags)
+        throws DbException;
+
     public native void err(int errcode, String message);
 
     public native void errx(String message);
@@ -117,9 +125,11 @@ public class DbEnv
         throws Throwable;
 
     // (Internal)
-    private native void _init(DbErrcall errcall, int flags);
+    // called during constructor
+    private native void _init(DbErrcall errcall, int flags) throws DbException;
 
     // (Internal)
+    // called when DbEnv is constructed as part of Db constructor.
     private native void _init_using_db(DbErrcall errcall, Db db);
 
     /*package*/ native void _notify_db_close();
@@ -143,6 +153,10 @@ public class DbEnv
 
     public native void set_cachesize(int gbytes, int bytes, int ncaches)
          throws DbException;
+
+    // Encryption
+    public native void set_encrypt(String passwd, /*u_int32_t*/ int flags)
+        throws DbException;
 
     // Error message callback.
     public void set_errcall(DbErrcall errcall)
@@ -235,30 +249,21 @@ public class DbEnv
     public native void set_mp_mmapsize(/*size_t*/ long mmapsize)
          throws DbException;
 
-    public native void set_mutexlocks(int mutexlocks)
+    public native void set_flags(int flags, boolean onoff)
          throws DbException;
 
-    public native static void set_pageyield(int pageyield)
-         throws DbException;
+    public native void set_rep_limit(int gbytes, int bytes) throws DbException;
 
-    public native static void set_panicstate(int panicstate)
-         throws DbException;
-
-    public void set_recovery_init(DbRecoveryInit recovery_init)
+    public void set_rep_transport(int envid, DbRepTransport transport)
          throws DbException
     {
-        recovery_init_ = recovery_init;
-        recovery_init_changed(recovery_init);
+         rep_transport_ = transport;
+         rep_transport_changed(envid, transport);
     }
 
     // (Internal)
-    private native void recovery_init_changed(DbRecoveryInit recovery_init)
-         throws DbException;
-
-    public native static void set_region_init(int region_init)
-         throws DbException;
-
-    public native void set_flags(int flags, boolean onoff)
+    private native void rep_transport_changed(int envid,
+				              DbRepTransport transport)
          throws DbException;
 
     public native void set_rpc_server(DbClient client, String host,
@@ -269,22 +274,26 @@ public class DbEnv
     public native void set_shm_key(long shm_key)
          throws DbException;
 
-    public native static void set_tas_spins(int tas_spins)
+    public native void set_tas_spins(int tas_spins)
          throws DbException;
+
+    public native void set_timeout(/*db_timeout_t*/ long timeout,
+                                   /*u_int32_t*/ int flags)
+        throws DbException;
 
     public native void set_tmp_dir(String tmp_dir)
          throws DbException;
 
     // Feedback
-    public void set_tx_recover(DbTxnRecover tx_recover)
+    public void set_app_dispatch(DbAppDispatch app_dispatch)
          throws DbException
     {
-        tx_recover_ = tx_recover;
-        tx_recover_changed(tx_recover);
+        app_dispatch_ = app_dispatch;
+        app_dispatch_changed(app_dispatch);
     }
 
     // (Internal)
-    private native void tx_recover_changed(DbTxnRecover tx_recover)
+    private native void app_dispatch_changed(DbAppDispatch app_dispatch)
          throws DbException;
 
     // Maximum number of transactions.
@@ -321,16 +330,32 @@ public class DbEnv
                                   /*db_lockmode_t*/ int lock_mode)
          throws DbException;
 
+    public native void lock_put(DbLock lock)
+         throws DbException;
+
     public native /*u_int32_t*/ int lock_id()
          throws DbException;
 
-    public native DbLockStat lock_stat()
+    public native void lock_id_free(/*u_int32_t*/ int id)
          throws DbException;
+
+    public native DbLockStat lock_stat(/*u_int32_t*/ int flags)
+         throws DbException;
+
+    public native void lock_vec(/*u_int32_t*/ int locker,
+                                int flags,
+                                DbLockRequest[] list,
+                                int offset,
+                                int count)
+        throws DbException;
 
     public native String[] log_archive(int flags)
          throws DbException;
 
     public native static int log_compare(DbLsn lsn0, DbLsn lsn1);
+
+    public native DbLogc log_cursor(int flags)
+         throws DbException;
 
     public native String log_file(DbLsn lsn)
          throws DbException;
@@ -338,40 +363,47 @@ public class DbEnv
     public native void log_flush(DbLsn lsn)
          throws DbException;
 
-    public native void log_get(DbLsn lsn, Dbt data, int flags)
-         throws DbException;
-
     public native void log_put(DbLsn lsn, Dbt data, int flags)
          throws DbException;
 
-    public native DbLogStat log_stat()
+    public native DbLogStat log_stat(/*u_int32_t*/ int flags)
          throws DbException;
 
-    public native void log_register(Db dbp, String name)
+    public native DbMpoolStat memp_stat(/*u_int32_t*/ int flags)
          throws DbException;
 
-    public native void log_unregister(Db dbp)
-         throws DbException;
-
-    public native DbMpoolStat memp_stat()
-         throws DbException;
-
-    public native DbMpoolFStat[] memp_fstat()
+    public native DbMpoolFStat[] memp_fstat(/*u_int32_t*/ int flags)
          throws DbException;
 
     public native int memp_trickle(int pct)
          throws DbException;
 
+    public native int rep_elect(int nsites, int pri, int timeout)
+         throws DbException;
+
+    public static class RepProcessMessage {
+        public int envid;
+    }
+    public native int rep_process_message(Dbt control, Dbt rec,
+            RepProcessMessage result)
+         throws DbException;
+
+    public native void rep_start(Dbt cookie, int flags)
+         throws DbException;
+
+    public native DbRepStat rep_stat(/*u_int32_t*/ int flags)
+         throws DbException;
+
     public native DbTxn txn_begin(DbTxn pid, int flags)
          throws DbException;
 
-    public native int txn_checkpoint(int kbyte, int min, int flags)
+    public native void txn_checkpoint(int kbyte, int min, int flags)
          throws DbException;
 
     public native DbPreplist[] txn_recover(int count, int flags)
         throws DbException;
 
-    public native DbTxnStat txn_stat()
+    public native DbTxnStat txn_stat(/*u_int32_t*/ int flags)
          throws DbException;
 
     ////////////////////////////////////////////////////////////////
@@ -383,8 +415,8 @@ public class DbEnv
     private int constructor_flags_ = 0;
     private Vector dblist_ = new Vector();    // Db's that are open
     private DbEnvFeedback feedback_ = null;
-    private DbRecoveryInit recovery_init_ = null;
-    private DbTxnRecover tx_recover_ = null;
+    private DbRepTransport rep_transport_ = null;
+    private DbAppDispatch app_dispatch_ = null;
     private DbOutputStreamErrcall errstream_ =
         new DbOutputStreamErrcall(System.err);
     /*package*/ DbErrcall errcall_ = errstream_;

@@ -1,21 +1,25 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997-2001
+ * Copyright (c) 1997-2002
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: AccessExample.cpp,v 11.13 2001/05/10 17:14:06 bostic Exp $
+ * $Id: AccessExample.cpp,v 11.18 2002/01/23 15:33:20 bostic Exp $
  */
 
 #include <sys/types.h>
 
-#include <iostream.h>
+#include <iostream>
+#include <iomanip>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <iomanip.h>
 #include <db_cxx.h>
+
+using std::cin;
+using std::cout;
+using std::cerr;
 
 class AccessExample
 {
@@ -41,11 +45,11 @@ int main()
 	try {
 		AccessExample app;
 		app.run();
-		return EXIT_SUCCESS;
+		return (EXIT_SUCCESS);
 	}
 	catch (DbException &dbe) {
 		cerr << "AccessExample: " << dbe.what() << "\n";
-		return EXIT_FAILURE;
+		return (EXIT_FAILURE);
 	}
 }
 
@@ -68,7 +72,7 @@ void AccessExample::run()
 	db.set_errpfx("AccessExample");
 	db.set_pagesize(1024);		/* Page size: 1K. */
 	db.set_cachesize(0, 32 * 1024, 0);
-	db.open(FileName, NULL, DB_BTREE, DB_CREATE, 0664);
+	db.open(NULL, FileName, NULL, DB_BTREE, DB_CREATE, 0664);
 
 	//
 	// Insert records into the database, where the key is the user

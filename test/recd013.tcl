@@ -1,12 +1,12 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 2000-2001
+# Copyright (c) 2000-2002
 #	Sleepycat Software.  All rights reserved.
 #
-# $Id: recd013.tcl,v 11.14 2001/07/02 16:52:10 krinsky Exp $
+# $Id: recd013.tcl,v 11.18 2002/02/25 16:44:27 sandstro Exp $
 #
-# Recovery Test 13.
-# Smoke test of aborted cursor adjustments.
+# TEST	recd013
+# TEST	Test of cursor adjustment on child transaction aborts. [#2373]
 #
 # XXX
 # Other tests that cover more specific variants of the same issue
@@ -48,11 +48,12 @@ proc recd013 { method { nitems 100 } args } {
 	    Create environment, database, and parent transaction."
 	set flags "-create -txn -home $testdir"
 
-	set env_cmd "berkdb env $flags"
+	set env_cmd "berkdb_env $flags"
 	set env [eval $env_cmd]
 	error_check_good dbenv [is_valid_env $env] TRUE
 
-	set oflags "-env $env -create -mode 0644 -pagesize $pgsz $args $omethod"
+	set oflags \
+    "-auto_commit -env $env -create -mode 0644 -pagesize $pgsz $args $omethod"
 	set db [eval {berkdb_open} $oflags $testfile]
 	error_check_good dbopen [is_valid_db $db] TRUE
 

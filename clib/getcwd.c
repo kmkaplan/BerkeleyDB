@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996-2001
+ * Copyright (c) 1996-2002
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -36,7 +36,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: getcwd.c,v 11.9 2001/04/03 18:26:32 bostic Exp $";
+static const char revid[] = "$Id: getcwd.c,v 11.13 2002/02/28 21:27:18 ubell Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -167,7 +167,7 @@ getcwd(pt, size)
 			 * been that way and stuff would probably break.
 			 */
 			bcopy(bpt, pt, ept - bpt);
-			__os_free(NULL, up, upsize);
+			__os_free(NULL, up);
 			return (pt);
 		}
 
@@ -261,12 +261,12 @@ notfound:
 	 * didn't find the current directory in its parent directory, set
 	 * errno to ENOENT.
 	 */
-	if (__os_get_errno() == 0)
+	if (__os_get_errno_ret_zero() == 0)
 		__os_set_errno(save_errno == 0 ? ENOENT : save_errno);
 	/* FALLTHROUGH */
 err:
 	if (ptsize)
-		__os_free(NULL, pt, ptsize);
-	__os_free(NULL, up, upsize);
+		__os_free(NULL, pt);
+	__os_free(NULL, up);
 	return (NULL);
 }

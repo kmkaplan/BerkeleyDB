@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996-2001
+ * Copyright (c) 1996-2002
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -43,7 +43,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: bt_delete.c,v 11.36 2001/04/27 15:43:54 bostic Exp $";
+static const char revid[] = "$Id: bt_delete.c,v 11.44 2002/07/03 19:03:49 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -53,10 +53,10 @@ static const char revid[] = "$Id: bt_delete.c,v 11.36 2001/04/27 15:43:54 bostic
 #endif
 
 #include "db_int.h"
-#include "db_page.h"
-#include "db_shash.h"
-#include "btree.h"
-#include "lock.h"
+#include "dbinc/db_page.h"
+#include "dbinc/db_shash.h"
+#include "dbinc/btree.h"
+#include "dbinc/lock.h"
 
 /*
  * __bam_ditem --
@@ -73,14 +73,18 @@ __bam_ditem(dbc, h, indx)
 	BINTERNAL *bi;
 	BKEYDATA *bk;
 	DB *dbp;
+	DB_MPOOLFILE *mpf;
 	u_int32_t nbytes;
 	int ret;
+	db_indx_t *inp;
 
 	dbp = dbc->dbp;
+	mpf = dbp->mpf;
+	inp = P_INP(dbp, h);
 
 	switch (TYPE(h)) {
 	case P_IBTREE:
-		bi = GET_BINTERNAL(h, indx);
+		bi = GET_BINTERNAL(dbp, h, indx);
 		switch (B_TYPE(bi->type)) {
 		case B_DUPLICATE:
 		case B_KEYDATA:
@@ -93,7 +97,7 @@ __bam_ditem(dbc, h, indx)
 				return (ret);
 			break;
 		default:
-			return (__db_pgfmt(dbp, PGNO(h)));
+			return (__db_pgfmt(dbp->dbenv, PGNO(h)));
 		}
 		break;
 	case P_IRECNO:
@@ -117,7 +121,7 @@ __bam_ditem(dbc, h, indx)
 			 * won't work!
 			 */
 			if (indx + P_INDX < (u_int32_t)NUM_ENT(h) &&
-			    h->inp[indx] == h->inp[indx + P_INDX])
+			    inp[indx] == inp[indx + P_INDX])
 				return (__bam_adjindx(dbc,
 				    h, indx, indx + O_INDX, 0));
 			/*
@@ -125,14 +129,14 @@ __bam_ditem(dbc, h, indx)
 			 * doesn't matter if we delete the key item before or
 			 * after the data item for the purposes of this one.
 			 */
-			if (indx > 0 && h->inp[indx] == h->inp[indx - P_INDX])
+			if (indx > 0 && inp[indx] == inp[indx - P_INDX])
 				return (__bam_adjindx(dbc,
 				    h, indx, indx - P_INDX, 0));
 		}
 		/* FALLTHROUGH */
 	case P_LDUP:
 	case P_LRECNO:
-		bk = GET_BKEYDATA(h, indx);
+		bk = GET_BKEYDATA(dbp, h, indx);
 		switch (B_TYPE(bk->type)) {
 		case B_DUPLICATE:
 			nbytes = BOVERFLOW_SIZE;
@@ -140,24 +144,24 @@ __bam_ditem(dbc, h, indx)
 		case B_OVERFLOW:
 			nbytes = BOVERFLOW_SIZE;
 			if ((ret = __db_doff(
-			    dbc, (GET_BOVERFLOW(h, indx))->pgno)) != 0)
+			    dbc, (GET_BOVERFLOW(dbp, h, indx))->pgno)) != 0)
 				return (ret);
 			break;
 		case B_KEYDATA:
 			nbytes = BKEYDATA_SIZE(bk->len);
 			break;
 		default:
-			return (__db_pgfmt(dbp, PGNO(h)));
+			return (__db_pgfmt(dbp->dbenv, PGNO(h)));
 		}
 		break;
 	default:
-		return (__db_pgfmt(dbp, PGNO(h)));
+		return (__db_pgfmt(dbp->dbenv, PGNO(h)));
 	}
 
 	/* Delete the item and mark the page dirty. */
 	if ((ret = __db_ditem(dbc, h, indx, nbytes)) != 0)
 		return (ret);
-	if ((ret = memp_fset(dbp->mpf, h, DB_MPOOL_DIRTY)) != 0)
+	if ((ret = mpf->set(mpf, h, DB_MPOOL_DIRTY)) != 0)
 		return (ret);
 
 	return (0);
@@ -177,35 +181,37 @@ __bam_adjindx(dbc, h, indx, indx_copy, is_insert)
 	int is_insert;
 {
 	DB *dbp;
-	db_indx_t copy;
+	DB_MPOOLFILE *mpf;
+	db_indx_t copy, *inp;
 	int ret;
 
 	dbp = dbc->dbp;
+	mpf = dbp->mpf;
+	inp = P_INP(dbp, h);
 
 	/* Log the change. */
-	if (DB_LOGGING(dbc)) {
-	    if ((ret = __bam_adj_log(dbp->dbenv, dbc->txn,
-		&LSN(h), 0, dbp->log_fileid, PGNO(h), &LSN(h),
-		indx, indx_copy, (u_int32_t)is_insert)) != 0)
+	if (DBC_LOGGING(dbc)) {
+	    if ((ret = __bam_adj_log(dbp, dbc->txn, &LSN(h), 0,
+		PGNO(h), &LSN(h), indx, indx_copy, (u_int32_t)is_insert)) != 0)
 			return (ret);
 	} else
 		LSN_NOT_LOGGED(LSN(h));
 
 	/* Shuffle the indices and mark the page dirty. */
 	if (is_insert) {
-		copy = h->inp[indx_copy];
+		copy = inp[indx_copy];
 		if (indx != NUM_ENT(h))
-			memmove(&h->inp[indx + O_INDX], &h->inp[indx],
+			memmove(&inp[indx + O_INDX], &inp[indx],
 			    sizeof(db_indx_t) * (NUM_ENT(h) - indx));
-		h->inp[indx] = copy;
+		inp[indx] = copy;
 		++NUM_ENT(h);
 	} else {
 		--NUM_ENT(h);
 		if (indx != NUM_ENT(h))
-			memmove(&h->inp[indx], &h->inp[indx + O_INDX],
+			memmove(&inp[indx], &inp[indx + O_INDX],
 			    sizeof(db_indx_t) * (NUM_ENT(h) - indx));
 	}
-	if ((ret = memp_fset(dbp->mpf, h, DB_MPOOL_DIRTY)) != 0)
+	if ((ret = mpf->set(mpf, h, DB_MPOOL_DIRTY)) != 0)
 		return (ret);
 
 	return (0);
@@ -227,6 +233,7 @@ __bam_dpages(dbc, stack_epg)
 	DB *dbp;
 	DBT a, b;
 	DB_LOCK c_lock, p_lock;
+	DB_MPOOLFILE *mpf;
 	EPG *epg;
 	PAGE *child, *parent;
 	db_indx_t nitems;
@@ -235,6 +242,7 @@ __bam_dpages(dbc, stack_epg)
 	int done, ret, t_ret;
 
 	dbp = dbc->dbp;
+	mpf = dbp->mpf;
 	cp = (BTREE_CURSOR *)dbc->internal;
 
 	/*
@@ -252,8 +260,7 @@ __bam_dpages(dbc, stack_epg)
 	 */
 	ret = 0;
 	for (epg = cp->sp; epg < stack_epg; ++epg) {
-		if ((t_ret =
-		    memp_fput(dbp->mpf, epg->page, 0)) != 0 && ret == 0)
+		if ((t_ret = mpf->put(mpf, epg->page, 0)) != 0 && ret == 0)
 			ret = t_ret;
 		(void)__TLPUT(dbc, epg->lock);
 	}
@@ -288,7 +295,7 @@ __bam_dpages(dbc, stack_epg)
 	pgno = PGNO(epg->page);
 	nitems = NUM_ENT(epg->page);
 
-	if ((ret = memp_fput(dbp->mpf, epg->page, 0)) != 0)
+	if ((ret = mpf->put(mpf, epg->page, 0)) != 0)
 		goto err_inc;
 	(void)__TLPUT(dbc, epg->lock);
 
@@ -318,7 +325,7 @@ __bam_dpages(dbc, stack_epg)
 err_inc:	++epg;
 err:		for (; epg <= cp->csp; ++epg) {
 			if (epg->page != NULL)
-				(void)memp_fput(dbp->mpf, epg->page, 0);
+				(void)mpf->put(mpf, epg->page, 0);
 			(void)__TLPUT(dbc, epg->lock);
 		}
 		BT_STK_CLR(cp);
@@ -347,7 +354,7 @@ err:		for (; epg <= cp->csp; ++epg) {
 		if ((ret =
 		    __db_lget(dbc, 0, pgno, DB_LOCK_WRITE, 0, &p_lock)) != 0)
 			goto stop;
-		if ((ret = memp_fget(dbp->mpf, &pgno, 0, &parent)) != 0)
+		if ((ret = mpf->get(mpf, &pgno, 0, &parent)) != 0)
 			goto stop;
 
 		if (NUM_ENT(parent) != 1)
@@ -359,7 +366,7 @@ err:		for (; epg <= cp->csp; ++epg) {
 			 * If this is overflow, then try to delete it.
 			 * The child may or may not still point at it.
 			 */
-			bi = GET_BINTERNAL(parent, 0);
+			bi = GET_BINTERNAL(dbp, parent, 0);
 			if (B_TYPE(bi->type) == B_OVERFLOW)
 				if ((ret = __db_doff(dbc,
 				    ((BOVERFLOW *)bi->data)->pgno)) != 0)
@@ -367,7 +374,7 @@ err:		for (; epg <= cp->csp; ++epg) {
 			pgno = bi->pgno;
 			break;
 		case P_IRECNO:
-			pgno = GET_RINTERNAL(parent, 0)->pgno;
+			pgno = GET_RINTERNAL(dbp, parent, 0)->pgno;
 			break;
 		default:
 			goto stop;
@@ -377,22 +384,21 @@ err:		for (; epg <= cp->csp; ++epg) {
 		if ((ret =
 		    __db_lget(dbc, 0, pgno, DB_LOCK_WRITE, 0, &c_lock)) != 0)
 			goto stop;
-		if ((ret = memp_fget(dbp->mpf, &pgno, 0, &child)) != 0)
+		if ((ret = mpf->get(mpf, &pgno, 0, &child)) != 0)
 			goto stop;
 
 		/* Log the change. */
-		if (DB_LOGGING(dbc)) {
+		if (DBC_LOGGING(dbc)) {
 			memset(&a, 0, sizeof(a));
 			a.data = child;
 			a.size = dbp->pgsize;
 			memset(&b, 0, sizeof(b));
-			b.data = P_ENTRY(parent, 0);
+			b.data = P_ENTRY(dbp, parent, 0);
 			b.size = TYPE(parent) == P_IRECNO ? RINTERNAL_SIZE :
 			    BINTERNAL_SIZE(((BINTERNAL *)b.data)->len);
-			if ((ret =
-			   __bam_rsplit_log(dbp->dbenv, dbc->txn, &child->lsn,
-			   0, dbp->log_fileid, PGNO(child), &a, PGNO(parent),
-			   RE_NREC(parent), &b, &parent->lsn)) != 0)
+			if ((ret = __bam_rsplit_log(dbp, dbc->txn,
+			    &child->lsn, 0, PGNO(child), &a, PGNO(parent),
+			    RE_NREC(parent), &b, &parent->lsn)) != 0)
 				goto stop;
 		} else
 			LSN_NOT_LOGGED(child->lsn);
@@ -417,9 +423,9 @@ err:		for (; epg <= cp->csp; ++epg) {
 			RE_NREC_SET(parent, rcnt);
 
 		/* Mark the pages dirty. */
-		if ((ret = memp_fset(dbp->mpf, parent, DB_MPOOL_DIRTY)) != 0)
+		if ((ret = mpf->set(mpf, parent, DB_MPOOL_DIRTY)) != 0)
 			goto stop;
-		if ((ret = memp_fset(dbp->mpf, child, DB_MPOOL_DIRTY)) != 0)
+		if ((ret = mpf->set(mpf, child, DB_MPOOL_DIRTY)) != 0)
 			goto stop;
 
 		/* Adjust the cursors. */
@@ -442,11 +448,11 @@ stop:			done = 1;
 		}
 		(void)__TLPUT(dbc, p_lock);
 		if (parent != NULL &&
-		    (t_ret = memp_fput(dbp->mpf, parent, 0)) != 0 && ret == 0)
+		    (t_ret = mpf->put(mpf, parent, 0)) != 0 && ret == 0)
 			ret = t_ret;
 		(void)__TLPUT(dbc, c_lock);
 		if (child != NULL &&
-		    (t_ret = memp_fput(dbp->mpf, child, 0)) != 0 && ret == 0)
+		    (t_ret = mpf->put(mpf, child, 0)) != 0 && ret == 0)
 			ret = t_ret;
 	}
 

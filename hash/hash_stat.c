@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996-2001
+ * Copyright (c) 1996-2002
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: hash_stat.c,v 11.33 2001/07/02 01:05:39 bostic Exp $";
+static const char revid[] = "$Id: hash_stat.c,v 11.48 2002/08/06 06:11:28 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -18,11 +18,9 @@ static const char revid[] = "$Id: hash_stat.c,v 11.33 2001/07/02 01:05:39 bostic
 #endif
 
 #include "db_int.h"
-#include "db_page.h"
-#include "db_shash.h"
-#include "btree.h"
-#include "hash.h"
-#include "lock.h"
+#include "dbinc/db_page.h"
+#include "dbinc/btree.h"
+#include "dbinc/hash.h"
 
 static int __ham_stat_callback __P((DB *, PAGE *, void *, int *));
 
@@ -38,10 +36,11 @@ __ham_stat(dbp, spp, flags)
 	void *spp;
 	u_int32_t flags;
 {
+	DBC *dbc;
 	DB_ENV *dbenv;
 	DB_HASH_STAT *sp;
+	DB_MPOOLFILE *mpf;
 	HASH_CURSOR *hcp;
-	DBC *dbc;
 	PAGE *h;
 	db_pgno_t pgno;
 	int ret;
@@ -51,6 +50,7 @@ __ham_stat(dbp, spp, flags)
 	PANIC_CHECK(dbenv);
 	DB_ILLEGAL_BEFORE_OPEN(dbp, "DB->stat");
 
+	mpf = dbp->mpf;
 	sp = NULL;
 
 	/* Check for invalid flags. */
@@ -76,7 +76,6 @@ __ham_stat(dbp, spp, flags)
 	sp->hash_magic = hcp->hdr->dbmeta.magic;
 	sp->hash_version = hcp->hdr->dbmeta.version;
 	sp->hash_metaflags = hcp->hdr->dbmeta.flags;
-	sp->hash_nelem = hcp->hdr->nelem;
 	sp->hash_ffactor = hcp->hdr->ffactor;
 
 	if (flags == DB_FAST_STAT || flags == DB_CACHED_COUNTS)
@@ -87,11 +86,11 @@ __ham_stat(dbp, spp, flags)
 	    pgno != PGNO_INVALID;) {
 		++sp->hash_free;
 
-		if ((ret = memp_fget(dbp->mpf, &pgno, 0, &h)) != 0)
+		if ((ret = mpf->get(mpf, &pgno, 0, &h)) != 0)
 			goto err;
 
 		pgno = h->next_pgno;
-		(void)memp_fput(dbp->mpf, h, 0);
+		(void)mpf->put(mpf, h, 0);
 	}
 
 	/* Now traverse the rest of the table. */
@@ -118,7 +117,7 @@ done:
 	return (0);
 
 err:	if (sp != NULL)
-		__os_free(dbenv, sp, sizeof(*sp));
+		__os_ufree(dbenv, sp);
 	if (hcp->hdr != NULL)
 		(void)__ham_release_meta(dbc);
 	(void)dbc->c_close(dbc);
@@ -131,7 +130,7 @@ err:	if (sp != NULL)
  *	 Traverse an entire hash table.  We use the callback so that we
  * can use this both for stat collection and for deallocation.
  *
- * PUBLIC:  int __ham_traverse __P((DBC *, db_lockmode_t,
+ * PUBLIC: int __ham_traverse __P((DBC *, db_lockmode_t,
  * PUBLIC:     int (*)(DB *, PAGE *, void *, int *), void *, int));
  */
 int
@@ -144,6 +143,7 @@ __ham_traverse(dbc, mode, callback, cookie, look_past_max)
 {
 	DB *dbp;
 	DBC *opd;
+	DB_MPOOLFILE *mpf;
 	HASH_CURSOR *hcp;
 	HKEYDATA *hk;
 	db_pgno_t pgno, opgno;
@@ -151,8 +151,9 @@ __ham_traverse(dbc, mode, callback, cookie, look_past_max)
 	u_int32_t bucket, spares_entry;
 
 	dbp = dbc->dbp;
-	hcp = (HASH_CURSOR *)dbc->internal;
 	opd = NULL;
+	mpf = dbp->mpf;
+	hcp = (HASH_CURSOR *)dbc->internal;
 	ret = 0;
 
 	/*
@@ -163,20 +164,46 @@ __ham_traverse(dbc, mode, callback, cookie, look_past_max)
 	 * duplicate, overflow and big pages from the bucket so that we
 	 * don't access anything that isn't properly locked.
 	 *
-	 * If look_past_max is not set, we can stop at max_bucket;  if it
-	 * is set, we need to include pages that are part of the current
-	 * doubling but beyond the highest bucket we've split into, as well
-	 * as pages from a "future" doubling that may have been created
-	 * within an aborted transaction.  To do this, increment bucket
-	 * until the corresponding spares array entries cease to be defined.
 	 */
-	for (bucket = 0; look_past_max ? (spares_entry = __db_log2(bucket + 1),
-	    spares_entry < NCACHED && hcp->hdr->spares[spares_entry] != 0) :
-	    bucket <= hcp->hdr->max_bucket; bucket++) {
+	for (bucket = 0;; bucket++) {
+		/*
+		 * We put the loop exit condition check here, because
+		 * it made for a really vile extended ?: that made SCO's
+		 * compiler drop core.
+		 *
+		 * If look_past_max is not set, we can stop at max_bucket;
+		 * if it is set, we need to include pages that are part of
+		 * the current doubling but beyond the highest bucket we've
+		 * split into, as well as pages from a "future" doubling
+		 * that may have been created within an aborted
+		 * transaction.  To do this, keep looping (and incrementing
+		 * bucket) until the corresponding spares array entries
+		 * cease to be defined.
+		 */
+		if (look_past_max) {
+			spares_entry = __db_log2(bucket + 1);
+			if (spares_entry >= NCACHED ||
+			    hcp->hdr->spares[spares_entry] == 0)
+				break;
+		} else {
+			if (bucket > hcp->hdr->max_bucket)
+				break;
+		}
+
 		hcp->bucket = bucket;
 		hcp->pgno = pgno = BUCKET_TO_PAGE(hcp, bucket);
 		for (ret = __ham_get_cpage(dbc, mode); ret == 0;
 		    ret = __ham_next_cpage(dbc, pgno, 0)) {
+
+			/*
+			 * If we are cleaning up pages past the max_bucket,
+			 * then they may be on the free list and have their
+			 * next pointers set, but the should be ignored.  In
+			 * fact, we really ought to just skip anybody who is
+			 * not a valid page.
+			 */
+			if (TYPE(hcp->page) == P_INVALID)
+				break;
 			pgno = NEXT_PGNO(hcp->page);
 
 			/*
@@ -186,13 +213,13 @@ __ham_traverse(dbc, mode, callback, cookie, look_past_max)
 			 * case we have to count those pages).
 			 */
 			for (i = 0; i < NUM_ENT(hcp->page); i++) {
-				hk = (HKEYDATA *)P_ENTRY(hcp->page, i);
+				hk = (HKEYDATA *)P_ENTRY(dbp, hcp->page, i);
 				switch (HPAGE_PTYPE(hk)) {
 				case H_OFFDUP:
 					memcpy(&opgno, HOFFDUP_PGNO(hk),
 					    sizeof(db_pgno_t));
 					if ((ret = __db_c_newopd(dbc,
-					    opgno, &opd)) != 0)
+					    opgno, NULL, &opd)) != 0)
 						return (ret);
 					if ((ret = __bam_traverse(opd,
 					    DB_LOCK_READ, opgno,
@@ -236,10 +263,10 @@ __ham_traverse(dbc, mode, callback, cookie, look_past_max)
 			goto err;
 
 		if (STD_LOCKING(dbc))
-			(void)lock_put(dbp->dbenv, &hcp->lock);
+			(void)dbp->dbenv->lock_put(dbp->dbenv, &hcp->lock);
 
 		if (hcp->page != NULL) {
-			if ((ret = memp_fput(dbc->dbp->mpf, hcp->page, 0)) != 0)
+			if ((ret = mpf->put(mpf, hcp->page, 0)) != 0)
 				return (ret);
 			hcp->page = NULL;
 		}
@@ -282,15 +309,15 @@ __ham_stat_callback(dbp, pagep, cookie, putp)
 		 * is a bucket.
 		 */
 		if (PREV_PGNO(pagep) == PGNO_INVALID)
-			sp->hash_bfree += P_FREESPACE(pagep);
+			sp->hash_bfree += P_FREESPACE(dbp, pagep);
 		else {
 			sp->hash_overflows++;
-			sp->hash_ovfl_free += P_FREESPACE(pagep);
+			sp->hash_ovfl_free += P_FREESPACE(dbp, pagep);
 		}
 		top = NUM_ENT(pagep);
 		/* Correct for on-page duplicates and deleted items. */
 		for (indx = 0; indx < top; indx += P_INDX) {
-			switch (*H_PAIRDATA(pagep, indx)) {
+			switch (*H_PAIRDATA(dbp, pagep, indx)) {
 			case H_OFFDUP:
 			case H_OFFPAGE:
 				break;
@@ -298,8 +325,8 @@ __ham_stat_callback(dbp, pagep, cookie, putp)
 				sp->hash_ndata++;
 				break;
 			case H_DUPLICATE:
-				tlen = LEN_HDATA(pagep, 0, indx);
-				hk = H_PAIRDATA(pagep, indx);
+				tlen = LEN_HDATA(dbp, pagep, 0, indx);
+				hk = H_PAIRDATA(dbp, pagep, indx);
 				for (off = 0; off < tlen;
 				    off += len + 2 * sizeof (db_indx_t)) {
 					sp->hash_ndata++;
@@ -335,11 +362,10 @@ __ham_stat_callback(dbp, pagep, cookie, putp)
 		break;
 	case P_OVERFLOW:
 		sp->hash_bigpages++;
-		sp->hash_big_bfree += P_OVFLSPACE(dbp->pgsize, pagep);
+		sp->hash_big_bfree += P_OVFLSPACE(dbp, dbp->pgsize, pagep);
 		break;
 	default:
-		return (__db_unknown_type(dbp->dbenv,
-		     "__ham_stat_callback", pagep->type));
+		return (__db_pgfmt(dbp->dbenv, pagep->pgno));
 	}
 
 	return (0);

@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996-2001
+ * Copyright (c) 1996-2002
  *	Sleepycat Software.  All rights reserved.
  */
 /*
@@ -36,7 +36,7 @@
 #include "db_config.h"
 
 #ifndef lint
-static const char revid[] = "$Id: txn_rec.c,v 11.24 2001/07/09 16:33:23 ubell Exp $";
+static const char revid[] = "$Id: txn_rec.c,v 11.41 2002/08/06 04:42:37 bostic Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -46,11 +46,10 @@ static const char revid[] = "$Id: txn_rec.c,v 11.24 2001/07/09 16:33:23 ubell Ex
 #endif
 
 #include "db_int.h"
-#include "db_page.h"
-#include "txn.h"
-#include "db_am.h"
-
-static int __txn_restore_txn __P((DB_ENV *, DB_LSN *, __txn_xa_regop_args *));
+#include "dbinc/db_page.h"
+#include "dbinc/txn.h"
+#include "dbinc/db_am.h"
+#include "dbinc/db_dispatch.h"
 
 #define	IS_XA_TXN(R) (R->xid.size != 0)
 
@@ -70,6 +69,7 @@ __txn_regop_recover(dbenv, dbtp, lsnp, op, info)
 	db_recops op;
 	void *info;
 {
+	DB_TXNHEAD *headp;
 	__txn_regop_args *argp;
 	int ret;
 
@@ -80,6 +80,13 @@ __txn_regop_recover(dbenv, dbtp, lsnp, op, info)
 	if ((ret = __txn_regop_read(dbenv, dbtp->data, &argp)) != 0)
 		return (ret);
 
+	headp = info;
+	/*
+	 * We are only ever called during FORWARD_ROLL or BACKWARD_ROLL.
+	 * We check for the former explicitly and the last two clauses
+	 * apply to the BACKWARD_ROLL case.
+	 */
+
 	if (op == DB_TXN_FORWARD_ROLL)
 		/*
 		 * If this was a 2-phase-commit transaction, then it
@@ -87,35 +94,48 @@ __txn_regop_recover(dbenv, dbtp, lsnp, op, info)
 		 * that's OK.  Ignore the return code from remove.
 		 */
 		(void)__db_txnlist_remove(dbenv, info, argp->txnid->txnid);
-	else if (dbenv->tx_timestamp == 0 ||
-	    argp->timestamp <= (int32_t)dbenv->tx_timestamp) {
+	else if ((dbenv->tx_timestamp != 0 &&
+	    argp->timestamp > (int32_t)dbenv->tx_timestamp) ||
+	    (!IS_ZERO_LSN(headp->trunc_lsn) &&
+	    log_compare(&headp->trunc_lsn, lsnp) < 0)) {
 		/*
-		 * We know this is the backward roll case because we
-		 * are never called during ABORT or OPENFILES.
+		 * We failed either the timestamp check or the trunc_lsn check,
+		 * so we treat this as an abort even if it was a commit record.
 		 */
 		ret = __db_txnlist_update(dbenv,
-		    info, argp->txnid->txnid, argp->opcode);
-		
+		    info, argp->txnid->txnid, TXN_ABORT, NULL);
+
+		if (ret == TXN_NOTFOUND)
+			ret = __db_txnlist_add(dbenv,
+			    info, argp->txnid->txnid, TXN_IGNORE, NULL);
+		else if (ret != TXN_OK)
+			goto err;
+		/* else ret = 0; Not necessary because TXN_OK == 0 */
+	} else {
+		/* This is a normal commit; mark it appropriately. */
+		ret = __db_txnlist_update(dbenv,
+		    info, argp->txnid->txnid, argp->opcode, lsnp);
+
 		if (ret == TXN_NOTFOUND)
 			ret = __db_txnlist_add(dbenv,
 			    info, argp->txnid->txnid,
-			    argp->opcode == TXN_ABORT ? TXN_IGNORE : argp->opcode);
-	} else {
-		/*
-		 * We failed the timestamp check, so we treat this as an abort
-		 * even if it was a commit record.
-		 */
-		ret = __db_txnlist_update(dbenv,
-		    info, argp->txnid->txnid, TXN_ABORT);
-		    
-		if (ret == TXN_NOTFOUND)
-			ret = __db_txnlist_add(dbenv,
-			    info, argp->txnid->txnid, TXN_IGNORE);
+			    argp->opcode == TXN_ABORT ?
+			    TXN_IGNORE : argp->opcode, lsnp);
+		else if (ret != TXN_OK)
+			goto err;
+		/* else ret = 0; Not necessary because TXN_OK == 0 */
 	}
 
 	if (ret == 0)
 		*lsnp = argp->prev_lsn;
-	__os_free(dbenv, argp, 0);
+
+	if (0) {
+err:		__db_err(dbenv,
+		    "txnid %lx commit record found, already on commit list",
+		    argp->txnid->txnid);
+		ret = EINVAL;
+	}
+	__os_free(dbenv, argp);
 
 	return (ret);
 }
@@ -184,7 +204,7 @@ txn_err:		__db_err(dbenv,
 			    "Transaction not in list %x", argp->txnid->txnid);
 			ret = DB_NOTFOUND;
 		} else if ((ret = __db_txnlist_add(dbenv,
-		   info, argp->txnid->txnid, TXN_COMMIT)) == 0)
+		   info, argp->txnid->txnid, TXN_COMMIT, lsnp)) == 0)
 			ret = __txn_restore_txn(dbenv, lsnp, argp);
 	} else
 		ret = 0;
@@ -192,7 +212,7 @@ txn_err:		__db_err(dbenv,
 	if (ret == 0)
 		*lsnp = argp->prev_lsn;
 
-err:	__os_free(dbenv, argp, 0);
+err:	__os_free(dbenv, argp);
 
 	return (ret);
 }
@@ -220,18 +240,11 @@ __txn_ckp_recover(dbenv, dbtp, lsnp, op, info)
 	if ((ret = __txn_ckp_read(dbenv, dbtp->data, &argp)) != 0)
 		return (ret);
 
-	/*
-	 * Check for 'restart' checkpoint record.  This occurs when the
-	 * checkpoint lsn is equal to the lsn of the checkpoint record
-	 * and means that we could set the transaction ID back to 1, so
-	 * that we don't exhaust the transaction ID name space.
-	 */
-	if (argp->ckp_lsn.file == lsnp->file &&
-	    argp->ckp_lsn.offset == lsnp->offset)
-		__db_txnlist_gen(info, DB_UNDO(op) ? -1 : 1);
+	if (op == DB_TXN_BACKWARD_ROLL)
+		__db_txnlist_ckp(dbenv, info, lsnp);
 
 	*lsnp = argp->last_ckp;
-	__os_free(dbenv, argp, 0);
+	__os_free(dbenv, argp);
 	return (DB_TXN_CKP);
 }
 
@@ -251,7 +264,7 @@ __txn_child_recover(dbenv, dbtp, lsnp, op, info)
 	void *info;
 {
 	__txn_child_args *argp;
-	int ret;
+	int c_stat, p_stat, ret;
 
 #ifdef DEBUG_RECOVER
 	(void)__txn_child_print(dbenv, dbtp, lsnp, op, info);
@@ -273,14 +286,42 @@ __txn_child_recover(dbenv, dbtp, lsnp, op, info)
 		ret = __db_txnlist_lsnadd(dbenv,
 		    info, &argp->c_lsn, TXNLIST_NEW);
 	} else if (op == DB_TXN_BACKWARD_ROLL) {
-		if (__db_txnlist_find(dbenv,
-		    info, argp->txnid->txnid) == TXN_COMMIT)
-			ret = __db_txnlist_add(dbenv,
-			    info, argp->child, TXN_COMMIT);
-		else
-			ret = __db_txnlist_add(dbenv,
-			     info, argp->child, TXN_ABORT);
+		/* Child might exist -- look for it. */
+		c_stat = __db_txnlist_find(dbenv, info, argp->child);
+		p_stat = __db_txnlist_find(dbenv, info, argp->txnid->txnid);
+
+		if (c_stat == TXN_EXPECTED) {
+			/*
+			 * The open after this create succeeded.  If the
+			 * parent succeeded, we don't want to redo; if the
+			 * parent aborted, we do want to undo.
+			 */
+			ret = __db_txnlist_update(dbenv,
+			    info, argp->child,
+			    p_stat == TXN_COMMIT ? TXN_IGNORE : TXN_ABORT,
+			    NULL);
+			if (ret > 0)
+				ret = 0;
+		} else if (c_stat == TXN_UNEXPECTED) {
+			/*
+			 * The open after this create failed.  If the parent
+			 * is rolling forward, we need to roll forward.  If
+			 * the parent failed, then we do not want to abort
+			 * (because the file may not be the one in which we
+			 * are interested).
+			 */
+			ret = __db_txnlist_update(dbenv, info, argp->child,
+			    p_stat == TXN_COMMIT ? TXN_COMMIT : TXN_IGNORE,
+			    NULL);
+			if (ret > 0)
+				ret = 0;
+		} else if (c_stat != TXN_IGNORE) {
+			ret = __db_txnlist_add(dbenv, info, argp->child,
+			    p_stat == TXN_COMMIT ? TXN_COMMIT : TXN_ABORT,
+			    NULL);
+		}
 	} else {
+		/* Forward Roll */
 		if ((ret =
 		    __db_txnlist_remove(dbenv, info, argp->child)) != TXN_OK) {
 			__db_err(dbenv,
@@ -292,7 +333,7 @@ __txn_child_recover(dbenv, dbtp, lsnp, op, info)
 	if (ret == 0)
 		*lsnp = argp->prev_lsn;
 
-	__os_free(dbenv, argp, 0);
+	__os_free(dbenv, argp);
 
 	return (ret);
 }
@@ -301,13 +342,16 @@ __txn_child_recover(dbenv, dbtp, lsnp, op, info)
  * __txn_restore_txn --
  *	Using only during XA recovery.  If we find any transactions that are
  * prepared, but not yet committed, then we need to restore the transaction's
- * state into the shared region, because the TM is going to issue a txn_abort
- * or txn_commit and we need to respond correctly.
+ * state into the shared region, because the TM is going to issue an abort
+ * or commit and we need to respond correctly.
  *
  * lsnp is the LSN of the returned LSN
  * argp is the perpare record (in an appropriate structure)
+ *
+ * PUBLIC: int __txn_restore_txn __P((DB_ENV *,
+ * PUBLIC:     DB_LSN *, __txn_xa_regop_args *));
  */
-static int
+int
 __txn_restore_txn(dbenv, lsnp, argp)
 	DB_ENV *dbenv;
 	DB_LSN *lsnp;
@@ -348,10 +392,45 @@ __txn_restore_txn(dbenv, lsnp, argp)
 	td->flags = 0;
 	F_SET(td, TXN_RESTORED);
 
-	region->nrestores++;
-	region->nactive++;
-	if (region->nactive > region->maxnactive)
-		region->maxnactive = region->nactive;
+	region->stat.st_nrestores++;
+	region->stat.st_nactive++;
+	if (region->stat.st_nactive > region->stat.st_maxnactive)
+		region->stat.st_maxnactive = region->stat.st_nactive;
 	R_UNLOCK(dbenv, &mgr->reginfo);
+	return (0);
+}
+
+/*
+ * __txn_recycle_recover --
+ *	Recovery function for recycle.
+ *
+ * PUBLIC: int __txn_recycle_recover
+ * PUBLIC:   __P((DB_ENV *, DBT *, DB_LSN *, db_recops, void *));
+ */
+int
+__txn_recycle_recover(dbenv, dbtp, lsnp, op, info)
+	DB_ENV *dbenv;
+	DBT *dbtp;
+	DB_LSN *lsnp;
+	db_recops op;
+	void *info;
+{
+	__txn_recycle_args *argp;
+	int ret;
+
+#ifdef DEBUG_RECOVER
+	(void)__txn_child_print(dbenv, dbtp, lsnp, op, info);
+#endif
+	if ((ret = __txn_recycle_read(dbenv, dbtp->data, &argp)) != 0)
+		return (ret);
+
+	COMPQUIET(lsnp, NULL);
+
+	if ((ret = __db_txnlist_gen(dbenv, info,
+	    DB_UNDO(op) ? -1 : 1, argp->min, argp->max)) != 0)
+		return (ret);
+
+	__os_free(dbenv, argp);
+
 	return (0);
 }

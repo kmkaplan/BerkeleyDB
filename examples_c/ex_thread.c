@@ -1,13 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1997-2001
+ * Copyright (c) 1997-2002
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: ex_thread.c,v 11.20 2001/05/12 19:25:31 bostic Exp $
+ * $Id: ex_thread.c,v 11.34 2002/08/15 14:37:13 bostic Exp $
  */
 
 #include <sys/types.h>
+#include <sys/time.h>
 
 #include <errno.h>
 #include <pthread.h>
@@ -18,8 +19,6 @@
 #include <time.h>
 
 #ifdef _WIN32
-extern int optind;
-extern char *optarg;
 extern int getopt(int, char * const *, const char *);
 #else
 #include <unistd.h>
@@ -33,16 +32,16 @@ extern int getopt(int, char * const *, const char *);
  */
 extern int sched_yield __P((void));		/* Pthread yield function. */
 
-DB_ENV *db_init __P((char *));
+int	db_init __P((const char *));
 void   *deadlock __P((void *));
-void	fatal __P((char *, int, int));
+void	fatal __P((const char *, int, int));
 void	onint __P((int));
 int	main __P((int, char *[]));
 int	reader __P((int));
 void	stats __P((void));
 void   *trickle __P((void *));
 void   *tstart __P((void *));
-void	usage __P((void));
+int	usage __P((void));
 void	word __P((void));
 int	writer __P((int));
 
@@ -97,11 +96,13 @@ main(argc, argv)
 {
 	extern char *optarg;
 	extern int errno, optind;
+	DB_TXN *txnp;
 	pthread_t *tids;
 	int ch, i, ret;
-	char *home;
+	const char *home;
 	void *retp;
 
+	txnp = NULL;
 	nlist = 1000;
 	nreaders = nwriters = 4;
 	home = "TESTDIR";
@@ -127,7 +128,7 @@ main(argc, argv)
 			break;
 		case '?':
 		default:
-			usage();
+			return (usage());
 		}
 	argc -= optind;
 	argv += optind;
@@ -145,7 +146,8 @@ main(argc, argv)
 	(void)remove(DATABASE);
 
 	/* Initialize the database environment. */
-	dbenv = db_init(home);
+	if ((ret = db_init(home)) != 0)
+		return (ret);
 
 	/* Initialize the database. */
 	if ((ret = db_create(&dbp, dbenv, 0)) != 0) {
@@ -157,10 +159,18 @@ main(argc, argv)
 		dbp->err(dbp, ret, "set_pagesize");
 		goto err;
 	}
-	if ((ret = dbp->open(dbp,
+
+	if ((ret = dbenv->txn_begin(dbenv, NULL, &txnp, 0)) != 0)
+		fatal("txn_begin", ret, 1);
+	if ((ret = dbp->open(dbp, txnp,
 	     DATABASE, NULL, DB_BTREE, DB_CREATE | DB_THREAD, 0664)) != 0) {
 		dbp->err(dbp, ret, "%s: open", DATABASE);
 		goto err;
+	} else {
+		ret = txnp->commit(txnp, 0);
+		txnp = NULL;
+		if (ret != 0)
+			goto err;
 	}
 
 	nthreads = nreaders + nwriters + 2;
@@ -197,7 +207,9 @@ main(argc, argv)
 	printf("Exiting\n");
 	stats();
 
-err:	(void)dbp->close(dbp, 0);
+err:	if (txnp != NULL)
+		(void)txnp->abort(txnp);
+	(void)dbp->close(dbp, 0);
 	(void)dbenv->close(dbenv, 0);
 
 	return (EXIT_SUCCESS);
@@ -290,8 +302,8 @@ writer(id)
 
 		/* Abort and retry. */
 		if (0) {
-retry:			if ((ret = txn_abort(tid)) != 0)
-				fatal("txn_abort", ret, 1);
+retry:			if ((ret = tid->abort(tid)) != 0)
+				fatal("DB_TXN->abort", ret, 1);
 			++perf[id].aborts;
 			++perf[id].aborted;
 		}
@@ -306,7 +318,7 @@ retry:			if ((ret = txn_abort(tid)) != 0)
 		}
 
 		/* Begin the transaction. */
-		if ((ret = txn_begin(dbenv, NULL, &tid, 0)) != 0)
+		if ((ret = dbenv->txn_begin(dbenv, NULL, &tid, 0)) != 0)
 			fatal("txn_begin", ret, 1);
 
 		/*
@@ -356,8 +368,8 @@ add:		/* Add the key.  1 data item in 30 is an overflow item. */
 		}
 
 commit:		/* The transaction finished, commit it. */
-		if ((ret = txn_commit(tid, 0)) != 0)
-			fatal("txn_commit", ret, 1);
+		if ((ret = tid->commit(tid, 0)) != 0)
+			fatal("DB_TXN->commit", ret, 1);
 
 		/*
 		 * Every time the thread completes 20 transactions, show
@@ -419,23 +431,22 @@ stats()
  * db_init --
  *	Initialize the environment.
  */
-DB_ENV *
+int
 db_init(home)
-	char *home;
+	const char *home;
 {
-	DB_ENV *dbenv;
 	int ret;
-
-	if (punish) {
-		(void)db_env_set_pageyield(1);
-		(void)db_env_set_func_yield(sched_yield);
-	}
 
 	if ((ret = db_env_create(&dbenv, 0)) != 0) {
 		fprintf(stderr,
 		    "%s: db_env_create: %s\n", progname, db_strerror(ret));
-		exit(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 	}
+	if (punish) {
+		(void)dbenv->set_flags(dbenv, DB_YIELDCPU, 1);
+		(void)db_env_set_func_yield(sched_yield);
+	}
+
 	dbenv->set_errfile(dbenv, stderr);
 	dbenv->set_errpfx(dbenv, progname);
 	(void)dbenv->set_cachesize(dbenv, 0, 100 * 1024, 0);
@@ -446,9 +457,10 @@ db_init(home)
 	    DB_INIT_MPOOL | DB_INIT_TXN | DB_THREAD, 0)) != 0) {
 		dbenv->err(dbenv, ret, NULL);
 		(void)dbenv->close(dbenv, 0);
-		exit(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 	}
-	return (dbenv);
+
+	return (0);
 }
 
 /*
@@ -482,7 +494,7 @@ tstart(arg)
 
 /*
  * deadlock --
- *	Thread start function for lock_detect().
+ *	Thread start function for DB_ENV->lock_detect.
  */
 void *
 deadlock(arg)
@@ -500,7 +512,7 @@ deadlock(arg)
 	t.tv_sec = 0;
 	t.tv_usec = 100000;
 	while (!quit) {
-		(void)lock_detect(dbenv, 0, DB_LOCK_YOUNGEST, NULL);
+		(void)dbenv->lock_detect(dbenv, 0, DB_LOCK_YOUNGEST, NULL);
 
 		/* Check every 100ms. */
 		(void)select(0, NULL, NULL, NULL, &t);
@@ -511,7 +523,7 @@ deadlock(arg)
 
 /*
  * trickle --
- *	Thread start function for memp_trickle().
+ *	Thread start function for memp_trickle.
  */
 void *
 trickle(arg)
@@ -528,7 +540,7 @@ trickle(arg)
 	fflush(stdout);
 
 	while (!quit) {
-		(void)memp_trickle(dbenv, 10, &wrote);
+		(void)dbenv->memp_trickle(dbenv, 10, &wrote);
 		if (verbose) {
 			sprintf(buf, "trickle: wrote %d\n", wrote);
 			write(STDOUT_FILENO, buf, strlen(buf));
@@ -574,7 +586,7 @@ word()
  */
 void
 fatal(msg, err, syserr)
-	char *msg;
+	const char *msg;
 	int err, syserr;
 {
 	fprintf(stderr, "%s: ", progname);
@@ -595,13 +607,13 @@ fatal(msg, err, syserr)
  * usage --
  *	Usage message.
  */
-void
+int
 usage()
 {
 	(void)fprintf(stderr,
     "usage: %s [-pv] [-h home] [-n words] [-r readers] [-w writers]\n",
 	    progname);
-	exit(EXIT_FAILURE);
+	return (EXIT_FAILURE);
 }
 
 /*

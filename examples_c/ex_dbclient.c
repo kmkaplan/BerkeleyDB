@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996-2001
+ * Copyright (c) 1996-2002
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: ex_dbclient.c,v 1.20 2001/05/10 17:14:04 bostic Exp $
+ * $Id: ex_dbclient.c,v 1.28 2002/08/06 06:11:24 bostic Exp $
  */
 
 #include <sys/types.h>
@@ -20,31 +20,22 @@
 
 #define	DATABASE	"access.db"
 
-int	db_clientrun __P((DB_ENV *, char *));
-int	ex_dbclient_run __P((char *, FILE *, char *, char *));
-#ifdef HAVE_VXWORKS
-int	ex_dbclient __P((char *));
-#define	ERROR_RETURN	ERROR
-#define	VXSHM_KEY	10
-#else
+int	db_clientrun __P((DB_ENV *, const char *));
+int	ex_dbclient_run __P((const char *, FILE *, const char *, const char *));
 int	main __P((int, char *[]));
-#define	ERROR_RETURN	1
-#endif
 
 /*
  * An example of a program creating/configuring a Berkeley DB environment.
  */
-#ifndef HAVE_VXWORKS
 int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	char *home;
-	int ret;
+	const char *home;
 
 	if (argc != 2) {
-		fprintf(stderr, "Usage: %s hostname\n",argv[0]);
+		fprintf(stderr, "Usage: %s hostname\n", argv[0]);
 		return (EXIT_FAILURE);
 	}
 
@@ -56,14 +47,13 @@ main(argc, argv)
 	return (ex_dbclient_run(home,
 	    stderr, argv[1], argv[0]) == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }
-#endif
 
 int
 ex_dbclient(host)
-	char *host;
+	const char *host;
 {
-	char *home;
-	char *progname = "ex_dbclient";		/* Program name. */
+	const char *home;
+	const char *progname = "ex_dbclient";		/* Program name. */
 	int ret;
 
 	/*
@@ -80,7 +70,7 @@ ex_dbclient(host)
 
 int
 ex_dbclient_run(home, errfp, host, progname)
-	char *home, *host, *progname;
+	const char *home, *host, *progname;
 	FILE *errfp;
 {
 	DB_ENV *dbenv;
@@ -92,14 +82,8 @@ ex_dbclient_run(home, errfp, host, progname)
 	 */
 	if ((ret = db_env_create(&dbenv, DB_CLIENT)) != 0) {
 		fprintf(errfp, "%s: %s\n", progname, db_strerror(ret));
-		return (ERROR_RETURN);
+		return (1);
 	}
-#ifdef HAVE_VXWORKS
-	if ((ret = dbenv->set_shm_key(dbenv, VXSHM_KEY)) != 0) {
-		fprintf(errfp, "%s: %s\n", progname, db_strerror(ret));
-		return (ERROR_RETURN);
-	}
-#endif
 	retry = 0;
 retry:
 	while (retry < 5) {
@@ -108,7 +92,7 @@ retry:
 		 */
 		if ((ret = dbenv->set_rpc_server(dbenv, NULL, host, 10000,
 		    10000, 0)) != 0) {
-			fprintf(stderr, "Try %d: DBENV->set_rpc_server: %s\n",
+			fprintf(stderr, "Try %d: DB_ENV->set_rpc_server: %s\n",
 			    retry, db_strerror(ret));
 			retry++;
 			sleep(15);
@@ -117,9 +101,10 @@ retry:
 	}
 
 	if (retry >= 5) {
-		fprintf(stderr, "DBENV->set_rpc_server: %s\n", db_strerror(ret));
+		fprintf(stderr,
+		    "DB_ENV->set_rpc_server: %s\n", db_strerror(ret));
 		dbenv->close(dbenv, 0);
-		return (ERROR_RETURN);
+		return (1);
 	}
 	/*
 	 * We want to specify the shared memory buffer pool cachesize,
@@ -128,7 +113,7 @@ retry:
 	if ((ret = dbenv->set_cachesize(dbenv, 0, 64 * 1024, 0)) != 0) {
 		dbenv->err(dbenv, ret, "set_cachesize");
 		dbenv->close(dbenv, 0);
-		return (ERROR_RETURN);
+		return (1);
 	}
 	/*
 	 * We have multiple processes reading/writing these files, so
@@ -141,7 +126,7 @@ retry:
 		dbenv->close(dbenv, 0);
 		if (ret == DB_NOSERVER)
 			goto retry;
-		return (ERROR_RETURN);
+		return (1);
 	}
 
 	ret = db_clientrun(dbenv, progname);
@@ -151,8 +136,8 @@ retry:
 
 	/* Close the handle. */
 	if ((ret = dbenv->close(dbenv, 0)) != 0) {
-		fprintf(stderr, "DBENV->close: %s\n", db_strerror(ret));
-		return (ERROR_RETURN);
+		fprintf(stderr, "DB_ENV->close: %s\n", db_strerror(ret));
+		return (1);
 	}
 	return (0);
 }
@@ -160,7 +145,7 @@ retry:
 int
 db_clientrun(dbenv, progname)
 	DB_ENV *dbenv;
-	char *progname;
+	const char *progname;
 {
 	DB *dbp;
 	DBT key, data;
@@ -180,8 +165,8 @@ db_clientrun(dbenv, progname)
 		dbp->err(dbp, ret, "set_pagesize");
 		goto err1;
 	}
-	if ((ret =
-	    dbp->open(dbp, DATABASE, NULL, DB_BTREE, DB_CREATE, 0664)) != 0) {
+	if ((ret = dbp->open(dbp,
+	    NULL, DATABASE, NULL, DB_BTREE, DB_CREATE, 0664)) != 0) {
 		dbp->err(dbp, ret, "%s: open", DATABASE);
 		goto err1;
 	}

@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996-2001
+ * Copyright (c) 1996-2002
  *	Sleepycat Software.  All rights reserved.
  */
 
@@ -9,9 +9,9 @@
 
 #ifndef lint
 static const char copyright[] =
-    "Copyright (c) 1996-2001\nSleepycat Software Inc.  All rights reserved.\n";
+    "Copyright (c) 1996-2002\nSleepycat Software Inc.  All rights reserved.\n";
 static const char revid[] =
-    "$Id: db_upgrade.c,v 1.18 2001/05/10 17:14:01 bostic Exp $";
+    "$Id: db_upgrade.c,v 1.31 2002/03/28 20:13:47 bostic Exp $";
 #endif
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -24,14 +24,10 @@ static const char revid[] =
 #endif
 
 #include "db_int.h"
-#include "clib_ext.h"
 
-int	main __P((int, char *[]));
-void	usage __P((void));
-void	version_check __P((void));
-
-const char
-	*progname = "db_upgrade";			/* Program name. */
+int main __P((int, char *[]));
+int usage __P((void));
+int version_check __P((const char *));
 
 int
 main(argc, argv)
@@ -40,29 +36,34 @@ main(argc, argv)
 {
 	extern char *optarg;
 	extern int optind;
+	const char *progname = "db_upgrade";
 	DB *dbp;
 	DB_ENV *dbenv;
 	u_int32_t flags;
 	int ch, e_close, exitval, nflag, ret, t_ret;
-	char *home;
+	char *home, *passwd;
 
-	version_check();
+	if ((ret = version_check(progname)) != 0)
+		return (ret);
 
 	dbenv = NULL;
 	flags = nflag = 0;
 	e_close = exitval = 0;
-	home = NULL;
-	while ((ch = getopt(argc, argv, "h:NsV")) != EOF)
+	home = passwd = NULL;
+	while ((ch = getopt(argc, argv, "h:NP:sV")) != EOF)
 		switch (ch) {
 		case 'h':
 			home = optarg;
 			break;
 		case 'N':
 			nflag = 1;
-			if ((ret = db_env_set_panicstate(0)) != 0) {
-				fprintf(stderr,
-				    "%s: db_env_set_panicstate: %s\n",
-				    progname, db_strerror(ret));
+			break;
+		case 'P':
+			passwd = strdup(optarg);
+			memset(optarg, 0, strlen(optarg));
+			if (passwd == NULL) {
+				fprintf(stderr, "%s: strdup: %s\n",
+				    progname, strerror(errno));
 				return (EXIT_FAILURE);
 			}
 			break;
@@ -74,13 +75,13 @@ main(argc, argv)
 			return (EXIT_SUCCESS);
 		case '?':
 		default:
-			usage();
+			return (usage());
 		}
 	argc -= optind;
 	argv += optind;
 
 	if (argc <= 0)
-		usage();
+		return (usage());
 
 	/* Handle possible interruptions. */
 	__db_util_siginit();
@@ -99,8 +100,20 @@ main(argc, argv)
 	dbenv->set_errfile(dbenv, stderr);
 	dbenv->set_errpfx(dbenv, progname);
 
-	if (nflag && (ret = dbenv->set_mutexlocks(dbenv, 0)) != 0) {
-		dbenv->err(dbenv, ret, "set_mutexlocks");
+	if (nflag) {
+		if ((ret = dbenv->set_flags(dbenv, DB_NOLOCKING, 1)) != 0) {
+			dbenv->err(dbenv, ret, "set_flags: DB_NOLOCKING");
+			goto shutdown;
+		}
+		if ((ret = dbenv->set_flags(dbenv, DB_NOPANIC, 1)) != 0) {
+			dbenv->err(dbenv, ret, "set_flags: DB_NOPANIC");
+			goto shutdown;
+		}
+	}
+
+	if (passwd != NULL && (ret = dbenv->set_encrypt(dbenv,
+	    passwd, DB_ENCRYPT_AES)) != 0) {
+		dbenv->err(dbenv, ret, "set_passwd");
 		goto shutdown;
 	}
 
@@ -149,15 +162,17 @@ shutdown:	exitval = 1;
 	return (exitval == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
-void
+int
 usage()
 {
-	fprintf(stderr, "usage: db_upgrade [-NsV] [-h home] db_file ...\n");
-	exit(EXIT_FAILURE);
+	fprintf(stderr, "%s\n",
+	    "usage: db_upgrade [-NsV] [-h home] [-P password] db_file ...");
+	return (EXIT_FAILURE);
 }
 
-void
-version_check()
+int
+version_check(progname)
+	const char *progname;
 {
 	int v_major, v_minor, v_patch;
 
@@ -169,6 +184,7 @@ version_check()
 	"%s: version %d.%d.%d doesn't match library version %d.%d.%d\n",
 		    progname, DB_VERSION_MAJOR, DB_VERSION_MINOR,
 		    DB_VERSION_PATCH, v_major, v_minor, v_patch);
-		exit(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 	}
+	return (0);
 }
