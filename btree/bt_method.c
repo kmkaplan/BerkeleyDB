@@ -1,14 +1,14 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1999
+ * Copyright (c) 1999, 2000
  *	Sleepycat Software.  All rights reserved.
  */
 
 #include "db_config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)bt_method.c	11.8 (Sleepycat) 10/27/99";
+static const char revid[] = "$Id: bt_method.c,v 11.13 2000/03/28 21:50:02 ubell Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -45,7 +45,7 @@ __bam_db_create(dbp)
 	int ret;
 
 	/* Allocate and initialize the private btree structure. */
-	if ((ret = __os_calloc(1, sizeof(BTREE), &t)) != 0)
+	if ((ret = __os_calloc(dbp->dbenv, 1, sizeof(BTREE), &t)) != 0)
 		return (ret);
 	dbp->bt_internal = t;
 
@@ -128,26 +128,26 @@ __bam_set_flags(dbp, flagsp)
 		if (LF_ISSET(DB_RECNUM | DB_REVSPLITOFF))
 			DB_ILLEGAL_METHOD(dbp, DB_OK_BTREE);
 
-		/*
-		 * DB_DUP and DB_RECNUM are mutually incompatible.  Handle
-		 * the case where one or more flags have already been set.
-		 */
-		if ((LF_ISSET(DB_DUP) || F_ISSET(dbp, DB_AM_DUP)) &&
-		    (LF_ISSET(DB_RECNUM) || F_ISSET(dbp, DB_BT_RECNUM)))
-			return (__db_ferr(dbp->dbenv, "DB->set_flags", 1));
+		if (LF_ISSET(DB_DUP | DB_DUPSORT)) {
+			/* DB_DUP/DB_DUPSORT is incompatible with DB_RECNUM. */
+			if (F_ISSET(dbp, DB_BT_RECNUM))
+				goto incompat;
 
-		if (LF_ISSET(DB_DUP)) {
+			if (LF_ISSET(DB_DUPSORT)) {
+				if (dbp->dup_compare == NULL)
+					dbp->dup_compare = __bam_defcmp;
+				F_SET(dbp, DB_AM_DUPSORT);
+			}
+
 			F_SET(dbp, DB_AM_DUP);
-			LF_CLR(DB_DUP);
-		}
-
-		if (LF_ISSET(DB_DUPSORT)) {
-			if (dbp->dup_compare == NULL)
-				dbp->dup_compare = __bam_defcmp;
-			LF_CLR(DB_DUPSORT);
+			LF_CLR(DB_DUP | DB_DUPSORT);
 		}
 
 		if (LF_ISSET(DB_RECNUM)) {
+			/* DB_RECNUM is incompatible with DB_DUP/DB_DUPSORT. */
+			if (F_ISSET(dbp, DB_AM_DUP))
+				goto incompat;
+
 			F_SET(dbp, DB_BT_RECNUM);
 			LF_CLR(DB_RECNUM);
 		}
@@ -160,6 +160,9 @@ __bam_set_flags(dbp, flagsp)
 		*flagsp = flags;
 	}
 	return (0);
+
+incompat:
+	return (__db_ferr(dbp->dbenv, "DB->set_flags", 1));
 }
 
 /*
@@ -383,5 +386,5 @@ __ram_set_re_source(dbp, re_source)
 
 	t = dbp->bt_internal;
 
-	return (__os_strdup(re_source, &t->re_source));
+	return (__os_strdup(dbp->dbenv, re_source, &t->re_source));
 }

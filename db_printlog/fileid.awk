@@ -1,4 +1,4 @@
-# @(#)fileid.awk	10.1 (Sleepycat) 4/11/99
+# $Id: fileid.awk,v 10.2 1999/11/21 18:01:42 bostic Exp $
 #
 # Take a comma-separated list of file numbers and spit out all the
 # log records that affect those file numbers.

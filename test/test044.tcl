@@ -1,11 +1,11 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 1997, 1998, 1999
+# Copyright (c) 1996, 1997, 1998, 1999, 2000
 #	Sleepycat Software.  All rights reserved.
 #
-#	@(#)test044.tcl	11.8 (Sleepycat) 10/25/99
+#	$Id: test044.tcl,v 11.22 2000/05/22 12:51:39 bostic Exp $
 #
-# DB Test 40 {access method}
+# DB Test 44 {access method}
 # System integration DB test: verify that locking, recovery, checkpoint,
 # and all the other utilities basically work.
 #
@@ -20,12 +20,19 @@
 # XXX This test uses grow-only files currently!
 proc test044 { method {nprocs 5} {nfiles 10} {cont 0} args } {
 	source ./include.tcl
+	global rand_init
 
 	set args [convert_args $method $args]
 	set omethod [convert_method $method]
 
-	if { [is_rbtree $method] == 1 } {
-		puts "Test044 skipping for method $method"
+	berkdb srand $rand_init
+
+	# If we are using an env, then skip this test.  It needs its own.
+	set eindex [lsearch -exact $args "-env"]
+	if { $eindex != -1 } {
+		incr eindex
+		set env [lindex $args $eindex]
+		puts "Test044 skipping for env $env"
 		return
 	}
 
@@ -55,8 +62,7 @@ proc test044 { method {nprocs 5} {nfiles 10} {cont 0} args } {
 
 		# Create an environment
 		puts "\tTest044.a: creating environment and $nfiles files"
-		set dbenv [berkdb env \
-		    -create -mpool -lock -log -txn -home $testdir]
+		set dbenv [berkdb env -create -txn -home $testdir]
 		error_check_good env_open [is_valid_env $dbenv] TRUE
 
 		# Create a bunch of files
@@ -72,7 +78,7 @@ proc test044 { method {nprocs 5} {nfiles 10} {cont 0} args } {
 				set m $omethod
 			}
 
-			set db [eval {berkdb open -env $dbenv -create \
+			set db [eval {berkdb_open -env $dbenv -create \
 			    -mode 0644 $m} $otherargs {test044.$i.db}]
 			error_check_good dbopen [is_valid_db $db] TRUE
 			error_check_good db_close [$db close] 0
@@ -89,10 +95,9 @@ proc test044 { method {nprocs 5} {nfiles 10} {cont 0} args } {
 	# Database is created, now fork off the kids.
 	puts "\tTest044.b: forking off $nprocs processes and utilities"
 	set cycle 1
-        set ncycles 3
+	set ncycles 3
 	while { $cycle <= $ncycles } {
-		set dbenv [berkdb env \
-		    -create -mpool -lock -log -txn -home $testdir]
+		set dbenv [berkdb env -create -txn -home $testdir]
 		error_check_good env_open [is_valid_env $dbenv] TRUE
 		error_check_good env_close [$dbenv close] 0
 
@@ -107,19 +112,29 @@ proc test044 { method {nprocs 5} {nfiles 10} {cont 0} args } {
 			set p [exec $tclsh_path \
 			    $test_path/sysscript.tcl $testdir \
 			    $nfiles $key_avg $data_avg $omethod \
-			    > $testdir/test044.$i.log &]
+			    >& $testdir/test044.$i.log &]
 			lappend pidlist $p
 		}
-		puts "[timestamp] $nprocs processes running $pidlist"
-		exec $SLEEP [berkdb random_int 300 600]
+		set sleep [berkdb random_int 300 600]
+		puts \
+"[timestamp] $nprocs processes running $pidlist for $sleep seconds"
+		tclsleep $sleep
 
 		# Now simulate a crash
 		puts "[timestamp] Crashing"
 		exec $KILL -9 $ddpid
 		exec $KILL -9 $cppid
+		#
+		# Use catch so that if any of the children died, we don't
+		# stop the script
+		#
 		foreach p $pidlist {
-			exec $KILL -9 $p
+			set e [catch {eval exec \
+			    [concat $KILL -9 $p]} res]
 		}
+		# Check for test failure
+		set e [eval findfail [glob $testdir/test044.*.log]]
+		error_check_good "FAIL: error message(s) in log files" $e 0
 
 		# Now run recovery
 		test044_verify $testdir $nfiles
@@ -137,11 +152,11 @@ proc test044_verify { dir nfiles } {
 
 	# Save everything away in case something breaks
 #	for { set f 0 } { $f < $nfiles } {incr f} {
-#		exec $CP $dir/test044.$f.db $dir/test044.$f.save1
+#		file copy -force $dir/test044.$f.db $dir/test044.$f.save1
 #	}
 #	foreach f [glob $dir/log.*] {
 #		if { [is_substr $f save] == 0 } {
-#			exec $CP $f $f.save1
+#			file copy -force $f $f.save1
 #		}
 #	}
 
@@ -156,16 +171,16 @@ proc test044_verify { dir nfiles } {
 
 	# Save everything away in case something breaks
 #	for { set f 0 } { $f < $nfiles } {incr f} {
-#		exec $CP $dir/test044.$f.db $dir/test044.$f.save2
+#		file copy -force $dir/test044.$f.db $dir/test044.$f.save2
 #	}
 #	foreach f [glob $dir/log.*] {
 #		if { [is_substr $f save] == 0 } {
-#			exec $CP $f $f.save2
+#			file copy -force $f $f.save2
 #		}
 #	}
 
 	for { set f 0 } { $f < $nfiles } { incr f } {
-		set db($f) [berkdb open $dir/test044.$f.db]
+		set db($f) [berkdb_open $dir/test044.$f.db]
 		error_check_good $f:dbopen [is_valid_db $db($f)] TRUE
 
 		set cursors($f) [$db($f) cursor]

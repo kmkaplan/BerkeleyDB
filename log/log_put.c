@@ -1,13 +1,13 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 1997, 1998, 1999
+ * Copyright (c) 1996, 1997, 1998, 1999, 2000
  *	Sleepycat Software.  All rights reserved.
  */
 #include "db_config.h"
 
 #ifndef lint
-static const char sccsid[] = "@(#)log_put.c	11.4 (Sleepycat) 11/10/99";
+static const char revid[] = "$Id: log_put.c,v 11.19 2000/04/22 03:20:36 ubell Exp $";
 #endif /* not lint */
 
 #ifndef NO_SYSTEM_INCLUDES
@@ -30,16 +30,26 @@ static const char sccsid[] = "@(#)log_put.c	11.4 (Sleepycat) 11/10/99";
 #include <unistd.h>
 #endif
 
+#ifdef  HAVE_RPC
+#include "db_server.h"
+#endif
+
 #include "db_int.h"
 #include "db_page.h"
 #include "log.h"
 #include "hash.h"
 #include "clib_ext.h"
 
+#ifdef HAVE_RPC
+#include "gen_client_ext.h"
+#include "rpc_client_ext.h"
+#endif
+
 static int __log_fill __P((DB_LOG *, DB_LSN *, void *, u_int32_t));
 static int __log_flush __P((DB_LOG *, const DB_LSN *));
 static int __log_newfh __P((DB_LOG *));
 static int __log_putr __P((DB_LOG *, DB_LSN *, const DBT *, u_int32_t));
+static int __log_open_files __P((DB_ENV *));
 static int __log_write __P((DB_LOG *, void *, u_int32_t));
 
 /*
@@ -55,6 +65,11 @@ log_put(dbenv, lsn, dbt, flags)
 {
 	DB_LOG *dblp;
 	int ret;
+
+#ifdef HAVE_RPC
+	if (F_ISSET(dbenv, DB_ENV_RPCCLIENT))
+		return (__dbcl_log_put(dbenv, lsn, dbt, flags));
+#endif
 
 	PANIC_CHECK(dbenv);
 	ENV_REQUIRES_CONFIG(dbenv, dbenv->lg_handle, DB_INIT_LOG);
@@ -84,10 +99,8 @@ __log_put(dbenv, lsn, dbt, flags)
 	const DBT *dbt;
 	u_int32_t flags;
 {
-	DBT fid_dbt, t;
+	DBT t;
 	DB_LOG *dblp;
-	DB_LSN r_unused;
-	FNAME *fnp;
 	LOG *lp;
 	u_int32_t lastoff;
 	int ret;
@@ -150,6 +163,10 @@ __log_put(dbenv, lsn, dbt, flags)
 		    &t, lastoff == 0 ? 0 : lastoff - lp->len)) != 0)
 			return (ret);
 
+		/* Record files open in this log. */
+		if ((ret = __log_open_files(dbenv)) != 0)
+			return (ret);
+
 		/* Update the LSN information returned to the user. */
 		lsn->file = lp->lsn.file;
 		lsn->offset = lp->lsn.offset;
@@ -167,22 +184,8 @@ __log_put(dbenv, lsn, dbt, flags)
 	 */
 	if (flags == DB_CHECKPOINT) {
 		lp->chkpt_lsn = *lsn;
-
-		for (fnp = SH_TAILQ_FIRST(&lp->fq, __fname);
-		    fnp != NULL; fnp = SH_TAILQ_NEXT(fnp, q, __fname)) {
-			if (fnp->ref == 0)	/* Entry not in use. */
-				continue;
-			memset(&t, 0, sizeof(t));
-			t.data = R_ADDR(&dblp->reginfo, fnp->name_off);
-			t.size = strlen(t.data) + 1;
-			memset(&fid_dbt, 0, sizeof(fid_dbt));
-			fid_dbt.data = fnp->ufid;
-			fid_dbt.size = DB_FILE_ID_LEN;
-			if ((ret = __log_register_log(dbenv, NULL, &r_unused, 0,
-			    LOG_CHECKPOINT, &t, &fid_dbt, fnp->id, fnp->s_type))
-			    != 0)
-				return (ret);
-		}
+		if ((ret = __log_open_files(dbenv)) != 0)
+			return (ret);
 	}
 
 	/*
@@ -255,6 +258,11 @@ log_flush(dbenv, lsn)
 {
 	DB_LOG *dblp;
 	int ret;
+
+#ifdef HAVE_RPC
+	if (F_ISSET(dbenv, DB_ENV_RPCCLIENT))
+		return (__dbcl_log_flush(dbenv, lsn));
+#endif
 
 	PANIC_CHECK(dbenv);
 	ENV_REQUIRES_CONFIG(dbenv, dbenv->lg_handle, DB_INIT_LOG);
@@ -340,7 +348,7 @@ __log_flush(dblp, lsn)
 	}
 
 	/* Sync all writes to disk. */
-	if ((ret = __os_fsync(&dblp->lfh)) != 0) {
+	if ((ret = __os_fsync(dblp->dbenv, &dblp->lfh)) != 0) {
 		__db_panic(dblp->dbenv, ret);
 		return (ret);
 	}
@@ -442,7 +450,7 @@ __log_write(dblp, addr, len)
 	u_int32_t len;
 {
 	LOG *lp;
-	ssize_t nw;
+	size_t nw;
 	int ret;
 
 	/*
@@ -459,13 +467,16 @@ __log_write(dblp, addr, len)
 	 * since we last did).
 	 */
 	if ((ret =
-	    __os_seek(&dblp->lfh, 0, 0, lp->w_off, 0, DB_OS_SEEK_SET)) != 0 ||
-	    (ret = __os_write(&dblp->lfh, addr, len, &nw)) != 0) {
+	    __os_seek(dblp->dbenv,
+	    &dblp->lfh, 0, 0, lp->w_off, 0, DB_OS_SEEK_SET)) != 0 ||
+	    (ret = __os_write(dblp->dbenv, &dblp->lfh, addr, len, &nw)) != 0) {
 		__db_panic(dblp->dbenv, ret);
 		return (ret);
 	}
-	if (nw != (int32_t)len)
+	if (nw != len) {
+		__db_err(dblp->dbenv, "Short write while writing log");
 		return (EIO);
+	}
 
 	/* Reset the buffer offset and update the seek offset. */
 	lp->w_off += len;
@@ -499,6 +510,11 @@ log_file(dbenv, lsn, namep, len)
 	int ret;
 	char *name;
 
+#ifdef HAVE_RPC
+	if (F_ISSET(dbenv, DB_ENV_RPCCLIENT))
+		return (__dbcl_log_file(dbenv, lsn, namep, len));
+#endif
+
 	PANIC_CHECK(dbenv);
 	ENV_REQUIRES_CONFIG(dbenv, dbenv->lg_handle, DB_INIT_LOG);
 
@@ -512,7 +528,8 @@ log_file(dbenv, lsn, namep, len)
 	/* Check to make sure there's enough room and copy the name. */
 	if (len < strlen(name) + 1) {
 		*namep = '\0';
-		return (ENOMEM);
+		__db_err(dbenv, "log_file: name buffer is too short");
+		return (EINVAL);
 	}
 	(void)strcpy(namep, name);
 	__os_freestr(name);
@@ -539,8 +556,16 @@ __log_newfh(dblp)
 	/* Get the path of the new file and open it. */
 	lp = dblp->reginfo.primary;
 	dblp->lfname = lp->lsn.file;
+
+	/* Adding DB_OSO_LOG to the flags may cause additional
+	 * platform-specific optimizations.  On WinNT, the logfile
+	 * is preallocated, which may have a time penalty at startup,
+	 * but may lead to overall better throughput.  We are not
+	 * certain that this works reliably, so enable at your own risk.
+	 */
 	if ((ret = __log_name(dblp, dblp->lfname,
-	    &name, &dblp->lfh, DB_OSO_CREATE | DB_OSO_LOG | DB_OSO_SEQ)) != 0)
+	    &name, &dblp->lfh,
+	    DB_OSO_CREATE |/* DB_OSO_LOG |*/ DB_OSO_SEQ)) != 0)
 		__db_err(dblp->dbenv,
 		    "log_put: %s: %s", name, db_strerror(ret));
 
@@ -593,7 +618,8 @@ __log_name(dblp, filenumber, namep, fhp, flags)
 		return (ret);
 
 	/* Open the new-style file -- if we succeed, we're done. */
-	if ((ret = __os_open(*namep, flags, lp->persist.mode, fhp)) == 0)
+	if ((ret = __os_open(dblp->dbenv,
+	    *namep, flags, lp->persist.mode, fhp)) == 0)
 		return (0);
 
 	/*
@@ -618,7 +644,8 @@ __log_name(dblp, filenumber, namep, fhp, flags)
 	 * space allocated for the new-style name and return the old-style
 	 * name to the caller.
 	 */
-	if ((ret = __os_open(oname, flags, lp->persist.mode, fhp)) == 0) {
+	if ((ret = __os_open(dblp->dbenv,
+	    oname, flags, lp->persist.mode, fhp)) == 0) {
 		__os_freestr(*namep);
 		*namep = oname;
 		return (0);
@@ -634,4 +661,39 @@ __log_name(dblp, filenumber, namep, fhp, flags)
 	 */
 err:	__os_freestr(oname);
 	return (ret);
+}
+
+static int
+__log_open_files(dbenv)
+	DB_ENV *dbenv;
+{
+	DB_LOG *dblp;
+	DB_LSN r_unused;
+	DBT fid_dbt, t;
+	FNAME *fnp;
+	LOG *lp;
+	int ret;
+
+	dblp = dbenv->lg_handle;
+	lp = dblp->reginfo.primary;
+
+	for (fnp = SH_TAILQ_FIRST(&lp->fq, __fname);
+	    fnp != NULL; fnp = SH_TAILQ_NEXT(fnp, q, __fname)) {
+		if (fnp->ref == 0)	/* Entry not in use. */
+			continue;
+		if (fnp->name_off != INVALID_ROFF) {
+			memset(&t, 0, sizeof(t));
+			t.data = R_ADDR(&dblp->reginfo, fnp->name_off);
+			t.size = strlen(t.data) + 1;
+		}
+		memset(&fid_dbt, 0, sizeof(fid_dbt));
+		fid_dbt.data = fnp->ufid;
+		fid_dbt.size = DB_FILE_ID_LEN;
+		if ((ret = __log_register_log(dbenv,
+		    NULL, &r_unused, 0, LOG_CHECKPOINT,
+		    fnp->name_off == INVALID_ROFF ? NULL : &t,
+		    &fid_dbt, fnp->id, fnp->s_type, fnp->meta_pgno)) != 0)
+			return (ret);
+	}
+	return (0);
 }
