@@ -309,7 +309,7 @@ DB_USE_ENVIRON	../include/db.h	/^#define	DB_USE_ENVIRON	      0x001000	\/* Use t
 DB_USE_ENVIRON_ROOT	../include/db.h	/^#define	DB_USE_ENVIRON_ROOT   0x002000	\/* Use the/
 DB_VERSION_MAJOR	../include/db.h	/^#define	DB_VERSION_MAJOR	2$/
 DB_VERSION_MINOR	../include/db.h	/^#define	DB_VERSION_MINOR	7$/
-DB_VERSION_PATCH	../include/db.h	/^#define	DB_VERSION_PATCH	3$/
+DB_VERSION_PATCH	../include/db.h	/^#define	DB_VERSION_PATCH	5$/
 DB_VERSION_STRING	../include/db.h	/^#define	DB_VERSION_STRING	"Sleepycat Software: Ber/
 DB_VMPAGESIZE	../include/db_int.h	/^#define	DB_VMPAGESIZE	(4 * 1024)$/
 DB_WRITELOCK	../include/db.h	/^#define	DB_WRITELOCK	24		\/* cursor() (internal) */
@@ -344,9 +344,9 @@ DB_log_register	../include/log_auto.h	/^#define	DB_log_register	(DB_log_BEGIN + 
 DB_ram_BEGIN	../include/db_dispatch.h	/^#define	DB_ram_BEGIN		100$/
 DB_txn_BEGIN	../include/db_dispatch.h	/^#define	DB_txn_BEGIN		  5$/
 DB_txn_child	../include/txn_auto.h	/^#define	DB_txn_child	(DB_txn_BEGIN + 4)$/
-DB_txn_ckp	../include/txn_auto.h	/^#define	DB_txn_ckp	(DB_txn_BEGIN + 3)$/
+DB_txn_ckp	../include/txn_auto.h	/^#define	DB_txn_ckp	(DB_txn_BEGIN + 2)$/
 DB_txn_regop	../include/txn_auto.h	/^#define	DB_txn_regop	(DB_txn_BEGIN + 1)$/
-DB_txn_xa_regop	../include/txn_auto.h	/^#define	DB_txn_xa_regop	(DB_txn_BEGIN + 2)$/
+DB_txn_xa_regop	../include/txn_auto.h	/^#define	DB_txn_xa_regop	(DB_txn_BEGIN + 3)$/
 DB_user_BEGIN	../include/db_dispatch.h	/^#define	DB_user_BEGIN		150$/
 DCHARHASH	../hash/hash_func.c	/^#define	DCHARHASH(h, c)	((h) = 0x63c63cd9*(h) + 0x/
 DEBUG_CHECK_USAGE	../test/utils.c	/^#define DEBUG_CHECK_USAGE "debug_check"$/
@@ -435,6 +435,7 @@ ISTEMPORARY	../mp/mp_fopen.c	/^#define	ISTEMPORARY	(path == NULL)$/
 IS_CUR_DELETED	../btree/bt_cursor.c	/^#define	IS_CUR_DELETED(cp)						\\$/
 IS_DELETED	../btree/bt_cursor.c	/^#define	IS_DELETED(cp, indx)						\\$/
 IS_VALID	../include/hash.h	/^#define	IS_VALID(C) ((C)->bucket != BUCKET_INVALID/
+IS_XA_TXN	../txn/txn_rec.c	/^#define	IS_XA_TXN(R) (R->xid.size != 0)$/
 IS_ZERO_LSN	../include/db_int.h	/^#define	IS_ZERO_LSN(LSN)	((LSN).file == 0)$/
 LEAFLEVEL	../include/db_page.h	/^#define	LEAFLEVEL	  1$/
 LEN_HDATA	../include/db_page.h	/^#define LEN_HDATA(p, psize, pindx) LEN_HKEYDATA(p,/
@@ -862,7 +863,7 @@ XAER_OUTSIDE	../include/xa.h	/^#define	XAER_OUTSIDE	-9		\/* resource manager doi
 XAER_PROTO	../include/xa.h	/^#define	XAER_PROTO	-6		\/* routine invoked in an i/
 XAER_RMERR	../include/xa.h	/^#define	XAER_RMERR	-3		\/* a resource manager erro/
 XAER_RMFAIL	../include/xa.h	/^#define	XAER_RMFAIL	-7		\/* resource manager unava/
-XA_FLAGS	../xa/xa.c	/^#define	XA_FLAGS \\$/
+XA_FLAGS	../xa/xa.c	/^#define	XA_FLAGS DB_RECOVER | \\$/
 XA_H	../include/xa.h	/^#define	XA_H$/
 XA_HEURCOM	../include/xa.h	/^#define	XA_HEURCOM	7		\/* the transaction branch h/
 XA_HEURHAZ	../include/xa.h	/^#define	XA_HEURHAZ	8		\/* the transaction branch m/
@@ -952,7 +953,6 @@ __bam_dpage	../btree/bt_delete.c	/^__bam_dpage(dbc, key)$/
 __bam_dpages	../btree/bt_delete.c	/^__bam_dpages(dbc)$/
 __bam_dsearch	../btree/bt_cursor.c	/^__bam_dsearch(dbc, cp, data, iflagp)$/
 __bam_dup	../btree/bt_cursor.c	/^__bam_dup(dbc, cp, indx, last_dup)$/
-__bam_dupnodel	../btree/bt_cursor.c	/^__bam_dupnodel(dbc, cp, indx)$/
 __bam_fixed	../btree/bt_put.c	/^__bam_fixed(dbc, dbt)$/
 __bam_free	../btree/bt_page.c	/^__bam_free(dbc, h)$/
 __bam_iitem	../btree/bt_put.c	/^__bam_iitem(dbc, hp, indxp, key, data, op, flags)$/
@@ -968,7 +968,7 @@ __bam_nrecs	../btree/bt_rsearch.c	/^__bam_nrecs(dbc, rep)$/
 __bam_open	../btree/bt_open.c	/^__bam_open(dbp, dbinfo)$/
 __bam_ovput	../btree/bt_put.c	/^__bam_ovput(dbc, h, indx, item)$/
 __bam_page	../btree/bt_split.c	/^__bam_page(dbc, pp, cp)$/
-__bam_partial	../btree/bt_put.c	/^__bam_partial(dbc, dbt, h, indx, nbytes)$/
+__bam_partial	../btree/bt_put.c	/^__bam_partial(dbc, dbt, h, indx, nbytes, flags)$/
 __bam_partsize	../btree/bt_put.c	/^__bam_partsize(data, h, indx)$/
 __bam_pg_alloc_log	../btree/btree_auto.c	/^int __bam_pg_alloc_log(logp, txnid, ret_lsnp, flag/
 __bam_pg_alloc_print	../btree/btree_auto.c	/^__bam_pg_alloc_print(notused1, dbtp, lsnp, notused/
@@ -1087,6 +1087,7 @@ __db_keyempty	../db/db_iface.c	/^__db_keyempty(dbenv)$/
 __db_loadme	../db/db_pr.c	/^__db_loadme()$/
 __db_log2	../common/db_log2.c	/^__db_log2(num)$/
 __db_map_rmid	../xa/xa_map.c	/^__db_map_rmid(rmid, env)$/
+__db_map_rmid_name	../xa/xa_map.c	/^__db_map_rmid_name(rmid, dbhome)$/
 __db_map_xid	../xa/xa_map.c	/^__db_map_xid(env, xid, off)$/
 __db_mapanon_ok	../os/os_map.c	/^__db_mapanon_ok(need_names)$/
 __db_mapfile	../os/os_map.c	/^__db_mapfile(path, fd, len, is_rdonly, addr)$/
@@ -1149,7 +1150,8 @@ __db_relink_recover	../db/db_rec.c	/^__db_relink_recover(logp, dbtp, lsnp, redo,
 __db_ret	../db/db_ret.c	/^__db_ret(dbp, h, indx, dbt, memp, memsize)$/
 __db_retcopy	../db/db_ret.c	/^__db_retcopy(dbt, data, len, memp, memsize, db_mal/
 __db_rgrow	../common/db_region.c	/^__db_rgrow(infop, new_size)$/
-__db_rmid_to_env	../xa/xa_map.c	/^__db_rmid_to_env(rmid, envp)$/
+__db_rmid_to_env	../xa/xa_map.c	/^__db_rmid_to_env(rmid, envp, open_ok)$/
+__db_rmid_to_name	../xa/xa_map.c	/^__db_rmid_to_name(rmid, dbhomep)$/
 __db_rpath	../os/os_rpath.c	/^__db_rpath(path)$/
 __db_rreattach	../common/db_region.c	/^__db_rreattach(infop, new_size)$/
 __db_runlink	../common/db_region.c	/^__db_runlink(infop, force)$/
@@ -1175,6 +1177,7 @@ __db_txnlist_init	../db/db_dispatch.c	/^__db_txnlist_init(retp)$/
 __db_txnlist_print	../db/db_dispatch.c	/^__db_txnlist_print(listp)$/
 __db_unlinkregion	../os/os_map.c	/^__db_unlinkregion(name, infop)$/
 __db_unmap_rmid	../xa/xa_map.c	/^__db_unmap_rmid(rmid)$/
+__db_unmap_rmid_name	../xa/xa_map.c	/^__db_unmap_rmid_name(rmid)$/
 __db_unmap_xid	../xa/xa_map.c	/^__db_unmap_xid(env, xid, off)$/
 __db_unmapfile	../os/os_map.c	/^__db_unmapfile(addr, len)$/
 __db_unmapregion	../os/os_map.c	/^__db_unmapregion(infop)$/
@@ -1328,7 +1331,7 @@ __log_init_recover	../log/log_auto.c	/^__log_init_recover(dbenv)$/
 __log_lid_to_fname	../log/log_rec.c	/^__log_lid_to_fname(dblp, lid, fnamep)$/
 __log_name	../log/log_put.c	/^__log_name(dblp, filenumber, namep, fdp, flags)$/
 __log_newfd	../log/log_put.c	/^__log_newfd(dblp)$/
-__log_open_file	../log/log_rec.c	/^__log_open_file(lp, uid, name, ftype, ndx)$/
+__log_open_file	../log/log_rec.c	/^__log_open_file(lp, argp)$/
 __log_panic	../log/log.c	/^__log_panic(dbenv)$/
 __log_put	../log/log_put.c	/^__log_put(dblp, lsn, dbt, flags)$/
 __log_putr	../log/log_put.c	/^__log_putr(dblp, lsn, dbt, prev)$/
@@ -1428,6 +1431,7 @@ __txn_regop_log	../txn/txn_auto.c	/^int __txn_regop_log(logp, txnid, ret_lsnp, f
 __txn_regop_print	../txn/txn_auto.c	/^__txn_regop_print(notused1, dbtp, lsnp, notused2, /
 __txn_regop_read	../txn/txn_auto.c	/^__txn_regop_read(recbuf, argpp)$/
 __txn_regop_recover	../txn/txn_rec.c	/^__txn_regop_recover(logp, dbtp, lsnp, redo, info)$/
+__txn_restore_txn	../txn/txn_rec.c	/^__txn_restore_txn(dbenv, lsnp, argp)$/
 __txn_undo	../txn/txn.c	/^__txn_undo(txnp)$/
 __txn_validate_region	../txn/txn.c	/^__txn_validate_region(tp)$/
 __txn_xa_begin	../txn/txn.c	/^__txn_xa_begin(dbenv, txn)$/
@@ -1448,6 +1452,7 @@ __xa_get	../xa/xa_db.c	/^__xa_get(dbp, txn, key, data, flags)$/
 __xa_put	../xa/xa_db.c	/^__xa_put(dbp, txn, key, data, flags)$/
 __xa_stat	../xa/xa_db.c	/^__xa_stat(dbp, spp, db_malloc, flags)$/
 __xa_sync	../xa/xa_db.c	/^__xa_sync(dbp, flags)$/
+__xa_txn_end	../xa/xa.c	/^__xa_txn_end(env)$/
 __xa_txn_init	../xa/xa.c	/^__xa_txn_init(env, td, off)$/
 _btree_ext_h_	../include/btree_ext.h	/^#define _btree_ext_h_$/
 _clib_ext_h_	../include/clib_ext.h	/^#define _clib_ext_h_$/
