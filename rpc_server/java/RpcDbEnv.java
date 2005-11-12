@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 2001-2004
+ * Copyright (c) 2001-2005
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: RpcDbEnv.java,v 1.15 2004/04/21 01:09:11 mjc Exp $
+ * $Id: RpcDbEnv.java,v 12.2 2005/08/02 06:57:08 mjc Exp $
  */
 
 package com.sleepycat.db.rpcserver;
@@ -160,7 +160,6 @@ public class RpcDbEnv extends Timer {
             if (config.getJoinEnvironment()) reply.flags |= DbConstants.DB_JOINENV;
             if (config.getLockDown()) reply.flags |= DbConstants.DB_LOCKDOWN;
             if (config.getPrivate()) reply.flags |= DbConstants.DB_PRIVATE;
-            if (config.getReadOnly()) reply.flags |= DbConstants.DB_RDONLY;
             if (config.getRunRecovery()) reply.flags |= DbConstants.DB_RECOVER;
             if (config.getRunFatalRecovery()) reply.flags |= DbConstants.DB_RECOVER_FATAL;
             if (config.getSystemMemory()) reply.flags |= DbConstants.DB_SYSTEM_MEM;
@@ -199,7 +198,6 @@ public class RpcDbEnv extends Timer {
             config.setJoinEnvironment((args.flags & DbConstants.DB_JOINENV) != 0);
             config.setLockDown((args.flags & DbConstants.DB_LOCKDOWN) != 0);
             config.setPrivate((args.flags & DbConstants.DB_PRIVATE) != 0);
-            config.setReadOnly((args.flags & DbConstants.DB_RDONLY) != 0);
             config.setRunRecovery((args.flags & DbConstants.DB_RECOVER) != 0);
             config.setRunFatalRecovery((args.flags & DbConstants.DB_RECOVER_FATAL) != 0);
             config.setSystemMemory((args.flags & DbConstants.DB_SYSTEM_MEM) != 0);
@@ -259,7 +257,7 @@ public class RpcDbEnv extends Timer {
     }
 
     public  void set_cachesize(Dispatcher server,
-                               __env_cachesize_msg args, __env_cachesize_reply reply) {
+                               __env_set_cachesize_msg args, __env_set_cachesize_reply reply) {
         try {
             long bytes = (long)args.gbytes * 1024 * 1024 * 1024;
             bytes += args.bytes;
@@ -282,7 +280,7 @@ public class RpcDbEnv extends Timer {
     }
 
     public  void set_encrypt(Dispatcher server,
-                             __env_encrypt_msg args, __env_encrypt_reply reply) {
+                             __env_set_encrypt_msg args, __env_set_encrypt_reply reply) {
         try {
             config.setEncrypted(args.passwd);
             reply.status = 0;
@@ -316,7 +314,7 @@ public class RpcDbEnv extends Timer {
     }
 
     public  void set_flags(Dispatcher server,
-                           __env_flags_msg args, __env_flags_reply reply) {
+                           __env_set_flags_msg args, __env_set_flags_reply reply) {
         try {
             boolean onoff = (args.onoff != 0);
             if (onoff)
@@ -346,7 +344,7 @@ public class RpcDbEnv extends Timer {
 
     // txn_recover implementation
     public  void txn_recover(Dispatcher server,
-                             __txn_recover_msg args, __txn_recover_reply reply) {
+                             __env_txn_recover_msg args, __env_txn_recover_reply reply) {
         try {
             PreparedTransaction[] prep_list = dbenv.recover(args.count, args.flags == DbConstants.DB_NEXT);
             if (prep_list != null && prep_list.length > 0) {

@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 2001-2004
+ * Copyright (c) 2001-2005
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: RpcDb.java,v 1.24 2004/11/05 00:42:40 mjc Exp $
+ * $Id: RpcDb.java,v 12.3 2005/08/02 06:57:08 mjc Exp $
  */
 
 package com.sleepycat.db.rpcserver;
@@ -111,8 +111,8 @@ public class RpcDb extends Timer {
             Transaction txn = (rtxn != null) ? rtxn.txn : null;
 
             CursorConfig config = new CursorConfig();
-            config.setDirtyRead((args.flags & DbConstants.DB_DIRTY_READ) != 0);
-            config.setDegree2((args.flags & DbConstants.DB_DEGREE_2) != 0);
+            config.setReadUncommitted((args.flags & DbConstants.DB_READ_UNCOMMITTED) != 0);
+            config.setReadCommitted((args.flags & DbConstants.DB_READ_COMMITTED) != 0);
             config.setWriteCursor((args.flags & DbConstants.DB_WRITECURSOR) != 0);
 
             Cursor dbc = db.openCursor(txn, config);
@@ -279,8 +279,8 @@ public class RpcDb extends Timer {
         return matchFound;
     }
 
-    public  void get_name(Dispatcher server,
-                          __db_get_name_msg args, __db_get_name_reply reply) {
+    public  void get_dbname(Dispatcher server,
+                          __db_get_dbname_msg args, __db_get_dbname_reply reply) {
         reply.filename = dbname;
         reply.dbname = subdbname;
         reply.status = 0;
@@ -446,16 +446,6 @@ public class RpcDb extends Timer {
         }
     }
 
-    public  void set_bt_maxkey(Dispatcher server,
-                               __db_bt_maxkey_msg args, __db_bt_maxkey_reply reply) {
-        try {
-            // XXX: check what to do about: config.setBtreeMaxKey(args.maxkey);
-            reply.status = 0;
-        } catch (Throwable t) {
-            reply.status = Util.handleException(t);
-        }
-    }
-
     public  void get_bt_minkey(Dispatcher server,
                                __db_get_bt_minkey_msg args, __db_get_bt_minkey_reply reply) {
         try {
@@ -467,7 +457,7 @@ public class RpcDb extends Timer {
     }
 
     public  void set_bt_minkey(Dispatcher server,
-                               __db_bt_minkey_msg args, __db_bt_minkey_reply reply) {
+                               __db_set_bt_minkey_msg args, __db_set_bt_minkey_reply reply) {
         try {
             config.setBtreeMinKey(args.minkey);
             reply.status = 0;
@@ -487,7 +477,7 @@ public class RpcDb extends Timer {
     }
 
     public  void set_encrypt(Dispatcher server,
-                             __db_encrypt_msg args, __db_encrypt_reply reply) {
+                             __db_set_encrypt_msg args, __db_set_encrypt_reply reply) {
         try {
             config.setEncrypted(args.passwd /*, args.flags == 0 */);
             reply.status = 0;
@@ -516,7 +506,7 @@ public class RpcDb extends Timer {
     }
 
     public  void set_flags(Dispatcher server,
-                           __db_flags_msg args, __db_flags_reply reply) {
+                           __db_set_flags_msg args, __db_set_flags_reply reply) {
         try {
             // Server.err.println("Calling db.setflags(" + Integer.toHexString(args.flags) + ")");
             config.setChecksum((args.flags & DbConstants.DB_CHKSUM) != 0);
@@ -546,7 +536,7 @@ public class RpcDb extends Timer {
     }
 
     public  void set_h_ffactor(Dispatcher server,
-                               __db_h_ffactor_msg args, __db_h_ffactor_reply reply) {
+                               __db_set_h_ffactor_msg args, __db_set_h_ffactor_reply reply) {
         try {
             config.setHashFillFactor(args.ffactor);
             reply.status = 0;
@@ -566,7 +556,7 @@ public class RpcDb extends Timer {
     }
 
     public  void set_h_nelem(Dispatcher server,
-                             __db_h_nelem_msg args, __db_h_nelem_reply reply) {
+                             __db_set_h_nelem_msg args, __db_set_h_nelem_reply reply) {
         try {
             config.setHashNumElements(args.nelem);
             reply.status = 0;
@@ -586,7 +576,7 @@ public class RpcDb extends Timer {
     }
 
     public  void set_lorder(Dispatcher server,
-                            __db_lorder_msg args, __db_lorder_reply reply) {
+                            __db_set_lorder_msg args, __db_set_lorder_reply reply) {
         try {
             config.setByteOrder(args.lorder);
             reply.status = 0;
@@ -606,7 +596,7 @@ public class RpcDb extends Timer {
     }
 
     public  void set_pagesize(Dispatcher server,
-                              __db_pagesize_msg args, __db_pagesize_reply reply) {
+                              __db_set_pagesize_msg args, __db_set_pagesize_reply reply) {
         try {
             config.setPageSize(args.pagesize);
             reply.status = 0;
@@ -616,7 +606,7 @@ public class RpcDb extends Timer {
     }
 
     public  void get_q_extentsize(Dispatcher server,
-                                  __db_get_extentsize_msg args, __db_get_extentsize_reply reply) {
+                                  __db_get_q_extentsize_msg args, __db_get_q_extentsize_reply reply) {
         try {
             reply.extentsize = config.getQueueExtentSize();
             reply.status = 0;
@@ -626,7 +616,7 @@ public class RpcDb extends Timer {
     }
 
     public  void set_q_extentsize(Dispatcher server,
-                                  __db_extentsize_msg args, __db_extentsize_reply reply) {
+                                  __db_set_q_extentsize_msg args, __db_set_q_extentsize_reply reply) {
         try {
             config.setQueueExtentSize(args.extentsize);
             reply.status = 0;
@@ -646,7 +636,7 @@ public class RpcDb extends Timer {
     }
 
     public  void set_re_delim(Dispatcher server,
-                              __db_re_delim_msg args, __db_re_delim_reply reply) {
+                              __db_set_re_delim_msg args, __db_set_re_delim_reply reply) {
         try {
             config.setRecordDelimiter(args.delim);
             reply.status = 0;
@@ -666,7 +656,7 @@ public class RpcDb extends Timer {
     }
 
     public  void set_re_len(Dispatcher server,
-                            __db_re_len_msg args, __db_re_len_reply reply) {
+                            __db_set_re_len_msg args, __db_set_re_len_reply reply) {
         try {
             config.setRecordLength(args.len);
             reply.status = 0;
@@ -686,7 +676,7 @@ public class RpcDb extends Timer {
     }
 
     public  void set_re_pad(Dispatcher server,
-                            __db_re_pad_msg args, __db_re_pad_reply reply) {
+                            __db_set_re_pad_msg args, __db_set_re_pad_reply reply) {
         try {
             config.setRecordPad(args.pad);
             reply.status = 0;
@@ -711,7 +701,7 @@ public class RpcDb extends Timer {
                     bs.getMagic(), bs.getVersion(),
                     bs.getMetaFlags(), bs.getNumKeys(),
                     bs.getNumData(), bs.getPageSize(),
-                    bs.getMaxKey(), bs.getMinKey(),
+                    bs.getMinKey(),
                     bs.getReLen(), bs.getRePad(),
                     bs.getLevels(), bs.getIntPages(),
                     bs.getLeafPages(), bs.getDupPages(),

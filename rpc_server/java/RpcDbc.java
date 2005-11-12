@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 2001-2004
+ * Copyright (c) 2001-2005
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: RpcDbc.java,v 1.13 2004/11/05 01:08:31 mjc Exp $
+ * $Id: RpcDbc.java,v 12.2 2005/08/02 06:57:09 mjc Exp $
  */
 
 package com.sleepycat.db.rpcserver;
@@ -44,7 +44,7 @@ public class RpcDbc extends Timer {
     }
 
     public  void close(Dispatcher server,
-                       __dbc_close_msg args, __dbc_close_reply reply) {
+                       __dbc_c_close_msg args, __dbc_c_close_reply reply) {
         try {
             dbc.close();
             dbc = null;
@@ -66,7 +66,7 @@ public class RpcDbc extends Timer {
     }
 
     public  void count(Dispatcher server,
-                       __dbc_count_msg args, __dbc_count_reply reply) {
+                       __dbc_c_count_msg args, __dbc_c_count_reply reply) {
         try {
             reply.dupcount = dbc.count(/* args.flags == 0 */);
             reply.status = 0;
@@ -76,7 +76,7 @@ public class RpcDbc extends Timer {
     }
 
     public  void del(Dispatcher server,
-                     __dbc_del_msg args, __dbc_del_reply reply) {
+                     __dbc_c_del_msg args, __dbc_c_del_reply reply) {
         try {
             reply.status = Util.getStatus(dbc.delete(/* args.flags == 0 */));
         } catch (Throwable t) {
@@ -85,7 +85,7 @@ public class RpcDbc extends Timer {
     }
 
     public  void dup(Dispatcher server,
-                     __dbc_dup_msg args, __dbc_dup_reply reply) {
+                     __dbc_c_dup_msg args, __dbc_c_dup_reply reply) {
         try {
             Cursor newdbc = dbc.dup(args.flags == DbConstants.DB_POSITION);
             RpcDbc rdbc = new RpcDbc(rdb, newdbc, false);
@@ -100,7 +100,7 @@ public class RpcDbc extends Timer {
     }
 
     public  void get(Dispatcher server,
-                     __dbc_get_msg args, __dbc_get_reply reply) {
+                     __dbc_c_get_msg args, __dbc_c_get_reply reply) {
         try {
             DatabaseEntry key = Util.makeDatabaseEntry(args.keydata, args.keydlen, args.keydoff, args.keyulen, args.keyflags);
             DatabaseEntry data = Util.makeDatabaseEntry(args.datadata,
@@ -187,7 +187,7 @@ public class RpcDbc extends Timer {
     }
 
     public  void pget(Dispatcher server,
-                      __dbc_pget_msg args, __dbc_pget_reply reply) {
+                      __dbc_c_pget_msg args, __dbc_c_pget_reply reply) {
         try {
             DatabaseEntry skey = Util.makeDatabaseEntry(args.skeydata, args.skeydlen, args.skeydoff, args.skeyulen, args.skeyflags);
             DatabaseEntry pkey = Util.makeDatabaseEntry(args.pkeydata, args.pkeydlen, args.pkeydoff, args.pkeyulen, args.pkeyflags);
@@ -265,7 +265,7 @@ public class RpcDbc extends Timer {
     }
 
     public  void put(Dispatcher server,
-                     __dbc_put_msg args, __dbc_put_reply reply) {
+                     __dbc_c_put_msg args, __dbc_c_put_reply reply) {
         try {
             DatabaseEntry key = Util.makeDatabaseEntry(args.keydata, args.keydlen, args.keydoff, args.keyulen, args.keyflags);
             DatabaseEntry data = Util.makeDatabaseEntry(args.datadata, args.datadlen, args.datadoff, args.dataulen, args.dataflags);
