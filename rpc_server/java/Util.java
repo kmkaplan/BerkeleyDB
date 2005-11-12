@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 2001-2004
+ * Copyright (c) 2001-2005
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: Util.java,v 1.6 2004/11/05 00:42:41 mjc Exp $
+ * $Id: Util.java,v 12.2 2005/08/02 06:57:10 mjc Exp $
  */
 
 package com.sleepycat.db.rpcserver;
@@ -111,10 +111,10 @@ public class Util {
 
     static LockMode getLockMode(int flags) {
         switch(flags & Server.DB_MODIFIER_MASK) {
-        case DbConstants.DB_DIRTY_READ:
-            return LockMode.DIRTY_READ;
-        case DbConstants.DB_DEGREE_2:
-            return LockMode.DEGREE_2;
+        case DbConstants.DB_READ_UNCOMMITTED:
+            return LockMode.READ_UNCOMMITTED;
+        case DbConstants.DB_READ_COMMITTED:
+            return LockMode.READ_COMMITTED;
         case DbConstants.DB_RMW:
             return LockMode.RMW;
         default:

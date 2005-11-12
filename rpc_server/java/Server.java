@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 2001-2004
+ * Copyright (c) 2001-2005
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: Server.java,v 1.1 2004/04/06 20:43:42 mjc Exp $
+ * $Id: Server.java,v 12.2 2005/08/02 06:57:10 mjc Exp $
  */
 
 package com.sleepycat.db.rpcserver;
@@ -241,7 +241,7 @@ public class Server extends Dispatcher {
     static final int DB_SERVER_ENVFLAGS = DbConstants.DB_INIT_CDB |
         DbConstants.DB_INIT_LOCK | DbConstants.DB_INIT_LOG | DbConstants.DB_INIT_MPOOL |
         DbConstants.DB_INIT_TXN | DbConstants.DB_JOINENV;
-    static final int DB_SERVER_DBFLAGS = DbConstants.DB_DIRTY_READ |
+    static final int DB_SERVER_DBFLAGS = DbConstants.DB_READ_UNCOMMITTED |
         DbConstants.DB_NOMMAP | DbConstants.DB_RDONLY;
     static final int DB_SERVER_DBNOSHARE = DbConstants.DB_EXCL | DbConstants.DB_TRUNCATE;
     static final int DB_MODIFIER_MASK = 0xff000000;

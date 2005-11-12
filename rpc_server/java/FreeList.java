@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 2001-2004
+ * Copyright (c) 2001-2005
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: FreeList.java,v 1.7 2004/04/06 20:43:41 mjc Exp $
+ * $Id: FreeList.java,v 12.1 2005/06/16 20:23:40 bostic Exp $
  */
 
 package com.sleepycat.db.rpcserver;

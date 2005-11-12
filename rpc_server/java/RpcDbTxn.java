@@ -1,10 +1,10 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 2001-2004
+ * Copyright (c) 2001-2005
  *	Sleepycat Software.  All rights reserved.
  *
- * $Id: RpcDbTxn.java,v 1.9 2004/05/04 13:45:33 sue Exp $
+ * $Id: RpcDbTxn.java,v 12.2 2005/08/02 06:57:09 mjc Exp $
  */
 
 package com.sleepycat.db.rpcserver;
@@ -51,7 +51,7 @@ public class RpcDbTxn extends Timer {
     }
 
     public  void begin(Dispatcher server,
-                       __txn_begin_msg args, __txn_begin_reply reply) {
+                       __env_txn_begin_msg args, __env_txn_begin_reply reply) {
         try {
             if (rdbenv == null) {
                 reply.status = DbConstants.DB_NOSERVER_ID;
@@ -62,8 +62,8 @@ public class RpcDbTxn extends Timer {
             Transaction parent = (rparent != null) ? rparent.txn : null;
 
             TransactionConfig config = new TransactionConfig();
-            config.setDegree2((args.flags & DbConstants.DB_DEGREE_2) != 0);
-            config.setDirtyRead((args.flags & DbConstants.DB_DIRTY_READ) != 0);
+            config.setReadCommitted((args.flags & DbConstants.DB_READ_COMMITTED) != 0);
+            config.setReadUncommitted((args.flags & DbConstants.DB_READ_UNCOMMITTED) != 0);
             config.setNoSync((args.flags & DbConstants.DB_TXN_NOSYNC) != 0);
             config.setNoWait(true);
             config.setSync((args.flags & DbConstants.DB_TXN_SYNC) != 0);
