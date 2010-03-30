@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996-2009 Oracle.  All rights reserved.
+ * Copyright (c) 1996, 2010 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -28,7 +28,7 @@ __memp_alloc(dbmp, infop, mfp, len, offsetp, retp)
 	roff_t *offsetp;
 	void *retp;
 {
-	BH *bhp, *latest_bhp, *mvcc_bhp, *oldest_bhp;
+	BH *bhp, *current_bhp, *mvcc_bhp, *oldest_bhp;
 	BH_FROZEN_PAGE *frozen_bhp;
 	DB_LSN vlsn;
 	DB_MPOOL_HASH *dbht, *hp, *hp_end, *hp_saved, *hp_tmp;
@@ -38,8 +38,8 @@ __memp_alloc(dbmp, infop, mfp, len, offsetp, retp)
 	size_t freed_space;
 	u_int32_t buckets, buffers, high_priority, priority, priority_saved;
 	u_int32_t put_counter, total_buckets;
-	int aggressive, alloc_freeze, b_lock, froze, giveup, got_oldest;
-	int h_locked, need_free, ret;
+	int aggressive, alloc_freeze, b_lock, giveup, got_oldest;
+	int h_locked, need_free, obsolete, ret;
 	u_int8_t *endp;
 	void *p;
 
@@ -172,15 +172,15 @@ search:	ret = 0;
 		 *
 		 * a: set a flag to attempt to flush high priority buffers as
 		 *    well as other buffers.
-		 * b: sync the mpool to force out queue extent pages.  While we
-		 *    might not have enough space for what we want and flushing
-		 *    is expensive, why not?
-		 * c: look at a buffer in every hash bucket rather than choose
+		 * b: look at a buffer in every hash bucket rather than choose
 		 *    the more preferable of two.
-		 * d: start to think about giving up.
+		 * c: start to think about giving up.
 		 *
-		 * If we get here twice, sleep for a second, hopefully someone
-		 * else will run and free up some memory.
+		 * If we get here three or more times, sync the mpool to force
+		 * out queue extent pages.  While we might not have enough
+		 * space for what we want and flushing is expensive, why not?
+		 * Then sleep for a second, hopefully someone else will run and
+		 * free up some memory.
 		 *
 		 * Always try to allocate memory too, in case some other thread
 		 * returns its memory to the region.
@@ -203,7 +203,7 @@ search:	ret = 0;
 				break;
 			case 2:
 				put_counter = c_mp->put_counter;
-				/* FALLTHROUGH */
+				break;
 			case 3:
 			case 4:
 			case 5:
@@ -242,40 +242,62 @@ search:	ret = 0;
 		/*
 		 * Find a buffer we can use.
 		 *
-		 * We don't want to free a buffer out of the middle of an MVCC
-		 * chain (that requires I/O).  So, walk the buffers, looking
-		 * for, in order of preference:
+		 * We use the lowest-LRU singleton buffer if we find one and
+		 * it's better than the result of another hash bucket we've
+		 * reviewed.  We do not use a buffer which has a priority
+		 * greater than high_priority unless we are being aggressive.
 		 *
-		 *	an obsolete buffer at the end of an MVCC chain,
-		 *	the lowest priority buffer, if it is not frozen,
-		 *	the lowest priority frozen buffer.
+		 * With MVCC buffers, the situation is more complicated: we
+		 * don't want to free a buffer out of the middle of an MVCC
+		 * chain, since that requires I/O.  So, walk the buffers,
+		 * looking for an obsolete buffer at the end of an MVCC chain.
+		 * Once a buffer becomes obsolete, its LRU priority is
+		 * irrelevant because that version can never be accessed again.
 		 *
-		 * We use an obsolete buffer at the end of a chain as soon as
-		 * we find one.  We use the lowest-LRU singleton buffer if we
-		 * find one and it's better than the result of another hash
-		 * bucket we've reviewed.  We do not use a buffer which
-		 * has a priority greater than high_priority unless we are
-		 * being aggressive.
-		 *
-		 * We prefer ordinary buffers over frozen buffers in the middle
-		 * of an MVCC chain, regardless of priority: if the oldest
-		 * buffer in a chain is frozen, we thaw or free it before
-		 * recycling any buffers within the version chain.
+		 * If we don't find any obsolete MVCC buffers, we will get
+		 * aggressive, and in that case consider the lowest priority
+		 * buffer within a chain.
 		 *
 		 * Ignore referenced buffers, we can't get rid of them.
 		 */
 retry_search:	bhp = NULL;
-		SH_TAILQ_FOREACH(latest_bhp, &hp->hash_bucket, hq, __bh) {
-			for (mvcc_bhp = oldest_bhp = latest_bhp;
+		obsolete = 0;
+		SH_TAILQ_FOREACH(current_bhp, &hp->hash_bucket, hq, __bh) {
+			/*
+			 * First, do the standard LRU check for singletons.
+			 * We can use the buffer if it is unreferenced, has a
+			 * priority that isn't too high (unless we are
+			 * aggressive), and is better than the best candidate
+			 * we have found so far.
+			 */
+			if (SH_CHAIN_SINGLETON(current_bhp, vc)) {
+				if (BH_REFCOUNT(current_bhp) == 0 &&
+				    (aggressive ||
+				    current_bhp->priority < high_priority) &&
+				    (bhp == NULL ||
+				    bhp->priority > current_bhp->priority)) {
+					if (bhp != NULL)
+						atomic_dec(env, &bhp->ref);
+					bhp = current_bhp;
+					atomic_inc(env, &bhp->ref);
+				}
+				continue;
+			}
+
+			/*
+			 * For MVCC buffers, walk through the chain.  If we are
+			 * aggressive, choose the best candidate from within
+			 * the chain for freezing.
+			 */
+			for (mvcc_bhp = oldest_bhp = current_bhp;
 			    mvcc_bhp != NULL;
 			    oldest_bhp = mvcc_bhp,
 			    mvcc_bhp = SH_CHAIN_PREV(mvcc_bhp, vc, __bh)) {
 				DB_ASSERT(env, mvcc_bhp !=
 				    SH_CHAIN_PREV(mvcc_bhp, vc, __bh));
-				if (BH_REFCOUNT(mvcc_bhp) == 0 &&
+				if (aggressive > 1 &&
+				    BH_REFCOUNT(mvcc_bhp) == 0 &&
 				    !F_ISSET(mvcc_bhp, BH_FROZEN) &&
-				    (aggressive ||
-				    mvcc_bhp->priority < high_priority) &&
 				    (bhp == NULL ||
 				    bhp->priority > mvcc_bhp->priority)) {
 					if (bhp != NULL)
@@ -286,25 +308,19 @@ retry_search:	bhp = NULL;
 			}
 
 			/*
-			 * If we don't have an MVCC chain (or a singleton
-			 * frozen buffer), or bhp is already pointing at the
-			 * oldest item, we can't do better.
-			 */
-			if (bhp == oldest_bhp ||
-			    (SH_CHAIN_SINGLETON(oldest_bhp, vc) &&
-			    !F_ISSET(oldest_bhp, BH_FROZEN)))
-				continue;
-
-			/*
 			 * oldest_bhp is the last buffer on the MVCC chain, and
-			 * an obsolete buffer at the end of the MVCC chain
-			 * gets used without further search.
+			 * an obsolete buffer at the end of the MVCC chain gets
+			 * used without further search.
 			 *
 			 * If the buffer isn't obsolete with respect to the
-			 * cached old reader LSN, recalculate the oldest
-			 * reader LSN and check again.
+			 * cached old reader LSN, recalculate the oldest reader
+			 * LSN and check again.
 			 */
+			if (BH_REFCOUNT(oldest_bhp) != 0)
+				continue;
+
 retry_obsolete:		if (BH_OBSOLETE(oldest_bhp, hp->old_reader, vlsn)) {
+				obsolete = 1;
 				if (bhp != NULL)
 					atomic_dec(env, &bhp->ref);
 				bhp = oldest_bhp;
@@ -393,12 +409,15 @@ this_buffer:	buffers++;
 		/* Drop the hash mutex and lock the buffer exclusively. */
 		MUTEX_UNLOCK(env, hp->mtx_hash);
 		h_locked = 0;
+
+		/* Don't bother trying to latch a busy buffer. */
+		if (BH_REFCOUNT(bhp) > 1)
+			goto next_hb;
+
 		/* We cannot block as the caller is probably holding locks. */
-		if (BH_REFCOUNT(bhp) > 1 ||
-		    (ret = MUTEX_TRYLOCK(env, bhp->mtx_buf)) != 0) {
-			if (ret != 0 && ret != DB_LOCK_NOTGRANTED)
+		if ((ret = MUTEX_TRYLOCK(env, bhp->mtx_buf)) != 0) {
+			if (ret != DB_LOCK_NOTGRANTED)
 				return (ret);
-			ret = 0;
 			goto next_hb;
 		}
 		F_SET(bhp, BH_EXCLUSIVE);
@@ -417,10 +436,28 @@ this_buffer:	buffers++;
 			DB_ASSERT(env, atomic_read(&hp->hash_page_dirty) > 0);
 			ret = __memp_bhwrite(dbmp, hp, bh_mfp, bhp, 0);
 			DB_ASSERT(env, atomic_read(&bhp->ref) > 0);
+
+			/*
+			 * If a write fails for any reason, we can't proceed.
+			 *
+			 * If there's a write error and we're having problems
+			 * finding something to allocate, avoid selecting this
+			 * buffer again by raising its priority.
+			 */
+			if (ret != 0) {
+				if (aggressive ||
+				    bhp->priority < c_mp->lru_count)
+					bhp->priority = c_mp->lru_count +
+					     c_mp->stat.st_pages /
+					     MPOOL_PRI_DIRTY;
+
+				goto next_hb;
+			}
+
 #ifdef HAVE_STATISTICS
-			if (ret == 0)
-				++c_mp->stat.st_rw_evict;
+			++c_mp->stat.st_rw_evict;
 #endif
+
 		}
 #ifdef HAVE_STATISTICS
 		else
@@ -428,67 +465,44 @@ this_buffer:	buffers++;
 #endif
 
 		/*
-		 * Freeze this buffer, if necessary.  That is, if the buffer
-		 * could be read by the oldest reader in the system.
+		 * Freeze this buffer, if necessary.  That is, if the buffer is
+		 * part of an MVCC chain and could be required by a reader.
 		 */
-		froze = 0;
-		if (ret == 0 && bh_mfp->multiversion) {
-			/*
-			 * Before freezing, double-check that we have an
-			 * up-to-date old_reader LSN.
-			 */
-			if (!got_oldest && SH_CHAIN_HASNEXT(bhp, vc) &&
-			    !BH_OBSOLETE(bhp, hp->old_reader, vlsn)) {
-				(void)__txn_oldest_reader(env,
-				    &hp->old_reader);
-				got_oldest = 1;
-			}
-			if ((SH_CHAIN_HASPREV(bhp, vc) &&
-			    !SH_CHAIN_HASNEXT(bhp, vc)) ||
-			    !BH_OBSOLETE(bhp, hp->old_reader, vlsn)) {
-				if (!aggressive ||
-				    F_ISSET(bhp, BH_DIRTY | BH_FROZEN))
-					goto next_hb;
-				if ((ret = __memp_bh_freeze(dbmp,
-				    infop, hp, bhp, &alloc_freeze)) == 0)
-					froze = 1;
-				else if (ret == EBUSY || ret == EIO ||
-				    ret == ENOMEM || ret == ENOSPC)
-					ret = 0;
-				else {
-					DB_ASSERT(env, BH_REFCOUNT(bhp) > 0);
-					atomic_dec(env, &bhp->ref);
-					DB_ASSERT(env, b_lock);
-					F_CLR(bhp, BH_EXCLUSIVE);
-					MUTEX_UNLOCK(env, bhp->mtx_buf);
-					DB_ASSERT(env, !h_locked);
-					return (ret);
-				}
+		if (SH_CHAIN_HASPREV(bhp, vc) ||
+		    (SH_CHAIN_HASNEXT(bhp, vc) && !obsolete)) {
+			if (!aggressive ||
+			    F_ISSET(bhp, BH_DIRTY | BH_FROZEN))
+				goto next_hb;
+			ret = __memp_bh_freeze(
+			    dbmp, infop, hp, bhp, &alloc_freeze);
+			if (ret == EBUSY || ret == EIO ||
+			    ret == ENOMEM || ret == ENOSPC) {
+				ret = 0;
+				goto next_hb;
+			} else if (ret != 0) {
+				DB_ASSERT(env, BH_REFCOUNT(bhp) > 0);
+				atomic_dec(env, &bhp->ref);
+				DB_ASSERT(env, b_lock);
+				F_CLR(bhp, BH_EXCLUSIVE);
+				MUTEX_UNLOCK(env, bhp->mtx_buf);
+				DB_ASSERT(env, !h_locked);
+				return (ret);
 			}
 		}
 
-		/*
-		 * If a write fails for any reason, we can't proceed.
-		 *
-		 * Also, we released the hash bucket lock while doing I/O, so
-		 * another thread may have acquired this buffer and incremented
-		 * the ref count or dirtied the buffer after we wrote it, in
-		 * which case we can't have it.
-		 *
-		 * If there's a write error and we're having problems finding
-		 * something to allocate, avoid selecting this buffer again
-		 * by raising its priority.
-		 */
 		MUTEX_LOCK(env, hp->mtx_hash);
 		h_locked = 1;
-		if (ret != 0 && (aggressive || bhp->priority < c_mp->lru_count))
-			bhp->priority = c_mp->lru_count +
-			     c_mp->stat.st_pages / MPOOL_PRI_DIRTY;
-		if (ret != 0 || BH_REFCOUNT(bhp) != 1 ||
-		    F_ISSET(bhp, BH_DIRTY) || (!froze &&
-		    ((SH_CHAIN_HASPREV(bhp, vc) &&
-		    !SH_CHAIN_HASNEXT(bhp, vc)) ||
-		    !BH_OBSOLETE(bhp, hp->old_reader, vlsn))))
+
+		/*
+		 * We released the hash bucket lock while doing I/O, so another
+		 * thread may have acquired this buffer and incremented the ref
+		 * count or dirtied the buffer or installed a new version after
+		 * we wrote it, in which case we can't have it.
+		 */
+		if (BH_REFCOUNT(bhp) != 1 || F_ISSET(bhp, BH_DIRTY) ||
+		    (SH_CHAIN_HASNEXT(bhp, vc) &&
+		    SH_CHAIN_NEXTP(bhp, vc, __bh)->td_off != bhp->td_off &&
+		    !BH_OBSOLETE(bhp, hp->old_reader, vlsn)))
 			goto next_hb;
 
 		/*
@@ -497,8 +511,7 @@ this_buffer:	buffers++;
 		 * mark bhp BH_FROZEN.)
 		 */
 		if (F_ISSET(bhp, BH_FROZEN)) {
-			DB_ASSERT(env, BH_OBSOLETE(bhp, hp->old_reader, vlsn) ||
-			    SH_CHAIN_SINGLETON(bhp, vc));
+			DB_ASSERT(env, obsolete || SH_CHAIN_SINGLETON(bhp, vc));
 			DB_ASSERT(env, BH_REFCOUNT(bhp) > 0);
 			if (!F_ISSET(bhp, BH_THAWED)) {
 				/*

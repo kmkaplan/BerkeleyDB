@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996-2009 Oracle.  All rights reserved.
+ * Copyright (c) 1996, 2010 Oracle and/or its affiliates.  All rights reserved.
  */
 /*
  * Copyright (c) 1990, 1993, 1994, 1995, 1996
@@ -319,6 +319,10 @@ __db_free(dbc, h)
 	hash = 0;
 
 	pgno = PGNO_BASE_MD;
+	if ((ret = __db_lget(dbc,
+	    LCK_ALWAYS, pgno, DB_LOCK_WRITE, 0, &metalock)) != 0)
+		goto err;
+
 #ifdef HAVE_HASH
 	if (dbp->type == DB_HASH) {
 		if ((ret = __ham_return_meta(dbc,
@@ -334,10 +338,6 @@ __db_free(dbc, h)
 	}
 #endif
 	if (meta == NULL) {
-		if ((ret = __db_lget(dbc,
-		    LCK_ALWAYS, pgno, DB_LOCK_WRITE, 0, &metalock)) != 0)
-			goto err;
-
 		/* If we support truncate, we might not dirty the meta page. */
 		if ((ret = __memp_fget(mpf, &pgno, dbc->thread_info, dbc->txn,
 #ifdef HAVE_FTRUNCATE
@@ -366,6 +366,7 @@ __db_free(dbc, h)
 	 * the list.  If it goes in the middle of the list, we will drop the
 	 * meta page and get the previous page.
 	 */
+	COMPQUIET(position, 0);
 	if ((ret = __memp_get_freelist(mpf, &nelem, &list)) != 0)
 		goto err1;
 	if (list == NULL)
@@ -373,9 +374,10 @@ __db_free(dbc, h)
 
 	if (h->pgno != last_pgno) {
 		/*
-		 * Put the page number in the sorted list.
-		 * Finds its position and the previous page,
-		 * extend the list, make room and insert.
+		 * Put the page number in the sorted list.  Find its
+		 * position and the previous page.  After logging we
+		 * will extend the list, make room and insert the page in
+		 * the list.
 		 */
 		position = 0;
 		if (nelem != 0) {
@@ -388,17 +390,6 @@ __db_free(dbc, h)
 				prev_pgno = list[position];
 		}
 
-		/* Put the page number into the list. */
-		if ((ret = __memp_extend_freelist(mpf, nelem + 1, &list)) != 0)
-			return (ret);
-		if (prev_pgno != PGNO_INVALID)
-			lp = &list[position + 1];
-		else
-			lp = list;
-		if (nelem != 0 && position != nelem)
-			memmove(lp + 1, lp,
-			    (size_t)((u_int8_t*)&list[nelem] - (u_int8_t*)lp));
-		*lp = h->pgno;
 	} else if (nelem != 0) {
 		/* Find the truncation point. */
 		for (lp = &list[nelem - 1]; lp >= list; lp--)
@@ -507,6 +498,14 @@ logged:
 	} else
 #endif
 	if (h->pgno == last_pgno) {
+		/*
+		 * We are going to throw this page away, but if we are
+		 * using MVCC then this version may stick around and we
+		 * might have to make a copy.
+		 */
+		if (mpf->mfp->multiversion && (ret = __memp_dirty(mpf,
+		    &h, dbc->thread_info, dbc->txn, dbc->priority, 0)) != 0)
+			goto err1;
 		LSN(h) = *lsnp;
 		P_INIT(h, dbp->pgsize,
 		    h->pgno, PGNO_INVALID, next_pgno, 0, P_INVALID);
@@ -522,6 +521,22 @@ logged:
 		meta->last_pgno--;
 		h = NULL;
 	} else {
+#ifdef HAVE_FTRUNCATE
+		if (list != NULL) {
+			/* Put the page number into the list. */
+			if ((ret =
+			    __memp_extend_freelist(mpf, nelem + 1, &list)) != 0)
+				goto err1;
+			if (prev_pgno != PGNO_INVALID)
+				lp = &list[position + 1];
+			else
+				lp = list;
+			if (nelem != 0 && position != nelem)
+				memmove(lp + 1, lp, (size_t)
+				    ((u_int8_t*)&list[nelem] - (u_int8_t*)lp));
+			*lp = h->pgno;
+		}
+#endif
 		/*
 		 * If we are not truncating the page then we
 		 * reinitialize it and put it at the head of
@@ -627,11 +642,11 @@ __db_freelist_sort(list, nelems)
 }
 
 /*
- * __db_pg_truncate -- sort the freelist and find the truncation point.
+ * __db_pg_truncate -- find the truncation point in a sorted freelist.
  *
  * PUBLIC: #ifdef HAVE_FTRUNCATE
  * PUBLIC: int __db_pg_truncate __P((DBC *, DB_TXN *,
- * PUBLIC:    db_pglist_t *, DB_COMPACT *, u_int32_t *, 
+ * PUBLIC:    db_pglist_t *, DB_COMPACT *, u_int32_t *,
  * PUBLIC:    db_pgno_t , db_pgno_t *, DB_LSN *, int));
  * PUBLIC: #endif
  */
@@ -658,6 +673,7 @@ __db_pg_truncate(dbc, txn,
 	int last, ret;
 
 	ret = 0;
+	h = NULL;
 
 	dbp = dbc->dbp;
 	mpf = dbp->mpf;
@@ -683,7 +699,8 @@ __db_pg_truncate(dbc, txn,
 	lp = list;
 	slp = &list[elems];
 	/*
-	 * Log the sorted list.  Don't overflow the log file.  
+	 * Log the sorted list. We log the whole list so it can be rebuilt.
+	 * Don't overflow the log file.
 	 */
 again:	if (DBC_LOGGING(dbc)) {
 		last = 1;
@@ -695,22 +712,41 @@ again:	if (DBC_LOGGING(dbc)) {
 		if (ddbt.size > log_size / 2) {
 			elems = (log_size / 2) / sizeof(*lp);
 			ddbt.size = elems * sizeof(*lp);
-			ddbt.data  = lp;
 			last = 0;
 			/*
-			 * If we stoped before the truncation point
-			 * then we need to truncate to here.
+			 * If we stopped after the truncation point
+			 * then we need to truncate from here.
 			 */
-			if (lp + elems < &list[tpoint])
+			if (lp + elems >= &list[tpoint])
 				lpgno = lp[elems - 1].pgno;
 		}
+		/*
+		 * If this is not the begining of the list fetch the end
+		 * of the previous segment.  This page becomes the last_free
+		 * page and will link to this segment if it is not truncated.
+		 */
+		if (lp != list) {
+			if ((ret = __memp_fget(mpf, &lp[-1].pgno,
+			    dbc->thread_info, txn, 0, &h)) != 0)
+				goto err;
+		}
+
 		slp = &lp[elems];
 
 		ZERO_LSN(null_lsn);
 		if ((ret = __db_pg_trunc_log(dbp, dbc->txn,
-		     lsnp, last == 1 ? DB_FLUSH : 0, PGNO_BASE_MD, lsnp,
-		     PGNO_INVALID, &null_lsn, free_pgno, lpgno, &ddbt)) != 0)
+		     lsnp, last == 1 ? DB_FLUSH : 0, PGNO_BASE_MD,
+		     lsnp, h != NULL ? PGNO(h) : PGNO_INVALID,
+		     h != NULL ? &LSN(h) : &null_lsn,
+		     free_pgno, lpgno, &ddbt)) != 0)
 			goto err;
+		if (h != NULL) {
+			LSN(h) = *lsnp;
+			if ((ret = __memp_fput(mpf,
+			    dbc->thread_info, h, dbc->priority)) != 0)
+				goto err;
+		}
+		h = NULL;
 	} else if (!in_recovery)
 		LSN_NOT_LOGGED(*lsnp);
 
@@ -733,7 +769,7 @@ again:	if (DBC_LOGGING(dbc)) {
 					    dbc->thread_info, h, dbp->priority);
 					goto err;
 				}
-			} else 
+			} else
 				goto skip;
 		}
 
@@ -747,10 +783,11 @@ again:	if (DBC_LOGGING(dbc)) {
 skip:		if ((ret = __memp_fput(mpf,
 		    dbc->thread_info, h, dbp->priority)) != 0)
 			goto err;
+		h = NULL;
 	}
 
 	/*
-	 * If we did not log everyting try again.  We start from slp and
+	 * If we did not log everything try again.  We start from slp and
 	 * try to go to the end of the list.
 	 */
 	if (last == 0) {
@@ -759,8 +796,13 @@ skip:		if ((ret = __memp_fput(mpf,
 		goto again;
 	}
 
+	/*
+	 * Truncate the file.  Its possible that the last page is the
+	 * only one that got truncated and that's done in the caller.
+	 */
 	if (pgno != *last_pgno) {
-		if ((ret = __memp_ftruncate(mpf, dbc->txn, dbc->thread_info,
+		if (tpoint != *nelemp &&
+		    (ret = __memp_ftruncate(mpf, dbc->txn, dbc->thread_info,
 		    pgno + 1, in_recovery ? MP_TRUNC_RECOVER : 0)) != 0)
 			goto err;
 		if (c_data)
@@ -769,12 +811,18 @@ skip:		if ((ret = __memp_fput(mpf,
 	}
 	*nelemp = tpoint;
 
-err:	return (ret);
+	if (0) {
+err:		if (h != NULL)
+			(void)__memp_fput(mpf,
+			    dbc->thread_info, h, dbc->priority);
+	}
+	return (ret);
 }
 
 /*
  * __db_free_truncate --
- *	Truncate free pages at the end of the file.
+ *	  Build a sorted free list and truncate free pages at the end
+ *	  of the file.
  *
  * PUBLIC: #ifdef HAVE_FTRUNCATE
  * PUBLIC: int __db_free_truncate __P((DB *, DB_THREAD_INFO *, DB_TXN *,
@@ -885,9 +933,15 @@ done:	if (last_pgnop != NULL)
 	 * The truncate point is the number of pages in the free
 	 * list back from the last page.  The number of pages
 	 * in the free list are the number that we can swap in.
+	 * Adjust it down slightly so if we find higher numbered
+	 * pages early and then free other pages later we can
+	 * truncate them.
 	 */
-	if (c_data)
+	if (c_data) {
 		c_data->compact_truncate = (u_int32_t)meta->last_pgno - nelems;
+		if (c_data->compact_truncate > nelems >> 2)
+			c_data->compact_truncate -= nelems >> 2;
+	}
 
 	if (nelems != 0 && listp != NULL) {
 		*listp = list;
@@ -921,7 +975,7 @@ __db_truncate_freelist(dbc, meta, h, list, start, nelem)
 	DB_MPOOLFILE *mpf;
 	PAGE *last_free, *pg;
 	db_pgno_t *lp, free_pgno, lpgno;
-	db_pglist_t *plist, *pp;
+	db_pglist_t *plist, *pp, *spp;
 	u_int32_t elem, log_size;
 	int last, ret;
 
@@ -929,6 +983,7 @@ __db_truncate_freelist(dbc, meta, h, list, start, nelem)
 	mpf = dbp->mpf;
 	plist = NULL;
 	last_free = NULL;
+	pg = NULL;
 
 	if (start != 0 &&
 	    (ret = __memp_fget(mpf, &list[start - 1],
@@ -951,6 +1006,7 @@ __db_truncate_freelist(dbc, meta, h, list, start, nelem)
 			if ((ret = __memp_fput(mpf,
 			    dbc->thread_info, pg, DB_PRIORITY_VERY_LOW)) != 0)
 				goto err;
+			pg = NULL;
 			pp++;
 		}
 		ZERO_LSN(null_lsn);
@@ -958,7 +1014,7 @@ __db_truncate_freelist(dbc, meta, h, list, start, nelem)
 		elem = nelem - start;
 		log_size = ((LOG *)dbc->env->
 		    lg_handle->reginfo.primary)->log_size;
-again:		ddbt.data = pp;
+again:		ddbt.data = spp = pp;
 		free_pgno = pp->pgno;
 		lpgno = meta->last_pgno;
 		ddbt.size = elem * sizeof(*pp);
@@ -971,22 +1027,34 @@ again:		ddbt.data = pp;
 			last = 0;
 		} else
 			last = 1;
-		if (last_free != NULL && last == 1) {
-			if ((ret = __db_pg_trunc_log(dbp, dbc->txn, &LSN(meta),
-			     DB_FLUSH, PGNO(meta), &LSN(meta), PGNO(last_free),
-			     &LSN(last_free), free_pgno, lpgno, &ddbt)) != 0)
-				goto err;
-		} else if ((ret = __db_pg_trunc_log(dbp, dbc->txn,
-		     &LSN(meta), last == 1 ? DB_FLUSH : 0,
-		     PGNO(meta), &LSN(meta), PGNO_INVALID,
-		     &null_lsn, free_pgno, lpgno, &ddbt)) != 0)
+		/*
+		 * Get the page which will link to this section if we abort.
+		 * If this is the first segment then its last_free.
+		 */
+		if (spp == plist)
+			pg = last_free;
+		else if ((ret = __memp_fget(mpf, &spp[-1].pgno,
+		     dbc->thread_info, dbc->txn, DB_MPOOL_DIRTY, &pg)) != 0)
 			goto err;
+
+		if ((ret = __db_pg_trunc_log(dbp, dbc->txn,
+		     &LSN(meta), last == 1 ? DB_FLUSH : 0,
+		     PGNO(meta), &LSN(meta),
+		     pg != NULL ? PGNO(pg) : PGNO_INVALID,
+		     pg != NULL ? &LSN(pg) : &null_lsn,
+		     free_pgno, lpgno, &ddbt)) != 0)
+			goto err;
+		if (pg != NULL) {
+			LSN(pg) = LSN(meta);
+			if (pg != last_free && (ret = __memp_fput(mpf,
+			    dbc->thread_info, pg, DB_PRIORITY_VERY_LOW)) != 0)
+				goto err;
+			pg = NULL;
+		}
 		if (last == 0)
 			goto again;
 	} else
 		LSN_NOT_LOGGED(LSN(meta));
-	if (last_free != NULL)
-		LSN(last_free) = LSN(meta);
 
 	if ((ret = __memp_fput(mpf,
 	    dbc->thread_info, h, DB_PRIORITY_VERY_LOW)) != 0)
@@ -1016,6 +1084,8 @@ err:	if (plist != NULL)
 	/* We need to put the page on error. */
 	if (h != NULL)
 		(void)__memp_fput(mpf, dbc->thread_info, h, dbc->priority);
+	if (pg != NULL && pg != last_free)
+		(void)__memp_fput(mpf, dbc->thread_info, pg, dbc->priority);
 	if (last_free != NULL)
 		(void)__memp_fput(mpf,
 		    dbc->thread_info, last_free, dbc->priority);

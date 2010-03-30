@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 2001-2009 Oracle.  All rights reserved.
+ * Copyright (c) 2001, 2010 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -15,7 +15,6 @@
 #include "dbinc/fop.h"
 #include "dbinc/lock.h"
 #include "dbinc/mp.h"
-#include "dbinc/log.h"
 #include "dbinc/txn.h"
 
 static int __fop_set_pgsize __P((DB *, DB_FH *, const char *));
@@ -246,6 +245,13 @@ __fop_file_setup(dbp, ip, txn, name, mode, flags, retidp)
 	}
 	LOCK_INIT(dbp->handle_lock);
 
+	if (txn != NULL && dbp->locker != NULL && F_ISSET(txn, TXN_INFAMILY)) {
+		if ((ret = __lock_addfamilylocker(env,
+		    txn->txnid, dbp->locker->id, 1)) != 0)
+			goto err;
+		txn = NULL;
+	}
+
 	locker = txn == NULL ? dbp->locker : txn->locker;
 
 	oflags = 0;
@@ -347,7 +353,8 @@ reopen:		if (!F_ISSET(dbp, DB_AM_INMEM) && (ret =
 		else {
 			ret = __fop_read_meta(env, real_name, mbuf,
 			    sizeof(mbuf), fhp,
-			    LF_ISSET(DB_FCNTL_LOCKING) && txn == NULL ? 1 : 0,
+			    LF_ISSET(DB_NOERROR) || 
+			    (LF_ISSET(DB_FCNTL_LOCKING) && txn == NULL) ? 1 : 0,
 			    &len);
 
 			/* Case 3: 0-length, no txns. */
@@ -361,7 +368,9 @@ reopen:		if (!F_ISSET(dbp, DB_AM_INMEM) && (ret =
 					goto err;
 				}
 				tmpname = (char *)name;
-				goto creat2;
+				if (create_ok)
+					goto creat2;
+				goto done;
 			}
 
 			/* Case 4: This is a valid file. */
@@ -412,49 +421,20 @@ reopen:		if (!F_ISSET(dbp, DB_AM_INMEM) && (ret =
 			}
 
 			/*
-			 * It's possible that our DBP was initialized
-			 * with a different file last time we opened it.
-			 * Therefore, we need to reset the DBP type and then
-			 * re-read the meta-data page and reset any other
-			 * fields that __db_meta_setup initializes.  We
-			 * need to shut down this dbp and reopen for in-memory
-			 * named databases. Unfortunately __db_refresh is
-			 * pretty aggressive at the shutting down, so we need
-			 * to do a bunch of restoration.
-			 * XXX it would be nice to pull refresh apart into
-			 * the stuff you need to do to call __env_mpool
-			 * and the stuff you can really throw away.
+			 * If we had to wait, we might be waiting on a
+			 * dummy file used in create/destroy of a database.
+			 * To be sure we have the correct information we
+			 * try again.
 			 */
-			if (F_ISSET(dbp, DB_AM_INMEM)) {
-				if ((ret = __db_refresh(dbp,
-				    txn, DB_NOSYNC, NULL, 1)) != 0)
-					goto err;
-				ret = __env_mpool(dbp, name, flags);
-			} else
-				ret =
-				    __os_open(env, real_name, 0, 0, 0, &fhp);
-
-			if (ret != 0) {
-				if ((ret =
-				    __ENV_LPUT(env, dbp->handle_lock)) != 0) {
-					LOCK_INIT(dbp->handle_lock);
-					goto err;
-				}
-				goto retry;
-			}
-
-			dbp->type = save_type;
-			if (F_ISSET(dbp, DB_AM_INMEM))
-				ret = __fop_inmem_read_meta(dbp,
-				    txn, name, flags);
-			else if ((ret =
-			    __fop_read_meta(env, real_name, mbuf,
-			    sizeof(mbuf), fhp,
-			    LF_ISSET(DB_FCNTL_LOCKING) && txn == NULL ? 1 : 0,
-			    &len)) != 0 ||
-			    (ret = __db_meta_setup(env, dbp, real_name,
-			    (DBMETA *)mbuf, flags, DB_CHK_META)) != 0)
+			if ((ret = __db_refresh(dbp,
+			    txn, DB_NOSYNC, NULL, 1)) != 0)
 				goto err;
+			if ((ret =
+			    __ENV_LPUT(env, dbp->handle_lock)) != 0) {
+				LOCK_INIT(dbp->handle_lock);
+				goto err;
+			}
+			goto retry;
 
 		}
 
@@ -894,21 +874,9 @@ DB_TEST_RECOVERY_LABEL
 	 * mpool.  If we're opening a subdb in an existing file, we can skip
 	 * the sync.
 	 */
-	if (txn == NULL || F_ISSET(txn, TXN_CDSGROUP) ||
-	    F_ISSET(mdbp, DB_AM_RECOVER)) {
-		if ((t_ret = __db_close(mdbp, txn,
-		    F_ISSET(dbp, DB_AM_CREATED_MSTR) ? 0 : DB_NOSYNC)) != 0 &&
-		    ret == 0)
-			ret = t_ret;
-	} else {
-		if (F_ISSET(dbp, DB_AM_CREATED_MSTR) &&
-		    (t_ret = __memp_fsync(mdbp->mpf)) != 0 && ret == 0)
-			ret = t_ret;
-
-		if ((t_ret =
-		     __txn_closeevent(env, txn, mdbp)) != 0 && ret == 0)
-			ret = t_ret;
-	}
+	if ((t_ret = __db_close(mdbp, txn,
+	    F_ISSET(dbp, DB_AM_CREATED_MSTR) ? 0 : DB_NOSYNC)) != 0 && ret == 0)
+		ret = t_ret;
 
 	return (ret);
 }
@@ -943,10 +911,14 @@ __fop_remove_setup(dbp, txn, name, flags)
 
 	/* Create locker if necessary. */
 retry:	if (LOCKING_ON(env)) {
-		if (txn != NULL)
+		if (IS_REAL_TXN(txn))
 			dbp->locker = txn->locker;
 		else if (dbp->locker == DB_LOCK_INVALIDID) {
 			if ((ret = __lock_id(env, NULL, &dbp->locker)) != 0)
+				goto err;
+			if (txn != NULL && F_ISSET(txn, TXN_INFAMILY) &&
+			    (ret = __lock_addfamilylocker(env,
+			    txn->txnid, dbp->locker->id, 1)) != 0)
 				goto err;
 		}
 	}
@@ -1244,9 +1216,10 @@ __fop_inmem_create(dbp, name, txn, flags)
 	ENV *env;
 	int ret;
 	int32_t lfid;
-	u_int32_t *p32;
+	u_int32_t dflags, *p32;
 
 	env = dbp->env;
+	dflags = F_ISSET(dbp, DB_AM_NOT_DURABLE) ? DB_LOG_NOT_DURABLE : 0;
 
 	MAKE_INMEM(dbp);
 
@@ -1305,7 +1278,7 @@ __fop_inmem_create(dbp, name, txn, flags)
 		lfid = dbp->log_filename == NULL ?
 		    DB_LOGFILEID_INVALID : dbp->log_filename->id;
 		if ((ret = __crdel_inmem_create_log(env, txn,
-		    &lsn, 0, lfid, &name_dbt, &fid_dbt, dbp->pgsize)) != 0)
+		    &lsn, dflags, lfid, &name_dbt, &fid_dbt, dbp->pgsize)) != 0)
 			goto err;
 	}
 
@@ -1581,7 +1554,6 @@ retry:	GET_ENVLOCK(env, locker, &elock);
 	 */
 	if (F_ISSET(tmpdbp, DB_AM_IN_RENAME))
 		__txn_remrem(env, parent, realnew);
-
 
 	/* Now log the child information in the parent. */
 	memset(&fiddbt, 0, sizeof(fiddbt));
