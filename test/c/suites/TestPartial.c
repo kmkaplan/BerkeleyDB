@@ -56,6 +56,8 @@ int TestPartialTestTeardown(CuTest *ct) {
 
 /* Test cases */
 int TestDbPartialGet(CuTest *ct) {
+/* Run this test only when queue is supported. */
+#ifdef HAVE_QUEUE
 	DB *pdb;
 
 	OpenDb(ct, NULL, &pdb, dbName, DB_BTREE, 0);
@@ -77,6 +79,9 @@ int TestDbPartialGet(CuTest *ct) {
 	CheckDbPartial(ct, pdb, 0, DB_CONSUME_WAIT, 0);
 	CuAssert(ct, "DB->close", CloseDb(pdb) == 0);
 	CuAssert(ct, "remove()", remove(dbName) == 0);
+#else
+	printf("TestDbPartialGet is not supported by the build.\n");
+#endif /* HAVE_QUEUE */
 
 	return (0);
 }

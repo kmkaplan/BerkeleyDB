@@ -12,7 +12,7 @@
   <body>
     <div xmlns="" class="navheader">
       <div class="libver">
-        <p>Library Version 11.2.5.2</p>
+        <p>Library Version 11.2.5.3</p>
       </div>
       <table width="100%" summary="Navigation header">
         <tr>
@@ -30,45 +30,49 @@
       <div class="titlepage">
         <div>
           <div>
-            <h1 class="title"><a id="id2621554"></a>Berkeley DB Upgrade Guide</h1>
+            <h1 class="title"><a id="idp890104"></a>Berkeley DB Upgrade Guide</h1>
           </div>
           <div>
             <div class="legalnotice">
-              <a id="id3467546"></a>
+              <a id="idp51655840"></a>
               <p class="legalnotice-title">
                 <b>Legal Notice</b>
               </p>
-              <p>
-        This documentation is distributed under an open source license.
-        You may review the terms of this license at:
-        <a class="ulink" href="http://www.oracle.com/technetwork/database/berkeleydb/downloads/oslicense-093458.html" target="_top">http://www.oracle.com/technetwork/database/berkeleydb/downloads/oslicense-093458.html</a>
-        
-        
-    </p>
-              <p>
-            Oracle, Berkeley DB,
+              <span>
+        <p>
+            This documentation is distributed under an open source license.
+            You may review the terms of this license at:
+            <a class="ulink" href="http://www.oracle.com/technetwork/database/berkeleydb/downloads/oslicense-093458.html" target="_top">http://www.oracle.com/technetwork/database/berkeleydb/downloads/oslicense-093458.html</a>
             
             
-            and
-            Sleepycat are trademarks or registered trademarks of
-            Oracle. All rights to these marks are reserved.
-            No third-party use is permitted without the
-            express prior written consent of Oracle.
-    </p>
-              <p>
-        Other names may be trademarks of their respective owners.
-    </p>
-              <p>
-        To obtain a copy of this document's original source code, please
-        submit a request to the Oracle Technology Network forum at:
-        <a class="ulink" href="http://forums.oracle.com/forums/forum.jspa?forumID=271" target="_top">http://forums.oracle.com/forums/forum.jspa?forumID=271</a>
+        </p>
+
+        <p>
+                Oracle, Berkeley DB,
+                
+                
+                and
+                Sleepycat are trademarks or registered trademarks of
+                Oracle. All rights to these marks are reserved.
+                No third-party use is permitted without the
+                express prior written consent of Oracle.
+        </p>
         
-        
-    </p>
+        <p>
+            Other names may be trademarks of their respective owners.
+        </p>
+        <p>
+            To obtain a copy of this document's original source code, please
+            submit a request to the Oracle Technology Network forum at:
+            <a class="ulink" href="http://forums.oracle.com/forums/forum.jspa?forumID=271" target="_top">http://forums.oracle.com/forums/forum.jspa?forumID=271</a>
+            
+            
+        </p>
+    </span>
             </div>
           </div>
           <div>
-            <p class="pubdate">9/14/2011</p>
+            <p class="pubdate">12/19/2011</p>
           </div>
         </div>
         <hr />
@@ -178,117 +182,117 @@
                 <dl>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469103">Database or Log File On-Disk Format Changes:</a>
+                      <a href="changelog_4_7.html#idp51752616">Database or Log File On-Disk Format Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469559">New Features:</a>
+                      <a href="changelog_4_7.html#idp51779808">New Features:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469590">Database Environment Changes:</a>
+                      <a href="changelog_4_7.html#idp51781648">Database Environment Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469620">Concurrent Data Store Changes:</a>
+                      <a href="changelog_4_7.html#idp51783488">Concurrent Data Store Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469596">General Access Method Changes:</a>
+                      <a href="changelog_4_7.html#idp51782016">General Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469767">Btree Access Method Changes:</a>
+                      <a href="changelog_4_7.html#idp51792256">Btree Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469333">Hash Access Method Changes:</a>
+                      <a href="changelog_4_7.html#idp51766488">Hash Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469212">Queue Access Method Changes:</a>
+                      <a href="changelog_4_7.html#idp51759184">Queue Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469104">Recno Access Method Changes:</a>
+                      <a href="changelog_4_7.html#idp51752680">Recno Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469031">C-specific API Changes:</a>
+                      <a href="changelog_4_7.html#idp51748312">C-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469036">Java-specific API Changes:</a>
+                      <a href="changelog_4_7.html#idp51748568">Java-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469668">Direct Persistence Layer (DPL), Bindings and Collections API:</a>
+                      <a href="changelog_4_7.html#idp51786352">Direct Persistence Layer (DPL), Bindings and Collections API:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469682">Tcl-specific API Changes:</a>
+                      <a href="changelog_4_7.html#idp51787208">Tcl-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469830">RPC-specific Client/Server Changes:</a>
+                      <a href="changelog_4_7.html#idp51796080">RPC-specific Client/Server Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469835">Replication Changes:</a>
+                      <a href="changelog_4_7.html#idp51796336">Replication Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469166">XA Resource Manager Changes:</a>
+                      <a href="changelog_4_7.html#idp51756368">XA Resource Manager Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469023">Locking Subsystem Changes:</a>
+                      <a href="changelog_4_7.html#idp51747808">Locking Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469868">Logging Subsystem Changes:</a>
+                      <a href="changelog_4_7.html#idp51798368">Logging Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469896">Memory Pool Subsystem Changes:</a>
+                      <a href="changelog_4_7.html#idp51800040">Memory Pool Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469689">Mutex Subsystem Changes:</a>
+                      <a href="changelog_4_7.html#idp51787624">Mutex Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469735">Transaction Subsystem Changes:</a>
+                      <a href="changelog_4_7.html#idp51790360">Transaction Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3469848">Utility Changes:</a>
+                      <a href="changelog_4_7.html#idp51797144">Utility Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_7.html#id3470116">Configuration, Documentation, Sample Application, Portability and Build Changes:</a>
+                      <a href="changelog_4_7.html#idp51813232">Configuration, Documentation, Sample Application, Portability and Build Changes:</a>
                     </span>
                   </dt>
                 </dl>
@@ -361,122 +365,122 @@
                 <dl>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470748">4.6.21 Patches:</a>
+                      <a href="changelog_4_6.html#idp51850784">4.6.21 Patches:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3469497">4.6.19 Patches</a>
+                      <a href="changelog_4_6.html#idp51776096">4.6.19 Patches</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3469282">Database or Log File On-Disk Format Changes:</a>
+                      <a href="changelog_4_6.html#idp51845592">Database or Log File On-Disk Format Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470831">New Features:</a>
+                      <a href="changelog_4_6.html#idp51856048">New Features:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470879">Database Environment Changes:</a>
+                      <a href="changelog_4_6.html#idp51858984">Database Environment Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470906">Concurrent Data Store Changes:</a>
+                      <a href="changelog_4_6.html#idp51860704">Concurrent Data Store Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470884">General Access Method Changes:</a>
+                      <a href="changelog_4_6.html#idp51859344">General Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3471169">Btree Access Method Changes:</a>
+                      <a href="changelog_4_6.html#idp51876400">Btree Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470917">Hash Access Method Changes:</a>
+                      <a href="changelog_4_6.html#idp51861392">Hash Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470655">Queue Access Method Changes:</a>
+                      <a href="changelog_4_6.html#idp51771440">Queue Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470719">Recno Access Method Changes:</a>
+                      <a href="changelog_4_6.html#idp51849032">Recno Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470969">C++-specific API Changes:</a>
+                      <a href="changelog_4_6.html#idp51864440">C++-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3471273">Java-specific API Changes:</a>
+                      <a href="changelog_4_6.html#idp51882632">Java-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470980">Java collections and bind API Changes:</a>
+                      <a href="changelog_4_6.html#idp51865008">Java collections and bind API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470988">Tcl-specific API Changes:</a>
+                      <a href="changelog_4_6.html#idp51865496">Tcl-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470992">RPC-specific Client/Server Changes:</a>
+                      <a href="changelog_4_6.html#idp51865784">RPC-specific Client/Server Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3471352">Replication Changes:</a>
+                      <a href="changelog_4_6.html#idp51887416">Replication Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3471010">XA Resource Manager Changes:</a>
+                      <a href="changelog_4_6.html#idp51866856">XA Resource Manager Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470997">Locking Subsystem Changes:</a>
+                      <a href="changelog_4_6.html#idp51866048">Locking Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470782">Logging Subsystem Changes:</a>
+                      <a href="changelog_4_6.html#idp51852928">Logging Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3470800">Memory Pool Subsystem Changes:</a>
+                      <a href="changelog_4_6.html#idp51854176">Memory Pool Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3471043">Transaction Subsystem Changes:</a>
+                      <a href="changelog_4_6.html#idp51868792">Transaction Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3471170">Utility Changes:</a>
+                      <a href="changelog_4_6.html#idp51876464">Utility Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_6.html#id3471238">Configuration, Documentation, Portability and Build Changes:</a>
+                      <a href="changelog_4_6.html#idp51880528">Configuration, Documentation, Portability and Build Changes:</a>
                     </span>
                   </dt>
                 </dl>
@@ -569,112 +573,112 @@
                 <dl>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472097">Database or Log File On-Disk Format Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51932272">Database or Log File On-Disk Format Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3471753">New Features:</a>
+                      <a href="changelog_4_5_20.html#idp51911352">New Features:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3471801">Database Environment Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51914272">Database Environment Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3471852">Concurrent Data Store Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51917304">Concurrent Data Store Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3471910">General Access Method Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51920792">General Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3471906">Btree Access Method Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51920584">Btree Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472183">Hash Access Method Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51937248">Hash Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472117">Queue Access Method Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51933512">Queue Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472230">Recno Access Method Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51940088">Recno Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472235">C++-specific API Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51940344">C++-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472267">Java-specific API Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51942256">Java-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472288">Java collections and bind API Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51943536">Java collections and bind API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472348">Tcl-specific API Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51947128">Tcl-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472384">RPC-specific Client/Server Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51949304">RPC-specific Client/Server Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472368">Replication Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51948360">Replication Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472537">XA Resource Manager Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51958488">XA Resource Manager Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472139">Locking Subsystem Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51934808">Locking Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472100">Logging Subsystem Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51932472">Logging Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472274">Memory Pool Subsystem Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51942640">Memory Pool Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472510">Transaction Subsystem Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51956880">Transaction Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472517">Utility Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51957264">Utility Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_5_20.html#id3472538">Configuration, Documentation, Portability and Build Changes:</a>
+                      <a href="changelog_4_5_20.html#idp51958552">Configuration, Documentation, Portability and Build Changes:</a>
                     </span>
                   </dt>
                 </dl>
@@ -737,112 +741,112 @@
                 <dl>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473162">Database or Log File On-Disk Format Changes:</a>
+                      <a href="changelog_4_4_16.html#idp51995528">Database or Log File On-Disk Format Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3472962">New Features:</a>
+                      <a href="changelog_4_4_16.html#idp51982816">New Features:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3472968">Database Environment Changes:</a>
+                      <a href="changelog_4_4_16.html#idp52002368">Database Environment Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3472700">Concurrent Data Store Changes:</a>
+                      <a href="changelog_4_4_16.html#idp51985992">Concurrent Data Store Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473101">General Access Method Changes:</a>
+                      <a href="changelog_4_4_16.html#idp51991632">General Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473108">Btree Access Method Changes:</a>
+                      <a href="changelog_4_4_16.html#idp51992056">Btree Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473171">Hash Access Method Changes:</a>
+                      <a href="changelog_4_4_16.html#idp51996064">Hash Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473197">Queue Access Method Changes:</a>
+                      <a href="changelog_4_4_16.html#idp51997632">Queue Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473217">Recno Access Method Changes</a>
+                      <a href="changelog_4_4_16.html#idp51999264">Recno Access Method Changes</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473201">C++-specific API Changes:</a>
+                      <a href="changelog_4_4_16.html#idp51997896">C++-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473247">Java-specific API Changes:</a>
+                      <a href="changelog_4_4_16.html#idp52001104">Java-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473592">Java collections and bind API Changes:</a>
+                      <a href="changelog_4_4_16.html#idp52021816">Java collections and bind API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473318">Tcl-specific API Changes:</a>
+                      <a href="changelog_4_4_16.html#idp52005808">Tcl-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473065">RPC-specific Client/Server Changes:</a>
+                      <a href="changelog_4_4_16.html#idp51989448">RPC-specific Client/Server Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473418">Replication Changes:</a>
+                      <a href="changelog_4_4_16.html#idp52011360">Replication Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473145">XA Resource Manager Changes:</a>
+                      <a href="changelog_4_4_16.html#idp51994488">XA Resource Manager Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473483">Locking Subsystem Changes:</a>
+                      <a href="changelog_4_4_16.html#idp52015288">Locking Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473488">Logging Subsystem Changes:</a>
+                      <a href="changelog_4_4_16.html#idp52015576">Logging Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473835">Memory Pool Subsystem Changes:</a>
+                      <a href="changelog_4_4_16.html#idp52036472">Memory Pool Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473538">Transaction Subsystem Changes:</a>
+                      <a href="changelog_4_4_16.html#idp52018576">Transaction Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473535">Utility Changes:</a>
+                      <a href="changelog_4_4_16.html#idp52018424">Utility Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_16.html#id3473601">Configuration, Documentation, Portability and Build Changes:</a>
+                      <a href="changelog_4_4_16.html#idp52022376">Configuration, Documentation, Portability and Build Changes:</a>
                     </span>
                   </dt>
                 </dl>
@@ -856,7 +860,7 @@
                 <dl>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_4_20.html#id3473648">Changes since Berkeley DB 4.4.16:</a>
+                      <a href="changelog_4_4_20.html#idp52025176">Changes since Berkeley DB 4.4.16:</a>
                     </span>
                   </dt>
                 </dl>
@@ -939,107 +943,107 @@
                 <dl>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3474816">Database or Log File On-Disk Format Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52095288">Database or Log File On-Disk Format Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3474421">New Features:</a>
+                      <a href="changelog_4_3_29.html#idp52071456">New Features:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3474484">Database Environment Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52075184">Database Environment Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3474961">Concurrent Data Store Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52103984">Concurrent Data Store Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3474759">General Access Method Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52091832">General Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3474756">Btree Access Method Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52101816">Btree Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3474825">Hash Access Method Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52095824">Hash Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3474856">Queue Access Method Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52097680">Queue Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3475244">Recno Access Method Changes</a>
+                      <a href="changelog_4_3_29.html#idp52120192">Recno Access Method Changes</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3474914">C++-specific API Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52101360">C++-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3474944">Java-specific API Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52102992">Java-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3474882">Tcl-specific API Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52127296">Tcl-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3474965">RPC-specific Client/Server Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52104344">RPC-specific Client/Server Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3474666">Replication Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52086296">Replication Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3475116">XA Resource Manager Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52113288">XA Resource Manager Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3475109">Locking Subsystem Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52112880">Locking Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3475570">Logging Subsystem Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52140544">Logging Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3475219">Memory Pool Subsystem Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52118720">Memory Pool Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3475253">Transaction Subsystem Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52120752">Transaction Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3474564">Utility Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52124792">Utility Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_3_29.html#id3475318">Configuration, Documentation, Portability and Build Changes:</a>
+                      <a href="changelog_4_3_29.html#idp52124640">Configuration, Documentation, Portability and Build Changes:</a>
                     </span>
                   </dt>
                 </dl>
@@ -1107,17 +1111,17 @@
                 <dl>
                   <dt>
                     <span class="sect2">
-                      <a href="upgrade_4_2_repinit.html#id3476642">Replication initialization</a>
+                      <a href="upgrade_4_2_repinit.html#idp52205128">Replication initialization</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="upgrade_4_2_repinit.html#id3475685">Database methods and replication clients</a>
+                      <a href="upgrade_4_2_repinit.html#idp52144112">Database methods and replication clients</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="upgrade_4_2_repinit.html#id3476238">DB_ENV-&gt;rep_process_message()</a>
+                      <a href="upgrade_4_2_repinit.html#idp52180144">DB_ENV-&gt;rep_process_message()</a>
                     </span>
                   </dt>
                 </dl>
@@ -1146,107 +1150,107 @@
                 <dl>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3476944">Database or Log File On-Disk Format Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52223304">Database or Log File On-Disk Format Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3476305">New Features:</a>
+                      <a href="changelog_4_2_52.html#idp52169416">New Features:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3476737">Database Environment Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52210568">Database Environment Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3476932">Concurrent Data Store Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52222552">Concurrent Data Store Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3476970">General Access Method Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52224736">General Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3476988">Btree Access Method Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52225816">Btree Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3477315">Hash Access Method Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52245184">Hash Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3477047">Queue Access Method Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52229104">Queue Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3477545">Recno Access Method Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52256536">Recno Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3477108">C++-specific API Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52232784">C++-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3476833">Java-specific API Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52216328">Java-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3477654">Tcl-specific API Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52210696">Tcl-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3477317">RPC-specific Client/Server Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52245416">RPC-specific Client/Server Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3477546">Replication Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52256624">Replication Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3477824">XA Resource Manager Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52275976">XA Resource Manager Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3477607">Locking Subsystem Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52263184">Locking Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3477741">Logging Subsystem Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52263600">Logging Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3477719">Memory Pool Subsystem Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52269864">Memory Pool Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3477181">Transaction Subsystem Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52253024">Transaction Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3477553">Utility Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52257040">Utility Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_2_52.html#id3478069">Configuration, Documentation, Portability and Build Changes:</a>
+                      <a href="changelog_4_2_52.html#idp52290728">Configuration, Documentation, Portability and Build Changes:</a>
                     </span>
                   </dt>
                 </dl>
@@ -1334,102 +1338,102 @@
                 <dl>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479287">Database or Log File On-Disk Format Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52363512">Database or Log File On-Disk Format Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479198">Major New Features:</a>
+                      <a href="changelog_4_1_24.html#idp52102040">Major New Features:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479107">General Environment Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52361680">General Environment Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479246">General Access Method Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52361256">General Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479292">Btree Access Method Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52363832">Btree Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479360">Hash Access Method Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52366584">Hash Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479390">Queue Access Method Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52369696">Queue Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479438">Recno Access Method Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52372544">Recno Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479469">C++-specific API Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52374384">C++-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479454">Java-specific API Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52376224">Java-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479104">Tcl-specific API Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52347632">Tcl-specific API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479052">RPC-specific Client/Server Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52350104">RPC-specific Client/Server Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479247">Replication Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52361320">Replication Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479596">XA Resource Manager Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52381912">XA Resource Manager Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479690">Locking Subsystem Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52387560">Locking Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479722">Logging Subsystem Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52366400">Logging Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479770">Memory Pool Subsystem Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52389616">Memory Pool Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479788">Transaction Subsystem Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52390704">Transaction Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479815">Utility Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52392288">Utility Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_1_24.html#id3479475">Configuration, Documentation, Portability and Build Changes:</a>
+                      <a href="changelog_4_1_24.html#idp52395192">Configuration, Documentation, Portability and Build Changes:</a>
                     </span>
                   </dt>
                 </dl>
@@ -1527,97 +1531,97 @@
                 <dl>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481771">Major New Features:</a>
+                      <a href="changelog_4_0_14.html#idp52512328">Major New Features:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481610">General Environment Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52502832">General Environment Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481643">General Access Method Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52504784">General Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481673">Btree Access Method Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52506568">Btree Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481272">Hash Access Method Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52434648">Hash Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481752">Queue Access Method Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52511224">Queue Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481780">Recno Access Method Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52512392">Recno Access Method Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481805">C++ API Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52514320">C++ API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481981">Java API Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52524720">Java API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481823">Tcl API Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52515400">Tcl API Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481841">RPC Client/Server Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52516480">RPC Client/Server Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481858">XA Resource Manager Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52517480">XA Resource Manager Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481854">Locking Subsystem Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52517240">Locking Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481905">Logging Subsystem Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52520320">Logging Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481921">Memory Pool Subsystem Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52521272">Memory Pool Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481943">Transaction Subsystem Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52522120">Transaction Subsystem Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481956">Utility Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52523328">Utility Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481963">Database or Log File On-Disk Format Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52524056">Database or Log File On-Disk Format Changes:</a>
                     </span>
                   </dt>
                   <dt>
                     <span class="sect2">
-                      <a href="changelog_4_0_14.html#id3481995">Configuration, Documentation, Portability and Build Changes:</a>
+                      <a href="changelog_4_0_14.html#idp52525576">Configuration, Documentation, Portability and Build Changes:</a>
                     </span>
                   </dt>
                 </dl>

@@ -80,4 +80,8 @@ public class TestClassCatalog implements ClassCatalog {
         }
         return desc;
     }
+
+    public ClassLoader getClassLoader() {
+        return null;
+    }
 }
