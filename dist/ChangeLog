@@ -1,9 +1,86 @@
 = Berkeley DB 6.1 Changelog =
 
+== Changes between 12.1.6.1.20 and 12.1.6.1.23 == 
+
+Fixed a recovery bug that could cause files to end up in the 
+wrong directory when using logs created in 5.3 or earlier. [#24169]
+
+Creating a table in SQL will no longer fail if the database
+connection was opened without the SQLITE_OPEN_CREATE flag. [#24115]
+
+Fixed a bug where an error message was not displayed back to the user 
+correctly when sequence creation failed. [#24103]
+
+Fixed a bug where BDB was not handling tables with multiple BLOB columns 
+when using the SQL API. [#24092]
+
+SQL sequence names are now case insensitive except when surrounded
+by quotation marks. [#23964]
+
+Avoid incrementing the statistic DB_LOG_STAT.st_scount
+("Total log file flushes") when DB_LOG_NOSYNC is in effect. [#23945]
+
+Fixed a bug that may lead to crash when opening multiple environments 
+in a multi-threaded program. [#23913]
+
+Improved the way we mark a password as consumed.  [#23876]
+
+Fixed the error "BDB2074 No space available in latch table" for
+configurations using plain pthreads mutexes and DB_ENV->set_thread_count().
+Susceptible configurations include the definition of HAVE_MUTEX_PTHREADS
+in db_config.h but do not define HAVE_MUTEX_HYBRID.  [#23831] 
+
+Fixed a crash when MVCC and snapshot isolation are used and the system is under 
+heavy load. [#23815]
+
+Fixed a problem with closing a panicked environment, in which an
+infinite loop was possible. [#23814]
+
+Removed Java 5 targets from Windows builds and javadoc production. [#23811]
+
+Support for client-to-client replication of BLOB data during internal
+initialization has been disabled. [#23748]
+
+Fixed a bug that may cause self-deadlock during database compaction. [#23725]
+
+Fixed a bug in the recovery of a truncated hash database. [#23772]
+
+== Changes between 12.1.6.1.19 and 12.1.6.1.20 == 
+
+Fixed a sqlite3odbc bug which may return an out-of-memory error when calling
+SQLGetData() on empty long columns. [#22777]
+
+Enabling BLOB support and master leases will no longer result
+in unexpected DB_REP_LEASE_EXPIRED errors. [#23275]
+
+Fixed a race condition when BLOB support is enabled with replication 
+where message handling could fail with an ENOENT error. [#23275]
+
+Existing SQL databases will have to be reindexed after upgrading 
+to this release.  No actions are required for non-SQL databases.  
+Check the upgrade documentation for more details. [#23469]
+
+Fixed a known bug in SQL where ORDER BY could return results 
+out of order if an index is used to answer the query. [#23469]
+
+Fixed a bug that causes a crash when opening a corrupted environment
+with encryption and DB_REGISTER. [#23643]
+
+Fixed a bug that causes a crash when opening a corrupted environment
+with DB_FAILCHK using a BDB compiled with DIAGNOSTIC defined. [#23643]
+
+Fixed a bug where closing a panicked environment raised an access violation 
+and crashed the program. [#23679]
+
+Fixed a bug where db_verify did not verify multiple files correctly. [#23692]
+
+Fixed a bug that causes a site joining a replication group to hang or
+to only partially complete the internal steps necessary to join the
+replication group. [#23750]
+
 == Database or Log File On-Disk Format Changes ==
 
 The log file format changed in 12.1.6.1.
-
 
 == New Features/Improvements ==
 
@@ -64,7 +141,7 @@ which was not adequate for systems with a 64KB pagesize. [#23290]
 
 == Concurrent Data Store Changes ==
 
-None
+-None
 
 == Access Method Changes ==
 
@@ -183,7 +260,8 @@ None
 
 == Logging Subsystem Changes ==
 
-None
+Avoid incrementing the statistic DB_LOG_STAT.st_scount
+("Total log file flushes") when DB_LOG_NOSYNC is in effect. [#23945]
 
 == Memory Pool Subsystem Changes ==
 
@@ -297,11 +375,10 @@ deprecated in the next release.
 
 == Known Bugs ==
 
-[#23469] The SQL ORDER BY command on the primary key of a table can in
+[#23469] (Fixed in 12.1.6.1.20 -- see above.) 
+The SQL ORDER BY command on the primary key of a table can in
 rare cases return the results out of order if an index search is used in
 executing the query.  For example: Create a single column table.  Insert
 two rows with identical values.  A query on the row id and the column will
 produce results in a different order depending on whether an index is used.
 
-[#23275] Enabling BLOB support and master leases can result in unexpected
-DB_REP_LEASE_EXPIRED errors.

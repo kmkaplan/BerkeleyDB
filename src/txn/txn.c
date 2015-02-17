@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2014 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2015 Oracle and/or its affiliates.  All rights reserved.
  */
 /*
  * Copyright (c) 1995, 1996
@@ -897,17 +897,16 @@ static int
 __txn_close_cursors(txn)
 	DB_TXN *txn;
 {
-	int ret, tret;
+	int ret, t_ret;
 	DBC *dbc;
 
-	ret = tret = 0;
+	ret = t_ret = 0;
 	dbc = NULL;
 
 	if (txn == NULL)
 		return (0);
 
 	while ((dbc = TAILQ_FIRST(&txn->my_cursors)) != NULL) {
-
 		DB_ASSERT(dbc->env, txn == dbc->txn);
 
 		/*
@@ -920,21 +919,21 @@ __txn_close_cursors(txn)
 
 		/* Removed from the active queue here. */
 		if (F_ISSET(dbc, DBC_ACTIVE))
-			ret = __dbc_close(dbc);
+			t_ret = __dbc_close(dbc);
 
 		dbc->txn = NULL;
 
 		/* We have to close all cursors anyway, so continue on error. */
-		if (ret != 0) {
-			__db_err(dbc->env, ret, "__dbc_close");
-			if (tret == 0)
-				tret = ret;
+		if (t_ret != 0) {
+			__db_err(dbc->env, t_ret, "__dbc_close");
+			if (ret == 0)
+				ret = t_ret;
 		}
 	}
 	txn->my_cursors.tqh_first = NULL;
 	txn->my_cursors.tqh_last = NULL;
 
-	return (tret);/* Return the first error if any. */
+	return (ret);	/* Return the first error, if any. */
 }
 
 /*
