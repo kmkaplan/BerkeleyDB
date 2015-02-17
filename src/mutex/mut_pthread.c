@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1999, 2014 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1999, 2015 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -556,7 +556,9 @@ __db_pthread_mutex_readlock(env, mutex)
 	DB_ENV *dbenv;
 	DB_MUTEX *mutexp;
 	MUTEX_STATE *state;
+#ifdef HAVE_FAILCHK_BROADCAST
 	db_timespec timespec;
+#endif
 	int ret;
 
 	dbenv = env->dbenv;
@@ -790,7 +792,12 @@ __db_pthread_mutex_unlock(env, mutex)
 			goto err;
 	} else {
 #ifndef HAVE_MUTEX_HYBRID
-		F_CLR(mutexp, DB_MUTEX_LOCKED);
+
+		if (F_ISSET(mutexp, DB_MUTEX_LOCKED))
+			F_CLR(mutexp, DB_MUTEX_LOCKED);
+		else if (env->thr_hashtab != NULL &&
+		    (ret = __mutex_record_unlock(env, mutex)) != 0)
+		    	goto err;
 #endif
 	}
 

@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2014 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2015 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -95,9 +95,11 @@ __memp_discard_all_mpfs (env, mp)
 		while ((mfp = SH_TAILQ_FIRST(
 		    &hp->hash_bucket, __mpoolfile)) != NULL) {
 			MUTEX_LOCK(env, mfp->mutex);
-			if ((t_ret = __memp_mf_discard(dbmp, mfp, 1)) != 0 &&
-			    ret == 0)
-				ret = t_ret;
+			if ((t_ret = __memp_mf_discard(dbmp, mfp, 1)) != 0) {
+				if (ret == 0)
+					ret = t_ret;
+				break;
+			}
 		}
 		MUTEX_UNLOCK(env, hp->mtx_hash);
 	}
