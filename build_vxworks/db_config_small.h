@@ -188,6 +188,9 @@
 /* Define to 1 if you have the `hstrerror' function. */
 /* #undef HAVE_HSTRERROR */
 
+/* Define to 1 if you have the `initstate_r' function. */
+/* #undef HAVE_INITSTATE_R */
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 /* #undef HAVE_INTTYPES_H */
 
@@ -428,6 +431,9 @@
 /* Define to 1 if you have the `random' function. */
 /* #undef HAVE_RANDOM */
 
+/* Define to 1 if you have the `random_r' function. */
+/* #undef HAVE_RANDOM_R */
+
 /* Define to 1 if building replication support. */
 /* #undef HAVE_REPLICATION */
 
@@ -463,6 +469,9 @@
 
 /* Define to 1 if you have the `snprintf' function. */
 /* #undef HAVE_SNPRINTF */
+
+/* Define to 1 if you have the `srandom_r' function. */
+/* #undef HAVE_SRANDOM_R */
 
 /* Define to 1 if you have the `stat' function. */
 #define HAVE_STAT 1
@@ -593,16 +602,16 @@
 #define PACKAGE_NAME "Berkeley DB"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "Berkeley DB 6.1.19"
+#define PACKAGE_STRING "Berkeley DB 6.1.23"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "db-6.1.19"
+#define PACKAGE_TARNAME "db-6.1.23"
 
 /* Define to the home page for this package. */
 #define PACKAGE_URL "http://www.oracle.com/technology/software/products/berkeley-db/index.html"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "6.1.19"
+#define PACKAGE_VERSION "6.1.23"
 
 /* The size of a `char', as computed by sizeof. */
 /* #undef SIZEOF_CHAR */

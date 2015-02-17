@@ -2,7 +2,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2014 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2015 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -615,6 +615,10 @@ typedef enum {
 	if (F_ISSET((env), ENV_OPEN_CALLED))				\
 		ENV_REQUIRES_CONFIG(env, handle, i, flags)
 
+/*
+ * The ENV_ENTER and ENV_LEAVE macros announce to other threads that
+ * the current thread is entering or leaving the BDB api.
+ */
 #define	ENV_ENTER_RET(env, ip, ret) do {				\
 	ret = 0;							\
 	DISCARD_HISTORY(env);						\
@@ -836,6 +840,11 @@ struct __env {
 
 #define ENV_DEF_DATA_LEN		100
 	u_int32_t data_len;		/* Data length in __db_prbytes. */
+
+	/* Registered processes */
+	size_t	num_active_pids;	/* number of entries in active_pids */
+	size_t	size_active_pids;	/* allocated size of active_pids */
+	pid_t	*active_pids;		/* array active pids */
 
 	/* Thread tracking */
 	u_int32_t	 thr_nbucket;	/* Number of hash buckets */
