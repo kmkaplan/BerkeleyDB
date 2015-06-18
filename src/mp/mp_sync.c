@@ -57,11 +57,13 @@ __memp_walk_files(env, mp, func, arg, countp, flags)
 			if ((t_ret = func(env,
 			    mfp, arg, countp, flags)) != 0 && ret == 0)
 				ret = t_ret;
-			if (ret != 0 && !LF_ISSET(DB_STAT_MEMP_NOERROR))
+			if (ret != 0 &&
+			    (!LF_ISSET(DB_STAT_MEMP_NOERROR) || ret == DB_BUFFER_SMALL))
 				break;
 		}
 		MUTEX_UNLOCK(env, hp->mtx_hash);
-		if (ret != 0 && !LF_ISSET(DB_STAT_MEMP_NOERROR))
+		if (ret != 0 &&
+		    (!LF_ISSET(DB_STAT_MEMP_NOERROR) || ret == DB_BUFFER_SMALL))
 			break;
 	}
 	return (ret);

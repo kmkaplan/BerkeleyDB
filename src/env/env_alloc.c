@@ -511,6 +511,7 @@ __env_alloc_extend(infop, ptr, lenp)
 	head = infop->head;
 
 	p = ptr;
+	*lenp = DB_ALIGN(*lenp, sizeof(uintmax_t));
 	len = *lenp;
 	elp = (ALLOC_ELEMENT *)(p - sizeof(ALLOC_ELEMENT));
 #ifdef DIAGNOSTIC

@@ -765,8 +765,10 @@ db_printlog_open_rep_db(dbenv, dbpp, dbcp)
 
 	return (0);
 
-err:	if (*dbpp != NULL)
+err:	if (*dbpp != NULL) {
 		(void)(*dbpp)->close(*dbpp, 0);
+		*dbpp = NULL;
+	}
 	return (ret);
 }
 

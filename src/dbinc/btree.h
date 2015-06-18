@@ -367,6 +367,14 @@ struct __cursor {
 };
 
 /*
+ * The maximum number of key/value pairs on a Btree leaf page, as a function
+ * of page size.
+ */
+#define B_MINKEY_UPPER_LIMIT(dbp)	\
+	((u_int16_t)(((dbp)->pgsize - P_OVERHEAD(dbp)) / \
+	    ((BKEYDATA_PSIZE(0) + DB_ALIGN(1, sizeof(int32_t))) * P_INDX)))
+
+/*
  * Threshhold value, as a function of bt_minkey, of the number of
  * bytes a key/data pair can use before being placed on an overflow
  * page.  Assume every item requires the maximum alignment for

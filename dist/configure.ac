@@ -254,9 +254,7 @@ if test "$GCC" = "yes"; then
 else
 	case "$host_os" in
 	hpux11.0*)	;;
-	hpux11*)	CPPFLAGS="$CPPFLAGS -mt"
-			test "$host_cpu" = "ia64" &&
-			    CFLAGS="$CFLAGS +u1";;
+	hpux11*)	CPPFLAGS="$CPPFLAGS -mt";;
 	solaris*)	CFLAGS="$CFLAGS "
 			CFLAGS=`echo "$CFLAGS" | sed 's/-O /-xO2 /g'`;;
 	esac

@@ -891,7 +891,7 @@ err:	/*
 /*
  * __txn_close_cursors
  *	Close a transaction's registered cursors, all its cursors are
- *	guaranteed to be closed.
+ *	guaranteed to be closed, even when an error occurs. 
  */
 static int
 __txn_close_cursors(txn)
@@ -925,7 +925,16 @@ __txn_close_cursors(txn)
 
 		/* We have to close all cursors anyway, so continue on error. */
 		if (t_ret != 0) {
-			__db_err(dbc->env, t_ret, "__dbc_close");
+#ifndef DIAGNOSTIC
+			/*
+			 * In order to prevent overly alarming messages from
+			 * appearing in the application's error stream, we
+			 * suppress deadlock messages except when in a
+			 * diagnostic build.
+			 */
+			if (t_ret != DB_LOCK_DEADLOCK)
+#endif
+				__db_err(dbc->env, t_ret, "__dbc_close");
 			if (ret == 0)
 				ret = t_ret;
 		}
@@ -1047,7 +1056,7 @@ __txn_abort(txn)
 	REGINFO *infop;
 	TXN_DETAIL *td;
 	u_int32_t id;
-	int ret;
+	int deadlocked, ret;
 
 	env = txn->mgrp->env;
 	td = txn->td;
@@ -1064,10 +1073,13 @@ __txn_abort(txn)
 	PERFMON1(env, txn, abort, txn->txnid);
 	/*
 	 * Close registered cursors before the abort. Even if the call fails,
-	 * all cursors are closed.
+	 * all cursors are closed. We continue with the rest of the abort if
+	 * the close failed due to deadlock. Then, at the end of the function
+	 * we return the deadlock error, if the abort was successful otherwise.
 	 */
-	if ((ret = __txn_close_cursors(txn)) != 0)
-		return (__env_panic(env, ret));
+	if ((deadlocked = __txn_close_cursors(txn)) != 0 &&
+	    deadlocked != DB_LOCK_DEADLOCK)
+		return (__env_panic(env, deadlocked));
 
 	/* Ensure that abort always fails fatally. */
 	if ((ret = __txn_isvalid(txn, TXN_OP_ABORT)) != 0)
@@ -1082,13 +1094,16 @@ __txn_abort(txn)
 	/*
 	 * Try to abort any unresolved children.
 	 *
-	 * Abort either succeeds or panics the region.  As soon as we
-	 * see any failure, we just get out of here and return the panic
-	 * up.
+	 * Abort either succeeds, deadlocks, or panics the region.  As soon as
+	 * we see any non-deadlock failure (usually a panic) we return it.
 	 */
 	while ((kid = TAILQ_FIRST(&txn->kids)) != NULL)
-		if ((ret = __txn_abort(kid)) != 0)
-			return (ret);
+		if ((ret = __txn_abort(kid)) != 0) {
+			if (ret == DB_LOCK_DEADLOCK)
+				deadlocked = ret;
+			else
+				return (ret);
+		}
 
 	infop = env->reginfo;
 	renv = infop->primary;
@@ -1155,8 +1170,13 @@ done:	 if (DBENV_LOGGING(env) && td->status == TXN_PREPARED &&
 	    LOG_FLAGS(txn), TXN_ABORT, (int32_t)time(NULL), id, NULL)) != 0)
 		return (__env_panic(env, ret));
 
-	/* __txn_end always panics if it errors, so pass the return along. */
-	return (__txn_end(txn, 0));
+	if ((ret = __txn_end(txn, 0)) != 0)
+		return (ret);
+	/*
+	 * Everything has succeeded, except possibly that a deadlock was
+	 * remembered and deferred until now. Return success, or that error.
+	 */
+	return (deadlocked);
 }
 
 /*
