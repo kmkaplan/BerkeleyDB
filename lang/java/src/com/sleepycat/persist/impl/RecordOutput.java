@@ -7,11 +7,11 @@
 
 package com.sleepycat.persist.impl;
 
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import com.sleepycat.bind.tuple.TupleOutput;
 import com.sleepycat.persist.raw.RawObject;
-import java.util.IdentityHashMap;
 
 /**
  * Implements EntityOutput to write record key-data pairs.  Extends TupleOutput

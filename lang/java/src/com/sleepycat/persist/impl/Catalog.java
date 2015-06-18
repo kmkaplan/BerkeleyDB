@@ -7,10 +7,10 @@
 
 package com.sleepycat.persist.impl;
 
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import com.sleepycat.persist.raw.RawObject;
-import java.util.IdentityHashMap;
 
 /**
  * Catalog operation interface used by format classes.
@@ -76,8 +76,9 @@ interface Catalog {
         throws RefreshException;
 
     /**
-     * Returns a format by class name.  Unlike {@link #getFormat(Class)}, the
-     * format will not be created if it is not already known.
+     * Returns a format by class name.  Unlike {@link
+     * #getFormat(Class,boolean)}, the format will not be created if it is not
+     * already known.
      */
     Format getFormat(String className);
 

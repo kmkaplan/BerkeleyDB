@@ -824,6 +824,7 @@ public class SecondaryIndex<SK, PK, E> extends BasicIndex<SK, E> {
      *
      * @return the secondary database.
      */
+    @Override
     public SecondaryDatabase getDatabase() {
         return secDb;
     }

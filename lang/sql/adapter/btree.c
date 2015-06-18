@@ -4123,9 +4123,13 @@ static int btreeCloseCursor(BtCursor *pCur, int listRemove)
 		pCur->index.data = NULL;
 	}
 
-	/* Incrblob write cursors have their own dedicated transactions. */
-	if (pCur->isIncrblobHandle && pCur->txn && pCur->wrFlag &&
-	    pSavepointTxn != NULL && pCur->txn != pSavepointTxn) {
+	/*
+	 * Incrblob write cursors have their own dedicated transactions
+	 * if txn_bulk is not enabled. 
+	 */
+	if (pCur->isIncrblobHandle && pCur->txn &&
+	    pCur->wrFlag && pSavepointTxn != NULL &&
+	    pCur->txn != pSavepointTxn && !p->txn_bulk) {
 		ret = pCur->txn->commit(pCur->txn, DB_TXN_NOSYNC);
 		pCur->txn = 0;
 	}
@@ -6189,9 +6193,12 @@ void sqlite3BtreeCacheOverflow(BtCursor *pCur)
 
 	/*
 	 * Give the transaction to the incrblob cursor, since it has to live
-	 * the lifetime of the cursor.
+	 * the lifetime of the cursor.  Create a new transaction for any
+	 * future operations.  When txn_bulk is enabled the cursor and all
+	 * other operations must share a single transaction for writing.
 	 */
-	if (p && p->connected && p->pBt->transactional && pCur->wrFlag) {
+	if (p && p->connected &&
+	    p->pBt->transactional && pCur->wrFlag && !p->txn_bulk) {
 		/* XXX error handling */
 		p->pBt->dbenv->txn_begin(p->pBt->dbenv, pSavepointTxn->parent,
 		    &pSavepointTxn, 0);

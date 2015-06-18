@@ -25,7 +25,7 @@ typedef enum {
 	DB_APP53_TMP			/* Temporary file. */
 } APPNAME53;
 
-static APPNAME __fop_convert_appname __P((ENV *, APPNAME53));
+static APPNAME __fop_convert_appname __P((APPNAME53));
 static int __fop_create_recover_int __P((ENV *, char *, db_recops, int));
 static int __fop_rename_recover_int
     __P((ENV *, DBT *, DB_LSN *, db_recops, void *, int));
@@ -44,8 +44,7 @@ static int __fop_write_file_recover_int
  * in 6.0.
  */
 static APPNAME
-__fop_convert_appname(env, appname)
-	ENV *env;
+__fop_convert_appname(appname)
 	APPNAME53 appname;
 {
 	switch(appname)
@@ -63,7 +62,6 @@ __fop_convert_appname(env, appname)
 		case DB_APP53_TMP:
 			return (DB_APP_TMP);
 	}
-	DB_ASSERT(env, 0);
 	return (DB_APP_NONE);
 }
 
@@ -256,7 +254,7 @@ __fop_create_60_recover(env, dbtp, lsnp, op, info)
 	else
 		dirname = (const char *)argp->dirname.data;
 
-	appname = __fop_convert_appname(env, (APPNAME53)argp->appname);
+	appname = __fop_convert_appname((APPNAME53)argp->appname);
 
 	if ((ret = __db_appname(env,
 	    appname == DB_APP_DATA ? DB_APP_RECOVER : appname,
@@ -304,7 +302,7 @@ __fop_create_42_recover(env, dbtp, lsnp, op, info)
 	REC_PRINT(__fop_create_print);
 	REC_NOOP_INTRO(__fop_create_read);
 	meta = (DBMETA *)mbuf;
-	appname = __fop_convert_appname(env, (APPNAME53)argp->appname);
+	appname = __fop_convert_appname((APPNAME53)argp->appname);
 
 	if ((ret = __db_appname(env, appname,
 	    (const char *)argp->name.data, NULL, &real_name)) != 0)
@@ -409,7 +407,7 @@ __fop_remove_60_recover(env, dbtp, lsnp, op, info)
 	REC_PRINT(__fop_remove_60_print);
 	REC_NOOP_INTRO(__fop_remove_60_read);
 
-	appname = __fop_convert_appname(env, (APPNAME53)argp->appname);
+	appname = __fop_convert_appname((APPNAME53)argp->appname);
 
 	if ((ret = __db_appname(env, appname,
 	    (const char *)argp->name.data, NULL, &real_name)) != 0)
@@ -503,7 +501,7 @@ __fop_write_60_recover(env, dbtp, lsnp, op, info)
 	if (DB_UNDO(op))
 		DB_ASSERT(env, argp->flag != 0);
 	else if (DB_REDO(op)) {
-		appname = __fop_convert_appname(env, (APPNAME53)argp->appname);
+		appname = __fop_convert_appname((APPNAME53)argp->appname);
 		ret = __fop_write(env,
 		    argp->txnp, argp->name.data,
 		    argp->dirname.size == 0 ? NULL : argp->dirname.data,
@@ -545,7 +543,7 @@ __fop_write_42_recover(env, dbtp, lsnp, op, info)
 	if (DB_UNDO(op))
 		DB_ASSERT(env, argp->flag != 0);
 	else if (DB_REDO(op)) {
-		appname = __fop_convert_appname(env, (APPNAME53)argp->appname);
+		appname = __fop_convert_appname((APPNAME53)argp->appname);
 		ret = __fop_write(env,
 		    argp->txnp, argp->name.data, NULL, appname,
 		    NULL, argp->pgsize, argp->pageno, argp->offset,
@@ -943,7 +941,7 @@ __fop_rename_60_recover_int(env, dbtp, lsnp, op, info, undo)
 		dirname = (const char *)argp->dirname.data;
 
 
-	appname = __fop_convert_appname(env, (APPNAME53)argp->appname);
+	appname = __fop_convert_appname((APPNAME53)argp->appname);
 	if (appname == DB_APP_DATA)
 		appname = DB_APP_RECOVER;
 
@@ -1080,7 +1078,7 @@ __fop_rename_42_recover_int(env, dbtp, lsnp, op, info, undo)
 	REC_NOOP_INTRO(__fop_rename_read);
 	fileid = argp->fileid.data;
 
-	appname = __fop_convert_appname(env, (APPNAME53)argp->appname);
+	appname = __fop_convert_appname((APPNAME53)argp->appname);
 	if ((ret = __db_appname(env, appname,
 	    (const char *)argp->newname.data, NULL, &real_new)) != 0)
 		goto out;
@@ -1301,7 +1299,7 @@ __fop_file_remove_60_recover(env, dbtp, lsnp, op, info)
 	    op != DB_TXN_FORWARD_ROLL && op != DB_TXN_APPLY)
 		goto done;
 
-	appname = __fop_convert_appname(env, (APPNAME53)argp->appname);
+	appname = __fop_convert_appname((APPNAME53)argp->appname);
 	if ((ret = __db_appname(env, appname,
 	    argp->name.data, NULL, &real_name)) != 0)
 		goto out;

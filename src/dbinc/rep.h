@@ -1090,6 +1090,7 @@ struct __db_rep {
 #define	REPCTL_PERM		DB_LOG_PERM_42_44
 #define	REPCTL_RESEND		DB_LOG_RESEND_42_44
 #define	REPCTL_INMEM_ONLY	0x100	/* In-memory databases only. */
+#define	REPCTL_ENCRYPTED	0x200	/* Master is using encryption. */
 
 /*
  * File info flags for internal init.  The per-database (i.e., file) flag

@@ -253,15 +253,6 @@ public class PrimaryIndex<PK, E> extends BasicIndex<PK, E> {
     }
 
     /**
-     * Returns the underlying database for this index.
-     *
-     * @return the database.
-     */
-    public Database getDatabase() {
-        return db;
-    }
-
-    /**
      * Returns the primary key class for this index.
      *
      * @return the key class.

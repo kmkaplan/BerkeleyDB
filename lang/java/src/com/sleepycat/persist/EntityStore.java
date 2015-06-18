@@ -435,6 +435,7 @@ public class EntityStore
      * Closes all databases and sequences that were opened via this store.  The
      * caller must ensure that no databases opened via this store are in use.
      *
+     *
      * <p>WARNING: To guard against memory leaks, the application should
      * discard all references to the closed handle.  While BDB makes an effort
      * to discard references from closed objects to the allocated memory for an

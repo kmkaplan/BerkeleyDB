@@ -1,6 +1,63 @@
 = Berkeley DB 6.1 Changelog =
 
+== Changes between 12.1.6.1.23 and 12.1.6.1.26 == 
+
+A 'salvage' (db_dump -r) no longer hangs on a corrupt database which contains
+a loop in an overflow item's chain of pages. [#18550]
+
+Remove +u1 compiler flag from the HP-UX build and fixed related alignment
+issue.  [#23739]
+
+Fixed DB_RUNRECOVERY errors caused by pthreads-based mutexes. [#23965]
+
+Allow the failchk process to call __env_refresh when necessary. [#24194]
+
+DB->open() now detects invalid pagesizes sooner, avoiding a potential
+floating point exception when a purported database file has a pagesize of 0.
+Added a pre-verify step to the db_dump utility. [#24217]
+
+Fixed a bug that can cause DBcursor->get to return incorrect data when
+DB_GET_BOTH_RANGE flag is used. [#24220.1]
+
+Added support for Java 8. [#24220.2]
+
+Aborting a transaction no longer panics if a deadlock error occurs while
+freeing up the transaction's cursors. [#24223]
+
+Fixed a crash which could occur when multiple BDB SQL processes repeatedly
+open a database file. [#24230]
+
+Fixed a bug where db_printlog improperly handled a "No such file or directory"
+error condition. [#24265]
+
+Fixed a bug that could cause a master crash in the following cases: an
+unencrypted client attempts to join an encrypted replication group, or
+an encrypted client attempts to join an unencrypted replication group.
+[#24288]
+
+Fixed a bug that can cause a crash when DB_ENV->memp_stat() is called. [#24298]
+
+Added support for arm64. [#24312]
+
+Reduced the minimum hash table size. [#24314].
+
+Fixed a bug where file names were not displayed correctly when a file 
+failed to open during backup. [#24340]
+
+Enabled cross compiling the JDBC driver. [#24347]
+
+Fixed a crash when writing to a SQL BLOB while txn_bulk is enabled. [#24351]
+
+DB->open() now detects invalid bt_minkey better, avoiding a potential
+floating point excetpion. [#24398]
+
+Removed EnvironmentConfig.setTxnNotDurable() and Environment.getTxnNotDurable()
+from the Java API. This flag cannot be set on environments. [#24416]
+
 == Changes between 12.1.6.1.20 and 12.1.6.1.23 == 
+
+Fixed a bug that was preventing PRAGMA cache_size from changing the
+size of the cache.  [#24206]
 
 Fixed a recovery bug that could cause files to end up in the 
 wrong directory when using logs created in 5.3 or earlier. [#24169]
@@ -139,6 +196,9 @@ Ensure that the size of memory mapped backing files are a multiple of the
 system pagesize. Previously the files were aligned up to 8KB boundaries,
 which was not adequate for systems with a 64KB pagesize. [#23290]
 
+Improved the sizing of the environment region to better match the needs of
+thread tracking as specified by DB_ENV->set_thread_count(). [#24314]
+
 == Concurrent Data Store Changes ==
 
 -None
@@ -273,6 +333,9 @@ Removed an environment handle mutex which was no longer needed. [#23099]
 
 Removed the last source files of the defunct fcntl mutex
 implementation. [#23119]
+
+Fix a race condition which might allow DB_ENV->failchk() to hang after
+it had freed a locker ID. [#24194]
 
 == Transaction Subsystem Changes ==
 

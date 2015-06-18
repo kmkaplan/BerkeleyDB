@@ -46,9 +46,9 @@ extern "C" {
 #define	DB_VERSION_RELEASE	1
 #define	DB_VERSION_MAJOR	6
 #define	DB_VERSION_MINOR	1
-#define	DB_VERSION_PATCH	23
-#define	DB_VERSION_STRING	"Berkeley DB 6.1.23: (February 17, 2015)"
-#define	DB_VERSION_FULL_STRING	"Berkeley DB 12c Release 1, library version 12.1.6.1.23: (February 17, 2015)"
+#define	DB_VERSION_PATCH	26
+#define	DB_VERSION_STRING	"Berkeley DB 6.1.26: (June 16, 2015)"
+#define	DB_VERSION_FULL_STRING	"Berkeley DB 12c Release 1, library version 12.1.6.1.26: (June 16, 2015)"
 
 /*
  * !!!

@@ -648,7 +648,12 @@ typedef enum {
 		(ip)->dbth_state = THREAD_FAILCHK;			\
 } while (0)
 
-#define	ENV_GET_THREAD_INFO(env, ip) ENV_ENTER(env, ip)
+#define	ENV_GET_THREAD_INFO(env, ip) 	do {				\
+	if ((env)->thr_hashtab == NULL)					\
+		ip = NULL;						\
+	else 								\
+		(void)__env_set_state(env, &(ip), THREAD_VERIFY);	\
+} while (0)
 
 #define	ENV_LEAVE(env, ip) do {						\
 	if ((ip) != NULL) {	\
@@ -713,9 +718,10 @@ typedef struct __mutex_state {	/* SHARED */
 
 
 struct __db_thread_info { /* SHARED */
+	DB_THREAD_STATE	dbth_state;
 	pid_t		dbth_pid;
 	db_threadid_t	dbth_tid;
-	DB_THREAD_STATE	dbth_state;
+	/* This contains the overflow chain in env->thr_hashtab[indx]. */
 	SH_TAILQ_ENTRY	dbth_links;
 	/*
 	 * The next field contains the (process local) reference to the XA
@@ -846,7 +852,12 @@ struct __env {
 	size_t	size_active_pids;	/* allocated size of active_pids */
 	pid_t	*active_pids;		/* array active pids */
 
-	/* Thread tracking */
+	/*
+	 * Thread tracking: a kind of configurable thread local storage that is
+	 * located in the environment region. Allocating a new entry requires
+	 * locking mtx_regenv. Entries are neither deleted nor moved between
+	 * buckets, which permits safe lookups without requiring any mutexes.
+	 */
 	u_int32_t	 thr_nbucket;	/* Number of hash buckets */
 	DB_HASHTAB	*thr_hashtab;	/* Hash table of DB_THREAD_INFO */
 
