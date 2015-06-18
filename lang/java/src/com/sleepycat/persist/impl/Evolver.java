@@ -8,6 +8,7 @@
 package com.sleepycat.persist.impl;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,7 +24,6 @@ import com.sleepycat.persist.evolve.Mutation;
 import com.sleepycat.persist.evolve.Mutations;
 import com.sleepycat.persist.evolve.Renamer;
 import com.sleepycat.persist.model.SecondaryKeyMetadata;
-import java.util.IdentityHashMap;
 
 /**
  * Evolves each old format that is still relevant if necessary, using Mutations

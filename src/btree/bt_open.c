@@ -88,12 +88,7 @@ __bam_open(dbp, ip, txn, name, base_pgno, flags)
 		return (EINVAL);
 	}
 
-	/*
-	 * Verify that the bt_minkey value specified won't cause the
-	 * calculation of ovflsize to underflow [#2406] for this pagesize.
-	 */
-	if (B_MINKEY_TO_OVFLSIZE(dbp, t->bt_minkey, dbp->pgsize) >
-	    B_MINKEY_TO_OVFLSIZE(dbp, DEFMINKEYPAGE, dbp->pgsize)) {
+	if (t->bt_minkey > B_MINKEY_UPPER_LIMIT(dbp)) {
 		__db_errx(dbp->env, DB_STR_A("1007",
 		    "bt_minkey value of %lu too high for page size of %lu",
 		    "%lu %lu"), (u_long)t->bt_minkey, (u_long)dbp->pgsize);
