@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1999, 2017 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1999, 2016 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -41,6 +41,7 @@ static const NAMEMAP rep_config_types[] = {
 	{"lease",		DB_REP_CONF_LEASE},
 	{"mgr2sitestrict",	DB_REPMGR_CONF_2SITE_STRICT},
 	{"mgrelections",	DB_REPMGR_CONF_ELECTIONS},
+	{"mgrforwardwrites",	DB_REPMGR_CONF_FORWARD_WRITES},
 	{"mgrprefmasclient",	DB_REPMGR_CONF_PREFMAS_CLIENT},
 	{"mgrprefmasmaster",	DB_REPMGR_CONF_PREFMAS_MASTER},
 	{"nowait",		DB_REP_CONF_NOWAIT},
@@ -51,12 +52,13 @@ static const NAMEMAP rep_timeout_types[] = {
 	{"ack",			DB_REP_ACK_TIMEOUT},
 	{"checkpoint_delay",	DB_REP_CHECKPOINT_DELAY},
 	{"connection_retry",	DB_REP_CONNECTION_RETRY},
-	{"election",		DB_REP_ELECTION_TIMEOUT},
 	{"election_retry",	DB_REP_ELECTION_RETRY},
+	{"election",		DB_REP_ELECTION_TIMEOUT},
 	{"full_election",	DB_REP_FULL_ELECTION_TIMEOUT},
 	{"heartbeat_monitor",	DB_REP_HEARTBEAT_MONITOR},
 	{"heartbeat_send",	DB_REP_HEARTBEAT_SEND},
 	{"lease",		DB_REP_LEASE_TIMEOUT},
+	{"write_forward",	DB_REP_WRITE_FORWARD_TIMEOUT},
 	{NULL,			0}
 };
 
@@ -643,14 +645,10 @@ tcl_RepNoarchiveTimeout(interp, dbenv)
 	_debug_check();
 	infop = env->reginfo;
 	renv = infop->primary;
-	/*
-	 * Since this function is only used in testing, skip the 
-	 * mutex counter.
-	 */
-	MUTEX_LOCK_NO_CTR(env, env->rep_handle->region->mtx_region);
+	REP_SYSTEM_LOCK(env);
 	F_CLR(renv, DB_REGENV_REPLOCKED);
 	renv->op_timestamp = 0;
-	MUTEX_UNLOCK_NO_CTR(env, env->rep_handle->region->mtx_region);
+	REP_SYSTEM_UNLOCK(env);
 
 	return (_ReturnSetup(interp,
 	    0, DB_RETOK_STD(0), "env test force noarchive_timeout"));
@@ -999,6 +997,13 @@ tcl_RepStat(interp, objc, objv, dbenv)
 	MAKE_STAT_LSN("Next LSN expected", &sp->st_next_lsn);
 	MAKE_STAT_LSN("First missed LSN", &sp->st_waiting_lsn);
 	MAKE_STAT_LSN("Maximum permanent LSN", &sp->st_max_perm_lsn);
+	MAKE_WSTAT_LIST("External files duplicated", sp->st_ext_duplicated);
+	MAKE_WSTAT_LIST("External file data messages recieved",
+	    sp->st_ext_records);
+	MAKE_WSTAT_LIST("External file data messages re-requested",
+	    sp->st_ext_rereq);
+	MAKE_WSTAT_LIST("External file updates re-requested",
+	    sp->st_ext_update_rereq);
 	MAKE_WSTAT_LIST("Bulk buffer fills", sp->st_bulk_fills);
 	MAKE_WSTAT_LIST("Bulk buffer overflows", sp->st_bulk_overflows);
 	MAKE_WSTAT_LIST("Bulk records stored", sp->st_bulk_records);
@@ -1061,6 +1066,10 @@ tcl_RepStat(interp, objc, objv, dbenv)
 	    sp->st_startsync_delayed);
 	MAKE_STAT_LIST("Maximum lease seconds", sp->st_max_lease_sec);
 	MAKE_STAT_LIST("Maximum lease usecs", sp->st_max_lease_usec);
+	/* Undocumented field used by tests only. */
+	MAKE_WSTAT_LIST("External files found deleted", sp->st_ext_deleted);
+	/* Undocumented field used by tests only. */
+	MAKE_WSTAT_LIST("External files found truncated", sp->st_ext_truncated);
 	/* Undocumented field used by tests only. */
 	MAKE_STAT_LIST("File fail cleanups done", sp->st_filefail_cleanups);
 	/* Undocumented field used by tests only. */
@@ -1616,6 +1625,10 @@ tcl_RepMgrStat(interp, objc, objv, dbenv)
 	MAKE_STAT_LIST("Participant sites", sp->st_site_participants);
 	MAKE_WSTAT_LIST("Automatic replication process takeovers",
 	    sp->st_takeovers);
+	MAKE_WSTAT_LIST("Write operations forwarded",
+	    sp->st_write_ops_forwarded);
+	MAKE_WSTAT_LIST("Forwarded write operations received",
+	    sp->st_write_ops_received);
 
 	Tcl_SetObjResult(interp, res);
 error:

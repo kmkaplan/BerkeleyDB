@@ -136,7 +136,7 @@ if test "$db_cv_jdbc" != "no"; then
   #    to that.
   # 2. The JDBC driver does not accept CPPFLAGS. So we move the CPPFLAGS options
   #    into CFLAGS for the JDBC driver.
-  jdbc_flags="$jdbc_flags CFLAGS=\"-I.. -I../../src/dbinc -I../sql \
+  jdbc_flags="$jdbc_flags CFLAGS=\"-I.. -I../../src/dbinc -I../../src -I../sql \
     -DHAVE_ERRNO_H -D_HAVE_SQLITE_CONFIG_H -DHAVE_SQLITE3_MALLOC \
     $CFLAGS $CPPFLAGS\""
   # Set LDFLAGS for JDBC driver

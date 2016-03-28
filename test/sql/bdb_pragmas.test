@@ -80,6 +80,7 @@ reset_db
 # Test bdbsql_system_memory pragma
 do_test bdb_pragmas-2.1 {
   execsql {
+    PRAGMA cache_size=2000;
     PRAGMA bdbsql_system_memory;
   }
 } {0}

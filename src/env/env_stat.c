@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -162,7 +162,7 @@ __env_print_stats(env, flags)
 		__db_msg(env, "Default database environment information:");
 	}
 	STAT_HEX("Magic number", renv->magic);
-	STAT_LONG("Panic value", renv->envid != env->envid);
+	STAT_LONG("Panic value", renv->panic);
 	__db_msg(env, "%d.%d.%d\tEnvironment version",
 	    renv->majver, renv->minver, renv->patchver);
 	STAT_LONG("Btree version", DB_BTREEVERSION);
@@ -175,7 +175,6 @@ __env_print_stats(env, flags)
 	__db_msg(env,
 	    "%.24s\tCreation time", __os_ctime(&renv->timestamp, time_buf));
 	STAT_HEX("Environment ID", renv->envid);
-	STAT_HEX("Local Environment ID", env->envid);
 	__mutex_print_debug_single(env,
 	    "Primary region allocation and reference count mutex",
 	    renv->mtx_regenv, flags);
@@ -257,6 +256,7 @@ __env_print_dbenv_all(env, flags)
 		{ DB_VERB_REP_TEST,		"DB_VERB_REP_TEST" },
 		{ DB_VERB_REPMGR_CONNFAIL,	"DB_VERB_REPMGR_CONNFAIL" },
 		{ DB_VERB_REPMGR_MISC,		"DB_VERB_REPMGR_MISC" },
+		{ DB_VERB_SLICE,		"DB_VERB_SLICE" },
 		{ DB_VERB_WAITSFOR,		"DB_VERB_WAITSFOR" },
 		{ 0,				NULL }
 	};
@@ -286,9 +286,10 @@ __env_print_dbenv_all(env, flags)
 	STAT_ISSET("ThreadId", dbenv->thread_id);
 	STAT_ISSET("ThreadIdString", dbenv->thread_id_string);
 
-	STAT_STRING("Blob dir", dbenv->db_blob_dir);
+	STAT_STRING("External file dir", dbenv->db_blob_dir);
 	STAT_STRING("Log dir", dbenv->db_log_dir);
 	STAT_STRING("Metadata dir", dbenv->db_md_dir);
+	STAT_STRING("Region dir", dbenv->db_reg_dir);
 	STAT_STRING("Tmp dir", dbenv->db_tmp_dir);
 	if (dbenv->db_data_dir == NULL)
 		STAT_ISSET("Data dir", dbenv->db_data_dir);
@@ -305,7 +306,7 @@ __env_print_dbenv_all(env, flags)
 
 	STAT_ISSET("Password", dbenv->passwd);
 
-	STAT_ULONG("Blob threshold", dbenv->blob_threshold);
+	STAT_ULONG("External file threshold", dbenv->blob_threshold);
 
 	STAT_ISSET("App private", dbenv->app_private);
 	STAT_ISSET("Api1 internal", dbenv->api1_internal);
@@ -510,12 +511,14 @@ __env_thread_state_print(state)
 		return ("blocked");
 	case THREAD_BLOCKED_DEAD:
 		return ("blocked and dead");
+	case THREAD_FAILCHK:
+		return ("failcheck");
 	case THREAD_OUT:
 		return ("out");
-	case THREAD_OUT_DEAD:
-		return ("out and dead");
 	case THREAD_VERIFY:
 		return ("verify");
+	case THREAD_SLOT_NOT_IN_USE:
+		return ("slot not in use");
 	default:
 		return ("unknown");
 	}
@@ -570,11 +573,10 @@ __env_print_thread(env)
 		SH_TAILQ_FOREACH(ip, &htab[i], dbth_links, __db_thread_info) {
 			if (ip->dbth_state == THREAD_SLOT_NOT_IN_USE)
 				continue;
-			__db_msg(env, "\tprocess/thread %s: %s %u mutexes",
+			__db_msg(env, "\tprocess/thread %s: %s",
 			    dbenv->thread_id_string(
 			    dbenv, ip->dbth_pid, ip->dbth_tid, buf),
-			    __env_thread_state_print(ip->dbth_state),
-			    ip->mtx_ctr);
+			    __env_thread_state_print(ip->dbth_state));
 			if (timespecisset(&ip->dbth_failtime))
 				__db_msg(env, "Crashed at %s",
 				    __db_ctimespec(&ip->dbth_failtime,
@@ -644,9 +646,11 @@ __db_print_fh(env, tag, fh, flags)
 	u_int32_t flags;
 {
 	static const FN fn[] = {
+		{ DB_FH_ENVLINK,"DB_BH_ENVLINK" },
 		{ DB_FH_NOSYNC,	"DB_FH_NOSYNC" },
 		{ DB_FH_OPENED,	"DB_FH_OPENED" },
 		{ DB_FH_UNLINK,	"DB_FH_UNLINK" },
+		{ DB_FH_REGION,	"DB_FH_REGION" },
 		{ 0,		NULL }
 	};
 
@@ -876,7 +880,8 @@ __reg_type(t)
 		return ("Transaction");
 	case INVALID_REGION_TYPE:
 		return ("Invalid");
-	/*lint -e{787} */
+	default:
+		break;
 	}
 	return ("Unknown");
 }

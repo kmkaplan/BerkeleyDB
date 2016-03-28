@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -58,7 +58,8 @@ __memp_walk_files(env, mp, func, arg, countp, flags)
 			    mfp, arg, countp, flags)) != 0 && ret == 0)
 				ret = t_ret;
 			if (ret != 0 &&
-			    (!LF_ISSET(DB_STAT_MEMP_NOERROR) || ret == DB_BUFFER_SMALL))
+			    (!LF_ISSET(DB_STAT_MEMP_NOERROR) ||
+			    ret == DB_BUFFER_SMALL))
 				break;
 		}
 		MUTEX_UNLOCK(env, hp->mtx_hash);

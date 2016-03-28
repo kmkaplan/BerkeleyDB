@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -767,11 +767,11 @@ __log_valid(dblp, number, set_persist, fhpp, flags, statusp, versionp)
 
 	/* Validate the header. */
 	if (persist->magic != DB_LOGMAGIC) {
+		ret = USR_ERR(env, EINVAL);
 		__db_errx(env, DB_STR_A("2530",
 		    "Ignoring log file: %s: magic number %lx, not %lx",
 		    "%s %lx %lx"), fname,
 		    (u_long)persist->magic, (u_long)DB_LOGMAGIC);
-		ret = EINVAL;
 		goto err;
 	}
 
@@ -783,10 +783,10 @@ __log_valid(dblp, number, set_persist, fhpp, flags, statusp, versionp)
 	 */
 	if (logversion > DB_LOGVERSION) {
 		/* This is a fatal error--the log file is newer than DB. */
+		ret = USR_ERR(env, EINVAL);
 		__db_errx(env, DB_STR_A("2531",
 		    "Unacceptable log file %s: unsupported log version %lu",
 		    "%s %lu"), fname, (u_long)logversion);
-		ret = EINVAL;
 		goto err;
 	} else if (logversion < DB_LOGOLDVER) {
 		status = DB_LV_OLD_UNREADABLE;
@@ -917,7 +917,7 @@ __log_env_refresh(env)
 	 * closing the env down during a panic. By using MUTEX_LOCK_RET(), we
 	 * continue with the rest of the cleanup.
 	 */
-	if ((ret = MUTEX_LOCK_RET(env, lp->mtx_filelist)) == 0) {
+	if (MUTEX_LOCK_RET(env, lp->mtx_filelist) == 0) {
 		SH_TAILQ_FOREACH(fnp, &lp->fq, q, __fname)
 			if (F_ISSET(fnp, DB_FNAME_NOTLOGGED) &&
 			    (t_ret = __dbreg_close_id_int(
@@ -933,7 +933,8 @@ __log_env_refresh(env)
 	if (F_ISSET(env, ENV_PRIVATE)) {
 	    reginfo->mtx_alloc = MUTEX_INVALID;
 	    /* Discard the flush mutex. */
-	    if ((t_ret = __mutex_free(env, &lp->mtx_flush)) != 0 && ret == 0)
+	    if ((t_ret =
+		__mutex_free(env, &lp->mtx_flush)) != 0 && ret == 0)
 		    ret = t_ret;
 
 	    /* Discard the log buffer. */
@@ -1117,7 +1118,7 @@ __log_region_max(env)
 		    __env_alloc_size(sizeof(FNAME) + 16);
 	if (s > init_size)
 		s -= init_size;
-	else 
+	else
 		s = 0;
 
 	return (s);

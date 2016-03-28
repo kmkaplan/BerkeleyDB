@@ -1,6 +1,6 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 2012, 2017 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2012, 2016 Oracle and/or its affiliates.  All rights reserved.
 #
 # $Id$
 #
@@ -183,4 +183,30 @@ proc test146 { method {tnum "146"} args } {
 
 	error_check_good db_close [$db close] 0
 	error_check_good env_close [$env close] 0
-}
+	error_check_good env_remove [berkdb envremove -home $testdir] 0
+
+	# Verify the creation of the blob meta database is rolled 
+	# back as well as the actual database when the creating 
+	# txn is aborted. We run this only for a single case, btree,
+	# because other cases do not exercise different code paths.
+	if { $pgindex == -1 && [is_partitioned $args] == 0 && $omethod == "btree" } {
+		puts "\tTest$tnum.d: Verify that the blob meta database is\
+		    removed when txn is aborted."
+		set env [eval {berkdb_env} -txn -create -home $testdir]
+		error_check_good is_valid_env [is_valid_env $env] TRUE
+		set txn [$env txn]
+		error_check_good is_valid_txn [is_valid_txn $txn $env] TRUE
+		set db [eval {berkdb_open} -env $env -txn $txn\
+		    $omethod -create -blob_threshold 1 blob.db] 
+		error_check_good db_put [$db put -txn $txn 1 2345] 0
+		error_check_good blob_meta_exists\
+		    [file exists $testdir/__db_bl/__db2/__db_blob_meta.db] 1
+		error_check_good txn_abort [$txn abort] 0
+		error_check_bad blob_meta_removed\
+		    [file exists $testdir/__db_bl/__db2/__db_blob_meta.db] 1
+		error_check_good db_close [$db close] 0
+		error_check_good env_close [$env close] 0
+	}
+
+
+}	

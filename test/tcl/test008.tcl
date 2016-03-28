@@ -1,6 +1,6 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
 #
 # $Id$
 #
@@ -302,6 +302,7 @@ proc test008 { method {reopen "008"} {debug 0} args} {
 
 			set encargs ""
 			split_encargs $args encargs
+			#puts "encargs $encargs"
 			# Run verify to check the internal structure and order.
 			if { [catch {eval {berkdb dbverify} \
 			    $vrflags $encargs $testfile-$opt.db} res] } {
