@@ -898,7 +898,10 @@
 #define	__env_region_share __env_region_share@DB_VERSION_UNIQUE_NAME@
 #define	__env_region_detach __env_region_detach@DB_VERSION_UNIQUE_NAME@
 #define	__envreg_register __envreg_register@DB_VERSION_UNIQUE_NAME@
+#define	__envreg_unregister_pid __envreg_unregister_pid@DB_VERSION_UNIQUE_NAME@
 #define	__envreg_unregister __envreg_unregister@DB_VERSION_UNIQUE_NAME@
+#define	__envreg_registry_open __envreg_registry_open@DB_VERSION_UNIQUE_NAME@
+#define	__envreg_registry_close __envreg_registry_close@DB_VERSION_UNIQUE_NAME@
 #define	__envreg_xunlock __envreg_xunlock@DB_VERSION_UNIQUE_NAME@
 #define	__envreg_isalive __envreg_isalive@DB_VERSION_UNIQUE_NAME@
 #define	__env_struct_sig __env_struct_sig@DB_VERSION_UNIQUE_NAME@
@@ -1643,9 +1646,6 @@
 #if defined(HAVE_SHARED_LATCHES)
 #define	__db_pthread_mutex_readlock __db_pthread_mutex_readlock@DB_VERSION_UNIQUE_NAME@
 #endif
-#if defined(HAVE_SHARED_LATCHES)
-#define	__db_pthread_mutex_tryreadlock __db_pthread_mutex_tryreadlock@DB_VERSION_UNIQUE_NAME@
-#endif
 #ifdef HAVE_MUTEX_HYBRID
 #define	__db_hybrid_mutex_suspend __db_hybrid_mutex_suspend@DB_VERSION_UNIQUE_NAME@
 #endif
@@ -1665,24 +1665,12 @@
 #define	__mutex_describe __mutex_describe@DB_VERSION_UNIQUE_NAME@
 #define	__db_tas_mutex_init __db_tas_mutex_init@DB_VERSION_UNIQUE_NAME@
 #define	__db_tas_mutex_lock __db_tas_mutex_lock@DB_VERSION_UNIQUE_NAME@
-#define	__db_tas_mutex_trylock __db_tas_mutex_trylock@DB_VERSION_UNIQUE_NAME@
-#if defined(HAVE_SHARED_LATCHES)
 #define	__db_tas_mutex_readlock __db_tas_mutex_readlock@DB_VERSION_UNIQUE_NAME@
-#endif
-#if defined(HAVE_SHARED_LATCHES)
-#define	__db_tas_mutex_tryreadlock __db_tas_mutex_tryreadlock@DB_VERSION_UNIQUE_NAME@
-#endif
 #define	__db_tas_mutex_unlock __db_tas_mutex_unlock@DB_VERSION_UNIQUE_NAME@
 #define	__db_tas_mutex_destroy __db_tas_mutex_destroy@DB_VERSION_UNIQUE_NAME@
-#define	__db_win32_mutex_init __db_win32_mutex_init@DB_VERSION_UNIQUE_NAME@
 #define	__db_win32_mutex_lock __db_win32_mutex_lock@DB_VERSION_UNIQUE_NAME@
-#define	__db_win32_mutex_trylock __db_win32_mutex_trylock@DB_VERSION_UNIQUE_NAME@
-#if defined(HAVE_SHARED_LATCHES)
+#define	__db_win32_mutex_init __db_win32_mutex_init@DB_VERSION_UNIQUE_NAME@
 #define	__db_win32_mutex_readlock __db_win32_mutex_readlock@DB_VERSION_UNIQUE_NAME@
-#endif
-#if defined(HAVE_SHARED_LATCHES)
-#define	__db_win32_mutex_tryreadlock __db_win32_mutex_tryreadlock@DB_VERSION_UNIQUE_NAME@
-#endif
 #define	__db_win32_mutex_unlock __db_win32_mutex_unlock@DB_VERSION_UNIQUE_NAME@
 #define	__db_win32_mutex_destroy __db_win32_mutex_destroy@DB_VERSION_UNIQUE_NAME@
 #define	__os_abort __os_abort@DB_VERSION_UNIQUE_NAME@

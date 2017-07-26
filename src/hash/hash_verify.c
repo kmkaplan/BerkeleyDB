@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1999, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1999, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -387,6 +387,14 @@ __ham_vrfy_item(dbp, vdp, pgno, h, i, flags)
 		}
 		memcpy(&hblob, P_ENTRY(dbp, h, i), HBLOB_SIZE);
 		blob_id = (db_seq_t)hblob.id;
+		if (blob_id < 1) {
+		    ret = DB_VERIFY_BAD;
+		    EPRINT((dbp->env, DB_STR_A("1220",
+			"Page %lu: invalid blob dir id %lld at item %lu",
+			"%lu %lld %lu"), (u_long)pip->pgno,
+			(long long)blob_id, (u_long)i));
+		    goto err;
+		}
 		GET_BLOB_SIZE(dbp->env, hblob, blob_size, ret);
 		if (ret != 0 || blob_size < 0) {
 			EPRINT((dbp->env, DB_STR_A("1181",
@@ -397,7 +405,8 @@ __ham_vrfy_item(dbp, vdp, pgno, h, i, flags)
 		}
 		file_id = (db_seq_t)hblob.file_id;
 		sdb_id = (db_seq_t)hblob.sdb_id;
-		if (file_id == 0 && sdb_id == 0) {
+		if (file_id < 0 || sdb_id < 0 
+		    || (file_id == 0 && sdb_id == 0)) {
 			EPRINT((dbp->env, DB_STR_A("1184",
 		"Page %lu: invalid blob dir ids %llu %llu at item %lu",
 			    "%lu %llu %llu %lu"),
@@ -911,6 +920,13 @@ __ham_vrfy_hashing(dbc, nentries, m, thisbucket, pgno, flags, hfunc)
 		return (ret);
 
 	for (i = 0; i < nentries; i += 2) {
+		if (HPAGE_PTYPE(P_ENTRY(dbp, h, i)) == H_BLOB) {
+			EPRINT((dbp->env, DB_STR_A("1197",
+			    "Page %lu: External file found in key item %lu",
+			    "%lu %lu"), (u_long)pgno, (u_long)i));
+			isbad = 1;
+			continue;
+		}
 		/*
 		 * We've already verified the page integrity and that of any
 		 * overflow chains linked off it;  it is therefore safe to use

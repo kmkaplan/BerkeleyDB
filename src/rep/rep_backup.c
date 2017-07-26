@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 2004, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 2004, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -148,6 +148,7 @@ __rep_update_req(env, rp)
 	 */
 	db_rep = env->rep_handle;
 	rep = db_rep->region;
+	memset(&context, 0, sizeof(FILE_LIST_CTX));
 
 	REP_SYSTEM_LOCK(env);
 	if (F_ISSET(rep, REP_F_INUPDREQ)) {
@@ -160,22 +161,26 @@ __rep_update_req(env, rp)
 	dblp = env->lg_handle;
 	logc = NULL;
 
-	/* Reserve space for the update_args, and fill in file info. */
-	if ((ret = __rep_init_file_list_context(env, rp->rep_version,
-	    F_ISSET(rp, REPCTL_INMEM_ONLY) ? FILE_CTX_INMEM_ONLY : 0,
-	    1, &context)) != 0)
-		goto err_noalloc;
-	if ((ret = __rep_find_dbs(env, &context)) != 0)
-		goto err;
-
 	/*
-	 * Now get our first LSN.  We send the lsn of the first
+	 * Get our first LSN.  We send the lsn of the first
 	 * non-archivable log file.
+	 *
+	 * We must get the first LSN before getting database file
+	 * information.  If we get the database file information first,
+	 * we risk a situation where the stable_lsn moves forward during
+	 * the time we are getting the file information.  If the
+	 * stable_lsn advances by more than a log file or two, it can
+	 * prevent the client from requesting all the needed log files for
+	 * a correct recovery after copying all the database pages.  A
+	 * symptom of this situation is that some client database files
+	 * have a contiguous set of empty pages in the middle that show up
+	 * in a db_dump as page 0's.  These empty pages eventually lead to
+	 * a log sequence error or other failures.
 	 */
 	flag = DB_SET;
 	if ((ret = __log_get_stable_lsn(env, &lsn, 0)) != 0) {
 		if (ret != DB_NOTFOUND)
-			goto err;
+			goto err_noalloc;
 		/*
 		 * If ret is DB_NOTFOUND then there is no checkpoint
 		 * in this log, that is okay, just start at the beginning.
@@ -188,7 +193,7 @@ __rep_update_req(env, rp)
 	 * Now get the version number of the log file of that LSN.
 	 */
 	if ((ret = __log_cursor(env, &logc)) != 0)
-		goto err;
+		goto err_noalloc;
 
 	memset(&vdbt, 0, sizeof(vdbt));
 	/*
@@ -202,13 +207,22 @@ __rep_update_req(env, rp)
 		 * log version.
 		 */
 		if (ret != DB_NOTFOUND)
-			goto err;
+			goto err_noalloc;
 		INIT_LSN(lsn);
 		version = DB_LOGVERSION;
 	} else {
 		if ((ret = __logc_version(logc, &version)) != 0)
-			goto err;
+			goto err_noalloc;
 	}
+
+	/* Reserve space for the update_args, and fill in file info. */
+	if ((ret = __rep_init_file_list_context(env, rp->rep_version,
+	    F_ISSET(rp, REPCTL_INMEM_ONLY) ? FILE_CTX_INMEM_ONLY : 0,
+	    1, &context)) != 0)
+		goto err_noalloc;
+	if ((ret = __rep_find_dbs(env, &context)) != 0)
+		goto err;
+
 	/*
 	 * Package up the update information.
 	 */
@@ -231,7 +245,9 @@ __rep_update_req(env, rp)
 	(void)__rep_send_message(
 	    env, DB_EID_BROADCAST, REP_UPDATE, &lsn, &updbt, 0, 0);
 
-err:	__os_free(env, context.buf);
+err:
+	if (context.buf != NULL)
+		__os_free(env, context.buf);
 err_noalloc:
 	if (logc != NULL && (t_ret = __logc_close(logc)) != 0 && ret == 0)
 		ret = t_ret;
@@ -3011,7 +3027,7 @@ __rep_blob_chunk(env, eid, ip, rec)
 		goto err;
 
 	if ((ret = __blob_id_to_path(
-	    env, blob_sub_dir, (db_seq_t)rbc.blob_id, &name)) != 0)
+	    env, blob_sub_dir, (db_seq_t)rbc.blob_id, &name, 0)) != 0)
 		goto err;
 
 	if ((ret = __db_appname(env, DB_APP_BLOB, name, NULL, &path)) != 0 )

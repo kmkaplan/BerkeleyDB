@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -751,6 +751,7 @@ err:	if (txn_local &&
 	if (handle_check && (t_ret = __env_db_rep_exit(env)) != 0 && ret == 0)
 		ret = t_ret;
 
+	DB_TEST_CRASH(env->test_abort, DB_TEST_NO_MUTEX);
 	ENV_LEAVE(env, ip);
 	__dbt_userfree(env, key, NULL, data);
 	return (ret);
@@ -1711,6 +1712,7 @@ err:	if (txn_local &&
 	if (handle_check && (t_ret = __env_db_rep_exit(env)) != 0 && ret == 0)
 		ret = t_ret;
 
+	DB_TEST_CRASH(env->test_abort, DB_TEST_NO_MUTEX);
 	ENV_LEAVE(env, ip);
 	__dbt_userfree(env, key, NULL, data);
 	return (ret);
@@ -2406,6 +2408,7 @@ __dbc_get_pp(dbc, key, data, flags)
 	    IS_REP_MASTER(env) && IS_USING_LEASES(env) && !ignore_lease)
 		ret = __rep_lease_check(env, 1);
 
+	DB_TEST_CRASH(env->test_abort, DB_TEST_NO_MUTEX);
 	ENV_LEAVE(env, ip);
 	__dbt_userfree(env, key, NULL, data);
 	return (ret);

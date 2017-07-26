@@ -1,6 +1,6 @@
 # See the file LICENSE for redistribution information.
 #
-# Copyright (c) 2000, 2016 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2000, 2017 Oracle and/or its affiliates.  All rights reserved.
 #
 # $Id$
 
@@ -29,7 +29,7 @@ set test_names(rep_elect)	[list rep002 rep005 rep016 rep020 rep022 \
     rep026 rep063 rep067 rep069 rep076 rep093 rep094]
 set test_names(env)	[list env001 env002 env003 env004 env005 env006 \
     env007 env008 env009 env010 env011 env012 env013 env014 env015 env016 \
-    env017 env018 env019 env020 env021 env022 env023 env024 env025]
+    env017 env018 env019 env020 env021 env022 env023 env024 env025 env030]
 set test_names(fail)	[list fail001]
 set test_names(fop)	[list fop001 fop002 fop003 fop004 fop005 fop006 \
     fop007 fop008 fop009 fop010 fop011 fop012]

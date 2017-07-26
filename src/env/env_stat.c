@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -162,7 +162,7 @@ __env_print_stats(env, flags)
 		__db_msg(env, "Default database environment information:");
 	}
 	STAT_HEX("Magic number", renv->magic);
-	STAT_LONG("Panic value", renv->panic);
+	STAT_LONG("Panic value", renv->envid != env->envid);
 	__db_msg(env, "%d.%d.%d\tEnvironment version",
 	    renv->majver, renv->minver, renv->patchver);
 	STAT_LONG("Btree version", DB_BTREEVERSION);
@@ -175,6 +175,7 @@ __env_print_stats(env, flags)
 	__db_msg(env,
 	    "%.24s\tCreation time", __os_ctime(&renv->timestamp, time_buf));
 	STAT_HEX("Environment ID", renv->envid);
+	STAT_HEX("Local Environment ID", env->envid);
 	__mutex_print_debug_single(env,
 	    "Primary region allocation and reference count mutex",
 	    renv->mtx_regenv, flags);
@@ -511,6 +512,8 @@ __env_thread_state_print(state)
 		return ("blocked and dead");
 	case THREAD_OUT:
 		return ("out");
+	case THREAD_OUT_DEAD:
+		return ("out and dead");
 	case THREAD_VERIFY:
 		return ("verify");
 	default:
@@ -567,10 +570,11 @@ __env_print_thread(env)
 		SH_TAILQ_FOREACH(ip, &htab[i], dbth_links, __db_thread_info) {
 			if (ip->dbth_state == THREAD_SLOT_NOT_IN_USE)
 				continue;
-			__db_msg(env, "\tprocess/thread %s: %s",
+			__db_msg(env, "\tprocess/thread %s: %s %u mutexes",
 			    dbenv->thread_id_string(
 			    dbenv, ip->dbth_pid, ip->dbth_tid, buf),
-			    __env_thread_state_print(ip->dbth_state));
+			    __env_thread_state_print(ip->dbth_state),
+			    ip->mtx_ctr);
 			if (timespecisset(&ip->dbth_failtime))
 				__db_msg(env, "Crashed at %s",
 				    __db_ctimespec(&ip->dbth_failtime,

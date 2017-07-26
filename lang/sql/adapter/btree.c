@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 2010, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 2010, 2017 Oracle and/or its affiliates.  All rights reserved.
  */
 
 /*
@@ -95,8 +95,6 @@ static int btreeCreateDataTable(Btree *, int, CACHED_DB **);
 static int btreeCreateSharedBtree(
     Btree *, const char *, u_int8_t *, sqlite3 *, int, storage_mode_t);
 static int btreeCreateTable(Btree *p, int *piTable, int flags);
-static void btreeHandleDbError(
-    const DB_ENV *dbenv, const char *errpfx, const char *msg);
 static int btreeDbHandleIsLocked(CACHED_DB *cached_db);
 static int btreeDbHandleLock(Btree *p, CACHED_DB *cached_db);
 static int btreeDbHandleUnlock(Btree *p, CACHED_DB *cached_db);
@@ -366,7 +364,14 @@ void btreeGetErrorFile(const BtShared *pBt, char *fname) {
 	}	
 }
 
-static void btreeHandleDbError(
+void btreeHandleDbMsg(
+	const DB_ENV *dbenv,
+	const char *msg
+) {
+	btreeHandleDbError(dbenv, "", msg);
+}
+
+void btreeHandleDbError(
 	const DB_ENV *dbenv,
 	const char *errpfx,
 	const char *msg
@@ -1064,6 +1069,8 @@ static void btreeFreeSharedBtree(BtShared *p, int clear_cache)
 		sqlite3_free(p->err_msg);
 	if (p->master_address != NULL)
 		sqlite3_free(p->master_address);
+	if (p->stat_filename != NULL)
+		sqlite3_free(p->stat_filename);
 
 	sqlite3_free(p);
 }
@@ -1493,6 +1500,7 @@ static int btreePrepareEnvironment(Btree *p)
 		pDbEnv->set_errpfx(pDbEnv, pBt->full_name);
 		pDbEnv->app_private = pBt;
 		pDbEnv->set_errcall(pDbEnv, btreeHandleDbError);
+		pDbEnv->set_msgcall(pDbEnv, btreeHandleDbMsg);
 		pDbEnv->set_event_notify(pDbEnv, btreeEventNotification);
 #ifndef BDBSQL_SINGLE_THREAD
 #ifndef BDBSQL_CONCURRENT_CONNECTIONS

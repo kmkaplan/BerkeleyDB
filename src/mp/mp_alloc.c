@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -623,9 +623,8 @@ this_buffer:	/*
 
 		/* We cannot block as the caller is probably holding locks. */
 		if ((ret = MUTEX_TRYLOCK(env, bhp->mtx_buf)) != 0) {
-			if (ret != DB_LOCK_NOTGRANTED) {
+			if (ret != DB_LOCK_NOTGRANTED)
 				goto err;
-			}
 			ret = 0;
 			goto next_hb;
 		}

@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -14,7 +14,7 @@
 
 #ifndef lint
 static const char copyright[] =
-    "Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.\n";
+    "Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.\n";
 #endif
 
 int	 db_dump_db_init __P((DB_ENV *, char *, int, u_int32_t, int *));
@@ -53,8 +53,10 @@ db_dump_main(argc, argv)
 	u_int32_t cache;
 	int ch;
 	int exitval, keyflag, lflag, mflag, nflag, pflag, sflag, private;
+	u_int32_t vflag;
 	int ret, Rflag, rflag, resize;
 	char *blob_dir, *data_len, *dbname, *dopt, *filename, *home, *passwd;
+	char *vopt;
 
 	if ((progname = __db_rpath(argv[0])) == NULL)
 		progname = argv[0];
@@ -67,13 +69,15 @@ db_dump_main(argc, argv)
 	dbenv = NULL;
 	dbp = dbvp = NULL;
 	exitval = lflag = mflag = nflag = pflag = rflag = Rflag = sflag = 0;
+	private = 0;
+	vflag = 0;
 	first = last = PGNO_INVALID;
 	keyflag = 0;
 	cache = MEGABYTE;
-	private = 0;
 	blob_dir = data_len = dbname = dopt = filename = home = passwd = NULL;
-	__db_getopt_reset = 1;
-	while ((ch = getopt(argc, argv, "b:d:D:f:F:h:klL:m:NpP:rRs:V")) != EOF)
+	vopt = NULL;
+	while ((ch =
+	    getopt(argc, argv, "b:d:D:f:F:h:klL:m:NpP:rRS:s:Vv:")) != EOF)
 		switch (ch) {
 		case 'b':
 			if (blob_dir!= NULL) {
@@ -148,6 +152,20 @@ db_dump_main(argc, argv)
 			/* FALLTHROUGH */
 		case 'r':
 			rflag = 1;
+			break;
+		case 'v': case 'S':
+			vopt = optarg;
+			switch(*vopt) {
+			case 'o':
+				vflag = DB_NOORDERCHK;
+				break;
+			case 'v':
+				vflag = 0;
+				break;
+			default:
+				(void)db_dump_usage();
+				goto err;
+			}
 			break;
 		case 'V':
 			printf("%s\n", db_version(NULL, NULL, NULL));
@@ -291,8 +309,8 @@ retry:	if ((ret = db_env_create(&dbenv, 0)) != 0) {
 		goto done;
 	}
 
-	if (db_create(&dbvp, dbenv, 0) != 0 ||
-		dbvp->verify(dbvp, filename, dbname, stdout, DB_NOORDERCHK) != 0)
+	if (vopt != NULL && (db_create(&dbvp, dbenv, 0) != 0 ||
+	    dbvp->verify(dbvp, filename, dbname, stdout, vflag) != 0))
 		goto err;
 
 	if ((ret = dbp->open(dbp, NULL,
@@ -559,10 +577,10 @@ db_dump_usage()
 	(void)fprintf(stderr, "usage: %s [-bklNprRV]\n\t%s%s\n",
 	    progname,
 	    "[-b blob_dir] [-d ahr] [-f output] [-h home] ",
-	    "[-P password] [-s database] db_file");
+	    "[-P password] [-s database] [-S ov] db_file");
 	(void)fprintf(stderr, "usage: %s [-kNpV] %s\n",
 	    progname,
-	    "[-d ahr] [-D data_len] [-f output] [-h home] -m database");
+	    "[-d ahr] [-D data_len] [-f output] [-h home] [-v ov] -m database");
 	return (EXIT_FAILURE);
 }
 

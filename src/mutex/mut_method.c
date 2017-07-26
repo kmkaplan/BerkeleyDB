@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -93,7 +93,7 @@ __mutex_lock_pp(dbenv, indx)
 		return (EINVAL);
 
 	ENV_ENTER(env, ip);
-	ret = __mutex_lock(env, indx);
+	ret = MUTEX_LOCK_RET(env, indx);
 	ENV_LEAVE(env, ip);
 	return (ret);
 }
@@ -119,7 +119,7 @@ __mutex_unlock_pp(dbenv, indx)
 		return (EINVAL);
 
 	ENV_ENTER(env, ip);
-	ret = __mutex_unlock(env, indx);
+	ret = MUTEX_UNLOCK_RET(env, indx);
 	ENV_LEAVE(env, ip);
 	return (ret);
 }

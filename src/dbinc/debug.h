@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1998, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1998, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -39,7 +39,7 @@ extern "C" {
 #define	DB_ASSERT(env, e)	((void)0)
 #endif
 
-#if defined(HAVE_ERROR_HISTORY)
+#if defined(HAVE_ERROR_HISTORY) && defined(DIAGNOSTIC)
 #define DB_DEBUG_MSG	__db_debug_msg
 #else
 #define DB_DEBUG_MSG	if (0) __db_debug_msg
@@ -253,6 +253,11 @@ typedef enum {
  * Hook for testing subdb locks.
  */
 #if CONFIG_TEST
+#define	DB_TEST_CRASH(field, val) do {				        \
+	if (field == (val))						\
+		exit(1);					        \
+} while (0)
+
 #define	DB_TEST_SUBLOCKS(env, flags) do {				\
 	if ((env)->test_abort == DB_TEST_SUBDB_LOCKS)			\
 		(flags) |= DB_LOCK_NOWAIT;				\
@@ -306,6 +311,7 @@ typedef enum {
 	if ((val) != 0)							\
 		__os_yield((env), (u_long)(val), 0)
 #else
+#define	DB_TEST_CRASH(env, val)
 #define	DB_TEST_SUBLOCKS(env, flags)
 #define	DB_ENV_TEST_RECOVERY(env, val, ret, name)
 #define	DB_TEST_RECOVERY(dbp, val, ret, name)

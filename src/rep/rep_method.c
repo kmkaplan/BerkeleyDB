@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 2001, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 2001, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -3097,7 +3097,7 @@ __rep_await_condition(env, reasonp, duration)
 		if (ret != 0)
 			return (ret);
 
-		MUTEX_LOCK(env, waiter->mtx_repwait);
+		MUTEX_LOCK_NO_CTR(env, waiter->mtx_repwait);
 	} else
 		SH_TAILQ_REMOVE(&rep->free_waiters,
 		    waiter, links, __rep_waiter);
@@ -3110,7 +3110,7 @@ __rep_await_condition(env, reasonp, duration)
 	    "waiting for condition %d", (int)reasonp->why));
 	REP_SYSTEM_UNLOCK(env);
 	/* Wait here for conditions to become more favorable. */
-	MUTEX_WAIT(env, waiter->mtx_repwait, duration);
+	MUTEX_LOCK_TIMEOUT(env, waiter->mtx_repwait, duration);
 	REP_SYSTEM_LOCK(env);
 
 	if (!F_ISSET(waiter, REP_F_WOKEN))

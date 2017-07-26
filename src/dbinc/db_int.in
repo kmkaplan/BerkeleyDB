@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -683,9 +683,11 @@ typedef enum {
 typedef enum {
 	THREAD_SLOT_NOT_IN_USE=0,
 	THREAD_OUT,
+	THREAD_OUT_DEAD,
 	THREAD_ACTIVE,
 	THREAD_BLOCKED,
 	THREAD_BLOCKED_DEAD,
+	THREAD_CTR_VERIFY,
 	THREAD_FAILCHK,
 	THREAD_VERIFY
 } DB_THREAD_STATE;
@@ -750,6 +752,7 @@ struct __db_thread_info { /* SHARED */
 	u_int32_t	dbth_check_off;	/* Count of number of LOCK_OFF calls. */
 #endif
 	db_timespec	dbth_failtime;	/* Time when its crash was detected. */
+	u_int32_t 	mtx_ctr;	/* Counts mutexes held by thread. */
 };
 
 #ifdef DIAGNOSTIC
@@ -829,6 +832,7 @@ struct __env {
 	char	 *db_home;		/* Database home */
 	u_int32_t open_flags;		/* Flags */
 	int	  db_mode;		/* Default open permissions */
+	u_int32_t envid;		/* Cached env id, panic if != REGENV. */
 
 	pid_t	pid_cache;		/* Cached process ID */
 
@@ -917,6 +921,11 @@ struct __env {
 #define	DB_TEST_REPMGR_PERM	 11	/* repmgr perm/archiving tests */
 #define	DB_TEST_SUBDB_LOCKS	 12	/* subdb locking tests */
 #define	DB_TEST_REPMGR_HEARTBEAT 13	/* repmgr stop sending heartbeats */
+#define	DB_TEST_NO_MUTEX         15     /* thread is holding no mutexes */
+#define	DB_TEST_LATCH            16     /* thread is sharing a latch */
+#define	DB_TEST_EXC_LATCH        17     /* thread has an exclusive latch */
+#define	DB_TEST_EXC_MUTEX        18     /* thread is holding a mutex */
+#define	DB_TEST_FAILCHK          19     /* thread is in failchk */
 	int	test_abort;		/* Abort value for testing */
 	int	test_check;		/* Checkpoint value for testing */
 	int	test_copy;		/* Copy value for testing */

@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 2010, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 2010, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -225,6 +225,14 @@ __heap_vrfy(dbp, vdp, h, pgno, flags)
 			 */
 			memcpy(&bhdr, hdr, sizeof(HEAPBLOBHDR));
 			blob_id = (db_seq_t)bhdr.id;
+			if (blob_id < 1) {
+				ret = DB_VERIFY_BAD;
+				EPRINT((dbp->env, DB_STR_A("1221",
+			"Page %lu: invalid blob dir id %lld at item %lu",
+				    "%lu %lld %lu"), (u_long)pgno,
+				    (long long)blob_id, (u_long)i));
+				goto err;
+			}
 			GET_BLOB_SIZE(dbp->env, bhdr, blob_size, ret);
 			if (ret != 0 || blob_size < 0) {
 				EPRINT((dbp->env, DB_STR_A("1175",
@@ -234,7 +242,7 @@ __heap_vrfy(dbp, vdp, h, pgno, flags)
 				goto err;
 			}
 			file_id = (db_seq_t)bhdr.file_id;
-			if (file_id == 0) {
+			if (file_id < 0) {
 				EPRINT((dbp->env, DB_STR_A("1177",
 			"Page %lu: invalid blob dir id %llu at item %lu",
 				    "%lu %llu, %lu"), (u_long)pgno,

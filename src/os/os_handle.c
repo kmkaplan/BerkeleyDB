@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1998, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1998, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -52,7 +52,7 @@ __os_openhandle(env, name, flags, mode, fhpp)
 	/* If the application specified an interface, use it. */
 	if (DB_GLOBAL(j_open) != NULL) {
 		if ((fhp->fd = DB_GLOBAL(j_open)(name, flags, mode)) == -1) {
-			ret = __os_posix_err(__os_get_syserr());
+			ret = USR_ERR(env, __os_posix_err(__os_get_syserr()));
 			goto err;
 		}
 		goto done;

@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
  */
 /*
  * Copyright (c) 1995, 1996
@@ -370,6 +370,7 @@ __txn_begin_int(txn)
 	inserted = 0;
 
 	TXN_SYSTEM_LOCK(env);
+	DB_TEST_CRASH(env->test_abort, DB_TEST_EXC_MUTEX);
 	if (!F_ISSET(txn, TXN_COMPENSATE) && F_ISSET(region, TXN_IN_RECOVERY)) {
 		__db_errx(env, DB_STR("4524",
 		    "operation not permitted during recovery"));
