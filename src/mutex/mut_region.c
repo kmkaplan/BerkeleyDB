@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -248,10 +248,10 @@ __mutex_region_init(env, mtxmgr)
 	mutex = MUTEX_INVALID;
 	if ((ret =
 	    __mutex_alloc(env, MTX_MUTEX_TEST, 0, &mutex) != 0) ||
-	    (ret = __mutex_lock(env, mutex)) != 0 ||
-	    (ret = __mutex_unlock(env, mutex)) != 0 ||
-	    (ret = __mutex_trylock(env, mutex)) != 0 ||
-	    (ret = __mutex_unlock(env, mutex)) != 0 ||
+	    (ret = __mutex_lock(env, mutex, 0, MUTEX_WAIT)) != 0 ||
+	    (ret = __mutex_unlock(env, mutex, NULL, 0)) != 0 ||
+	    (ret = __mutex_lock(env, mutex, 0, MUTEX_WAIT)) != 0 ||
+	    (ret = __mutex_unlock(env, mutex, NULL, 0)) != 0 ||
 	    (ret = __mutex_free(env, &mutex)) != 0) {
 		__db_errx(env, DB_STR("2015",
 	    "Unable to acquire/release a mutex; check configuration"));
@@ -267,13 +267,13 @@ __mutex_region_init(env, mtxmgr)
 	if ((ret =
 	    __mutex_alloc(env,
 		MTX_MUTEX_TEST, DB_MUTEX_SHARED, &mutex) != 0) ||
-	    (ret = __mutex_lock(env, mutex)) != 0 ||
-	    (ret = __mutex_tryrdlock(env, mutex)) == 0 ||
-	    (ret = __mutex_unlock(env, mutex)) != 0 ||
-	    (ret = __mutex_rdlock(env, mutex)) != 0 ||
-	    (ret = __mutex_rdlock(env, mutex)) != 0 ||
-	    (ret = __mutex_unlock(env, mutex)) != 0 ||
-	    (ret = __mutex_unlock(env, mutex)) != 0 ||
+	    (ret = __mutex_lock(env, mutex, 0, MUTEX_WAIT)) != 0 ||
+	    (ret = __mutex_rdlock(env, mutex, 0)) == 0 ||
+	    (ret = __mutex_unlock(env, mutex, NULL, 0)) != 0 ||
+	    (ret = __mutex_rdlock(env, mutex, MUTEX_WAIT)) != 0 ||
+	    (ret = __mutex_rdlock(env, mutex, MUTEX_WAIT)) != 0 ||
+	    (ret = __mutex_unlock(env, mutex, NULL, 0)) != 0 ||
+	    (ret = __mutex_unlock(env, mutex, NULL, 0)) != 0 ||
 	    (ret = __mutex_free(env, &mutex)) != 0) {
 		__db_errx(env, DB_STR("2016",
     "Unable to acquire/release a shared latch; check configuration"));

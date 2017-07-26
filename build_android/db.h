@@ -2,7 +2,7 @@
 /*
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  *
@@ -46,9 +46,9 @@ extern "C" {
 #define	DB_VERSION_RELEASE	1
 #define	DB_VERSION_MAJOR	6
 #define	DB_VERSION_MINOR	1
-#define	DB_VERSION_PATCH	29
-#define	DB_VERSION_STRING	"Berkeley DB 6.1.29: (May 13, 2016)"
-#define	DB_VERSION_FULL_STRING	"Berkeley DB 12c Release 1, library version 12.1.6.1.29: (May 13, 2016)"
+#define	DB_VERSION_PATCH	36
+#define	DB_VERSION_STRING	"Berkeley DB 6.1.36: (July 21, 2017)"
+#define	DB_VERSION_FULL_STRING	"Berkeley DB 12c Release 1, library version 12.1.6.1.36: (July 21, 2017)"
 
 /*
  * !!!
@@ -2319,7 +2319,8 @@ struct __db_qam_stat { /* SHARED */
 /*******************************************************
  * Environment.
  *******************************************************/
-#define	DB_REGION_MAGIC	0x120897	/* Environment magic number. */
+#define	DB_REGION_MAGIC		0x120897 /* The environment is available. */
+#define	DB_REGION_MAGIC_RECOVER	0xeeeccc /* Recovery is running. */
 
 /*
  * Database environment structure.

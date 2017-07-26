@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -1028,7 +1028,7 @@ __log_flush_int(dblp, lsnp, release)
 				__env_alloc_free(&dblp->reginfo, commit);
 				return (ret);
 			}
-			MUTEX_LOCK(env, commit->mtx_txnwait);
+			MUTEX_LOCK_NO_CTR(env, commit->mtx_txnwait);
 		} else
 			SH_TAILQ_REMOVE(
 			    &lp->free_commits, commit, links, __db_commit);
@@ -1047,7 +1047,7 @@ __log_flush_int(dblp, lsnp, release)
 		    &lp->commits, commit, links, __db_commit);
 		LOG_SYSTEM_UNLOCK(env);
 		/* Wait here for the in-progress flush to finish. */
-		MUTEX_LOCK(env, commit->mtx_txnwait);
+		MUTEX_LOCK_NO_CTR(env, commit->mtx_txnwait);
 		LOG_SYSTEM_LOCK(env);
 
 		lp->ncommit--;
@@ -1161,13 +1161,13 @@ done:
 		first = 1;
 		SH_TAILQ_FOREACH(commit, &lp->commits, links, __db_commit)
 			if (LOG_COMPARE(&lp->s_lsn, &commit->lsn) > 0) {
-				MUTEX_UNLOCK(env, commit->mtx_txnwait);
+				MUTEX_UNLOCK_NO_CTR(env, commit->mtx_txnwait);
 				SH_TAILQ_REMOVE(
 				    &lp->commits, commit, links, __db_commit);
 				ncommit++;
 			} else if (first == 1) {
 				F_SET(commit, DB_COMMIT_FLUSH);
-				MUTEX_UNLOCK(env, commit->mtx_txnwait);
+				MUTEX_UNLOCK_NO_CTR(env, commit->mtx_txnwait);
 				SH_TAILQ_REMOVE(
 				    &lp->commits, commit, links, __db_commit);
 				/*

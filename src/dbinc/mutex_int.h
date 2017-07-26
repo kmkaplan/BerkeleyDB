@@ -1,7 +1,7 @@
 /*
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1996, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -65,40 +65,6 @@ extern "C" {
 		pthread_rwlock_t rwlock;	/* Read/write lock */	\
 	} u;
 
-#if defined(HAVE_SHARED_LATCHES) && !defined(HAVE_MUTEX_HYBRID)
-#define	RET_SET_PTHREAD_LOCK(mutexp, ret) do {				\
-	if (F_ISSET(mutexp, DB_MUTEX_SHARED))				\
-		RET_SET((pthread_rwlock_wrlock(&(mutexp)->u.rwlock)),	\
-		    ret);						\
-	else								\
-		RET_SET((pthread_mutex_lock(&(mutexp)->u.m.mutex)), ret); \
-} while (0)
-#define	RET_SET_PTHREAD_TIMEDLOCK(mutexp, timespec, ret) do {		\
-	if (F_ISSET(mutexp, DB_MUTEX_SHARED))				\
-		RET_SET(pthread_rwlock_timedwrlock(&(mutexp)->u.rwlock, \
-		    (timespec)), ret);					\
-	else								\
-		RET_SET(pthread_mutex_timedlock(&(mutexp)->u.m.mutex,	\
-		    (timespec)), ret); 					\
-} while (0)
-#define	RET_SET_PTHREAD_TRYLOCK(mutexp, ret) do {			\
-	if (F_ISSET(mutexp, DB_MUTEX_SHARED))				\
-		RET_SET((pthread_rwlock_trywrlock(&(mutexp)->u.rwlock)), \
-		    ret);						\
-	else								\
-		RET_SET((pthread_mutex_trylock(&(mutexp)->u.m.mutex)),	\
-		    ret);						\
-} while (0)
-#else
-#define	RET_SET_PTHREAD_LOCK(mutexp, ret)				\
-		RET_SET(pthread_mutex_lock(&(mutexp)->u.m.mutex), ret);
-#define	RET_SET_PTHREAD_TIMEDLOCK(mutexp, timespec, ret)		\
-		RET_SET(pthread_mutex_timedlock(&(mutexp)->u.m.mutex,	\
-		    (timespec)), ret);
-#define	RET_SET_PTHREAD_TRYLOCK(mutexp, ret)				\
-		RET_SET(pthread_mutex_trylock(&(mutexp)->u.m.mutex), ret);
-#endif
-#endif
 
 #ifdef HAVE_MUTEX_UI_THREADS
 #include <thread.h>
@@ -123,7 +89,7 @@ extern "C" {
  *********************************************************************/
 #ifdef HAVE_MUTEX_SOLARIS_LWP
 /*
- * XXX
+ * !!!
  * Don't change <synch.h> to <sys/lwp.h> -- although lwp.h is listed in the
  * Solaris manual page as the correct include to use, it causes the Solaris
  * compiler on SunOS 2.6 to fail.
@@ -133,6 +99,7 @@ extern "C" {
 #define	MUTEX_FIELDS							\
 	lwp_mutex_t mutex;		/* Mutex. */			\
 	lwp_cond_t cond;		/* Condition variable. */
+#endif
 #endif
 
 /*********************************************************************
@@ -148,7 +115,7 @@ extern "C" {
 #endif
 
 /*********************************************************************
- * AIX C library functions.
+ * AIX C library functions -- _check_lock.
  *********************************************************************/
 #ifdef HAVE_MUTEX_AIX_CHECK_LOCK
 #include <sys/atomic_op.h>
@@ -162,7 +129,21 @@ typedef int tsl_t;
 #endif
 
 /*********************************************************************
- * Apple/Darwin library functions.
+ * BSD/Apple/Darwin library functions -- OSSpinLockTry.
+ *********************************************************************/
+#ifdef HAVE_MUTEX_BSD_OSSPINLOCKTRY
+#include <libkern/OSAtomic.h>
+typedef OSSpinLock tsl_t;
+
+#ifdef LOAD_ACTUAL_MUTEX_CODE
+#define	MUTEX_SET(tsl)          OSSpinLockTry(tsl)
+#define	MUTEX_UNSET(tsl)        OSSpinLockUnlock(tsl)
+#define	MUTEX_INIT(tsl)         (MUTEX_UNSET(tsl), 0)
+#endif
+#endif
+
+/*********************************************************************
+ * Apple/Darwin -- fallback to the undocumented _spin_lock_try.
  *********************************************************************/
 #ifdef HAVE_MUTEX_DARWIN_SPIN_LOCK_TRY
 typedef u_int32_t tsl_t;
@@ -278,10 +259,10 @@ typedef abilock_t tsl_t;
 #include <sys/machlock.h>
 typedef lock_t tsl_t;
 
-/* 
+/*
  * Solaris requires 8 byte alignment for pthread_mutex_t values.
  */
-#define MUTEX_ALIGN 8
+#define	MUTEX_ALIGN 8
 
 /*
  * The functions are declared in <sys/machlock.h>, but under #ifdef KERNEL.
@@ -330,12 +311,12 @@ typedef SEM_ID tsl_t;
 
 #ifdef LOAD_ACTUAL_MUTEX_CODE
 /*
- * Uses of this MUTEX_SET() need to have a local 'nowait' variable,
+ * Uses of this MUTEX_SET() need to have a local 'flags' variable,
  * which determines whether to return right away when the semaphore
  * is busy or to wait until it is available.
  */
 #define	MUTEX_SET(tsl)							\
-	(semTake((*(tsl)), nowait ? NO_WAIT : WAIT_FOREVER) == OK)
+	(semTake((*(tsl)), LF_ISSET(MUTEX_WAIT) ? WAIT_FOREVER : NO_WAIT) == OK)
 #define	MUTEX_UNSET(tsl)	(semGive((*tsl)))
 #define	MUTEX_INIT(tsl)							\
 	((*(tsl) = semBCreate(SEM_Q_FIFO, SEM_FULL)) == NULL)
@@ -505,7 +486,7 @@ typedef unsigned int tsl_t;
 
 #define	MUTEX_UNSET(tsl)	(*(volatile tsl_t *)(tsl) = 0)
 #define	MUTEX_INIT(tsl)         (MUTEX_UNSET(tsl), 0)
-#define	MUTEX_MEMBAR(x)	\
+#define	MUTEX_MEMBAR(x) \
 	({ __asm__ volatile ("dsb"); })
 #define	MEMBAR_ENTER() \
 	({ __asm__ volatile ("dsb"); })
@@ -528,16 +509,16 @@ typedef unsigned int tsl_t;
 		"ldxr	%w1, [%3]\n\t"					\
 		"stxr	%w0, %w2, [%3]\n\t"				\
 		"orr	%w0, %w0, %w1\n\t"				\
-		"neg	%w0, %w0\n\t"					\
-	    : "=&r" (__r), "=r" (__old)					\
+		"mvn	%w0, %w0\n\t"					\
+	    : "=&r" (__r), "+r" (__old)					\
 	    : "r" (1), "r" (tsl)					\
 	    );								\
 	__r & 1;							\
 })
 
 #define	MUTEX_UNSET(tsl)	(*(volatile tsl_t *)(tsl) = 0)
-#define	MUTEX_INIT(tsl)         (MUTEX_UNSET(tsl), 0)
-#define	MUTEX_MEMBAR(x)	\
+#define	MUTEX_INIT(tsl)		(MUTEX_UNSET(tsl), 0)
+#define	MUTEX_MEMBAR(x) \
 	({ __asm__ volatile ("dsb sy"); })
 #define	MEMBAR_ENTER() \
 	({ __asm__ volatile ("dsb sy"); })
@@ -995,7 +976,7 @@ typedef struct __db_mutexregion { /* SHARED */
  * MTX_DIAG turns on the recording of when and where a mutex was locked. It has
  * a large impact, and should only be turned on when debugging mutexes.
  */
-#define MUTEX_STACK_TEXT_SIZE	600
+#define	MUTEX_STACK_TEXT_SIZE	600
 typedef struct __mutex_history { /* SHARED */
 	db_timespec when;
 	char	stacktext[MUTEX_STACK_TEXT_SIZE];

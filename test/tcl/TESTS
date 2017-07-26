@@ -366,6 +366,22 @@ env026
 	and should not be added to the automated Tcl test suite.
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+env030
+	Test failchk.
+
+	Tests that failchk is able to recover the environment after a crash,
+	or returns RUNRECOVERY when appropriate.
+
+	1. Open environment with is_alive function and failchk.
+	2. Open database and insert a record.
+	3. Test that failchk works when another process: exits cleanly,
+	crashes outside the API, crashes inside the API but holds no
+	latches, and crashes inside the API while holding latches.
+	4. Test that failchk returns RUNRECOVER when another process:
+	crashes while holding an exclusive latch, crashes while holding
+	a mutex, and crashes while performing failchk.
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 fail001
 	Test database compaction errors.
 

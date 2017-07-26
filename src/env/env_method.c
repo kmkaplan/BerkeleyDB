@@ -1,7 +1,7 @@
 /*-
  * See the file LICENSE for redistribution information.
  *
- * Copyright (c) 1999, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 1999, 2017 Oracle and/or its affiliates.  All rights reserved.
  *
  * $Id$
  */
@@ -387,6 +387,11 @@ __db_env_init(dbenv)
 
 	env = dbenv->env;
 	__os_id(NULL, &env->pid_cache, NULL);
+	/*
+	 * The real envid of any existing environment is unknown until the
+	 * region is read. Setting all bits until then is a diagnostic aid.
+	 */
+	env->envid = ENVID_UNKNOWN;
 
 	env->log_verify_wrap = __log_verify_wrap;
 	env->data_len = ENV_DEF_DATA_LEN;
@@ -1030,6 +1035,12 @@ __env_fetch_flags(flagmap, mapsize, inflagsp, outflagsp)
 			FLD_SET(*outflagsp, fmp->inflag);
 }
 
+/* 
+ * __env_get_flags --
+ *	Extract the DB_ENV->set_flags() values for the env.  Most come from the
+ *	flags in our DB_ENV handle, but the panic and hotbackup flags are
+ *	found by examining the shared region.
+ */
 static int
 __env_get_flags(dbenv, flagsp)
 	DB_ENV *dbenv;
@@ -1043,8 +1054,11 @@ __env_get_flags(dbenv, flagsp)
 	env = dbenv->env;
 	/* Some flags are persisted in the regions. */
 	if (env->reginfo != NULL &&
-	    ((REGENV *)env->reginfo->primary)->panic != 0)
+	    ((REGENV *)env->reginfo->primary)->envid != env->envid) {
+		DB_DEBUG_MSG(env, "env_get_flags envid panic %u != %u",
+		    ((REGENV *)env->reginfo->primary)->envid, env->envid);
 		FLD_SET(*flagsp, DB_PANIC_ENVIRONMENT);
+	}
 
 	/* If the hotbackup counter is positive, set the flag indicating so. */
 	if (TXN_ON(env)) {

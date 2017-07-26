@@ -1748,7 +1748,7 @@ proc wal_check_journal_mode {testname {db db}} {
     $db eval { SELECT * FROM sqlite_master }
     do_test $testname [list $db eval "PRAGMA main.journal_mode"] {wal}
   }
-  forcedelete test.db-journal/__db.register
+  catch { forcedelete test.db-journal/__db.register }
 }
 
 proc permutation {} {

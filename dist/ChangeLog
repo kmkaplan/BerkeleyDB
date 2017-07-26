@@ -1,5 +1,37 @@
 = Berkeley DB 6.1 Changelog =
 
+== Changes between 12.1.6.1.29 and 12.1.6.1.36 ==
+
+Increased the number of instances in which failchk can successfully
+clean the environment without requiring full recovery after a thread 
+crashes while using Berkeley DB. [#25087]
+
+Improved db_verify's handling of corrupted database files. [#25239]
+
+Fixed configure bug which prevented shared library support on FreeBSD 10.
+[#25251]
+
+Added PRAGMA statistics, which prints out statistics about the database 
+and its environment. [#25550]
+
+Added PRAGMA statistics_files, which redirects output from the statistics
+PRAGMA to a file. [#25550]
+
+Internal Berkeley DB messages are now redirected to the same file where
+internal Berkeley DB error messages are redirected. [#25568]
+
+Fixed a bug that could cause a client undergoing internal initialization
+to fail to request all the necessary logs for a correct recovery.  The
+major symptom of this bug was that some client database files were left
+with empty pages that would later cause log sequence errors or other
+failures. [#25624]
+
+Fixed a blob files related crash in db_verify. [#25920]
+
+When opening a database handle which was created outside of an environment,
+if the current working directory contains a DB_CONFIG file it will no longer
+be processed.  [#26319]
+
 == Changes between 12.1.6.1.26 and 12.1.6.1.29 == 
 
 Fixed a bug where opening or renaming a compressed in-memory database
@@ -288,6 +320,9 @@ which was not adequate for systems with a 64KB pagesize. [#23290]
 
 Improved the sizing of the environment region to better match the needs of
 thread tracking as specified by DB_ENV->set_thread_count(). [#24314]
+
+Include a new field in the per-thread statistics output:
+the number of locked mutexes. [#25690] 
 
 == Concurrent Data Store Changes ==
 
