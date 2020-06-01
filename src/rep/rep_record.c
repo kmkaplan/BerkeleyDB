@@ -1,7 +1,7 @@
 /*-
- * See the file LICENSE for redistribution information.
+ * Copyright (c) 2001, 2020 Oracle and/or its affiliates.  All rights reserved.
  *
- * Copyright (c) 2001, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * See the file LICENSE for license information.
  *
  * $Id$
  */
@@ -1518,8 +1518,7 @@ out:
 /*
  * __rep_process_txn --
  *
- * This is the routine that actually gets a transaction ready for
- * processing.
+ * This is the routine that actually applies a transaction's set of updates.
  *
  * PUBLIC: int __rep_process_txn __P((ENV *, DBT *));
  */
@@ -1609,6 +1608,7 @@ __rep_process_txn(env, rec)
 	/* Phase 1.  Get a list of the LSNs in this transaction, and sort it. */
 	if ((ret = __rep_collect_txn(env, &prev_lsn, &lc, &dblp)) != 0)
 		goto err;
+
 	/* Deal with any child transactions that had to be delayed. */
 	while (dblp != NULL) {
 		if ((ret = __rep_collect_txn(
@@ -1630,6 +1630,10 @@ __rep_process_txn(env, rec)
 	ENV_GET_THREAD_INFO(env, ip);
 	if ((ret = __db_txnlist_init(env, ip, 0, 0, NULL, &txninfo)) != 0)
 		goto err;
+	/* Replication uses a transaction only when client mvcc is active. */
+	if (F_ISSET(env->dbenv, DB_ENV_MULTIVERSION) && (ret = __txn_begin(env,
+	    ip, NULL, &txninfo->txn, DB_TXN_SNAPSHOT | DB_TXN_DISPATCH)) != 0)
+		goto err;
 
 	/* Phase 2: Apply updates. */
 	if ((ret = __log_cursor(env, &logc)) != 0)
@@ -1643,12 +1647,24 @@ __rep_process_txn(env, rec)
 		}
 		if ((ret = __db_dispatch(env, &env->recover_dtab,
 		    &data_dbt, lsnp, DB_TXN_APPLY, txninfo)) != 0) {
-			__db_errx(env, DB_STR_A("3523",
-			    "transaction failed at [%lu][%lu]", "%lu %lu"),
+			__db_err(env, ret, DB_STR_A("3523",
+			    "transaction %x failed at [%lu][%lu]", "%lu %lu"),
+			    txninfo->txn->txnid,
 			    (u_long)lsnp->file, (u_long)lsnp->offset);
 			goto err;
 		}
 		LOGCOPY_32(env, &rectype, data_dbt.data);
+	}
+	if (txninfo->txn != NULL) {
+		ret = __txn_commit(txninfo->txn, 0);
+		txninfo->txn = NULL;
+		if (ret != 0) {
+			__db_errx(env, DB_STR_A("3715", "%lu %lu",
+			    "rep_process_txn [%lu][%lu] failed to commit"),
+			    (u_long)lc.array[lc.nlsns - 1].file,
+			    (u_long)lc.array[lc.nlsns - 1].offset);
+			goto err;
+		}
 	}
 
 err:	memset(&req, 0, sizeof(req));
@@ -2045,6 +2061,14 @@ __rep_do_ckp(env, rec, rp)
 	}
 
 	MUTEX_LOCK(env, rep->mtx_clientdb);
+#ifdef HAVE_REPLICATION_THREADS
+	if (ret == 0) {
+		REP_SYSTEM_LOCK(env);
+		if (LOG_COMPARE(&ckp_lsn, &rep->last_ckp_lsn) > 0)
+			rep->last_ckp_lsn = ckp_lsn;
+		REP_SYSTEM_UNLOCK(env);
+	}
+#endif
 	return (ret);
 }
 
@@ -2240,8 +2264,8 @@ __rep_process_rec(env, ip, rp, rec, ret_tsp, ret_lsnp)
 		/*
 		 * DB opens occur in the context of a transaction, so we can
 		 * simply handle them when we process the transaction.  Closes,
-		 * however, are not transaction-protected, so we have to handle
-		 * them here.
+		 * checkpoints and other dbreg opcodes are not transaction-
+		 * protected, so we have to handle them here.
 		 *
 		 * It should be unsafe for the master to do a close of a file
 		 * that was opened in an active transaction, so we should be

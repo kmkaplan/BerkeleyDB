@@ -1,7 +1,7 @@
 /*-
- * See the file LICENSE for redistribution information.
+ * Copyright (c) 2001, 2020 Oracle and/or its affiliates.  All rights reserved.
  *
- * Copyright (c) 2001, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * See the file LICENSE for license information.
  *
  * $Id$
  */
@@ -24,6 +24,7 @@ static int  __rep_check_applied __P((ENV *,
 static void __rep_config_map __P((ENV *, u_int32_t *, u_int32_t *));
 static u_int32_t __rep_conv_vers __P((ENV *, u_int32_t));
 static int  __rep_defview __P((DB_ENV *, const char *, int *, u_int32_t));
+static void __rep_openfiles __P((ENV*, DB_THREAD_INFO *));
 static int  __rep_restore_prepared __P((ENV *));
 static int  __rep_save_lsn_hist __P((ENV *, DB_THREAD_INFO *, DB_LSN *));
 /*
@@ -127,7 +128,9 @@ __rep_get_config(dbenv, which, onp)
     DB_REP_CONF_LEASE | DB_REP_CONF_NOWAIT |				\
     DB_REPMGR_CONF_2SITE_STRICT | DB_REPMGR_CONF_ELECTIONS |		\
     DB_REPMGR_CONF_FORWARD_WRITES |					\
-    DB_REPMGR_CONF_PREFMAS_CLIENT | DB_REPMGR_CONF_PREFMAS_MASTER)
+    DB_REPMGR_CONF_PREFMAS_CLIENT | DB_REPMGR_CONF_PREFMAS_MASTER |	\
+    DB_REPMGR_CONF_DISABLE_POLL | DB_REPMGR_CONF_ENABLE_EPOLL |		\
+    DB_REPMGR_CONF_DISABLE_SSL)
 
 	if (FLD_ISSET(which, ~OK_FLAGS))
 		return (__db_ferr(env, "DB_ENV->rep_get_config", 0));
@@ -174,6 +177,7 @@ __rep_set_config(dbenv, which, on)
 	REP_BULK bulk;
 	u_int32_t mapped, orig;
 	int inmemlog, pm_ret, ret, t_ret;
+	const char * msg;
 
 	env = dbenv->env;
 	db_rep = env->rep_handle;
@@ -189,10 +193,13 @@ __rep_set_config(dbenv, which, on)
     DB_REP_CONF_LEASE | DB_REP_CONF_NOWAIT |				\
     DB_REPMGR_CONF_2SITE_STRICT | DB_REPMGR_CONF_ELECTIONS |		\
     DB_REPMGR_CONF_FORWARD_WRITES |					\
-    DB_REPMGR_CONF_PREFMAS_CLIENT | DB_REPMGR_CONF_PREFMAS_MASTER)
+    DB_REPMGR_CONF_PREFMAS_CLIENT | DB_REPMGR_CONF_PREFMAS_MASTER |	\
+    DB_REPMGR_CONF_DISABLE_POLL | DB_REPMGR_CONF_ENABLE_EPOLL |		\
+    DB_REPMGR_CONF_DISABLE_SSL)
+
 #define	REPMGR_FLAGS (REP_C_2SITE_STRICT | REP_C_ELECTIONS |		\
-    REP_C_FORWARD_WRITES |						\
-    REP_C_PREFMAS_CLIENT | REP_C_PREFMAS_MASTER)
+    REP_C_FORWARD_WRITES | REP_C_DISABLE_POLL | REP_C_ENABLE_EPOLL |	\
+    REP_C_PREFMAS_CLIENT | REP_C_PREFMAS_MASTER | REP_C_DISABLE_SSL)
 
 #define	TURNING_ON_PREFMAS(orig, curr)					\
     ((FLD_ISSET(curr, REP_C_PREFMAS_MASTER) &&				\
@@ -233,26 +240,80 @@ __rep_set_config(dbenv, which, on)
 		 */
 		if (FLD_ISSET(mapped, REP_C_INMEM)) {
 			__db_errx(env, DB_STR_A("3549",
-"%s in-memory replication must be configured before DB_ENV->open",
-			    "%s"), "DB_ENV->rep_set_config:");
+			    "%s in-memory replication must be configured before "
+			    "DB_ENV->open", "%s"), "DB_ENV->rep_set_config:");
 			ENV_LEAVE(env, ip);
 			return (EINVAL);
 		}
 		/*
-		 * The undocumented ELECT_LOGLENGTH option and the preferred
-		 * master options cannot be changed after calling repmgr_start.
+		 * Following options can't be changed after repmgr_start
+		 * 1. The undocumented ELECT_LOGLENGTH option.
+		 * 2. The preferred master options.
+		 * 3. The network i/o polling method options
+		 *	a). DB_REPMGR_CONF_DISABLE_POLL
+		 *	b). DB_REPMGR_CONF_ENABLE_EPOLL
+		 * 4. SSL support for Replication Messaging
 		 */
 		if (FLD_ISSET(mapped, (REP_C_ELECT_LOGLENGTH |
-		    REP_C_PREFMAS_MASTER | REP_C_PREFMAS_CLIENT)) &&
-		    F_ISSET(rep, REP_F_START_CALLED)) {
+		    REP_C_PREFMAS_MASTER | REP_C_PREFMAS_CLIENT |
+		    REP_C_DISABLE_POLL | REP_C_ENABLE_EPOLL |
+		    REP_C_DISABLE_SSL)) && F_ISSET(rep, REP_F_START_CALLED)) {
+			if (FLD_ISSET(mapped, REP_C_ELECT_LOGLENGTH))
+				msg = "ELECT_LOGLENGTH";
+			else if (FLD_ISSET(mapped, REP_C_DISABLE_POLL))
+				msg = "DISABLE_POLL";
+			else if (FLD_ISSET(mapped, REP_C_ENABLE_EPOLL))
+				msg = "ENABLE_EPOLL";
+			else if (FLD_ISSET(mapped, REP_C_PREFMAS_MASTER |
+			    REP_C_PREFMAS_CLIENT))
+				msg = "preferred master";
+			else if (FLD_ISSET(mapped, REP_C_DISABLE_SSL))
+				msg = "DISABLE_SSL";
+
 			__db_errx(env, DB_STR_A("3706",
 			    "DB_ENV->rep_set_config: %s "
 			    "must be configured before DB_ENV->repmgr_start",
-			    "%s"), FLD_ISSET(mapped, REP_C_ELECT_LOGLENGTH) ?
-			    "ELECT_LOGLENGTH" : "preferred master");
+			    "%s"), msg);
 			ENV_LEAVE(env, ip);
 			return (EINVAL);
 		}
+		/*
+		 * Report an error if users attempt enabling epoll on a
+		 * platform where epoll support doesn't exist
+		 */
+#if !defined(HAVE_EPOLL)
+		if (FLD_ISSET(mapped, REP_C_ENABLE_EPOLL)) {
+			__db_errx(env, DB_STR("3727",
+			    "DB_ENV->rep_set_config: cannot use EPOLL on this"
+			    " system. OS support not available for epoll()"));
+			ENV_LEAVE(env, ip);
+			return (EINVAL);
+		}
+#endif
+		/*
+		 * Report error if users attempt to disable poll on a platform
+		 * where support for poll() doesn't exist.
+		 */
+#if !defined(HAVE_POLL)
+		if (FLD_ISSET(mapped, REP_C_DISABLE_POLL)) {
+			__db_errx(env, DB_STR("3728",
+			    "DB_ENV->rep_set_config: POLL support not "
+			    "available on this system. Ignoring this flag."));
+		}
+#endif
+		/*
+		 * Report an error if users attempt to disable SSL on a platform
+		 * where support for SSL doesn't exist.
+		 */
+#if !defined(HAVE_REPMGR_SSL)
+		if (FLD_ISSET(mapped, REP_C_DISABLE_SSL)) {
+			__db_errx(env, DB_STR("5512",
+			    "DB_ENV->rep_set_config: SSL support for "
+			    "replication not available on this system. "
+			    "Ignoring the flag DB_REPMGR_CONF_DISABLE_SSL."));
+		}
+#endif
+
 		/*
 		 * Do not allow users to turn on preferred master if
 		 * leases or in-memory replication files are in effect,
@@ -472,6 +533,19 @@ __rep_config_map(env, inflagsp, outflagsp)
 		FLD_SET(*outflagsp, REP_C_PREFMAS_MASTER);
 		FLD_CLR(*inflagsp, DB_REPMGR_CONF_PREFMAS_MASTER);
 	}
+	if (FLD_ISSET(*inflagsp, DB_REPMGR_CONF_DISABLE_POLL)) {
+		FLD_SET(*outflagsp, REP_C_DISABLE_POLL);
+		FLD_CLR(*inflagsp, DB_REPMGR_CONF_DISABLE_POLL);
+	}
+	if (FLD_ISSET(*inflagsp, DB_REPMGR_CONF_ENABLE_EPOLL)) {
+		FLD_SET(*outflagsp, REP_C_ENABLE_EPOLL);
+		FLD_CLR(*inflagsp, DB_REPMGR_CONF_ENABLE_EPOLL);
+	}
+	if (FLD_ISSET(*inflagsp, DB_REPMGR_CONF_DISABLE_SSL)) {
+		FLD_SET(*outflagsp, REP_C_DISABLE_SSL);
+		FLD_CLR(*inflagsp, DB_REPMGR_CONF_DISABLE_SSL);
+	}
+
 	DB_ASSERT(env, *inflagsp == 0);
 }
 
@@ -924,6 +998,15 @@ __rep_start_int(env, dbt, flags, startopts)
 		if (role_chg) {
 			pending_event = DB_EVENT_REP_MASTER;
 			/*
+			 * We were a client but we didn't complete our initial
+			 * sync.  We may be in an inconsistent state.  In
+			 * particular, files that are supposed to be open
+			 * during recover may not have been opened.  Go
+			 * through the log and make sure they are opened.
+			 */
+			if (rep->stat.st_startup_complete == 0)
+				__rep_openfiles(env, ip);
+			/*
 			 * If prepared transactions have not been restored
 			 * look to see if there are any.  If there are,
 			 * then mark the open files, otherwise close them.
@@ -975,6 +1058,7 @@ __rep_start_int(env, dbt, flags, startopts)
 		 * Start a non-client as a client.
 		 */
 		rep->master_id = DB_EID_INVALID;
+		rep->stat.st_startup_complete = 0;
 		/*
 		 * A non-client should not have been participating in an
 		 * election, so most election flags should be off.  The TALLY
@@ -1144,6 +1228,52 @@ out:
 		MUTEX_UNLOCK(env, rep->mtx_repstart);
 	__dbt_userfree(env, dbt, NULL, NULL);
 	return (ret);
+}
+
+/*
+ * Recover all open files to make sure all files that should remain
+ * open at the end of the log are opened.
+ */
+static void
+__rep_openfiles(env, ip)
+	ENV *env;
+	DB_THREAD_INFO *ip;
+{
+	DBT data;
+	DB_LOGC *logc;
+	DB_LSN first_lsn, last_lsn, ckp_lsn;
+	DB_TXNHEAD *txninfo;
+	__txn_ckp_args *ckp_args;
+
+	logc = NULL;
+	txninfo = NULL;
+	ckp_args = NULL;
+	memset(&data, 0, sizeof(data));
+
+	if (__log_cursor(env, &logc) != 0)
+		return;
+	if (__logc_get(logc, &last_lsn, &data, DB_LAST) != 0)
+		goto err;
+	/* If we can find a recent checkpoint use it. */
+	if (__txn_getckp(env, &ckp_lsn) == 0 &&
+	    __logc_get(logc, &ckp_lsn, &data, DB_SET) == 0 &&
+	    __txn_ckp_read(env, data.data, &ckp_args) == 0 &&
+	    __logc_get(logc, &ckp_args->ckp_lsn, &data, DB_SET) == 0)
+		first_lsn = ckp_args->ckp_lsn;
+	else if (__logc_get(logc, &first_lsn, &data, DB_FIRST) != 0)
+		goto err;
+
+	if (__db_txnlist_init(env, ip, 0, 0, NULL, &txninfo) != 0)
+		goto err;
+
+	(void)__env_openfiles(env, logc, txninfo, &data,
+	    &first_lsn, &last_lsn, 1.0, 0);
+
+err:	if (txninfo != NULL)
+		__db_txnlist_end(env, txninfo);
+	if (ckp_args != NULL)
+		__os_free(env, ckp_args);
+	(void)__logc_close(logc);
 }
 
 /*
@@ -1680,7 +1810,7 @@ __rep_restore_prepared(env)
 			__os_free(env, ckp_args);
 		}
 		if (ret != 0) {
-			__db_errx(env, DB_STR_A("3561",
+			__db_errx(env, DB_STR_A("4506",
 			    "Invalid checkpoint record at [%lu][%lu]",
 			    "%lu %lu"), (u_long)lsn.file, (u_long)lsn.offset);
 			goto err;
@@ -2044,9 +2174,9 @@ __rep_set_priority_pp(dbenv, priority)
 	    env, db_rep->region, "DB_ENV->rep_set_priority", DB_INIT_REP);
 
 	if (PREFMAS_IS_SET(env)) {
-		__db_errx(env, DB_STR_A("3710",
-"%s: cannot change priority in preferred master mode.",
-		    "%s"), "DB_ENV->rep_set_priority");
+		__db_errx(env, DB_STR_A("3710", "%s: cannot change priority %s",
+		    "%s"), "DB_ENV->rep_set_priority",
+		    "in preferred master mode");
 		return (EINVAL);
 	}
 
@@ -2070,6 +2200,12 @@ __rep_set_priority_int(env, priority)
 	ret = 0;
 	if (REP_ON(env)) {
 		rep = db_rep->region;
+		if (IN_ELECTION(rep)) {
+			__db_errx(env, DB_STR_A("3710",
+			    "%s: cannot change priority %s", "%s"),
+			    "DB_ENV->rep_set_priority", "during election");
+			return (DB_REP_INELECT);
+		}
 		prev = rep->priority;
 		rep->priority = priority;
 #ifdef HAVE_REPLICATION_THREADS
@@ -3115,7 +3251,7 @@ __rep_await_condition(env, reasonp, duration)
 		if (ret != 0)
 			return (ret);
 
-		MUTEX_LOCK(env, waiter->mtx_repwait);
+		MUTEX_LOCK_NO_CTR(env, waiter->mtx_repwait);
 	} else
 		SH_TAILQ_REMOVE(&rep->free_waiters,
 		    waiter, links, __rep_waiter);
@@ -3128,7 +3264,7 @@ __rep_await_condition(env, reasonp, duration)
 	    "waiting for condition %d", (int)reasonp->why));
 	REP_SYSTEM_UNLOCK(env);
 	/* Wait here for conditions to become more favorable. */
-	MUTEX_WAIT(env, waiter->mtx_repwait, duration);
+	MUTEX_LOCK_TIMEOUT(env, waiter->mtx_repwait, duration);
 	REP_SYSTEM_LOCK(env);
 
 	if (!F_ISSET(waiter, REP_F_WOKEN))

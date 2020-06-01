@@ -1,7 +1,7 @@
 /*-
- * See the file LICENSE for redistribution information.
+ * Copyright (c) 2001, 2020 Oracle and/or its affiliates.  All rights reserved.
  *
- * Copyright (c) 2001, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * See the file LICENSE for license information.
  *
  * $Id$
  */
@@ -137,14 +137,6 @@ __fop_create_recover_int(env, real_name, op, mode)
 do_unlink:		(void)__os_unlink(env, real_name, 0);
 	} else if (DB_REDO(op)) {
 		path = real_name;
-#ifdef DB_WIN32
-		/*
-		 * Absolute paths on windows can result in it creating a
-		 * "C" or "D" directory in the working directory.
-		 */
-		if (__os_abspath(real_name))
-			path += 2;
-#endif
 
 #ifdef	HAVE_REPLICATION
 		/*
@@ -667,7 +659,7 @@ __fop_write_file_recover(env, dbtp, lsnp, op, info)
 	COMPQUIET(lsnp, NULL);
 	COMPQUIET(op, 0);
 	COMPQUIET(info, NULL);
-	__db_errx(env, DB_STR("0244",
+	__db_errx(env, DB_STR("0243",
 	    "External files require 64 integer compiler support."));
 	return (DB_OPNOTSUP);
 #endif

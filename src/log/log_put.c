@@ -1,7 +1,7 @@
 /*-
- * See the file LICENSE for redistribution information.
+ * Copyright (c) 1996, 2020 Oracle and/or its affiliates.  All rights reserved.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * See the file LICENSE for license information.
  *
  * $Id$
  */
@@ -98,6 +98,8 @@ __log_put(env, lsnp, udbt, flags)
 	int lock_held, need_free, ret;
 	u_int8_t *key;
 
+	COMPQUIET(rep, NULL);
+	
 	dblp = env->lg_handle;
 	lp = dblp->reginfo.primary;
 	db_cipher = env->crypto_handle;
@@ -136,7 +138,20 @@ __log_put(env, lsnp, udbt, flags)
 #endif
 		}
 	}
-	DB_ASSERT(env, !IS_REP_CLIENT(env));
+
+	if (IS_REP_CLIENT(env)) {
+		__db_errx(env, DB_STR("2590",
+			    "log_put is illegal on replication clients"));
+#if  !defined(DIAGNOSTIC)
+		/*
+		 * DB_ASSERT would generate a stack if DIAGNOSTIC is true.
+		 */
+		__os_stack(env);
+		return (__env_panic(env, EINVAL));
+#endif
+
+		DB_ASSERT(env, FALSE);
+	}
 
 	/*
 	 * If we are coming from the logging code, we use an internal flag,
@@ -1028,7 +1043,7 @@ __log_flush_int(dblp, lsnp, release)
 				__env_alloc_free(&dblp->reginfo, commit);
 				return (ret);
 			}
-			MUTEX_LOCK(env, commit->mtx_txnwait);
+			MUTEX_LOCK_NO_CTR(env, commit->mtx_txnwait);
 		} else
 			SH_TAILQ_REMOVE(
 			    &lp->free_commits, commit, links, __db_commit);
@@ -1047,7 +1062,7 @@ __log_flush_int(dblp, lsnp, release)
 		    &lp->commits, commit, links, __db_commit);
 		LOG_SYSTEM_UNLOCK(env);
 		/* Wait here for the in-progress flush to finish. */
-		MUTEX_LOCK(env, commit->mtx_txnwait);
+		MUTEX_LOCK_NO_CTR(env, commit->mtx_txnwait);
 		LOG_SYSTEM_LOCK(env);
 
 		lp->ncommit--;
@@ -1161,13 +1176,13 @@ done:
 		first = 1;
 		SH_TAILQ_FOREACH(commit, &lp->commits, links, __db_commit)
 			if (LOG_COMPARE(&lp->s_lsn, &commit->lsn) > 0) {
-				MUTEX_UNLOCK(env, commit->mtx_txnwait);
+				MUTEX_UNLOCK_NO_CTR(env, commit->mtx_txnwait);
 				SH_TAILQ_REMOVE(
 				    &lp->commits, commit, links, __db_commit);
 				ncommit++;
 			} else if (first == 1) {
 				F_SET(commit, DB_COMMIT_FLUSH);
-				MUTEX_UNLOCK(env, commit->mtx_txnwait);
+				MUTEX_UNLOCK_NO_CTR(env, commit->mtx_txnwait);
 				SH_TAILQ_REMOVE(
 				    &lp->commits, commit, links, __db_commit);
 				/*
@@ -1715,7 +1730,7 @@ __log_put_record_pp(DB_ENV *dbenv, DB *dbp, DB_TXN *txnp, DB_LSN *ret_lsnp,
 
 	/* Replication clients should never write log records. */
 	if (IS_REP_CLIENT(env)) {
-		__db_errx(env, DB_STR("2522",
+		__db_errx(env, DB_STR("2511",
 		    "DB_ENV->log_put is illegal on replication clients"));
 		return (EINVAL);
 	}

@@ -105,7 +105,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/FIXED:NO /export:__db_assert %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;Advapi32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>..\..\build_windows\libdb.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -119,7 +119,7 @@
       <PreprocessorDefinitions>_UNICODE;UNICODE;DB_CREATE_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;Advapi32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>..\..\build_windows\libdb.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -134,7 +134,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/FIXED:NO /export:__db_assert %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;Advapi32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>..\..\build_windows\libdb.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -148,7 +148,7 @@
       <PreprocessorDefinitions>_UNICODE;UNICODE;DB_CREATE_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;Advapi32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>..\..\build_windows\libdb.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -429,9 +429,12 @@
     <ClCompile Include="..\..\src\txn\txn_stat.c"/>
     <ClCompile Include="..\..\src\txn\txn_util.c"/>
     <ClCompile Include="..\..\src\common\os_method.c"/>
+    <ClCompile Include="..\..\src\common\util_arg.c"/>
     <ClCompile Include="..\..\src\common\util_cache.c"/>
+    <ClCompile Include="..\..\src\common\util_env.c"/>
     <ClCompile Include="..\..\src\common\util_log.c"/>
     <ClCompile Include="..\..\src\common\util_sig.c"/>
+    <ClCompile Include="..\..\src\common\util_ver_check.c"/>
     <ClCompile Include="..\..\src\common\zerofill.c"/>
     <ClCompile Include="..\..\src\xa\xa.c"/>
     <ClCompile Include="..\..\src\xa\xa_map.c"/>
