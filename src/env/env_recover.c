@@ -1,7 +1,7 @@
 /*-
- * See the file LICENSE for redistribution information.
+ * Copyright (c) 1996, 2020 Oracle and/or its affiliates.  All rights reserved.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * See the file LICENSE for license information.
  *
  * $Id$
  */
@@ -55,7 +55,6 @@ __db_apprec(env, ip, max_lsn, trunclsn, update, flags)
 	DB_TXNHEAD *txninfo;
 	DB_TXNREGION *region;
 	REGENV *renv;
-	REGINFO *infop;
 	__txn_ckp_args *ckp_args;
 	time_t now, tlow;
 	double nfiles;
@@ -65,6 +64,7 @@ __db_apprec(env, ip, max_lsn, trunclsn, update, flags)
 	char *p, *pass;
 	char t1[CTIME_BUFLEN], t2[CTIME_BUFLEN], time_buf[CTIME_BUFLEN];
 
+	COMPQUIET(low, 0);
 	COMPQUIET(nfiles, (double)0.001);
 
 	dbenv = env->dbenv;
@@ -76,20 +76,24 @@ __db_apprec(env, ip, max_lsn, trunclsn, update, flags)
 	ZERO_LSN(lsn);
 
 	/*
-	 * XXX
 	 * Get the log size.  No locking required because we're single-threaded
 	 * during recovery.
 	 */
 	log_size = ((LOG *)env->lg_handle->reginfo.primary)->log_size;
 
 	/*
+	 * When truly recovering (i.e., not replication) change the environment
+	 * magic from 0 (newly created) to recovery-in-progress.
+	 */
+	renv = env->reginfo->primary;
+	if (LF_ISSET(DB_RECOVER | DB_RECOVER_FATAL))
+		renv->magic = DB_REGION_MAGIC_RECOVER;
+
+	/*
 	 * If we need to, update the env handle timestamp.
 	 */
-	if (update && REP_ON(env)) {
-		infop = env->reginfo;
-		renv = infop->primary;
+	if (update && REP_ON(env))
 		(void)time(&renv->rep_timestamp);
-	}
 
 	/* Set in-recovery flags. */
 	F_SET(env->lg_handle, DBLOG_RECOVER);
@@ -237,7 +241,7 @@ __db_apprec(env, ip, max_lsn, trunclsn, update, flags)
 			/* We have a recent checkpoint.  This is LSN (1). */
 			if ((ret = __txn_ckp_read(env,
 			    data.data, &ckp_args)) != 0) {
-				__db_errx(env, DB_STR_A("1511",
+				__db_errx(env, DB_STR_A("4506",
 				    "Invalid checkpoint record at [%ld][%ld]",
 				    "%ld %ld"), (u_long)ckp_lsn.file,
 				    (u_long)ckp_lsn.offset);
@@ -562,7 +566,7 @@ done:
 			if (ret == DB_NOTFOUND)
 				ret = 0;
 			else
-				__db_errx(env, DB_STR("1516",
+				__db_errx(env, DB_STR("1510",
 				    "First log record not found"));
 			goto err;
 		}
@@ -571,7 +575,7 @@ done:
 			/* We have a recent checkpoint.  This is LSN (1). */
 			if ((ret = __txn_ckp_read(env,
 			    data.data, &ckp_args)) != 0) {
-				__db_errx(env, DB_STR_A("1517",
+				__db_errx(env, DB_STR_A("4506",
 				    "Invalid checkpoint record at [%ld][%ld]",
 				    "%ld %ld"), (u_long)first_lsn.file,
 				    (u_long)first_lsn.offset);

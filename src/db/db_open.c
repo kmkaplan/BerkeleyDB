@@ -1,7 +1,7 @@
 /*-
- * See the file LICENSE for redistribution information.
+ * Copyright (c) 1996, 2020 Oracle and/or its affiliates.  All rights reserved.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * See the file LICENSE for license information.
  *
  * $Id$
  */
@@ -471,11 +471,9 @@ __db_chk_meta(env, dbp, meta, flags)
 {
 	DB_LSN swap_lsn;
 	int is_hmac, needs_swap, ret;
-	u_int32_t magic;
 	u_int8_t *chksum;
 
 	ret = 0;
-	needs_swap = 0;
 
 	/*
 	 * We can verify that this is some kind of db now, before any potential
@@ -483,22 +481,15 @@ __db_chk_meta(env, dbp, meta, flags)
 	 * cleartext. This gets called both before and after swapping, so we
 	 * need to check for byte swapping ourselves.
 	 */
-	magic = meta->magic;
-magic_retry:
-	switch (magic) {
-	case DB_BTREEMAGIC:
-	case DB_HASHMAGIC:
-	case DB_HEAPMAGIC:
-	case DB_QAMMAGIC:
-	case DB_RENAMEMAGIC:
+	switch (__db_needswap(meta->magic)) {
+	case 0:
+		needs_swap = 0;
+		break;
+	case DB_SWAPBYTES:
+		needs_swap = 1;
 		break;
 	default:
-		if (needs_swap)
-			/* It's already been swapped, so it isn't a BDB file. */
-			return (USR_ERR(env, EINVAL));
-		M_32_SWAP(magic);
-		needs_swap = 1;
-		goto magic_retry;
+		return (USR_ERR(env, EINVAL));
 	}
 
 	if (LOGGING_ON(env) && !LF_ISSET(DB_CHK_NOLSN)) {
@@ -581,15 +572,7 @@ __db_meta_setup(env, dbp, name, meta, oflags, flags)
 	F_CLR(dbp, DB_AM_SWAP | DB_AM_IN_RENAME);
 	magic = meta->magic;
 
-swap_retry:
-	switch (magic) {
-	case DB_BTREEMAGIC:
-	case DB_HASHMAGIC:
-	case DB_HEAPMAGIC:
-	case DB_QAMMAGIC:
-	case DB_RENAMEMAGIC:
-		break;
-	case 0:
+	if (magic == 0) {
 		/*
 		 * The only time this should be 0 is if we're in the
 		 * midst of opening a subdb during recovery and that
@@ -602,13 +585,16 @@ swap_retry:
 			return (USR_ERR(env, ENOENT));
 
 		goto bad_format;
-	default:
-		if (F_ISSET(dbp, DB_AM_SWAP))
-			goto bad_format;
-
+	}
+	switch (__db_needswap(magic)) {
+	case 0:
+		break;
+	case DB_SWAPBYTES:
 		M_32_SWAP(magic);
 		F_SET(dbp, DB_AM_SWAP);
-		goto swap_retry;
+		break;
+	default:
+		goto bad_format;
 	}
 
 	/*
@@ -622,7 +608,7 @@ swap_retry:
 	if (!LF_ISSET(DB_SKIP_CHK) &&
 	    (ret = __db_chk_meta(env, dbp, meta, flags)) != 0) {
 		if (ret == DB_META_CHKSUM_FAIL)
-			__db_errx(env, DB_STR_A("0640",
+			__db_errx(env, DB_STR_A("0210",
 			    "%s: metadata page checksum error", "%s"), name);
 		goto bad_format;
 	}
@@ -755,7 +741,7 @@ __db_get_metaflags(env, name, metaflagsp)
 	if (FLD_ISSET(*metaflagsp, DBMETA_SLICED))
 		ret = __env_no_slices(env);
 #endif
-		
+
 	return (ret);
 }
 

@@ -520,7 +520,11 @@ typedef struct
 	int compact(DB_TXN *txn, DBT *start, DBT *stop, DB_COMPACT *cdata, u_int32_t flags, DBT *end) {
 		return self->compact(self, txn, start, stop, cdata, flags, end);
 	}
-	
+
+	int convert(const char *file, int lorder) {
+		return self->convert(self, file, lorder);
+	}
+
 	%csmethodmodifiers cursor "private"
 	DBC *cursor(DB_TXN *txn, u_int32_t flags, int *err) {
 		DBC *cursor = NULL;
@@ -910,7 +914,7 @@ typedef struct
 	int upgrade(const char *file, u_int32_t flags) {
 		return self->upgrade(self, file, flags);
 	}
-	
+
 	%typemap(cstype) FILE * "System.IO.TextWriter"
 	%typemap(imtype) FILE * "System.IO.TextWriter"
 	%typemap(csin) FILE * "$csinput"
@@ -1160,6 +1164,8 @@ typedef struct
 	u_int32_t status;
 	%typemap(csvarin) u_int32_t flags %{%}
 	u_int32_t flags;
+	%typemap(csvarin) DB_LSN max_ack_lsn %{%}
+	DB_LSN max_ack_lsn;
 } DB_REPMGR_SITE;
 
 %typemap(cscode) DB_TXN %{
@@ -1788,6 +1794,10 @@ typedef struct
 		return self->repmgr_get_ack_policy(self, ack_policy);
 	}
 
+	int repmgr_set_ssl_config(int config_type, char *value) {
+		return self->repmgr_set_ssl_config(self, config_type, value);
+	}
+
 	int repmgr_get_incoming_queue_max(u_int32_t *gbytes, u_int32_t *bytes) {
 		return self->repmgr_get_incoming_queue_max(self, gbytes, bytes);
 	}
@@ -2365,6 +2375,18 @@ typedef struct
 			return ret;
 		if (onoff)
 			*msgs |= DB_VERB_REPMGR_MISC;
+		if ((ret = self->get_verbose(self, DB_VERB_REPMGR_SSL_ALL, &onoff)) != 0)
+			return ret;
+		if (onoff)
+			*msgs |= DB_VERB_REPMGR_SSL_ALL;	
+		if ((ret = self->get_verbose(self, DB_VERB_REPMGR_SSL_CONN, &onoff)) != 0)
+			return ret;
+		if (onoff)
+			*msgs |= DB_VERB_REPMGR_SSL_CONN;
+		if ((ret = self->get_verbose(self, DB_VERB_REPMGR_SSL_IO, &onoff)) != 0)
+			return ret;
+		if (onoff)
+			*msgs |= DB_VERB_REPMGR_SSL_IO;			
 		if ((ret = self->get_verbose(self, DB_VERB_WAITSFOR, &onoff)) != 0)
 			return ret;
 		if (onoff)
@@ -2416,6 +2438,15 @@ typedef struct
 			return ret;
 		if ((which & DB_VERB_REPMGR_MISC) &&
 			(ret = self->set_verbose(self, DB_VERB_REPMGR_MISC, onoff)) != 0)
+			return ret;
+		if ((which & DB_VERB_REPMGR_SSL_ALL) &&
+			(ret = self->set_verbose(self, DB_VERB_REPMGR_SSL_ALL, onoff)) != 0)
+			return ret;	
+		if ((which & DB_VERB_REPMGR_SSL_CONN) &&
+			(ret = self->set_verbose(self, DB_VERB_REPMGR_SSL_CONN, onoff)) != 0)
+			return ret;
+		if ((which & DB_VERB_REPMGR_SSL_IO) &&
+			(ret = self->set_verbose(self, DB_VERB_REPMGR_SSL_IO, onoff)) != 0)
 			return ret;
 		if ((which & DB_VERB_WAITSFOR) &&
 			(ret = self->set_verbose(self, DB_VERB_WAITSFOR, onoff)) != 0)

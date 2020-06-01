@@ -1,7 +1,7 @@
 /*-
- * See the file LICENSE for redistribution information.
+ * Copyright (c) 1996, 2020 Oracle and/or its affiliates.  All rights reserved.
  *
- * Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.
+ * See the file LICENSE for license information.
  *
  * $Id$
  */
@@ -12,12 +12,11 @@
 
 #ifndef lint
 static const char copyright[] =
-    "Copyright (c) 1996, 2016 Oracle and/or its affiliates.  All rights reserved.\n";
+    "Copyright (c) 1996, 2020 Oracle and/or its affiliates.  All rights reserved.\n";
 #endif
 
 int main __P((int, char *[]));
 void usage __P((void));
-int version_check __P((void));
 
 const char *progname;
 
@@ -28,24 +27,25 @@ main(argc, argv)
 {
 	extern char *optarg;
 	extern int optind;
-	DB *dbp, *dbp1;
+	DB *dbp;
 	DB_ENV *dbenv;
 	u_int32_t flags, cache;
 	int ch, exitval, mflag, nflag, private;
-	int quiet, resize, ret;
+	int quiet, ret;
 	char *blob_dir, *dname, *fname, *home, *passwd;
 
-	if ((progname = __db_rpath(argv[0])) == NULL)
-		progname = argv[0];
-	else
-		++progname;
+	progname = __db_util_arg_progname(argv[0]);
 
-	if ((ret = version_check()) != 0)
+	if ((ret = __db_util_version_check(progname)) != 0)
 		return (ret);
 
 	dbenv = NULL;
 	dbp = NULL;
-	cache = MEGABYTE;
+	/*
+	 * If db_verify creates a private environment, use a 10MB cache
+	 * so that we don't fail when verifying large databases.
+	 */
+	cache = 10 * MEGABYTE;
 	mflag = nflag = quiet = 0;
 	flags = 0;
 	exitval = EXIT_SUCCESS;
@@ -65,18 +65,9 @@ main(argc, argv)
 			nflag = 1;
 			break;
 		case 'P':
-			if (passwd != NULL) {
-				fprintf(stderr, DB_STR("5132",
-					"Password may not be specified twice"));
+			if (__db_util_arg_password(progname, 
+			    optarg, &passwd) != 0)
 				goto err;
-			}
-			passwd = strdup(optarg);
-			memset(optarg, 0, strlen(optarg));
-			if (passwd == NULL) {
-				fprintf(stderr, "%s: strdup: %s\n",
-				    progname, strerror(errno));
-				goto err;
-			}
 			break;
 		case 'o':
 			LF_SET(DB_NOORDERCHK);
@@ -107,7 +98,7 @@ main(argc, argv)
 	 * Create an environment object and initialize it for error
 	 * reporting.
 	 */
-retry:	if ((ret = db_env_create(&dbenv, 0)) != 0) {
+	if ((ret = db_env_create(&dbenv, 0)) != 0) {
 		fprintf(stderr,
 		    "%s: db_env_create: %s\n", progname, db_strerror(ret));
 		goto err;
@@ -116,6 +107,9 @@ retry:	if ((ret = db_env_create(&dbenv, 0)) != 0) {
 	if (!quiet) {
 		dbenv->set_errfile(dbenv, stderr);
 		dbenv->set_errpfx(dbenv, progname);
+	} else {
+		dbenv->set_errfile(dbenv, NULL);
+		dbenv->set_msgfile(dbenv, NULL);
 	}
 
 	if (blob_dir != NULL &&
@@ -141,28 +135,13 @@ retry:	if ((ret = db_env_create(&dbenv, 0)) != 0) {
 		goto err;
 	}
 	/*
-	 * Attach to an mpool if it exists, but if that fails, attach to a
-	 * private region.  In the latter case, declare a reasonably large
-	 * cache so that we don't fail when verifying large databases.
+	 * Try to attach to an existing environment -- and its associated
+	 * mpool. This lets db_verify access the most up-to-date version of
+	 * the database's pages.
 	 */
-	private = 0;
-	if ((ret =
-	    dbenv->open(dbenv, home, DB_INIT_MPOOL | DB_USE_ENVIRON, 0)) != 0) {
-		if (ret != DB_VERSION_MISMATCH && ret != DB_REP_LOCKOUT) {
-			if ((ret =
-			    dbenv->set_cachesize(dbenv, 0, cache, 1)) != 0) {
-				dbenv->err(dbenv, ret, "set_cachesize");
-				goto err;
-			}
-			private = 1;
-			ret = dbenv->open(dbenv, home, DB_CREATE |
-			    DB_INIT_MPOOL | DB_PRIVATE | DB_USE_ENVIRON, 0);
-		}
-		if (ret != 0) {
-			dbenv->err(dbenv, ret, "DB_ENV->open");
-			goto err;
-		}
-	}
+	if (__db_util_env_open(dbenv,
+	    home, DB_INIT_MPOOL, 1, DB_INIT_MPOOL, cache, &private) != 0)
+		goto err;
 
 	/*
 	 * Find out if we have a transactional environment so that we can
@@ -190,54 +169,6 @@ retry:	if ((ret = db_env_create(&dbenv, 0)) != 0) {
 			goto err;
 		}
 
-		/*
-		 * We create a 2nd dbp to this database to get its pagesize
-		 * because the dbp we're using for verify cannot be opened.
-		 *
-		 * If the database is corrupted, we may not be able to open
-		 * it, of course.  In that case, just continue, using the
-		 * cache size we have.
-		 */
-		if (private) {
-			if ((ret = db_create(&dbp1, dbenv, 0)) != 0) {
-				dbenv->err(
-				    dbenv, ret, "%s: db_create", progname);
-				goto err;
-			}
-
-			if (TXN_ON(dbenv->env) && (ret =
-			    dbp1->set_flags(dbp1, DB_TXN_NOT_DURABLE)) != 0) {
-				dbenv->err(
-				    dbenv, ret, "%s: db_set_flags", progname);
-				goto err;
-			}
-
-			ret = dbp1->open(dbp1,
-			    NULL, fname, dname, DB_UNKNOWN, DB_RDONLY, 0);
-
-			/*
-			 * If we get here, we can check the cache/page.
-			 * !!!
-			 * If we have to retry with an env with a larger
-			 * cache, we jump out of this loop.  However, we
-			 * will still be working on the same argv when we
-			 * get back into the for-loop.
-			 */
-			if (ret == 0) {
-				if (__db_util_cache(
-				    dbp1, &cache, &resize) == 0 && resize) {
-					(void)dbp1->close(dbp1, 0);
-					(void)dbp->close(dbp, 0);
-					dbp = NULL;
-
-					(void)dbenv->close(dbenv, 0);
-					dbenv = NULL;
-					goto retry;
-				}
-			}
-			(void)dbp1->close(dbp1, 0);
-		}
-
 		/* The verify method is a destructor. */
 		ret = dbp->verify(dbp, fname, dname, NULL, flags);
 		dbp = NULL;
@@ -256,7 +187,7 @@ err:		exitval = EXIT_FAILURE;
 done:
 	if (dbp != NULL && (ret = dbp->close(dbp, 0)) != 0) {
 		exitval = EXIT_FAILURE;
-		dbenv->err(dbenv, ret, DB_STR("5106", "close"));
+		dbenv->err(dbenv, ret, DB_STR("0164", "close"));
 	}
 	if (dbenv != NULL && (ret = dbenv->close(dbenv, 0)) != 0) {
 		exitval = EXIT_FAILURE;
@@ -278,21 +209,4 @@ usage()
 {
 	fprintf(stderr, "usage: %s %s\n", progname,
 	    "[-mNoqV] [-b blob_dir] [-h home] [-P password] db_file ...");
-}
-
-int
-version_check()
-{
-	int v_major, v_minor, v_patch;
-
-	/* Make sure we're loaded with the right version of the DB library. */
-	(void)db_version(&v_major, &v_minor, &v_patch);
-	if (v_major != DB_VERSION_MAJOR || v_minor != DB_VERSION_MINOR) {
-		fprintf(stderr, DB_STR_A("5107",
-		    "%s: version %d.%d doesn't match library version %d.%d\n",
-		    "%s %d %d %d %d\n"), progname, DB_VERSION_MAJOR,
-		    DB_VERSION_MINOR, v_major, v_minor);
-		return (EXIT_FAILURE);
-	}
-	return (0);
 }

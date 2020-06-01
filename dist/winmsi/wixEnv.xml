@@ -8,8 +8,8 @@
   <env name="jar" group="group_java">
     <Environment Id="classpathdb" Name="CLASSPATH" Action="set" System="yes" Part="last" Permanent="no" Value="[INSTALLDIR]jar\db.jar" />
   </env>
-  <env name="jar" group="group_sql">
-    <Environment Id="classpathjdbc" Name="CLASSPATH" Action="set" System="yes" Part="last" Permanent="no" Value="[INSTALLDIR]jar\jdbc.jar" />
+  <env name="jar" group="group_java">
+    <Environment Id="classpathdbg" Name="CLASSPATH" Action="set" System="yes" Part="last" Permanent="no" Value="[INSTALLDIR]jar\db_gui.jar" />
   </env>
   <env name="bin" group="group_runtime">
     <Environment Id="path1" Name="PATH" Action="set" System="yes" Part="last" Permanent="no" Value="[INSTALLDIR]bin" />

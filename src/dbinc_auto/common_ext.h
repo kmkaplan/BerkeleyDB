@@ -8,9 +8,11 @@ extern "C" {
 
 void __clock_set_expires __P((ENV *, db_timespec *, db_timeout_t));
 int __clock_expired __P((ENV *, db_timespec *, db_timespec *));
+time_t __clock_get_start __P((void));
 int __crypto_region_init __P((ENV *));
 int __db_isbigendian __P((void));
 int __db_byteorder __P((ENV *, int));
+int __db_needswap __P((u_int32_t));
 u_int32_t __db_compress_count_int __P((u_int64_t));
 int __db_compress_int __P((u_int8_t *, u_int64_t));
 u_int32_t __db_decompress_count_int __P((const u_int8_t *));
@@ -47,6 +49,7 @@ int __db_unknown_path __P((ENV *, char *));
 int __db_check_txn __P((DB *, DB_TXN *, DB_LOCKER *, int));
 int __db_txn_deadlock_err __P((ENV *, DB_TXN *));
 int __db_not_txn_env __P((ENV *));
+int __db_not_log_env __P((ENV *));
 int __db_rec_toobig __P((ENV *, u_int32_t, u_int32_t));
 int __db_rec_repl __P((ENV *, u_int32_t, u_int32_t));
 int __dbc_logging __P((DBC *));
@@ -84,11 +87,16 @@ int __dbt_defcmp __P((DB *, const DBT *, const DBT *, size_t *));
 int __db_mkpath __P((ENV *, const char *));
 u_int32_t __db_openflags __P((int));
 int __db_util_arg __P((char *, char *, int *, char ***));
+const char *__db_util_arg_progname __P((const char *));
+int __db_util_arg_password __P((const char *, char *, char **));
 int __db_util_cache __P((DB *, u_int32_t *, int *));
+int __db_util_env_create __P((DB_ENV **, const char *, const char *, const char *));
+int __db_util_env_open __P((DB_ENV *, const char *, int, int, int, u_int32_t, int *));
 int __db_util_logset __P((const char *, char *));
 void __db_util_siginit __P((void));
 int __db_util_interrupted __P((void));
 void __db_util_sigresend __P((void));
+int __db_util_version_check __P((const char *));
 int __db_zero_fill __P((ENV *, DB_FH *));
 int __db_zero_extend __P((ENV *, DB_FH *, db_pgno_t, db_pgno_t, u_int32_t));
 

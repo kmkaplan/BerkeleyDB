@@ -130,6 +130,8 @@ int __rep_closefiles __P((ENV *));
 int __rep_write_egen __P((ENV *, REP *, u_int32_t));
 int __rep_write_gen __P((ENV *, REP *, u_int32_t));
 int __rep_check_view __P((ENV *));
+size_t __rep_object_size __P((ENV *));
+size_t __rep_object_max __P((ENV *));
 int __rep_stat_pp __P((DB_ENV *, DB_REP_STAT **, u_int32_t));
 int __rep_stat_print_pp __P((DB_ENV *, u_int32_t));
 int __rep_stat_print __P((ENV *, u_int32_t));

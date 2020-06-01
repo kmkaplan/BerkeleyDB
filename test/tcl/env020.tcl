@@ -1,6 +1,6 @@
-# See the file LICENSE for redistribution information.
+# Copyright (c) 2011, 2020 Oracle and/or its affiliates.  All rights reserved.
 #
-# Copyright (c) 2011, 2016 Oracle and/or its affiliates.  All rights reserved.
+# See the file LICENSE for license information.
 #
 # $Id$
 #
@@ -426,6 +426,7 @@ proc env020_init { } {
 		"Priority"
 		"Page's LSN offset"
 		"Page's clear length"
+		"Multiversion reference count"
 		"ID"
 		"Flags"
 	}
@@ -646,6 +647,7 @@ proc env020_init { } {
 		"Number of existing connections dropped"
 		"Number of failed new connection attempts"
 		"Number of currently active election threads"
+		"Earliest log file still needed by replication group"
 		"Election threads for which space is reserved"
 		"Number of participant sites in replication group"
 		"Total number of sites in replication group"
@@ -655,6 +657,7 @@ proc env020_init { } {
 		"Incoming message size in queue"
 		"Number of write operations forwarded by this client"
 		"Number of write operations received by this master"
+		"Replication Manager Polling method"
 	}
 
 	set repmgr_statprt_pattern_sites {
@@ -869,7 +872,7 @@ proc env020_init { } {
 		"LOG FNAME list"
 		"Fid max"
 		"Log buffer size"
-		{btree\s*\d\s*\d*\s*\d\s*\d\s*\d\s*DBP}
+		{btree\s*\d\s*\d*\s*\d\s*\d*\s*\d\s*DBP}
 		{\(\d [0-9a-fA-F]* \d*\)}
 	}
 
